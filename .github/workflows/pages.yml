@@ -30,7 +30,6 @@ jobs:
           CLANG: clang-18
           WASM_LD: /usr/bin/wasm-ld-18
         run: bash scripts/build.sh
-      - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v4
         with:
           path: web
