@@ -1,4 +1,14 @@
 # dq9-AT 実装計画
+
+## 現在地（2026-09-29 10:37 UTC / 作業継続中）
+- P0採掘: 実ROM1010マップ構造、268通常画像+150特殊画像=418画像、283配置合成を本番WASMで実行、エラー0。静的配置未結合572レコードも欠落させず表示。
+- P0公開: commit d9ee0b52b1b3500bef70b224ec327d1b54ee40f4、Actions run36556131763がbuild/deployとも成功。Ubuntu26.04/configure-pages@v5。公開 https://daisukedaisuke.github.io/dq9-AT/ 。HTTPと配布WASMの取得を確認中。以前のPages403/404は解消。
+- A01実装: 既存ARand参照+WASM skipahead/前方探索、既知seed入力、証明済み下限と観測条件付き下限の分離、未探索suffix保持、追跡保存/証拠再評価による復元、既存encによる対象weighted乱数位置を実装。初回combinedWASM build・実測replayへ進行中。まだライブナビ完成ではない。
+- A02実測: 指定装備ありstateで32連続UpdateAT、14ATRandInt、7生成を保存。18消費はmonster移動先選択02079ed8、7はtable選択、7はmonster選択。途中state起点でありboot下限証明には使わない。docs/observations/metaru-soubi-at32.json。
+- N00採掘: map7402の実RAMに26ノードのmonster移動/spawn候補graphを確認。ROM側loaderをGhidraで追跡中。敵graphをそのまま人間用walkmeshと断定しない。
+- 次の実作業: combinedWASM本番replay→AT UI公開、ROMから全mapのspawn graph/area/table候補を取得、起動proof producerと位置/方向案内へ接続。カメラ/文字/3D認識は未接続。
+- protocol追記: 下5秒→上5秒でstateのencounter reset可能。ただしmap入場時のたる/つぼ/青宝箱/map固有AT消費を無視しない。新規tests/sanitizer/ブラウザ操作は行わない。約10分pull継続。
+
 更新: 2026-09-29 / 担当 isolation dq9-at-map-20260929-a7
 ## X
 既知initial AT seedから証明可能な下限と候補集合を維持し、全map/areaと映像を統合して人間へメタル系連続ポップの移動を案内する。今回の先行成果はNDS投入でmapメタデータ・上画面マップを採掘できるWebアプリ。未実装の追跡・認識・最速性を完了と表示しない。
@@ -14,7 +24,7 @@
 |C06|P0|実ROMで本番マイニング/WASMを実行し成功/非対応件数を保存|docs/observations/actual-map-wasm.json|完了:1010構造、418画像、283合成、失敗0。通常配置未結合572構造を保持|
 |C07a|P0|Codespaceへソースだけ転送してWASM build|scripts/build.sh|完了:clang18/lld18、1606bytes|
 |C07b|P0|GitHubへ実装push、Actions buildとartifact作成|.github/workflows/pages.yml|着手|
-|C07c|P0|GitHub Pages公開、HTTP/wasm取得確認|docs/DEPLOYMENT.md|初期Pages作成APIが403。所有者のPages設定が必要|
+|C07c|P0|GitHub Pages公開、HTTP/wasm取得確認|docs/DEPLOYMENT.md|完了:run36556131763成功、HTTP200と配布WASM取得/Module生成確認|
 |G01|P0並行|Ghidraでmap resource/area table選択の入口・正式関数名を取得|docs/ghidra|完了:現在のmap/area採掘範囲|
 |G02|P0並行|不足関数をbatch_decompileし生の結果と解釈を分離保存|docs/ghidra|完了:static根拠を実測と分離|
 |H01|P1|ふういんのほこら1Fの装備なし/ありを既存ハーネスで観測、map/area/ATを記録|scripts/field-observer.pscript.js, docs/observations|着手:永続読取handler実行済。area/tableの有効値は未確認|

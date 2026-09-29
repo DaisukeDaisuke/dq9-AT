@@ -1,4 +1,11 @@
 # Deployment checkpoint
+## Public deployment succeeded
+2026-09-29T10:37Z: commitd9ee0b52b1b3500bef70b224ec327d1b54ee40f4, Actionsrun36556131763 SUCCESS (Ubuntu26.04,configure-pages@v5). Owner enabledPages. Public URL https://daisukedaisuke.github.io/dq9-AT/ returnedHTTP200,text/html. Publicwasm fetched and successfully instantiated as WebAssembly.Module, exportsmemory/obg_decode/tiles_decode/blit/__heap_base. Browser UI interaction was not performed, per protocol.
+A subsequent combinedmap+ATWASM build succeeded inCodespace (2384bytes); not yet the deployed version at this checkpoint.
+
+## Verified Actions result
+2026-09-29T10:23Z: run36554505620, commit900f6e9f21594eacad1677156073de79b7bcb2bc. Build job109360307614 SUCCEEDED including clang/lld build and upload-pages-artifact (artifact11025832681). Deploy job109360470529 FAILED404, log explicitly says ensure GitHub Pages is enabled. This is not a WASM build failure. Site not yet published.
+
 ## Build
 Codespace potential-fishstick-jjwvw95499j2p665, /workspaces/dq9-AT. clang18.1.3 + lld18. scripts/build.sh successfully built real standalone WebAssembly (1606bytes). Same binary copied back and executed on the user's actual ROM;418images/283composites succeeded.
 ## GitHub Actions

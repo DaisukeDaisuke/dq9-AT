@@ -1,4 +1,12 @@
 # 作業ログ
+## protocol追加 / map再入場
+最新pullで「下5秒・上5秒でエンカウントリセット。ただし入場時のたる/つぼ/青宝箱およびmap固有処理によるAT消費に注意」を受領。移動入力をそのまま一定AT数に変換しない。既存pickup研究は共通経路の証拠だけを再利用する。
+AT UI/coreを追加中。既存ARandを参照するWASM、前方探索、手動観測の条件付き分岐、証拠再評価による保存/復元を実装。途中stateの実測をboot-originへ偽装しない。実ROM32AT/14ATRandInt/7生成のproduction replayを次に実行する。
+
+## protocol: Pages構成済み / ubuntu26.04
+最新pullで所有者からPages構成済み、runs-on:ubuntu-26.04、main直接push可、configure-pages@v5を戻す指示を受領。workflowを更新。以前の403/404は履歴として残し、新runの結果を別に記録する。
+同時に実ハーネスの32AT連続exec観測を保存: docs/observations/metaru-soubi-at32.json。32回のうちテーブル選択7回/モンスター選択7回、残り18回のcaller02079ed8。spawn creation7回。保存後traceをdisarmした。
+一度gatewayの複数書込を含む呼出が安全確認で拒否。読取/書込を分割して再実行し、範囲を広げていない。
 ## protocol追加: ATナビの実装を継続
 2026-09-29T10:15Z:「目的は、ATのナビゲーション(人間)なので続けろ。」およびUpdateAT監視Lua/出力を受信。新しい不足へ進む。ログにATRandInt LR02075150/020751a0が反復。read-only writer/caller観測として参考にし、Lua内の戦闘レジスタ書換えを実行しない。setAT検知の例があっても追跡仕様へsetAT経路を追加しない。
 所有者が作業途中の実装を2666e94(upd)としてmainへpush済みと確認。重複実装コミットを作らず、新規チェックポイント差分だけをその先へ積む。

@@ -1,0 +1,12 @@
+{
+ "format":"dq9-at-observed-exec-series","version":1,"sourceState":"metaru_soubi.dst","startSeed":388724333,"mapId":7402,"origin":"paused-state-not-boot","harnessIsolation":"dq9-at-map-a7","script":"scripts/at-field-trace.pscript.js","captureLimit":32,"stop":"paused before 33rd UpdateAT","fieldAttemptCallbacks":1477,
+ "columns":["sequence","afterSeed","random15"],
+ "updates":[[1,1625608866,24804],[2,82262835,1255],[3,1190129392,18159],[4,211160169,3222],[5,1440839406,21985],[6,2907723663,11600],[7,1300040220,19837],[8,83494437,1274],[9,1911690234,29170],[10,864345515,13188],[11,1214163976,18526],[12,3202998177,16105],[13,1664972230,25405],[14,1479649671,22577],[15,339116212,5174],[16,1973671133,30115],[17,3247122514,16779],[18,3488962339,20469],[19,2484401184,5140],[20,1611522521,24589],[21,3884939166,26511],[22,4038869631,28860],[23,2309304908,2469],[24,594657941,9073],[25,351760298,5367],[26,3638331291,22748],[27,3289982776,17433],[28,3052991249,13816],[29,2771704950,9524],[30,3958506103,27634],[31,1372946148,20949],[32,3974672205,27880]],
+ "intCallColumns":["atSequence","maxArgument","integerResult","callerHex"],
+ "intCalls":[[2,1,0,"02075150"],[3,16,8,"020751a0"],[6,1,0,"02075150"],[7,16,9,"020751a0"],[10,1,0,"02075150"],[11,16,9,"020751a0"],[15,1,0,"02075150"],[16,16,14,"020751a0"],[20,1,0,"02075150"],[21,16,12,"020751a0"],[25,1,0,"02075150"],[26,16,11,"020751a0"],[29,1,0,"02075150"],[30,16,13,"020751a0"]],
+ "otherUpdateCaller":"02079ed8",
+ "spawnColumns":["afterATSequence","monsterId","tableId","mapId"],
+ "spawnCreationEntries":[[3,108,30,7402],[7,108,30,7402],[11,108,30,7402],[16,83,30,7402],[21,83,30,7402],[26,83,30,7402],[30,83,30,7402]],
+ "provenance":"Compact transcription of actual persistent-script exec entry/return observations; no synthetic data. Raw beforeSeed for each update equaled the preceding observed afterSeed. Creation entry is intent, not a separately confirmed rendered appearance.",
+ "limitations":["State-origin observation does not establish known initial boot seed","Do not infer a fixed number of AT calls per visible spawn","Different recorded states do not establish equipment causality"]
+}
