@@ -1,0 +1,9 @@
+[submodule "vendor/encounter_jp"]
+	path = vendor/encounter_jp
+	url = git@github.com:DaisukeDaisuke/dq9Asset.git
+[submodule "vendor/nds-font-converter"]
+	path = vendor/nds-font-converter
+	url = git@github.com:DQIX/Nds9ToFonts.js.git
+[submodule "vendor/apicula"]
+	path = vendor/apicula
+	url = git@github.com:scurest/apicula.git
