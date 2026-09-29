@@ -1,3 +1,145 @@
 読み込めてるよ
 10分に1回ぐらい読んでね
 ごめんchrome-devtools有効化忘れた。今は有効化無理だから、データマイニングとビルド確認、github アクションでのデプロイに専念して
+
+目的は、ATのナビゲーション(人間)なので続けろ。
+
+script returned but is still running registered functions
+0
+rand: 0x000060e4
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+1
+rand: 0x000004e7
+2 prng called: 0x00000010
+2 prng called: 0x020751a0
+2
+rand: 0x000046ef
+3
+rand: 0x00000c96
+4
+rand: 0x000055e1
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+5
+rand: 0x00002d50
+2 prng called: 0x00000010
+2 prng called: 0x020751a0
+6
+rand: 0x00004d7d
+7
+rand: 0x000004fa
+8
+rand: 0x000071f2
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+9
+rand: 0x00003384
+2 prng called: 0x00000010
+2 prng called: 0x020751a0
+10
+rand: 0x0000485e
+11
+rand: 0x00003ee9
+
+
+function printf(...) print(string.format(...)) end
+function printhex(string, hex)
+    if hex == nil then
+        print(string .. ": nil")
+    else
+        printf("%s: %#.8x", string, hex)
+    end
+end
+
+reg = memory.getregister
+regw = memory.setregister
+read8 = memory.readbyte
+read16 = memory.readword
+-- read32 = memory.readdword
+write8 = memory.writebyte
+
+
+
+local counter = 0
+local memo = 0
+
+memory.registerwrite(0x020eee90, function()
+    print(counter)
+    counter = counter + 1
+    -- if counter == 236 then
+    --     emu.pause()
+    -- end
+end)
+
+memory.registerexec(0x02003c54, function()
+    printf("rand: %#.8x", reg("r0"))
+    -- if reg("r0") == 6353 then
+    --     emu.pause()
+    -- end
+    if reg("r0") < 128 then
+        print("1/256")
+    elseif reg("r0") < 256 then
+        print("1/128")
+    elseif reg("r0") < 512 then
+        print("1/64")
+    elseif reg("r0") < 1024 then
+        print("1/32")
+    -- elseif reg("r0") < 2048 then
+    --     print("1/16")
+    -- elseif reg("r0") < 4096 then
+    --     print("1/8")
+     end
+end)
+memory.registerexec(0x02031ea8, function()
+    if reg("r14") == 0x02197d20 then --
+        --print("hit")
+        --regw("r0", 1)
+    end
+    memo = reg("r14")
+    --if reg("r0") ~= 0x00000001 then
+      --  if reg("r0") ~= 0x00000010 then
+            printf("2 prng called: %#.8x", reg("r0"))
+            printf("2 prng called: %#.8x", reg("r14"))
+        --end
+    --end
+end)
+
+memory.registerexec(0x02031eb4, function()
+    --printf("prng called: %#.8x", reg("r0"))
+end)
+
+memory.registerexec(0x02031ef4, function()
+    if memo == 0x02197d20 then --tomadoi
+        print("hit")
+        regw("r0", 0)
+    end
+    if memo == 0x02197d58 then --ikinari
+        print("hit ikinari")
+        --pregw("r0", 6)
+    end
+
+    --printf("prng called: %#.8x", reg("r0"))
+end)
+memory.registerexec(0x02197d20, function()
+    printf("tomadoi: %#.8x", reg("r4"))
+end)
+memory.registerexec(0x02197d58, function()
+    printf("ikinari: %#.8x", reg("r4"))
+end)
+
+local a = 1;
+memory.registerexec(0x0207cfec, function()
+    -- if a == 3 then
+    --     regw("r0", 24) -- はやてのリング: 68~72
+    -- else
+    --     regw("r0", 100)
+    -- end
+    a = a + 1
+    print("takara: ", reg("r0"))
+end)
+
+
+memory.registerexec(0x2003C64, function()
+    printhex("setAT!!!!", reg("r0"))
+end)

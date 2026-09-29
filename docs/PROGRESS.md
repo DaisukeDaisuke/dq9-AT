@@ -1,4 +1,10 @@
 # 作業ログ
+## protocol追加: ATナビの実装を継続
+2026-09-29T10:15Z:「目的は、ATのナビゲーション(人間)なので続けろ。」およびUpdateAT監視Lua/出力を受信。新しい不足へ進む。ログにATRandInt LR02075150/020751a0が反復。read-only writer/caller観測として参考にし、Lua内の戦闘レジスタ書換えを実行しない。setAT検知の例があっても追跡仕様へsetAT経路を追加しない。
+所有者が作業途中の実装を2666e94(upd)としてmainへpush済みと確認。重複実装コミットを作らず、新規チェックポイント差分だけをその先へ積む。
+## H01: 指定2状態の実観測
+2026-09-29T10:12Z。装備なしload+1frameはmap7402, AT9414f420, slotなし。装備ありload+1frameはmap7402, AT172b766d, monster31/spawnTable30/spawnId1が1体。生結果をmetaru-nasi-frame10117.json / metaru-soubi-frame10118.jsonへ保存。area maskは後者index8->0でselectedTable null。caller側の0mask fallback/初期化時点は未確認。map/area/table/装備因果を仮定で結ばない。
+公開:Pages初期作成403のため所有者へSettings Pages GitHub Actions設定を依頼。build artifact作成は独立させ、未設定でも本番WASM build結果が保存されるようconfigure-pages（静的構成では出力未使用）を外した。
 ## C06 本番WASM・特殊パック追加後
 2026-09-29T10:06Z: scripts/run-map-mining.mjs実ROM実行成功。1010構造レコード、283配置、268OBG+150PAC=418画像、画像/合成エラー0、438レコードに通常配置候補。採掘・全画像描画約1327.819ms（ローカルNode実行、ROM読込時間を含まない）。D04M02とmapt_001を画像として目視確認。ブラウザUI操作確認とは区別する。
 GitHub認証はCodespaceの非login shellにはなく、通常login shell bash -lcでは既存認証が利用できることを確認。秘密値は取得・転送していない。Pagesサイトは未作成（GET404）。
