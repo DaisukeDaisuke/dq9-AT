@@ -1,0 +1,16 @@
+# Natural spawn vs forced spawn / AT obligations
+2026-09-29. Ghidra batch_decompile, program dq9_new2.nds. Static reconstruction; actual exec trace stored separately.
+## FUN_02074568: natural field scheduler
+Field context must be nonnull and byte+0xc active. Timeru32(field+8) adds dynamic delta FUN_0201006c. Requires timer>999 and a free slot among12. It searches up to4 candidate attempts around player/graph nodes. Existing nearby monsters influence capacity and candidate rejection. Candidate direction prefers maximum positive dot product to player facing; when no preferred direction and nodes exist, one direct UpdateAT modulo candidate count chooses a node.
+Graph field+0x14, accessed by FUN_02027c9c / FUN_02027ccc. Candidate node: area byte+1, flagsbyte+3, position signedshort XYZ+4/+6/+8 then <<12. Rejects blocked or occupied positions; nearby occupancy thresholds include0x3000 in X/Z and0x5000 in Y.
+FUN_02075050 takes the CANDIDATE NODE area byte, not necessarily the player's area. It consumes1 AT when its eligible table list is nonempty. Spawn delay from selected table flags is (7-((flags>>21)&15))*1000. Earlier attempts can consume table-selection AT and still reject spawning. Therefore do not assume fixed AT-per-visible-spawn.
+When a candidate survives: FUN_02075168 selects weighted monster with1 ATRandInt, computes orientation, calls FUN_overlay_d_17__021a2bb8 with monster/table/position/node. Success resets field timers+8/+10. Remaining callee AT needs actual trace; static absence of a direct call is insufficient.
+## FUN_overlay_d_17__021a2e74: forced/special path
+Table selection still occurs if candidates exist. Weighted monster selection occurs only when the requested monster argument is negative; explicitly forced monster IDs skip it. Full-slot replacement may use another ATRandInt. Visible appearance alone does not prove the natural weighted path or2 AT. Keep provenance with observation.
+## FUN_overlay_d_17__021a2bb8: creation
+Resolves field/model/AI resources, selects free slot(group*12+0x70), initializes object and terrain-adjustedposition. Writes monsterId+2, spawnTableId+0x168, spawnInstanceId+0x16a (via021a23d4), nodeId+0x164 and+0xb8. Slot identity/model initialization involve other calls. No direct UpdateAT in this function does NOT prove callees consume none.
+Capture function entry r0=context,r1=field/map,r2=monsterId,r3=tableId and stack arguments for position/node. This is creation intent; successful return/object state separately confirms appearance.
+## ATRandInt conversion
+Ghidra constant at02031ef8: highword0x40dfffc0 withlowword0x00000000, binary64=32767.0. Function computes max*((UpdateAT()-1)/32767.0), then Double64ToInt1 truncates towardzero. For relevant small positive max the model is Math.trunc(max*((random-1)/32767)). This is not modulo and negative tiny output when random=0 truncates0. Runtime input/output traces must confirm this before candidate filtering uses it as a proven observation rule.
+## Important limits
+Map/area/table state from arbitrary savedstates is not known-seed boot tracking. A search window is not an upper-bound proof. Unsearched suffix must remain possible; lower-bound advances require disjoint consumption evidence or exhaustive exclusion below the newbound.
