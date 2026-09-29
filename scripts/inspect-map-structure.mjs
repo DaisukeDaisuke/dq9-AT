@@ -1,0 +1,16 @@
+import fs from 'node:fs/promises';
+import {NitroFS} from '../web/vendor/nitro-fs.mjs';
+import '../web/vendor/gp2.js';
+import {parseCalls,decodeNumber,readPoolString,decodeMapRecords,u32} from '../web/vendor/call-stream.mjs';
+const buf=await fs.readFile(new URL('../../dq9_new2.nds',import.meta.url));
+const nitro=NitroFS.fromRom(buf.buffer.slice(buf.byteOffset,buf.byteOffset+buf.byteLength));
+const m=new Uint8Array(nitro.readFile('data/map/maplist9.bin'));
+const records=decodeMapRecords(m,parseCalls(m));
+const csv=await fs.readFile(new URL('../web/data/map-id-names.csv',import.meta.url),'utf8');
+const shrineIds=csv.split(/\r?\n/).filter(s=>s.includes('ふういんのほこら')).map(s=>Number(s.split(',')[1]));
+const gp=globalThis.NdsFontGp2.parseGp2(new Uint8Array(nitro.readFile('data/pack_lv5/minimap.gp2')));
+const bmmp=gp.filter(e=>e.path.endsWith('.bmmp')).map(e=>({path:e.path,calls:parseCalls(e.data).map(c=>({offset:c.offset,op:c.opcode,args:c.args.map(a=>a.type===0?readPoolString(e.data,u32(e.data,4),a):decodeNumber(a))}))}));
+const obg=gp.filter(e=>e.path.endsWith('.obg')).map(e=>{const d=e.data,v=new DataView(d.buffer,d.byteOffset,d.byteLength),count=v.getUint32(4,true),tileBytes=d[2]?64:32,palBytes=d[2]?512:32;const start=8+palBytes+count*tileBytes;let max=0,nonzeroBank=0;for(let p=start;p+1<d.length;p+=2){const q=v.getUint16(p,true);max=Math.max(max,q&1023);nonzeroBank+=!!(q&0xf000);}return {path:e.path,width:d[0]*8,height:d[1]*8,depth:d[2],count,size:d.length,expected:start+d[0]*d[1]*2,maxTile:max,nonzeroBank};});
+const r={records,bmmp,obg,shrineIds,shrine:records.filter(r=>shrineIds.includes(r.mapId))};
+await fs.writeFile(new URL('../docs/mining/map-structure.json',import.meta.url),JSON.stringify(r,null,2));
+console.log(JSON.stringify({recordCount:records.length,shrineIds,shrine:r.shrine,bmmp:bmmp.slice(0,2),obg:obg.slice(0,4),obgSizeMismatch:obg.filter(x=>x.size!==x.expected).map(x=>x.path),depths:[...new Set(obg.map(x=>x.depth))]},null,2));

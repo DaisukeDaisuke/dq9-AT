@@ -1,0 +1,6 @@
+import fs from 'node:fs/promises';
+import {NitroFS} from '../web/vendor/nitro-fs.mjs';import '../web/vendor/gp2.js';
+const rom=await fs.readFile(new URL('../../dq9_new2.nds',import.meta.url)),fsys=NitroFS.fromRom(rom.buffer.slice(rom.byteOffset,rom.byteOffset+rom.byteLength));
+const entries=globalThis.NdsFontGp2.parseGp2(new Uint8Array(fsys.readFile('data/pack_lv5/minimapt.gp2')));
+const result=entries.slice(0,3).map(e=>{const b=e.data,v=new DataView(b.buffer,b.byteOffset,b.byteLength),blocks=[];for(let i=0;i+4<=b.length;i++){const s=String.fromCharCode(...b.subarray(i,i+4));if(['PALT','SCRN','CHAR','CPOS','POS0'].includes(s))blocks.push({offset:i,magic:s,header:Array.from(b.subarray(i,i+32))});}const names=[];for(let i=0;i+5<b.length;i++){if(b[i]===46&&b[i+1]===98&&b[i+2]===110){let j=i;while(j>0&&b[j-1]>=32&&b[j-1]<127)j--;let k=i;while(k<b.length&&b[k]>=32&&b[k]<127)k++;names.push({offset:j,name:new TextDecoder().decode(b.subarray(j,k)),headerU32:Array.from({length:20},(_,n)=>v.getUint32(j+n*4,true))});}}return {path:e.path,size:b.length,blocks,names};});
+await fs.writeFile(new URL('../docs/mining/pac-structure.json',import.meta.url),JSON.stringify(result,null,2));console.log(JSON.stringify(result,null,2));

@@ -1,0 +1,8 @@
+.idea/
+*.nds
+*.dst
+*.sav
+*.dsv
+private/
+observations-private/
+node_modules/

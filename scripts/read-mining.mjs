@@ -1,0 +1,3 @@
+import fs from 'node:fs/promises';
+const r=JSON.parse(await fs.readFile(new URL('../docs/mining/rom-inventory.json',import.meta.url),'utf8'));
+console.log(JSON.stringify({header:r.header,oldInventory:{keys:r.existingInventory.keys,arrays:r.existingInventory.arrays},archives:r.archives.map(a=>({path:a.path,size:a.size,count:a.count,extensions:a.entries.reduce((o,e)=>{const k=e.path.split('.').pop();o[k]=(o[k]||0)+1;return o;},{}),first:a.entries.slice(0,5),obg:a.entries.filter(e=>e.path.endsWith('.obg')).slice(0,3),bmmp:a.entries.filter(e=>e.path.endsWith('.bmmp')).slice(0,3)})),maplist:r['data/map/maplist9.bin']},null,2));

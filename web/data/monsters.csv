@@ -1,0 +1,439 @@
+ID,Model ID,Japanese,English,Spanish,French,German,Italian
+0001,z000a,スライム,slime,limo,gluant,Schleim,Slime
+0002,z000b,スライムベス,she-slime,lima,gluante,Schleimette,Slime arancione
+0003,z000c,メタルスライム,metal slime,limo metálico,gluant de métal,Metallschleim,Slime grigio
+0004,z007a,ドラキー,dracky,dracanino,vampivol,Drako,Vampistrello
+0005,z007b,タホドラキー,drackmage,dracanino mago,vampimage,Drakomagus,Verdestrello
+0006,z007c,ドラキーマ,drackyma,dracanina,vampivolle,Drakina,Vampistrello giallo
+0007,z011a,メラゴースト,firespirit,alma ígnea,feu follet,Feuergeist,Fuoco fatuo
+0008,z011b,さまようたましい,lost soul,alma extraviada,flammerolle,Verlorene Seele,Fuoco blu
+0009,z013a,おばけキノコ,funghoul,seta macabra,champigoule,Pestpilz,Nauseafungus
+000a,z013b,マタンゴ,Morphean mushroom,seta onírica,champitox,Schlafpilz,Violafungus
+000b,z013c,マージマタンゴ,mushroom mage,seta mágica,champimage,Pilzmagier,Magifungo
+000c,z036a,ねこまどう,meowgician,magato,miaougicien,Miaugier,Miago
+000d,z036b,ジャガーメイジ,clawcerer,miauchicero,sorciergrif,Nekromaunz,Magifelino
+000e,z036c,ベンガルクーン,purrestidigitator,hechironrroneador,prestigriffitateur,Schnurrke,Artiglio stregato
+000f,z015a,ホイミスライム,healslime,medulimo cicatrizante,médigluant,Doktorschleim,Dottor Slime
+0010,z015b,しびれくらげ,man o' war,medusa guerrera,méduse,Seeblase,Medusa
+0011,z015c,ベホイミスライム,medislime,semimedulimo,coagluant,Arztschleim,Medislime
+0012,z015d,ベホイムスライム,sootheslime,alivialimo,gluantibio,Pflegerschleim,Lenislime
+0013,z015e,ベホマスライム,cureslime,medulimo curativo,guérigluant,Heilschleim,Curaslime
+0014,z018a,メタッピー,mecha-mynah,maquipájaro,rouage-gorge,Metallmeise,Pettirobot
+0015,z018b,アイアンクック,robo-robin,robopájaro,engrenoiseau,Dampfdrossel,Pettirobot nero
+0016,z018c,ガチャコッコ,clockwork cuckoo,mecanipájaro,coucou mécanique,Stahlspatz,Meccanicucù
+0017,z005a,リリパット,bodkin archer,arquero punzante,archer vert,Schützenwicht,Anselmo Tell
+0018,z005b,どくやずきん,bodkin fletcher,flechero punzante,dardeur,Pfeilwicht,Robin Good
+0019,z005c,アローインプ,bodkin bowyer,tirador encapuchado,tire-flèches,Bogenwicht,Tegolas
+001a,z014a,バブルスライム,bubble slime,burbujilimo,gluanbulle,Blasenschleim,Bollaslime
+001b,z014b,はぐれメタル,liquid metal slime,burbujilimo metálico,gluant de mercure,Flüssigmetallschleim,Liquislime
+001c,z002a,おおきづち,hammerhood,mazador,marteleur,Hämmerling,Martellus
+001d,z002b,ブラウニー,brownie,macero,martebrun,Hammerkauz,Martellus magnus
+001e,z019a,ゆうれい,spirit,espíritu,esprit,Geist,Spyr
+001f,z019b,しにがみ,mean spirit,espíritu malvado,esprit frappeur,Garstige Geist,Malvaspyr
+0020,z037a,じんめんちょう,batterfly,chafaposa,peurpillon,Zerschmetterling,Alabatt
+0021,z037b,ひとくいが,betterfly,golpeposa,frappillon,Zerschmeißfliege,Neo Alabatt
+0022,z037c,しびれあげは,dread admiral,mariposón,papilon,Furchtbare Falter,Gigabatt
+0023,z029a,みならいあくま,winkster,truhán,fée tide,Blinzler,Lampeggino
+0024,z029b,ベビーマジシャン,blinkster,bribón,fée brile,Zwinkerer,Occhiolino
+0025,z029c,ひとつめピエロ,jinkster,tunante,fée lée,Blödler,Sveltolino
+0026,z009a,ひとくいばこ,cannibox,cofre caníbal,canniboîte,Fresskiste,Cannibaule
+0027,z009b,ミミック,mimic,cofre mimético,imitapeur,Imitator,Skrigno dentato
+0028,z009c,パンドラボックス,Pandora's box,caja de Pandora,boîte de Pandore,Pandorabüchse,Skrigno a molla
+0029,z024a,メーダ,lunatick,selenita,luna-tique,Zänkische Zecke,Solletinsetto
+002a,z024b,メーダロード,raving lunatick,selenita lunático,fana-tique,Wirre Wanze,Solletinsetto ferox
+002b,z017a,わらいぶくろ,bag o' laughs,saco de risas,maransac,Lachsack,Sacco golosone
+002c,z017b,おどるほうせき,goodybag,saco de joyas,sacatrésor,Klunkerbeutel,Sacco ghiottone
+002d,z038a,ギズモ,cumaulus,cúmulo,flammulus,Wolkenketzer,Cumulus
+002e,z038c,ヒートギズモ,hell niño,borrascazo,cramulus,Wütende Wolke,Cumulus infernale
+002f,z038b,フロストギズモ,freezing fog,niebla helada,brumulus,Frostnebel,Cumulus gelido
+0030,z033a,シールドこぞう,leery lout,sonrisillas receloso,bouclieux,Listige Lümmel,Bandido
+0031,z033b,ダークホビット,grim grinner,sonrisillas siniestro,boucliblindé,Grimmige Grinser,Minifante
+0032,z033c,ビッグフェイス,gum shield,sonrillisas dentón,rebonclier,Zähneblecker,Stopper
+0033,z058a,テンツク,slugger,calandraca,limasson,Miesmade,Lentolus
+0034,z058b,スーパーテンツク,sluggernaut,calandraca movediza,limassif,Mördermade,Tensinsetto
+0035,z058c,ラストテンツク,sluggerslaught,calandraca asesina,limastard,Massakermade,Calmassacrator
+0036,z061a,ピンクモーモン,pink sanguini,sanguinino rosa,sanguini rose,Fledersau,Sanguonicum
+0037,z061b,マポレーナ,genie sanguini,genio sanguinino,sanguini irisé,Flederdschinn,Bonsang
+0038,z061c,モーモン,teeny sanguini,sanguinino,sanguini vache,Flederkuh,Sanguinis
+0039,z063a,ズッキーニャ,cruelcumber,pepinillo guerrero,concombrageur,Saure Gurke,Verdurfante
+003a,z063b,ぶっちズキーニャ,zumeanie,pepinillo revenido,tropiconcombre,Zickige Zucchini,Cetriolo del caos
+003b,z063c,ブラックベジター,scourgette,pepinillo pasado,secourgette,Knallgurke,Esplortaggio
+003c,z059a,ウパソルジャー,wooper trooper,tritón guerrero,défamphibien,Molchstrolch,Combamandra
+003d,z059b,かいぞくウーパー,salamarauder,salamandro piratón,amphigien,Salamarodeur,Salamala
+003e,z059c,ウパパロン,axolhotl,axalote,ardamphibien,Schwertlurch,Aholhotl
+003f,z060a,ドロザラー,sacksquatch,sacalodo,sacasable,Sandsack,Sacksabb
+0040,z060b,ようがんピロー,bagma,sacamagma,lavensac,Feuerbeutel,Lavagma
+004b,z077a,スライムタワー,slime stack,trío limoso,aggluantin,Schleimstapel,Torreslime
+004c,z077b,メタルブラザーズ,metal medley,trío metalimoso,métaggluantin,Stahlstaffel,Metallikon
+004d,z077c,ゴールデントーテム,gem jamboree,trío ororoso,aggluandor,Edelschleimturm,Splendijem
+004e,z078a,もみじこぞう,leafy larrikin,maldad patuda otoñal,foufolia,Blätterbalg,Fante fronduto
+004f,z078b,まだらイチョウ,bud brother,maldad patuda,folidaire,Knospenknilch,Cespinfame
+0050,z065a,デンデンがえる,gastropog,gasterópodo,gastérapaud,Schreckschnecke,Ranguscio
+0051,z065b,メダパニつむり,giddy gastropog,gasterópodo aturdidor,mauvellusque,Schnickschnecke,Ranguscio terribilis
+0052,z065c,ダークデンデン,gloomy gastropog,gasterópodo siniestro,gros-gris,Schattenschnecke,Ranguscio demoniaco
+0053,z064a,はにわナイト,earthenwarrior,jinete de terracota,cavalier de glaise,Keramikkrieger,Milite d'argilla
+0054,z064b,ふゆしょうぐん,brrearthenwarrior,jinete de terrorcota,cavalier de glace,Kalte Keramikkrieger,Palafreddo
+0055,z035a,がいこつ,skeleton,esqueleto,squelette,Skelett,Skeletro
+0056,z035b,死霊の騎士,skeleton soldier,esqueleto soldado,soldat squelette,Skelettsoldat,Soldaskeletro
+0057,z035c,影の騎士,dark skeleton,esqueleto oscuro,squelette noir,Dunkle Skelett,Neroskeletro
+0058,z039a,ウィングスネーク,flython,serpiente veladora,veninconda,Schwingenschleiche,Hisserp
+0059,z039b,ヘルバイパー,diethon,sierpe alada,toxicrotale,Satansschleiche,Demonvipera
+005a,z039c,オーシャンナーガ,sail serpent,serpiente marinera,vipère sonique,Segelschleiche,Aquarettile
+005b,z025a,おおくちばし,beakon,aticuécano,rapastrident,Schandschnabel,Semplibeck
+005c,z025b,デッドペッカー,weaken beakon,aticuécano debilitador,altérapace,Schindschnabel,Beck Beck
+005d,z025c,アカイライ,belisha beakon,aticuécano picador,rapacepasse,Sturmschnabel,Flash Beck
+005e,z040a,がいこつ兵,lesionnaire,lesionario,lésionnaire,Läsionär,Legionario
+005f,z040b,しにがみ兵,deadcurion,letaurión,sangturion,Dekadenturio,Centurione
+0060,z040c,ゾンビナイト,stenchurion,hedourión,décarion,Stinkurio,Lanciere velenoso
+0061,z041a,ガオン,cheeky tiki,tikis mikis,grimasque,Grinsgötze,Maskerossa
+0062,z041b,トーテムキラー,teaky mask,tiki de teka,maskoteck,Teak-Tiki,Ebetyssimus
+0063,z042a,リカント,bewarewolf,lobobo,folycanthrope,Böse Wolf,Licanlupo
+0064,z042b,キラーリカント,tearwolf,lobobo desgarrador,grizzlycanthrope,Reißwolf,Artigliupo
+0065,z042c,リカントマムル,scarewolf,lobobo espantajo,chienlycanthrope,Wehwolf,Ululà
+0066,z008a,くさった死体,walking corpse,zombi errante,mort-vivant,Wiedergänger,Zombie
+0067,z008b,どくどくゾンビ,toxic zombie,zombi infeccioso,zombitox,Giftzombie,Zombie velenoso
+0068,z008c,グール,ghoul,zombi necrófago,goule,Ghul,Zombie grigio
+0069,z022a,かまいたち,cyclown,anticiclón,cyclown,Tornadoteufel,Ciclown
+006a,z022b,うずしおキング,spinchilla,ciclón matón,glacyclone,Frostfritze,Wilfredd
+006b,z022c,レッドサイクロン,whirly girly,tornada,typhonphonphon,Wirbeline,Gyra
+006c,z021a,ミイラ男,mummy boy,pequemomia,momignon,Mumienknirps,Cocco di mummia
+006d,z021b,マミー,mummy,momia,momie,Mumie,Mummia
+006e,z021c,ブラッドマミー,blood mummy,momia ensangrentada,momie sanglante,Blutmumie,Mummia scarlatta
+006f,z023a,ガメゴン,wyrtle,tortuverno,tortugon,Schilddrache,Tartadrago
+0070,z023b,ガメゴンロード,wyrtoise,galapaverno,dracarapace,Panzerdrache,Dragoruga
+0071,z043a,マッドオックス,ram raider,carnero campero,boucboule,Widderling,Hari-Hari
+0072,z043b,ゴートドン,rampage,carnero pampero,inhibélier,Profibockser,Korna
+0073,z043c,ビッグホーン,battering ram,carnero arietero,boucabouche,Rammbock,Pecheras
+0074,z006a,ばくだん岩,rockbomb,rocobomba,rochexplosif,Felsenbombe,Esplo-sasso
+0075,z006b,スマイルロック,grinade,piedrolo,scorictus,Sprengstein,Sorbomba
+0076,z006c,メガザルロック,bomboulder,petrobomba,vulcanobombe,Bombenbrocken,Masso rosso
+0077,z004a,さまようよろい,restless armour,armadura inquieta,armure errante,Ruhelose Rüstung,Armatura assassina
+0078,z004b,じごくのよろい,infernal armour,armadura infernal,armure infernale,Höllenrüstung,Corazza infernale
+0079,z004c,キラーアーマー,lethal armour,armadura letal,armure fatale,Todesrüstung,Armatura letale
+007a,z003a,スライムナイト,slime knight,jinete de limo,monte-gluant,Schleimritter,Paladino Slime
+007b,z003b,メタルライダー,metal slime knight,jinete de limo metálico,monte-gluant de métal,Metallschleimritter,Cavaliere Slime
+007c,z044a,突げきホーン,swinoceros,maliceronte,cornocéros,Schweinozeros,Malignoceronte
+007d,z044b,ライノキング,splatterhorn,feroceronte,rudocéros,Marterhorn,Rinoferoce
+007e,z045a,ドロヌーバ,mudraker,fangal oscuro,fangeux,Schlammschlachter,Melmortifero
+007f,z045b,ジェリーマン,admirer,cenagal mimético,viscaire,Matschmagier,Poltiglion
+0080,z045c,マグマロン,live lava,lava viva,brûlavif,Lustige Lava,Lavaviva
+0081,z027a,マンドリル,badboon,malandril,babourin,Gibbonze,Scimpanzer
+0082,z027b,バブーン,big badboon,malandril grande,combabouin,Große Gibbonze,Gran Scimpanzer
+0083,z027c,ヒババンゴ,brainy badboon,malandril inteligente,ababouin,Gescheite Gibbonze,Cerebroscimmia
+0084,z020b,まじゅつし,magus,mago,mage,Magus,Magus
+0085,z020a,きとうし,shaman,chamán,shaman,Schamane,Shaman
+0086,z020c,ようじゅつし,sorcerer,hechicero,sorcier,Hexer,Stregon
+0087,z046a,リザードマン,mandrake major,dracogento,caporal mandragor,Alraunenmajor,Mandrago maggiore
+0088,z046b,りゅう兵士,mandrake marauder,merodeadraco,soldat mandragor,Alraunensoldat,Mandrago Ultra
+0089,z046c,シュプリンガー,mandrake marshal,draconiente,général mandragor,Alraunenmarschall,Drapocalypse
+008a,z047a,じんめんじゅ,treeface,arboligno,tronc-bine,Baumfratze,Faccia d'albero
+008b,z047b,ウドラー,treevil,arboligno diabólico,arbomination,Baumteufel,Malalbero grigio
+008c,z031a,キメラ,chimaera,quimera,chimère,Chimäre,Chimera
+008d,z031b,メイジキメラ,hocus chimaera,quimera engañosa,archimère,Feuerchimäre,Chimera incantata
+008e,z066a,かまっち,ragged reaper,muerte miserable,faux-frère,Sensenscheuche,Contadimonio
+008f,z066b,アサシンドール,raving reaper,muerte mísera,épouvantaille,Düsterdrescher,Mietitore malvagio
+0090,z067a,ポンポコだぬき,boppin' badger,malpache bailón,blaireau bongo,Diskodachs,Kan Kanide
+0091,z067b,メイジポンポコ,badger mager,malpache,blaireau mage,Zauberdachs,Leocane
+0092,z067c,ブラックタヌー,badja,malpache enmascarado,blaireau ninja,Frechdachs,Cattican
+0093,z068a,とっしんこぞう,chariot chappie,carretero,hécatombereau,Wüste Wagenlenker,Er Car
+0094,z068b,エビルチャリオット,corrupt carter,carretero corrupto,charretier blindé,Korrupte Kutscher,Carro arrabbiato
+0095,z069a,ガマキャノン,mortoad,sapogaitas,crapouillot,Platzprotz,Rospomor
+0096,z069b,デザートタンク,expload,sapogaitas explosivo,croartilleur,Knallfrosch,Ranabum
+0097,z069c,キャノンキング,blastoad,sapogaitas petardo,crapoxique,Böllerkröte,Deflagrana
+0098,z079a,デザートランナー,parched peckerel,pollastre reseco,accélhéron,Hünenpicker,Sbeccadoon reale
+0099,z079b,アサシンエミュー,peckerel,pollastre,pirvert,Pick-Aas,Sbeccadoon
+009d,z071a,ニードルオクト,knocktopus,pulplof,poulpic,Prollyp,Knocktopus
+009e,z071b,オクトスパイカー,shocktopus,pulplof sorpresa,pieuxvre,Schocktopus,Shocktopus
+009f,z062a,アーゴンデビル,manguini,bocazas,manguini,Maulheld,Laboca
+00a0,z062b,ブラッドアーゴン,bloody manguini,bocazas sanguinario,manguini sanguinaire,Blutige Maulheld,Boca magistra
+00a1,z073a,ヌボーン,gruffon,grifete,escogriffon,Angreif,Grifarruffo
+00a2,z073b,ビッグボック,great gruffon,gran grifete,grand escogriffon,Großangreif,Gran Grifo
+00a3,z073c,アロダイタス,gramarye gruffon,necrogrifete,escogrillefon,Uri-Geier,Magigrifo
+00a4,z070a,タイガーランス,trigertaur,tigretauro,hippotigre,Tigertaurus,Tricentauro
+00a5,z070b,ホワイトランサー,white trigertaur,tigretauro blanco,hippotigre blanc,Weiße Tigertaurus,Tricentauro gelido
+00a6,z070c,キマライガー,sick trigertaur,tigretauro enfermo,hippotigrulk,Kranke Tigertaurus,Tricentauro malefico
+00a7,z032a,アンクルホーン,moosifer,mucifer,belzébik,Bullzebub,Basettos
+00a8,z032b,ヘルバトラー,barbatos,barbatos,barbatos,Barbatos,Barbatos
+00a9,z048a,グリーンドラゴン,green dragon,dragón verde,dragon vert,Grüne Drache,Verdrago
+00aa,z048b,レッドドラゴン,red dragon,dragón rojo,dragon rouge,Rote Drache,Porpordrago
+00ab,z048c,アンドレアル,rashaverak,rashaverak,rashaverak,Rashaverak,Rashaverak
+00ac,z010a,うごくせきぞう,living statue,coloso viviente,statue vivante,Lebende Statue,Statua vivente
+00ad,z010b,だいまじん,stone guardian,coloso guardián,gardien de pierre,Steinwächter,Guardia di pietra
+00ae,z030a,ギガントヒルズ,drakularge,drácogran,dracularge,Wampir,Lardodragon
+00af,z030b,ギガントドラゴン,drakulard,drácolard,draculard,Wanstdrache,Draku Lard
+00b0,z030c,ドラゴン・ウー,drakulord,dráculord,draculord,Drachenfürst,Lord Draku
+00b1,z016a,メタルハンター,hunter mech,roboarmadura guerrera,mécachasseur,Jagdroboter,Mechacentauro grigio
+00b2,z016b,キラーマシン,killing machine,máquina de matar,machine à tuer,Killermaschine,Mechacentauro
+00b3,z012a,キングスライム,king slime,limo rey,roi gluant,Königsschleim,Re Slime
+00b4,z012b,スライムベホマズン,king cureslime,limo rey curativo,roi guérigluant,Heilschleimkönig,Re Curaslime
+00b5,z012c,メタルキング,metal king slime,limo rey metálico,roi gluant de métal,Metallkönigschleim,Re Slime grigio
+00b6,z049a,くもの大王,cumulus rex,cúmulo rex,cumulus lex,Wolkenkönig,Nubis
+00b7,z049b,ヘルクラウダー,cumulus vex,cúmulo matón,cumulus jex,Wolkenkaiser,Nebulus
+00b8,z050a,スライムマデュラ,darkonium slime,limo tenebrum,gluant ténérium,Dunkelsteinschleim,Slime Darkonium
+00b9,z050b,ゴールデンスライム,gem slime,limo gema,gluandor,Edelschleim,Prezioslime
+00ba,z001a,ストーンマン,stone golem,gólem de piedra,golem de pierre,Steingolem,Golem di pietra
+00bb,z001b,ゴールドマン,gold golem,gólem de oro,golem d'or,Goldgolem,Golem dorato
+00bc,z001c,ゴーレム,golem,gólem,golem,Golem,Golem
+00bd,z051a,ストロングアニマル,drackal,dracal,dracal,Drakal,Drakallo
+00be,z051b,ヘルジャッカル,drastic drackal,dracal drástico,dracal bestial,Drastische Drakal,Iper Drakallo
+00bf,z051c,スケアリードッグ,dreadful drackal,dracal atroz,dracal fatal,Drangsal-Drakal,Sciak Demon
+00c0,z052a,デビルアーマー,harmour,aymadura,hauberserker,Rüde Rüstung,Karmatura
+00c1,z052b,てっこうまじん,bad karmour,karmadura,cuirassassin,Eisenhauer,Karmatura del male
+00c2,z052c,サタンメイル,alarmour,alarmadura,alarmure,Panikpanzer,Allarmatura
+00c3,z053a,ナイトリッチ,fright knight,caballero horripilante,seigneur malheur,Albritter,Cavaliere della paura
+00c4,z053b,ナイトキング,night knight,caballero nocturno,seigneur terreur,Nachtritter,Paladino del terrore
+00c5,z054a,マッドファルコン,terrorhawk,halcorror,épirevier,Angstadler,Frenfalcon
+00c6,z054b,にじくじゃく,prism peacock,pavo prisma,dark-en-ciel,Prismapfau,Pavone prismatico
+00c7,z054c,れんごくまちょう,bird of terrordise,ave del terroriso,oiseau de peuradis,Terrordiesvogel,Alinferno
+00c8,z055a,ビッグモアイ,mad moai,moai loco,moaï mutant,Meschuggene Moai,Moai pazzo
+00c9,z055b,ゴードンヘッド,mega moai,megamoai,moaïaïaï,Mega-Moai,Mega Moai
+00ca,z056a,ヘルビースト,sculptrice,esculptricia,glargouille,Skrupellose Skulptur,Scultura gelida
+00cb,z056b,リビングスタチュー,sculpture vulture,buitre esculpido,froicoucass,Skalptur,Demone marmoreo
+00cc,z056c,ウィングデビル,aggrosculpture,agrrroscultura,rapace-muraille,Skulptortur,Aggrescultura
+00cd,z057a,デスプリースト,wight priest,sacerdote esquelético,prêtre maudit,Todespriester,Druido dell'ombra
+00ce,z057b,ワイトキング,wight king,pontífice esquelético,roi maudit,Todeskönig,Druido supremo
+00cf,z072a,ヘルマリーン,claw hammer,martillo con garras,vilerequin pèlerin,Klauenhammer,Pinz
+00d0,z072b,サンドシャーク,power hammer,martillo potente,vilerequin tigre,Krafthammer,Martellissimus
+00d4,z074a,スネークロード,python priest,pitoniso,vicaire vipère,Pythonpriester,Serpe sacrilega
+00d5,z074b,じごくのメンドーサ,cobra cardinal,pitoniso cardenal,cardinal crotale,Kobrakardinal,Caracobra
+00d6,z080a,れんごく天馬,tantamount,tantomonta,tempétalon,Gaul des Grauens,Tanamont
+00d7,z080b,レジェンドホース,godsteed,montatanto,impur-sang,Ross der Rache,Furia demoniaca
+00d8,z080c,黒竜丸,Equinox,Montadito,Équinocte,Hengst der Angst,Equinox
+00d9,z034a,サイクロプス,cyclops,cíclope titán,cyclope,Zyklop,Ciclope
+00da,z034b,ギガンテス,gigantes,cíclope gigante,géant,Gigant,Gigante
+00db,z034c,アトラス,Atlas,Atlas,Atlas,Atlas,Atlas
+00dc,z028a,トロル,troll,trol,troll,Troll,Troll
+00dd,z028b,ボストロール,boss troll,trol jefe,chef troll,Trollboss,Troll capo
+00de,z028c,トロルキング,great troll,trol gigante,grand troll,Riesentroll,Grande Troll
+00df,z026a,ようがんまじん,magmalice,magmalicioso,magmasse,Magmalefiz,Magmalvagio
+00e0,z026b,ひょうがまじん,firn fiend,firn,glaglator,Gletschergeist,Gelmonio
+00e1,z075a,スライムジェネラル,Shogum,Limiermo Tell,Monte-gluancien,Schleimurai,Slime Parabellum
+00e2,z075b,ゴッドライダー,slionheart,corazón de limón,monte-gluancêtre,Bismatsch,Cuor di Slime
+00e3,z076a,Ｓキラーマシン,Trauminator,Traumanator,Trauminator,Trauminator,Traumatizzator
+00e4,z076b,ゴールドマジンガ,AU-1000,AU-1000,AU-1000,AU-1000,AU-1000
+00e5,z076c,ファイナルウェポン,void droid,androide borde,droïde arachnoïde,Drohboter,Vacuum Droid
+00e6,z081a,キマイラロード,alphyn,leoncio,imbroglion,Pantherror,Signore dei leoni
+00e7,z081b,じごくのヌエ,vermil lion,bermeleón,vermilion,Lileu,Red Leo
+00e8,z078c,デビルスノー,shivery shrubbery,maldad patuda helada,cryofolia,Zitterzweig,Brem Trem
+00e9,z079c,ランドンクイナ,apeckalypse,pollastre apocalíptico,aigrettox,Apickalypse,Trisbecca
+00ea,z081c,ハヌマーン,Nemean,León de Nemea,Némée,Nemeische Löwe,Nemean
+00eb,z023c,ガメゴンレジェンド,wonder wyrtle,tortuverno del averno,tortugondor,Wunderdrache,Meraviguscio
+00ec,z026c,あんこくまじん,geothaum,accidente geológico,géolem,Tektokrat,Geomagico
+00ed,z031c,スターキメラ,cosmic chimaera,quimera cósmica,chimère cosmique,Kosmische Chimäre,Chimera cosmica
+00ee,z032c,デスカイザー,master moosifer,mucifer alfa,maître belzébik,Meister-Bullzebub,Basettos maximo
+00ef,z041c,まおうのかめん,freaky tiki,tiki tiki,traumasque,Magische Maske,Tantoterror
+00f0,z046d,まかいファイター,mandrake monarch,draconarca,commandragor,Alraunenmonarch,Drapocalypse supremo
+00f1,z049c,ヘルミラージュ,cumulus hex,cúmulo maldito,cumulus rex,Wolkenhexer,Nube infernale
+00f2,z050c,プラチナキング,platinum king jewel,rey joya de platino,bijou royal en platine,Platinkönigsjuwel,Platislime
+00f3,z052d,マジックアーマー,charmour,encantadura,heaumage,Erzmagier,Larmagic
+00f4,z053c,ヴァルハラー,blight knight,caballero maldito,seigneur saigneur,Verderbnisritter,Victorio
+00f5,z055c,クラウンヘッド,moai minstrel,moai payaso,moaï marrant,Moai-Musikant,Clown Moai
+00f6,z056d,ホラービースト,grrrgoyle,garrrgola,grrrgouille,Grrrgyl,Groargoyle
+00f7,z057c,ロードコープス,wight emperor,emperador esquelético,empereur maudit,Todeskaiser,Monarca incantatore
+00f8,z062c,イエローサタン,boogie manguini,bocazas endemoniado,manguini boogie,Zappelnde Maulheld,Boca suprema
+00f9,z064c,ちていのばんにん,barriearthenwarrior,jinete de defenscota,cavalier de braise,Harte Keramikkrieger,Cavaliere ceramico
+00fa,z066c,メフィストフェレス,grim reaper,muerte súbita,glauque-mitaine,Sensenmännchen,Macabrette
+00fb,z067d,ゴールドタヌ,bling badger,malpache dorado,blaireau bling,Glitzerdachs,Cancab
+00fc,z068c,じごくぐるま,flamin' drayman,carretero infernal,chauffard d'assaut,Flammende Fuhrmann,Carrofante
+00fd,z072c,ダークマリーン,hammer horror,martillo horroroso,vilerequin marteau,Horrorhammer,Marterribilis
+00fe,z074c,ビュアール,boa bishop,pitoniso obispo,prélat boa,Boabischof,Bad Boa
+00ff,z082a,ガニラス,handsome crab,cangrejo macizo,crabat-joie,Krabbarbar,Belgrank
+0100,z082b,ぐんたいガニ,crabid,carabinero,crabarbare,Sabberkrabbe,Grankiolon
+0101,z082c,じごくのハサミ,crabber dabber doo,camarón de la península,crabject,Krabba-Dabba-Du,Gran Grank
+0102,z082d,キラークラブ,king crab,centollo,crabsolutiste,Königskrabbe,King Grank
+0103,z083a,アイスビックル,icikiller,garrero gélido,glaciatueur,Eisklaue,Killer delle nevi
+0104,z083b,オーシャンクロー,riptide,garrero marino,rase-marée,Schlitzer,Assalitore marino
+0105,z083c,クローハンズ,claws,garrero,griffeur,Kralle,Assalitore gelido
+0106,z084a,ギャオース,seasaur,oceanosaurio,aquasaure,Seesaurier,Drago d'acqua
+0107,z084b,ヘルダイバー,abyss diver,oceanosaurio abisal,abyssaure,Abgrundtaucher,Dragoon
+0108,z084c,シーバーン,seavern,guiverno marinero,pélagosaure,Seewurm,Vyverna marina
+0109,z028d,ダークトロル,terror troll,trol terrorífico,troll à trouille,Terrortroll,Terror Troll
+010a,z000d,スライム,slime,limo,gluant,Schleim,Slime
+010b,z000d,スライム,slime,limo,gluant,Schleim,Slime
+010c,z075c,デンガー,prime slime,primus inter limus,monte-gluantique,Pappoleon,Slime optimus
+010d,b006b,エビルフレイム,scarlet fever,escarlatina,scarlatin,Masernmops,Febbre scarlatta
+010e,b003a,ブルドーガ,hexagoon,hexatauro,hexacorne,Hexagoblin,Hexagon
+010f,z069c,キャノンキング,blastoad,sapogaitas petardo,crapoxique,Böllerkröte,Deflagrana
+0110,z051a,ストロングアニマル,drackal,dracal,dracal,Drakal,Drakallo
+0111,z082a,ガニラス,handsome crab,cangrejo macizo,crabat-joie,Krabbarbar,Belgrank
+0112,z034a,サイクロプス,cyclops,cíclope titán,cyclope,Zyklop,Ciclope
+0113,z010b,だいまじん,stone guardian,coloso guardián,gardien de pierre,Steinwächter,Guardia di pietra
+0114,z030b,ギガントドラゴン,drakulard,drácolard,draculard,Wanstdrache,Draku Lard
+0115,z081b,じごくのヌエ,vermil lion,bermeleón,vermilion,Lileu,Red Leo
+0116,z028d,ダークトロル,terror troll,trol terrorífico,troll à trouille,Terrortroll,Terror Troll
+0117,z052a,デビルアーマー,harmour,aymadura,hauberserker,Rüde Rüstung,Karmatura
+0118,z052b,てっこうまじん,bad karmour,karmadura,cuirassassin,Eisenhauer,Karmatura del male
+0119,z053a,ナイトリッチ,fright knight,caballero horripilante,seigneur malheur,Albritter,Cavaliere della paura
+011a,z056c,ウィングデビル,aggrosculpture,agrrroscultura,rapace-muraille,Skulptortur,Aggrescultura
+011b,z038c,ヒートギズモ,hell niño,borrascazo,cramulus,Wütende Wolke,Cumulus infernale
+011c,b006b,エビルフレイム,scarlet fever,escarlatina,scarlatin,Masernmops,Febbre scarlatta
+011d,z044a,突げきホーン,swinoceros,maliceronte,cornocéros,Schweinozeros,Malignoceronte
+011e,z044b,ライノキング,splatterhorn,feroceronte,rudocéros,Marterhorn,Rinoferoce
+011f,b006b,エビルフレイム,scarlet fever,escarlatina,scarlatin,Masernmops,Febbre scarlatta
+0120,b006b,エビルフレイム,scarlet fever,escarlatina,scarlatin,Masernmops,Febbre scarlatta
+0121,b006b,エビルフレイム,scarlet fever,escarlatina,scarlatin,Masernmops,Febbre scarlatta
+0122,z000a,スライム,slime,limo,gluant,Schleim,Slime
+0123,z000a,スライム,slime,limo,gluant,Schleim,Slime
+0124,z063a,ズッキーニャ,cruelcumber,pepinillo guerrero,concombrageur,Saure Gurke,Verdurfante
+0125,z040c,ゾンビナイト,stenchurion,hedourión,décarion,Stinkurio,Lanciere velenoso
+0126,z014b,はぐれメタル,liquid metal slime,burbujilimo metálico,gluant de mercure,Flüssigmetallschleim,Liquislime
+0127,z012c,メタルキング,metal king slime,limo rey metálico,roi gluant de métal,Metallkönigschleim,Re Slime grigio
+0128,z050c,プラチナキング,platinum king jewel,rey joya de platino,bijou royal en platine,Platinkönigsjuwel,Platislime
+0129,z000c,メタルスライム,metal slime,limo metálico,gluant de métal,Metallschleim,Slime grigio
+012a,z004c,キラーアーマー,lethal armour,armadura letal,armure fatale,Todesrüstung,Armatura letale
+012c,b003a,ブルドーガ,hexagoon,hexatauro,hexacorne,Hexagoblin,Hexagon
+012d,b004a,なぞの黒騎士,Wight Knight,Caballero Oscuro,chevalier Karbon,Schwarze Ritter,Cavaliere dell'Ombra
+012e,b005a,妖女イシュダル,Morag,Morag,Sylvane,Morag,Morag
+012f,b006a,病魔パンデルム,Ragin' Contagion,Pestilencia,Épidémon,Seine Pestilenz,Epidemon
+0130,b007a,魔神ジャダーマ,Master of Nu'un,Andosiniestro,Blaisephème,Luziferius,Signore del Nulla
+0131,b008a,ぬしさま,Lleviathan,Leviatán,Moby Pick,Leviatran,Baleviatan
+0132,b009a,石の番人,Garth Goyle,Gárgol,garde Gouille,Gneisbeißer,Gran Goyle
+0133,b010a,妖毒虫ズオー,Tyrantula,Tirántula,Tyrantule,Tyrantula,Tirantula
+0134,b011a,アノン,Grand Lizzier,Draco,Balthézard,Kommodore Waran,Draklin
+0135,b012a,呪幻師シャルマナ,Larstastnaras,Larstastnaras,Larstastnaras,Larstastnaras,Ynimiga
+0136,b013a,魔教師エルシオン,Dreadmaster,Dire,Directueur,Grausige Pauker,Dyscyplos
+0137,b014a,大怪像ガドンゴ,Gadrongo,Tejujú,Gadrongo,Gadrongo,Gadrongo
+0138,b015a,グレイナル,Greygnarl,Dragris,Grizius,Graugnarz,Dragriphon
+0139,b016a,ゴレオン将軍,Goreham-Hogg,Teniente Schwein,général Mac Assin,Hauptmann Grunz,Generale Soinos
+013a,b017a,ゲルニック将軍,Hootingham-Gore,Teniente Eule,général Mac Hulotte,Hauptmann Kauz,Generale Gufus
+013b,b018a,ギュメイ将軍,Goresby-Purrvis,Teniente Katze,général Mac Léo,Hauptmann Katz,Generale Pardus
+013c,b019a,暗黒皇帝ガナサダイ,King Godwyn,rey König,roi Govin de Klenfer,König Gottfried,Imperatore Teufel
+013d,b020a,暗黒皇帝ガナサダイ,King Godwyn,rey König,roi Govin de Klenfer,König Gottfried,Imperatore Teufel
+013e,b021a,闇竜バルボロス,Barbarus,Fafnir,Barbarus,Barbarus,Barbarus
+013f,b022a,堕天使エルギオス,Corvus,Luzbel,Corvus,Corvus,Corvus
+0140,b023a,堕天使エルギオス,Corvus,Luzbel,Corvus,Corvus,Corvus
+0141,b003b,アイアンブルドー,octagoon,octotauro,octocorne,Oktogoblin,Octagon
+0142,b004b,ブラッドナイト,Sir Sanguinus,Sir Sanguinus,baron Hémoglobon,Sir Sanguinus,Sir Sanguinus
+0143,b005b,ヘルヴィーナス,cannibelle,canibella,cannibelle,Kannibella,Cannibella
+0144,b006b,エビルフレイム,scarlet fever,escarlatina,scarlatin,Masernmops,Febbre scarlatta
+0145,b006c,マッドブリザード,uncommon cold,permafrost,hypothermiasme,Bibber-Bakillus,Gelo profondo
+0146,b007b,破壊神フォロボス,Tyrannosaurus Wrecks,Cernunnos,Tyrannomort,Tyrannosaurus Hex,Tirannosaurus Max
+0147,b008b,だいおうクジラ,stale whale,ballena varada,léviathon,Annodazu-Wal,Baledetta
+0148,b008c,オーシャンボーン,pale whale,ballena blancuzca,bhaleine,Strahlwal,Cetaceus pallidus
+0149,b010b,デスタランチュラ,widow's pique,pico de viuda,veuve venin,Pfuispinne,Tessitele
+014a,b010c,ボーンスパイダ,cyber spider,ciberaraña,armygale,Robospinne,Technoaracnide
+014b,b012b,うみうしひめ,slugly betsy,beafea,laidy,Igitte,Perfidya
+014c,b013b,イデアラゴン,Elusid,Elusido,Grévanescent,Volataire,Elusid
+014d,b014b,ヘルガーディアン,hell's gatekeeper,decapitado infernal,gardien de l'enfer,Höllenpförtner,Custode infernale
+014e,b014c,ギリメカラ,wishmaster,genio malvado,carnagénie,Wunschmeister,Mastro Desiderio
+014f,b016b,怪力軍曹イボイノス,Hammibal,Kochinillen,Hannimal,Clausewutz,Porcesare
+0150,b017b,邪眼皇帝アウルート,Fowleye,Pajarraken,Volattila,Uhunhold,Gufugawa
+0151,b018b,魔剣神レパルド,Excalipurr,Felinen,Charibaldi,Parserval,Bonapardus
+0152,b021b,グレイナル,Greygnarl,Dragris,Grizius,Graugnarz,Dragriphon
+0153,b007c,いにしえの魔神,Yore,Matasalén,Fourax,Megrusalem,Matsalem
+0154,b024a,アルマトラ,Nodoph,Leonírico,Atoner,Tatzel,Nodoph
+0155,b025a,ギャングアニマル,Rover,Lindo Pulgoso,Médhor,Lumpi,Doggy
+0156,b019b,名をうばわれし王,King Godfrey,rey Káiser,roi Godefroi de Klenfer,König Gottlieb,Re Goffredo
+0157,b012c,フォロボシータ,Tyrannosaura Wrecks,Cernunnas,Tyrannamort,Tyrannosaura Hex,Tirannosaura Lex
+0158,b016a,ゴレオン将軍,Goreham-Hogg,Teniente Schwein,général Mac Assin,Hauptmann Grunz,Generale Soinos
+0159,b017a,ゲルニック将軍,Hootingham-Gore,Teniente Eule,général Mac Hulotte,Hauptmann Kauz,Generale Gufus
+015a,b018a,ギュメイ将軍,Goresby-Purrvis,Teniente Katze,général Mac Léo,Hauptmann Katz,Generale Pardus
+015b,b008a,ぬしさま,Lleviathan,Leviatán,Moby Pick,Leviatran,Baleviatan
+01f4,b100a,竜王,Dragonlord,Draconarius,Lordragon,Drachenfürst,Dragonlord
+01f5,b101a,シドー,Malroth,Malroth,Malroth,Malroth,Malroth
+01f6,b102a,バラモス,Baramos,Baramos,Baramos,Baramos,Padramos
+01f7,b103a,ゾーマ,Zoma,Zoma,Zoma,Zoma,Zoma
+01f8,b104a,デスピサロ,Psaro,Psaro,Psaro,Psaro,Psaro
+01f9,b105a,エスターク,Estark,Estark,Estark,Estark,Estark
+01fa,b106a,ミルドラース,Nimzo,Nimzo,Nimzo,Nimzo,Nimzo
+01fb,b107a,ムドー,Murdaw,Murdaw,Meurtor,Mordar,Lacertow
+01fc,b108a,デスタムーア,Mortamor,Mortamor,Mortamor,Mortamor,Moltomort
+01fd,b108b,ひだりて,left claw,garra izquierda,griffe gauche,Linke Klaue,artiglio sinistro
+01fe,b108c,みぎて,right claw,garra derecha,griffe droite,Rechte Klaue,artiglio destro
+01ff,b109a,オルゴ・デミーラ,Orgodemir,Orgodemir,Orgodémir,Orgodemir,Granvert
+0200,b110a,ドルマゲス,Dhoulmagus,Dhoulmagus,Dhoulmagus,Dhoulmagus,Dhoulmagus
+0201,b111a,ラプソーン,Rhapthorne,Rhapthorne,Rhapthorne,Rhapthorne,Rhapthorne
+0202,b112a,ダークドレアム,Nokturnus,Nokturnus,Nokturnus,Nokturnus,Nokturnus
+0258,b100a,竜王,Dragonlord,Draconarius,Lordragon,Drachenfürst,Dragonlord
+0259,b100a,竜王,Dragonlord,Draconarius,Lordragon,Drachenfürst,Dragonlord
+025a,b101a,シドー,Malroth,Malroth,Malroth,Malroth,Malroth
+025b,b101a,シドー,Malroth,Malroth,Malroth,Malroth,Malroth
+025c,b101a,シドー,Malroth,Malroth,Malroth,Malroth,Malroth
+025d,b101a,シドー,Malroth,Malroth,Malroth,Malroth,Malroth
+025e,b102a,バラモス,Baramos,Baramos,Baramos,Baramos,Padramos
+025f,b102a,バラモス,Baramos,Baramos,Baramos,Baramos,Padramos
+0260,b102a,バラモス,Baramos,Baramos,Baramos,Baramos,Padramos
+0261,b102a,バラモス,Baramos,Baramos,Baramos,Baramos,Padramos
+0262,b103a,ゾーマ,Zoma,Zoma,Zoma,Zoma,Zoma
+0263,b103a,ゾーマ,Zoma,Zoma,Zoma,Zoma,Zoma
+0264,b103a,ゾーマ,Zoma,Zoma,Zoma,Zoma,Zoma
+0265,b103a,ゾーマ,Zoma,Zoma,Zoma,Zoma,Zoma
+0266,b104a,デスピサロ,Psaro,Psaro,Psaro,Psaro,Psaro
+0267,b104a,デスピサロ,Psaro,Psaro,Psaro,Psaro,Psaro
+0268,b104a,デスピサロ,Psaro,Psaro,Psaro,Psaro,Psaro
+0269,b104a,デスピサロ,Psaro,Psaro,Psaro,Psaro,Psaro
+026a,b104a,デスピサロ,Psaro,Psaro,Psaro,Psaro,Psaro
+026b,b104a,デスピサロ,Psaro,Psaro,Psaro,Psaro,Psaro
+026c,b104a,デスピサロ,Psaro,Psaro,Psaro,Psaro,Psaro
+026d,b105a,エスターク,Estark,Estark,Estark,Estark,Estark
+026e,b105a,エスターク,Estark,Estark,Estark,Estark,Estark
+026f,b105a,エスターク,Estark,Estark,Estark,Estark,Estark
+0270,b105a,エスターク,Estark,Estark,Estark,Estark,Estark
+0271,b105a,エスターク,Estark,Estark,Estark,Estark,Estark
+0272,b105a,エスターク,Estark,Estark,Estark,Estark,Estark
+0273,b106a,ミルドラース,Nimzo,Nimzo,Nimzo,Nimzo,Nimzo
+0274,b106a,ミルドラース,Nimzo,Nimzo,Nimzo,Nimzo,Nimzo
+0275,b106a,ミルドラース,Nimzo,Nimzo,Nimzo,Nimzo,Nimzo
+0276,b106a,ミルドラース,Nimzo,Nimzo,Nimzo,Nimzo,Nimzo
+0277,b106a,ミルドラース,Nimzo,Nimzo,Nimzo,Nimzo,Nimzo
+0278,b107a,ムドー,Murdaw,Murdaw,Meurtor,Mordar,Lacertow
+0279,b107a,ムドー,Murdaw,Murdaw,Meurtor,Mordar,Lacertow
+027a,b107a,ムドー,Murdaw,Murdaw,Meurtor,Mordar,Lacertow
+027b,b107a,ムドー,Murdaw,Murdaw,Meurtor,Mordar,Lacertow
+027c,b107a,ムドー,Murdaw,Murdaw,Meurtor,Mordar,Lacertow
+027d,b107a,ムドー,Murdaw,Murdaw,Meurtor,Mordar,Lacertow
+027e,b108a,デスタムーア,Mortamor,Mortamor,Mortamor,Mortamor,Moltomort
+027f,b108a,デスタムーア,Mortamor,Mortamor,Mortamor,Mortamor,Moltomort
+0280,b108a,デスタムーア,Mortamor,Mortamor,Mortamor,Mortamor,Moltomort
+0281,b108a,デスタムーア,Mortamor,Mortamor,Mortamor,Mortamor,Moltomort
+0282,b108a,デスタムーア,Mortamor,Mortamor,Mortamor,Mortamor,Moltomort
+0283,b108a,デスタムーア,Mortamor,Mortamor,Mortamor,Mortamor,Moltomort
+0284,b109a,オルゴ・デミーラ,Orgodemir,Orgodemir,Orgodémir,Orgodemir,Granvert
+0285,b109a,オルゴ・デミーラ,Orgodemir,Orgodemir,Orgodémir,Orgodemir,Granvert
+0286,b109a,オルゴ・デミーラ,Orgodemir,Orgodemir,Orgodémir,Orgodemir,Granvert
+0287,b109a,オルゴ・デミーラ,Orgodemir,Orgodemir,Orgodémir,Orgodemir,Granvert
+0288,b109a,オルゴ・デミーラ,Orgodemir,Orgodemir,Orgodémir,Orgodemir,Granvert
+0289,b110a,ドルマゲス,Dhoulmagus,Dhoulmagus,Dhoulmagus,Dhoulmagus,Dhoulmagus
+028a,b110a,ドルマゲス,Dhoulmagus,Dhoulmagus,Dhoulmagus,Dhoulmagus,Dhoulmagus
+028b,b110a,ドルマゲス,Dhoulmagus,Dhoulmagus,Dhoulmagus,Dhoulmagus,Dhoulmagus
+028c,b110a,ドルマゲス,Dhoulmagus,Dhoulmagus,Dhoulmagus,Dhoulmagus,Dhoulmagus
+028d,b110a,ドルマゲス,Dhoulmagus,Dhoulmagus,Dhoulmagus,Dhoulmagus,Dhoulmagus
+028e,b111a,ラプソーン,Rhapthorne,Rhapthorne,Rhapthorne,Rhapthorne,Rhapthorne
+028f,b111a,ラプソーン,Rhapthorne,Rhapthorne,Rhapthorne,Rhapthorne,Rhapthorne
+0290,b111a,ラプソーン,Rhapthorne,Rhapthorne,Rhapthorne,Rhapthorne,Rhapthorne
+0291,b111a,ラプソーン,Rhapthorne,Rhapthorne,Rhapthorne,Rhapthorne,Rhapthorne
+0292,b111a,ラプソーン,Rhapthorne,Rhapthorne,Rhapthorne,Rhapthorne,Rhapthorne
+0293,b111a,ラプソーン,Rhapthorne,Rhapthorne,Rhapthorne,Rhapthorne,Rhapthorne
+0294,b111a,ラプソーン,Rhapthorne,Rhapthorne,Rhapthorne,Rhapthorne,Rhapthorne
+02eb,b013a,魔教師エルシオン,Dreadmaster,Dire,Directueur,Grausige Pauker,Dyscyplos
+02ec,b020a,暗黒皇帝ガナサダイ,King Godwyn,rey König,roi Govin de Klenfer,König Gottfried,Imperatore Teufel
+02ed,b020a,暗黒皇帝ガナサダイ,King Godwyn,rey König,roi Govin de Klenfer,König Gottfried,Imperatore Teufel
+02ee,b021a,闇竜バルボロス,Barbarus,Fafnir,Barbarus,Barbarus,Barbarus
+02ef,b022a,堕天使エルギオス,Corvus,Luzbel,Corvus,Corvus,Corvus
+02f0,b023a,堕天使エルギオス,Corvus,Luzbel,Corvus,Corvus,Corvus
+02f1,b023a,堕天使エルギオス,Corvus,Luzbel,Corvus,Corvus,Corvus
+02f2,b023a,堕天使エルギオス,Corvus,Luzbel,Corvus,Corvus,Corvus
+02f3,b023a,堕天使エルギオス,Corvus,Luzbel,Corvus,Corvus,Corvus
+02f4,b007b,破壊神フォロボス,Tyrannosaurus Wrecks,Cernunnos,Tyrannomort,Tyrannosaurus Hex,Tirannosaurus Max
+02f5,b007b,破壊神フォロボス,Tyrannosaurus Wrecks,Cernunnos,Tyrannomort,Tyrannosaurus Hex,Tirannosaurus Max
+02f6,b021b,グレイナル,Greygnarl,Dragris,Grizius,Graugnarz,Dragriphon
+02f7,b021b,グレイナル,Greygnarl,Dragris,Grizius,Graugnarz,Dragriphon
+02f8,b019b,名をうばわれし王,King Godfrey,rey Káiser,roi Godefroi de Klenfer,König Gottlieb,Re Goffredo
+02f9,b012c,フォロボシータ,Tyrannosaura Wrecks,Cernunnas,Tyrannamort,Tyrannosaura Hex,Tirannosaura Lex
+02fa,b007c,いにしえの魔神,Yore,Matasalén,Fourax,Megrusalem,Matsalem
+02fb,b007c,いにしえの魔神,Yore,Matasalén,Fourax,Megrusalem,Matsalem
+02fc,b018b,魔剣神レパルド,Excalipurr,Felinen,Charibaldi,Parserval,Bonapardus
+0301,b112a,ダークドレアム,Nokturnus,Nokturnus,Nokturnus,Nokturnus,Nokturnus
+0302,b112a,ダークドレアム,Nokturnus,Nokturnus,Nokturnus,Nokturnus,Nokturnus
+0303,b112a,ダークドレアム,Nokturnus,Nokturnus,Nokturnus,Nokturnus,Nokturnus
+0304,b112a,ダークドレアム,Nokturnus,Nokturnus,Nokturnus,Nokturnus,Nokturnus
+0305,b112a,ダークドレアム,Nokturnus,Nokturnus,Nokturnus,Nokturnus,Nokturnus
+0306,b112a,ダークドレアム,Nokturnus,Nokturnus,Nokturnus,Nokturnus,Nokturnus
+0307,b112a,ダークドレアム,Nokturnus,Nokturnus,Nokturnus,Nokturnus,Nokturnus
+0308,b108b,ひだりて,left claw,garra izquierda,griffe gauche,Linke Klaue,artiglio sinistro
+0309,b108b,ひだりて,left claw,garra izquierda,griffe gauche,Linke Klaue,artiglio sinistro
+030a,b108c,みぎて,right claw,garra derecha,griffe droite,Rechte Klaue,artiglio destro
+030b,b108c,みぎて,right claw,garra derecha,griffe droite,Rechte Klaue,artiglio destro
+0320,b300a,イザヤール,Aquila,Engel,Aquila,Aquila,Falko
+0321,b022a,堕天使エルギオス,Corvus,Luzbel,Corvus,Corvus,Corvus
+0384,z060c,サンドバッグくん,,,,,
