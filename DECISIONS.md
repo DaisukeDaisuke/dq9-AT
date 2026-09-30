@@ -20,3 +20,10 @@ seed推定/setAT経路を追加しない。起動から既知seedを追跡。下
 既存JS parserを再利用。WASMを実計算に使用する方針で、既存parserを単に再実装するためのWASM化はしない。Codespace /workspaces/dq9-ATでbuildし専用portへ公開する。
 ## D006: 通信
 protocol.txtは約10分間隔の作業中pull。開始時の内容:「読み込めてるよ」「10分に1回ぐらい読んでね」。既存staged変更を維持。
+
+
+## C3 actual-data decisions
+- Keep real timer deltas; no fixed33 approximation. Table selection precedes delay, and four-attempt exhaustion differs from no-member early return.
+- Store reached-event nonspawn arithmetic separately from unproven event enumeration. Six controller+six phase+12pickup initializations in one state do not become universal NPC/pot counts.
+- Distinguish previous weighted-draw positions from current conditional interval with open tail; retain independent proven boot bound.
+- Upper-map registration is pixel-space only; no invented player/world coordinates or human routes from enemy edges.

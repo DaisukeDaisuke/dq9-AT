@@ -50,3 +50,32 @@ protocol.txtは利用者所有のpull通信。作業中約10分ごと・build/�
 enc.json/map-id-names.csv/monster CSVを再マイニングしない。既存parserを確認して再利用。ROM/state/ゲーム画像/font/modelを公開物へ入れない。公開はweb成果物と許可済metadataのみ。
 OBS MCPはレイアウト/映像確認専用。ROM実測は既存DeSmuMEハーネス。Ghidra静的読解と実測を混同しない。例示関数FUN_overlay_d_03__0217d3b8は解析しない。
 新規unit/integration/regression等テスト基盤、sanitizer、一般品質保証、無関係refactorを作らない。必要確認は実ROM/既存WebAssembly/既存ハーネスの実行による。
+
+
+## C3 03:07 UTC — protocol-driven next checkpoints
+
+Interim: docs/INTERIM_C3_20260930.md. Prior pending merge/push is complete (bb46573/Actions36660635552). New clock/scheduler/candidate code is local pending final folder synchronization. Actual257AT/163integer/19creation and501scheduler/24clock matches recorded.
+
+- P0 continuation: preserve proven lower bound and candidate uncertainty across all map transitions; explicitly account for NPC, pots/barrels, entry initialization and unknown consumers instead of assuming0 or resetting.
+- P1 analysis: reuse relevant LocalAI/fountain knowledge; observe UpdateAT callers and distinguish proven common logic from pickup-only assumptions.
+- P1 navigation: measured upper-map localization and map/area state; do not equate the monster graph with human walkability.
+- P0 delivery: synchronize entire source directories and build outputs with fuzzy-goggles-r4vqvwgrw943p5r9 before final push; preserve histories.
+
+Single-map reproduction and writing this plan are checkpoints, not completion of X. No new tests or generalQA are added.
+
+
+## C3 consolidated checkpoint (2026-09-30)
+
+Actual execution: 303 AT updates / 175 ATRandInt returns / 25 creation entries, mismatch0. Scheduler501 complete calls/4053rows, actual elapsed writer24pairs; nonspawn paired writer replay results are in actual-world-consumer-replay.json. Actual map registration also saved, image coordinates only.
+
+Implemented: production timer/control scheduler, elapsed clamp/division, ordered nonspawn initialization arithmetic, multi-table observation union, explicit unresolved-consumer intervals across map contexts, candidate/save-restore, dedicated upper-map registration worker. Existing map mining remains151graphs3934nodes6044connections/418images283compositions. Reused enc.json/CSV unchanged.
+
+P0: final source snapshot/directory parity and Codespace main push; build only fuzzy-goggles-r4vqvwgrw943p5r9. Existing prior-stage publish bb46573 already succeeded; new-stage publication must be verified separately.
+P1 next evidence gap: autonomously enumerate actual NPC/container/map-entry consumers and their ordering rather than treating event-input replay as an autonomous world simulator. Stornway container loot has NOT been measured; pickup materialization is not automatically pot/barrel loot.
+P1 navigation: player-arrow detection + image/world transform and human passability, 3D monster matching, complete boot evidence capture; currently image registration/candidates do not guarantee earliest navigation. Keep all-map lower-bound continuity and open tail, no map resets.
+
+Complete navigator X remains unfinished; this checkpoint is not a claim of all-map/frame/boot/vision completion.
+
+
+## C3 live protocol update at03:34 UTC
+User supplied root sennto.dst, immediately before entering enemy-free Stornway town exterior. Read immediately before planned push; source parity correctly detected only protocol.txt changed. Publication of source02 is held while incorporating this new direct all-map consumer observation, then a fresh whole-folder snapshot will be synchronized. Source02 build/replay succeeded but is not a completed publish. Do not misclassify this live user update as transfer corruption.

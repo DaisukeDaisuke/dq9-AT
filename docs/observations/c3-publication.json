@@ -1,0 +1,14 @@
+{
+  "format":"dq9-publication-observation",
+  "recordedAt":"2026-09-30T02:38:51Z",
+  "codespace":"fuzzy-goggles-r4vqvwgrw943p5r9",
+  "commit":"bb46573939185f4a4dd3734277887874c6c4704d",
+  "parents":["edede3fd239d4b178715ece2fef4017a2c719260","d9ee0b52b1b3500bef70b224ec327d1b54ee40f4"],
+  "sourceSync":{"files":120,"sha256":"e1fe38c2bcfabf0992a2b3a99cf9f4aa9e9417791c791919dd38855104619a76","localVerified":true,"remoteVerified":true},
+  "actions":{"runId":36660635552,"conclusion":"success"},
+  "publicURL":"https://daisukedaisuke.github.io/dq9-AT/",
+  "http200":["","wasm/map_render.wasm","field-at.mjs","field-graph.mjs","video-panel.mjs"],
+  "codespaceBuild":{"bytes":3292,"sha256":"31fefd46d2656fecdd926eec94ae16aa257509d4a15f9e13bbf9a84e5d8f49fc","actualReplayMismatchCount":0},
+  "pagesBuild":{"bytes":3362,"sha256":"e2d3c2c6b73dc4ba4381fec07bf733ed31c5e26df7c351264efee4c4e01b5767","moduleCompiled":true,"exports":["memory","obg_decode","tiles_decode","blit","at_next","at_advance","at_randint","at_generate","at_match_interval","field_table_candidates","field_neighbor_candidates","field_movement_index","__heap_base"]},
+  "note":"Pages rebuild uses its own compiler and differs in bytes from Codespace clang18; exports compile successfully. No claim of byte-identical public payload. No browser interaction test."
+}

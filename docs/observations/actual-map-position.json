@@ -1,0 +1,122 @@
+{
+  "format": "dq9-actual-map-position-observation",
+  "origin": "real metaru_nasi upper screen after clock24; actual ROM composition, not synthetic",
+  "referenceImage": {
+    "width": 224,
+    "height": 256
+  },
+  "capturedImage": {
+    "width": 128,
+    "height": 96,
+    "quantization": "luma5"
+  },
+  "wasmSha256": "280d1d50f4b28895e000e9cdeef51430800fb746dc70d21c8aede0c136812d5a",
+  "result": {
+    "kind": "video-map-registration",
+    "resolved": true,
+    "best": {
+      "dx": 8,
+      "dy": -72,
+      "score": 0.8577815294265747,
+      "samples": 2574,
+      "scale": 0.5
+    },
+    "margin": 0.29562437534332275,
+    "candidates": [
+      {
+        "dx": 8,
+        "dy": -72,
+        "score": 0.8577815294265747,
+        "samples": 2574,
+        "scale": 0.5
+      },
+      {
+        "dx": -64,
+        "dy": -72,
+        "score": 0.562157154083252,
+        "samples": 1254,
+        "scale": 0.5
+      },
+      {
+        "dx": 80,
+        "dy": -72,
+        "score": 0.4382014274597168,
+        "samples": 712,
+        "scale": 0.5
+      },
+      {
+        "dx": -64,
+        "dy": -48,
+        "score": 0.3669812083244324,
+        "samples": 2012,
+        "scale": 0.5
+      },
+      {
+        "dx": 32,
+        "dy": -72,
+        "score": 0.3196053206920624,
+        "samples": 2165,
+        "scale": 0.5
+      },
+      {
+        "dx": 32,
+        "dy": -94,
+        "score": 0.29673272371292114,
+        "samples": 782,
+        "scale": 0.5
+      },
+      {
+        "dx": 32,
+        "dy": -98,
+        "score": 0.17748014628887177,
+        "samples": 660,
+        "scale": 0.5
+      },
+      {
+        "dx": -64,
+        "dy": -68,
+        "score": 0.16586163640022278,
+        "samples": 1336,
+        "scale": 0.5
+      },
+      {
+        "dx": -64,
+        "dy": -52,
+        "score": 0.13622279465198517,
+        "samples": 1901,
+        "scale": 0.5
+      },
+      {
+        "dx": -64,
+        "dy": -76,
+        "score": 0.12526562809944153,
+        "samples": 1150,
+        "scale": 0.5
+      },
+      {
+        "dx": 8,
+        "dy": -68,
+        "score": 0.12465767562389374,
+        "samples": 2757,
+        "scale": 0.5
+      },
+      {
+        "dx": 8,
+        "dy": -76,
+        "score": 0.11367703974246979,
+        "samples": 2368,
+        "scale": 0.5
+      }
+    ],
+    "mapId": 7402,
+    "descriptor": "D04M02.bmmp",
+    "imageWidth": 224,
+    "imageHeight": 256,
+    "coordinateSpace": "ROM-composed-image-pixels",
+    "worldPositionKnown": false,
+    "bootProof": false,
+    "interpretation": "Image alignment only. No player/world position unless independently observed marker/transform is supplied."
+  },
+  "elapsedMs": 10.9541,
+  "worldCoordinateVerified": false
+}

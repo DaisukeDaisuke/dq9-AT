@@ -1,8 +1,381 @@
 {
   "format": "dq9-at-production-observation-replay",
-  "version": 2,
-  "recordedAt": "2026-09-30T01:09:29.253Z",
-  "wasmSha256": "31fefd46d2656fecdd926eec94ae16aa257509d4a15f9e13bbf9a84e5d8f49fc",
+  "version": 6,
+  "worldConsumers": {
+    "pairedInputs": 24,
+    "outputs": 24,
+    "mismatches": []
+  },
+  "clock": {
+    "rows": [
+      {
+        "frame": 3078,
+        "elapsedLow": 33382,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3080,
+        "elapsedLow": 33384,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3082,
+        "elapsedLow": 33384,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3084,
+        "elapsedLow": 33384,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3086,
+        "elapsedLow": 33382,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3088,
+        "elapsedLow": 33382,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3090,
+        "elapsedLow": 33382,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3092,
+        "elapsedLow": 33382,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3094,
+        "elapsedLow": 33382,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3096,
+        "elapsedLow": 33382,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3098,
+        "elapsedLow": 33382,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3100,
+        "elapsedLow": 33382,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3102,
+        "elapsedLow": 33382,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3104,
+        "elapsedLow": 33382,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3106,
+        "elapsedLow": 33382,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3108,
+        "elapsedLow": 33382,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3110,
+        "elapsedLow": 33384,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3112,
+        "elapsedLow": 33384,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3114,
+        "elapsedLow": 33384,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3116,
+        "elapsedLow": 33384,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3118,
+        "elapsedLow": 33382,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3120,
+        "elapsedLow": 33382,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3122,
+        "elapsedLow": 33382,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      },
+      {
+        "frame": 3124,
+        "elapsedLow": 33382,
+        "elapsedHigh": 0,
+        "expected": 33,
+        "actual": 33
+      }
+    ],
+    "mismatches": []
+  },
+  "observationReplay": [
+    {
+      "path": "docs/observations/metaru-soubi-at32.json",
+      "sequence": 3,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/metaru-soubi-at32.json",
+      "sequence": 7,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/metaru-soubi-at32.json",
+      "sequence": 11,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/metaru-soubi-at32.json",
+      "sequence": 16,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/metaru-soubi-at32.json",
+      "sequence": 21,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/metaru-soubi-at32.json",
+      "sequence": 26,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/metaru-soubi-at32.json",
+      "sequence": 30,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/metaru-nasi-at128.json",
+      "sequence": 90,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/metaru-nasi-at128.json",
+      "sequence": 93,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/metaru-nasi-at128.json",
+      "sequence": 97,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/metaru-nasi-at128.json",
+      "sequence": 101,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/metaru-nasi-at128.json",
+      "sequence": 106,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/metaru-nasi-at128.json",
+      "sequence": 110,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/metaru-nasi-at128.json",
+      "sequence": 116,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/metaru-nasi-at128.json",
+      "sequence": 120,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/metaru-nasi-at128.json",
+      "sequence": 126,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/metaru-nasi-scheduler-c3.json",
+      "sequence": 90,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/metaru-nasi-scheduler-c3.json",
+      "sequence": 93,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/metaru-nasi-scheduler-c3.json",
+      "sequence": 97,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/erahulita-at46-c3.json",
+      "sequence": 26,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/erahulita-at46-c3.json",
+      "sequence": 28,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/erahulita-at46-c3.json",
+      "sequence": 30,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/erahulita-at46-c3.json",
+      "sequence": 36,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/erahulita-at46-c3.json",
+      "sequence": 39,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    },
+    {
+      "path": "docs/observations/erahulita-at46-c3.json",
+      "sequence": 46,
+      "actualPositionRetained": true,
+      "provenLowerBoundUnchanged": true,
+      "saveRestoreSame": true
+    }
+  ],
+  "scheduler": {
+    "invocations": 501,
+    "resolved": 501,
+    "mismatches": [],
+    "contextSources": {
+      "7402": {
+        "rows": [
+          {
+            "tableId": 30,
+            "flags": 8391802,
+            "sourceOffset": 2380
+          }
+        ],
+        "timeValue": 0,
+        "basis": "all complete existing map rows are time-invariant mode>1; 0 is a representative, not measured clock"
+      }
+    }
+  },
+  "recordedAt": "2026-09-30T03:26:38.517Z",
+  "wasmSha256": "280d1d50f4b28895e000e9cdeef51430800fb746dc70d21c8aede0c136812d5a",
   "records": [
     {
       "path": "docs/observations/metaru-soubi-at32.json",
@@ -72,7 +445,7 @@
       "finalSeed": "0xece8af4d",
       "bootProof": false,
       "tailReplay": {
-        "basis": "observed branch entries and observed map7402 context, not inferred frame timing",
+        "basis": "observed branch entries and actual table-call area plus reused per-map rows; time2 from prior actual contexts, not autonomous timing",
         "rows": [
           {
             "sequence": 3,
@@ -218,7 +591,7 @@
       "finalSeed": "0x90bd4da0",
       "bootProof": false,
       "tailReplay": {
-        "basis": "observed branch entries and observed map7402 context, not inferred frame timing",
+        "basis": "observed branch entries and actual table-call area plus reused per-map rows; time2 from prior actual contexts, not autonomous timing",
         "rows": [
           {
             "sequence": 90,
@@ -291,6 +664,186 @@
             "matches": true,
             "consumed": 2,
             "selectedMonster": 108
+          }
+        ],
+        "mismatches": []
+      }
+    },
+    {
+      "path": "docs/observations/metaru-nasi-scheduler-c3.json",
+      "format": "dq9-at-replay-result",
+      "sourceOrigin": "paused-state-observation-not-boot",
+      "updates": 97,
+      "intCalls": 68,
+      "spawns": [
+        {
+          "sequence": 90,
+          "monsterId": 3,
+          "tableId": 30,
+          "mapId": 7402,
+          "value": 15,
+          "agrees": true
+        },
+        {
+          "sequence": 93,
+          "monsterId": 83,
+          "tableId": 30,
+          "mapId": 7402,
+          "value": 13,
+          "agrees": true
+        },
+        {
+          "sequence": 97,
+          "monsterId": 83,
+          "tableId": 30,
+          "mapId": 7402,
+          "value": 10,
+          "agrees": true
+        }
+      ],
+      "mismatches": [],
+      "finalSeed": "0xd78ece79",
+      "bootProof": false,
+      "tailReplay": {
+        "basis": "observed branch entries and actual table-call area plus reused per-map rows; time2 from prior actual contexts, not autonomous timing",
+        "rows": [
+          {
+            "sequence": 90,
+            "monsterId": 3,
+            "tableId": 30,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 3
+          },
+          {
+            "sequence": 93,
+            "monsterId": 83,
+            "tableId": 30,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 83
+          },
+          {
+            "sequence": 97,
+            "monsterId": 83,
+            "tableId": 30,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 83
+          }
+        ],
+        "mismatches": []
+      }
+    },
+    {
+      "path": "docs/observations/erahulita-at46-c3.json",
+      "format": "dq9-at-replay-result",
+      "sourceOrigin": "paused-state-observation-not-boot",
+      "updates": 46,
+      "intCalls": 12,
+      "spawns": [
+        {
+          "sequence": 26,
+          "monsterId": 142,
+          "tableId": 4,
+          "mapId": 20003,
+          "value": 14,
+          "agrees": true
+        },
+        {
+          "sequence": 28,
+          "monsterId": 142,
+          "tableId": 4,
+          "mapId": 20003,
+          "value": 17,
+          "agrees": true
+        },
+        {
+          "sequence": 30,
+          "monsterId": 142,
+          "tableId": 4,
+          "mapId": 20003,
+          "value": 14,
+          "agrees": true
+        },
+        {
+          "sequence": 36,
+          "monsterId": 12,
+          "tableId": 4,
+          "mapId": 20003,
+          "value": 2,
+          "agrees": true
+        },
+        {
+          "sequence": 39,
+          "monsterId": 80,
+          "tableId": 4,
+          "mapId": 20003,
+          "value": 11,
+          "agrees": true
+        },
+        {
+          "sequence": 46,
+          "monsterId": 142,
+          "tableId": 4,
+          "mapId": 20003,
+          "value": 15,
+          "agrees": true
+        }
+      ],
+      "mismatches": [],
+      "finalSeed": "0xeac7ad0b",
+      "bootProof": false,
+      "tailReplay": {
+        "basis": "observed branch entries and actual table-call area plus reused per-map rows; time2 from prior actual contexts, not autonomous timing",
+        "rows": [
+          {
+            "sequence": 26,
+            "monsterId": 142,
+            "tableId": 4,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 142
+          },
+          {
+            "sequence": 28,
+            "monsterId": 142,
+            "tableId": 4,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 142
+          },
+          {
+            "sequence": 30,
+            "monsterId": 142,
+            "tableId": 4,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 142
+          },
+          {
+            "sequence": 36,
+            "monsterId": 12,
+            "tableId": 4,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 12
+          },
+          {
+            "sequence": 39,
+            "monsterId": 80,
+            "tableId": 4,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 80
+          },
+          {
+            "sequence": 46,
+            "monsterId": 142,
+            "tableId": 4,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 142
           }
         ],
         "mismatches": []
@@ -538,7 +1091,7 @@
     ],
     "frameTimingKnown": false
   },
-  "elapsedMs": 7.803919999999998,
+  "elapsedMs": 38.2239,
   "bootProof": false,
   "mismatchCount": 0
 }

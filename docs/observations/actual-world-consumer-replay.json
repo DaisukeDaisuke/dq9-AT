@@ -1,0 +1,209 @@
+{
+  "format": "dq9-world-consumer-actual-replay",
+  "source": "fresh-erahulita-state-not-boot",
+  "resolved": true,
+  "reason": "provided ordered consumers resolved",
+  "position": "24",
+  "consumed": 24,
+  "minimumConsumed": 24,
+  "outputs": [
+    {
+      "kind": "movement-init",
+      "object": 37054556,
+      "position": "1",
+      "seed": 3101573270,
+      "random": 14558,
+      "value": 2558
+    },
+    {
+      "kind": "actor-phase-init",
+      "object": 37054588,
+      "position": "2",
+      "seed": 2018731031,
+      "random": 30803,
+      "value": 122
+    },
+    {
+      "kind": "movement-init",
+      "object": 37056632,
+      "position": "3",
+      "seed": 3838496772,
+      "random": 25802,
+      "value": 3802
+    },
+    {
+      "kind": "actor-phase-init",
+      "object": 37056664,
+      "position": "4",
+      "seed": 483654125,
+      "random": 7379,
+      "value": 7331
+    },
+    {
+      "kind": "movement-init",
+      "object": 37056820,
+      "position": "5",
+      "seed": 1454755874,
+      "random": 22197,
+      "value": 2197
+    },
+    {
+      "kind": "actor-phase-init",
+      "object": 37056852,
+      "position": "6",
+      "seed": 3978308275,
+      "random": 27936,
+      "value": 5570
+    },
+    {
+      "kind": "movement-init",
+      "object": 37057008,
+      "position": "7",
+      "seed": 1025960048,
+      "random": 15654,
+      "value": 3654
+    },
+    {
+      "kind": "actor-phase-init",
+      "object": 37057040,
+      "position": "8",
+      "seed": 453199849,
+      "random": 6915,
+      "value": 4710
+    },
+    {
+      "kind": "movement-init",
+      "object": 37057196,
+      "position": "9",
+      "seed": 1199885422,
+      "random": 18308,
+      "value": 2308
+    },
+    {
+      "kind": "actor-phase-init",
+      "object": 37057228,
+      "position": "10",
+      "seed": 4108893967,
+      "random": 29928,
+      "value": 5242
+    },
+    {
+      "kind": "movement-init",
+      "object": 37057384,
+      "position": "11",
+      "seed": 3320454044,
+      "random": 17898,
+      "value": 3898
+    },
+    {
+      "kind": "actor-phase-init",
+      "object": 37057416,
+      "position": "12",
+      "seed": 2411690405,
+      "random": 4031,
+      "value": 1269
+    },
+    {
+      "kind": "pickup-materialize",
+      "object": 36727440,
+      "position": "13",
+      "seed": 2251637114,
+      "random": 1589,
+      "value": 5685
+    },
+    {
+      "kind": "pickup-materialize",
+      "object": 36727464,
+      "position": "14",
+      "seed": 4244389163,
+      "random": 31996,
+      "value": 36092
+    },
+    {
+      "kind": "pickup-materialize",
+      "object": 36727488,
+      "position": "15",
+      "seed": 3427489160,
+      "random": 19531,
+      "value": 23627
+    },
+    {
+      "kind": "pickup-materialize",
+      "object": 36727512,
+      "position": "16",
+      "seed": 2673019681,
+      "random": 8019,
+      "value": 12115
+    },
+    {
+      "kind": "pickup-materialize",
+      "object": 36727536,
+      "position": "17",
+      "seed": 541457222,
+      "random": 8261,
+      "value": 12357
+    },
+    {
+      "kind": "pickup-materialize",
+      "object": 36727560,
+      "position": "18",
+      "seed": 780108039,
+      "random": 11903,
+      "value": 15999
+    },
+    {
+      "kind": "pickup-materialize",
+      "object": 36727584,
+      "position": "19",
+      "seed": 939803188,
+      "random": 14340,
+      "value": 18436
+    },
+    {
+      "kind": "pickup-materialize",
+      "object": 36727608,
+      "position": "20",
+      "seed": 2385786973,
+      "random": 3636,
+      "value": 7732
+    },
+    {
+      "kind": "pickup-materialize",
+      "object": 36727632,
+      "position": "21",
+      "seed": 2857797074,
+      "random": 10838,
+      "value": 14934
+    },
+    {
+      "kind": "pickup-materialize",
+      "object": 36727656,
+      "position": "22",
+      "seed": 3054053027,
+      "random": 13833,
+      "value": 17929
+    },
+    {
+      "kind": "pickup-materialize",
+      "object": 36727680,
+      "position": "23",
+      "seed": 2428325280,
+      "random": 4285,
+      "value": 8381
+    },
+    {
+      "kind": "pickup-materialize",
+      "object": 36727704,
+      "position": "24",
+      "seed": 4160814425,
+      "random": 30720,
+      "value": 34816
+    }
+  ],
+  "bootProof": false,
+  "unresolvedConsumersRemain": false,
+  "expectedCount": 24,
+  "mismatches": [],
+  "interpretation": "Paired return/writer replay, not autonomous event enumeration or a boot proof.",
+  "wasmSha256": "280d1d50f4b28895e000e9cdeef51430800fb746dc70d21c8aede0c136812d5a"
+}

@@ -1,0 +1,255 @@
+{
+  "format": "dq9-nonspawn-actual-pairs",
+  "version": 1,
+  "origin": "fresh-erahulita-state-not-boot",
+  "startSeed": 299291569,
+  "sequenceSource": "first24 UpdateAT in erahulita-at46-c3.json; independent fresh-state writer capture",
+  "items": [
+    {
+      "kind": "movement-init",
+      "frame": 4938,
+      "random": 14558,
+      "object": 37054556,
+      "result": 2558,
+      "inputPC": "020409d0",
+      "storePC": "020409dc"
+    },
+    {
+      "kind": "actor-phase-init",
+      "frame": 4938,
+      "random": 30803,
+      "object": 37054588,
+      "remainder": 3,
+      "result": 122,
+      "inputPC": "0203ccf0",
+      "storePC": "0203cd18"
+    },
+    {
+      "kind": "movement-init",
+      "frame": 4939,
+      "random": 25802,
+      "object": 37056632,
+      "result": 3802,
+      "inputPC": "020409d0",
+      "storePC": "020409dc"
+    },
+    {
+      "kind": "actor-phase-init",
+      "frame": 4939,
+      "random": 7379,
+      "object": 37056664,
+      "remainder": 179,
+      "result": 7331,
+      "inputPC": "0203ccf0",
+      "storePC": "0203cd18"
+    },
+    {
+      "kind": "movement-init",
+      "frame": 4939,
+      "random": 22197,
+      "object": 37056820,
+      "result": 2197,
+      "inputPC": "020409d0",
+      "storePC": "020409dc"
+    },
+    {
+      "kind": "actor-phase-init",
+      "frame": 4939,
+      "random": 27936,
+      "object": 37056852,
+      "remainder": 136,
+      "result": 5570,
+      "inputPC": "0203ccf0",
+      "storePC": "0203cd18"
+    },
+    {
+      "kind": "movement-init",
+      "frame": 4939,
+      "random": 15654,
+      "object": 37057008,
+      "result": 3654,
+      "inputPC": "020409d0",
+      "storePC": "020409dc"
+    },
+    {
+      "kind": "actor-phase-init",
+      "frame": 4939,
+      "random": 6915,
+      "object": 37057040,
+      "remainder": 115,
+      "result": 4710,
+      "inputPC": "0203ccf0",
+      "storePC": "0203cd18"
+    },
+    {
+      "kind": "movement-init",
+      "frame": 4939,
+      "random": 18308,
+      "object": 37057196,
+      "result": 2308,
+      "inputPC": "020409d0",
+      "storePC": "020409dc"
+    },
+    {
+      "kind": "actor-phase-init",
+      "frame": 4939,
+      "random": 29928,
+      "object": 37057228,
+      "remainder": 128,
+      "result": 5242,
+      "inputPC": "0203ccf0",
+      "storePC": "0203cd18"
+    },
+    {
+      "kind": "movement-init",
+      "frame": 4939,
+      "random": 17898,
+      "object": 37057384,
+      "result": 3898,
+      "inputPC": "020409d0",
+      "storePC": "020409dc"
+    },
+    {
+      "kind": "actor-phase-init",
+      "frame": 4939,
+      "random": 4031,
+      "object": 37057416,
+      "remainder": 31,
+      "result": 1269,
+      "inputPC": "0203ccf0",
+      "storePC": "0203cd18"
+    },
+    {
+      "kind": "pickup-materialize",
+      "frame": 4946,
+      "random": 1589,
+      "object": 36727440,
+      "lower": 4096,
+      "upper": 49152,
+      "result": 5685,
+      "inputPC": "0208fbd8",
+      "storePC": "0208fbec"
+    },
+    {
+      "kind": "pickup-materialize",
+      "frame": 4946,
+      "random": 31996,
+      "object": 36727464,
+      "lower": 4096,
+      "upper": 49152,
+      "result": 36092,
+      "inputPC": "0208fbd8",
+      "storePC": "0208fbec"
+    },
+    {
+      "kind": "pickup-materialize",
+      "frame": 4946,
+      "random": 19531,
+      "object": 36727488,
+      "lower": 4096,
+      "upper": 49152,
+      "result": 23627,
+      "inputPC": "0208fbd8",
+      "storePC": "0208fbec"
+    },
+    {
+      "kind": "pickup-materialize",
+      "frame": 4946,
+      "random": 8019,
+      "object": 36727512,
+      "lower": 4096,
+      "upper": 49152,
+      "result": 12115,
+      "inputPC": "0208fbd8",
+      "storePC": "0208fbec"
+    },
+    {
+      "kind": "pickup-materialize",
+      "frame": 4946,
+      "random": 8261,
+      "object": 36727536,
+      "lower": 4096,
+      "upper": 49152,
+      "result": 12357,
+      "inputPC": "0208fbd8",
+      "storePC": "0208fbec"
+    },
+    {
+      "kind": "pickup-materialize",
+      "frame": 4946,
+      "random": 11903,
+      "object": 36727560,
+      "lower": 4096,
+      "upper": 49152,
+      "result": 15999,
+      "inputPC": "0208fbd8",
+      "storePC": "0208fbec"
+    },
+    {
+      "kind": "pickup-materialize",
+      "frame": 4946,
+      "random": 14340,
+      "object": 36727584,
+      "lower": 4096,
+      "upper": 49152,
+      "result": 18436,
+      "inputPC": "0208fbd8",
+      "storePC": "0208fbec"
+    },
+    {
+      "kind": "pickup-materialize",
+      "frame": 4946,
+      "random": 3636,
+      "object": 36727608,
+      "lower": 4096,
+      "upper": 49152,
+      "result": 7732,
+      "inputPC": "0208fbd8",
+      "storePC": "0208fbec"
+    },
+    {
+      "kind": "pickup-materialize",
+      "frame": 4946,
+      "random": 10838,
+      "object": 36727632,
+      "lower": 4096,
+      "upper": 49152,
+      "result": 14934,
+      "inputPC": "0208fbd8",
+      "storePC": "0208fbec"
+    },
+    {
+      "kind": "pickup-materialize",
+      "frame": 4946,
+      "random": 13833,
+      "object": 36727656,
+      "lower": 4096,
+      "upper": 49152,
+      "result": 17929,
+      "inputPC": "0208fbd8",
+      "storePC": "0208fbec"
+    },
+    {
+      "kind": "pickup-materialize",
+      "frame": 4946,
+      "random": 4285,
+      "object": 36727680,
+      "lower": 4096,
+      "upper": 49152,
+      "result": 8381,
+      "inputPC": "0208fbd8",
+      "storePC": "0208fbec"
+    },
+    {
+      "kind": "pickup-materialize",
+      "frame": 4946,
+      "random": 30720,
+      "object": 36727704,
+      "lower": 4096,
+      "upper": 49152,
+      "result": 34816,
+      "inputPC": "0208fbd8",
+      "storePC": "0208fbec"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 {
   "format": "dq9-folder-sync-manifest",
   "version": 1,
-  "generatedAt": "2026-09-30T01:17:38.003Z",
+  "generatedAt": "2026-09-30T03:30:39.470Z",
   "source": "local dq9-AT selected complete source directories",
   "folders": [
     "web",
@@ -46,8 +46,8 @@
     },
     {
       "path": "DECISIONS.md",
-      "bytes": 3081,
-      "sha256": "fed5b6120ab645647527d3b5e549a5233f5880c4a743cddf4a68d150adf4bf40"
+      "bytes": 3701,
+      "sha256": "85d100b61103fdcb412bb28f3b54a51d3fec7245247413ac28e15842c1b95900"
     },
     {
       "path": "docs/ASSETS.md",
@@ -63,6 +63,11 @@
       "path": "docs/CONTINUATION_20260930.md",
       "bytes": 3608,
       "sha256": "71c664d821959632b26c2aaab2afce30378b25aa6f9e127270bcc5625182dc8f"
+    },
+    {
+      "path": "docs/CONTINUATION_C3_20260930.md",
+      "bytes": 5133,
+      "sha256": "f44893020ea67a4ea9f8d9b754c70426a0eeca0a572a18386d57347d6f7ce52d"
     },
     {
       "path": "docs/DEPLOYMENT.md",
@@ -115,14 +120,44 @@
       "sha256": "3f698f432a9aeeaa25348e07c84e2580f7e44cdd7f49bce1d9bfabbdb95ddfe4"
     },
     {
+      "path": "docs/ghidra/09-spawn-scheduler.md",
+      "bytes": 2746,
+      "sha256": "7b7b0107679ce14b94c66fb5748a0ef5306403fd2e107df0cc347d09241d4b10"
+    },
+    {
+      "path": "docs/ghidra/10-field-clock.md",
+      "bytes": 2800,
+      "sha256": "107068978e2369edf828f1332cf76193b57661baa494fef421bb0deb7dadcef9"
+    },
+    {
+      "path": "docs/ghidra/11-nonspawn-consumers.md",
+      "bytes": 3833,
+      "sha256": "196ca003e3bd29026206d90994171215aa43e963f292479b3e9f7aa6854de954"
+    },
+    {
+      "path": "docs/ghidra/12-nonspawn-writer-pairs.md",
+      "bytes": 3022,
+      "sha256": "db9d0f1b7eea63508065afbddfd19bbceb430b5ca04d577ecc12232e3c2da0af"
+    },
+    {
       "path": "docs/HANDOFF.md",
       "bytes": 3645,
       "sha256": "d1a63f8473d0fd128688dc7ef564f8f643d23a9dacfdc2f7739e535720bc70d6"
     },
     {
+      "path": "docs/INTERIM_C3_20260930.md",
+      "bytes": 3690,
+      "sha256": "a8c2ead7d43b5690baead2852027db9daedf394ec08e55e3073769f4f242e99c"
+    },
+    {
       "path": "docs/ISSUES_20260930.md",
       "bytes": 4089,
       "sha256": "cfcbe0db03454aba533526ad1281b49f2c089469e2d57c43d5102ad18614e63b"
+    },
+    {
+      "path": "docs/ISSUES_C3_20260930.md",
+      "bytes": 2742,
+      "sha256": "631c923572a9f3285359b2994c54247bd45e712c080286522ec0ca04c6da49de"
     },
     {
       "path": "docs/mining/encounter-contexts.json",
@@ -143,6 +178,11 @@
       "path": "docs/mining/MAP_FORMAT.md",
       "bytes": 4097,
       "sha256": "a42f151358fdd2bab4c17d7292f456aced640e59fd3e24eb8374b0db450a2d53"
+    },
+    {
+      "path": "docs/mining/MAP_POSITION.md",
+      "bytes": 2011,
+      "sha256": "c9810b1e21538aeb303b61a0f5407e6e2a9c156f69428a114c6e7002b71860fc"
     },
     {
       "path": "docs/mining/map-metadata.json",
@@ -176,8 +216,8 @@
     },
     {
       "path": "docs/observations/actual-at-replay.json",
-      "bytes": 13447,
-      "sha256": "0233e2cf82e5b72bd399f083e5d52c2408384b6b716d277fee8d7c86c7f76f43"
+      "bytes": 27050,
+      "sha256": "c9eca5b4b71c9bb46f955c86875996d9ec675ab821281bd8f48bc5cb5aea69b6"
     },
     {
       "path": "docs/observations/actual-field-mining.json",
@@ -190,9 +230,14 @@
       "sha256": "b37b5245f4af8ad84c333410339dbe3042f0fa0bf6c86e7aba2a94a174df2a72"
     },
     {
+      "path": "docs/observations/actual-map-position.json",
+      "bytes": 2706,
+      "sha256": "7fa2f7af72bcc16c81685b1ca2806edc2ddb272ebf34b4b11fca82a9214a10aa"
+    },
+    {
       "path": "docs/observations/actual-map-wasm.json",
-      "bytes": 442531,
-      "sha256": "53668bb26a1f19bc2306b13fb7a8b0d983570888bc60a988b4e7b4e0f79e6a16"
+      "bytes": 442540,
+      "sha256": "0c1c695fab7c7cbfacd93ca3174326f9584d4759dc36b804a5ad30700bd4338b"
     },
     {
       "path": "docs/observations/actual-production-contexts.json",
@@ -200,9 +245,39 @@
       "sha256": "ba641553e7e263162db57dcec67a624505bcbd23d05510056a295610997df3d2"
     },
     {
+      "path": "docs/observations/actual-scheduler-replay.json",
+      "bytes": 124627,
+      "sha256": "dacdaf0c4d3bcb8dcefae5cb7c34bd39ce8ef6f5d076a38e44b78c0b93cad9a2"
+    },
+    {
+      "path": "docs/observations/actual-world-consumer-replay.json",
+      "bytes": 4514,
+      "sha256": "96b45b0928cb9f5d141c68277d157aebbb681c1eb8eb11c1311590eb2ca7a4e0"
+    },
+    {
       "path": "docs/observations/build-return-0930.json",
       "bytes": 320,
       "sha256": "da195ac1e4d6d530434f8af4da2145a494e56bb9e81dc0e85f54488aa17178e9"
+    },
+    {
+      "path": "docs/observations/c3-publication.json",
+      "bytes": 1326,
+      "sha256": "5094d44213b60fdee020cab467d455787d64dba819582d576bcf69bd08e256b4"
+    },
+    {
+      "path": "docs/observations/erahulita-at46-c3.json",
+      "bytes": 2462,
+      "sha256": "4fc365a6a89fb2a54648f76f1205ae514d377237b040804e36e848ee4cd0d521"
+    },
+    {
+      "path": "docs/observations/erahulita-nonspawn-pairs-c3.json",
+      "bytes": 5621,
+      "sha256": "cb09d33a69bd6ae9c709c1f6081d6829371c28a8f7743fe8c9c8c8336c82b93e"
+    },
+    {
+      "path": "docs/observations/field-clock-c3.json",
+      "bytes": 1152,
+      "sha256": "f6da853866a84a4a8dbe33223ff40137bf454654faeff3f5d1d5dd3542e1998d"
     },
     {
       "path": "docs/observations/map20003-field-graph.json",
@@ -235,6 +310,11 @@
       "sha256": "794d3af84308fdc521c7b67fead726065b2a9f8301c9be503470c23b5dd6bda1"
     },
     {
+      "path": "docs/observations/metaru-nasi-scheduler-c3.json",
+      "bytes": 356513,
+      "sha256": "f0c1b5fb0095334c1342e20aab12b5c8ce6e68f9c3c032280f2bd7057f730c05"
+    },
+    {
       "path": "docs/observations/metaru-soubi-at32.json",
       "bytes": 2156,
       "sha256": "70c56fa7bd8cc189630328bc75335eda19bd05dae35da6fb50632dd2c1f9e59e"
@@ -251,8 +331,13 @@
     },
     {
       "path": "docs/PROGRESS.md",
-      "bytes": 7766,
-      "sha256": "dcc666fd233feadb8e113613ab0a2cab5e0bd7486a0cd9ae399fbf097bcde0fd"
+      "bytes": 10488,
+      "sha256": "6c35eec753b407e8b61f1bf945eb4beee3f5bf521695a5fcff3460a390a7cd19"
+    },
+    {
+      "path": "docs/RELEASE_C3_20260930.md",
+      "bytes": 4312,
+      "sha256": "3cf5b3721a0a68be2dcb7f85dcbca8f61d6c6d42c32bb8c140188b08f449f7bd"
     },
     {
       "path": "docs/VIDEO_PIPELINE_20260930.md",
@@ -266,13 +351,13 @@
     },
     {
       "path": "PLAN.md",
-      "bytes": 7824,
-      "sha256": "aed93f6f6e8c36163546dbc7249ae7e0e189c7e9061a27f4d24c98c9d5abbd72"
+      "bytes": 10546,
+      "sha256": "e8d515419d670542cc4e183cd3e6c9c80b4b24e0763faa0ab7a0834a7e9a413d"
     },
     {
       "path": "protocol.txt",
-      "bytes": 686,
-      "sha256": "f0418ac38d7411fdef377d406212439a653ec5f0c293a0a2b2d00f63540568f9"
+      "bytes": 1425,
+      "sha256": "70a8fdbfe720dc970bc169ac32891d12a52f4ec0bdafbba7aa2c4092acd81f02"
     },
     {
       "path": "README.md",
@@ -281,18 +366,23 @@
     },
     {
       "path": "scripts/at-field-trace.pscript.js",
-      "bytes": 3667,
-      "sha256": "075157e36d287478f70080bec3c05e00fe40c0285c8b9e2466d201ef5d3b7d4d"
+      "bytes": 6024,
+      "sha256": "5bc27c39f6fdf480bea676b37b7b96c7a52842d9ef9ba1701e5bc22b57606549"
     },
     {
       "path": "scripts/build.sh",
-      "bytes": 875,
-      "sha256": "5cf713112b20783b3c8aa9031827cd534a0d5eb3daaa052d78187f3537af9fa5"
+      "bytes": 911,
+      "sha256": "7ea6548135ea0f7bd8b36eda981a3460f6aa07cf986fc1857bdd4bad2f223bc1"
     },
     {
       "path": "scripts/enc_jp.reference.lua",
       "bytes": 56170,
       "sha256": "f94830000a2ba96af09f405d6804e2c682aba76033fba90356d91023aa8d5fa1"
+    },
+    {
+      "path": "scripts/field-clock.pscript.js",
+      "bytes": 1113,
+      "sha256": "f6dcee514a86eae56ae65e99a56673844d75e086b592751ce3a2c44018754f94"
     },
     {
       "path": "scripts/field-graph.pscript.js",
@@ -370,6 +460,11 @@
       "sha256": "0bee6fe5e0dc77e7c0b38c891249dcc8b8c4ca33dbdce39f8a2151bf546a405f"
     },
     {
+      "path": "scripts/nonspawn-consumers.pscript.js",
+      "bytes": 1955,
+      "sha256": "4445a9dbbdaf0dcd2960e9adc8f4df7b273cfd28a504b8fdfe467cfaa9cf78dc"
+    },
+    {
       "path": "scripts/read-field-mining.mjs",
       "bytes": 728,
       "sha256": "3771362e8c0f56bc37d79e3008d2deec03226b13d7347d3278710092344768ac"
@@ -396,8 +491,8 @@
     },
     {
       "path": "scripts/run-at-replay.mjs",
-      "bytes": 3275,
-      "sha256": "1e606153f5da9f3ff269e729a19be19c8bdaedba0e0628e07b279f995f36f5f1"
+      "bytes": 7464,
+      "sha256": "80c8df86fceb5621073cb36875c7ea976329e7161873e67d1af7089cccf0afbe"
     },
     {
       "path": "scripts/run-field-mining.mjs",
@@ -413,6 +508,11 @@
       "path": "scripts/run-map-mining.mjs",
       "bytes": 4060,
       "sha256": "2903769e492dbc1389814db72a8d3b7b7636829bc64861e0f7346050eba1c7c2"
+    },
+    {
+      "path": "scripts/stage-source-folder.mjs",
+      "bytes": 1484,
+      "sha256": "e6366711869a812684ca7126aaca6a329a9975f619666f886aa1d0034989f800"
     },
     {
       "path": "scripts/summarize-structure.mjs",
@@ -431,13 +531,23 @@
     },
     {
       "path": "wasm/field_at.c",
-      "bytes": 1300,
-      "sha256": "e24a561765f07abda14e9639e0c4b4f9b0c6accc47b5216159be6c35e279366d"
+      "bytes": 2822,
+      "sha256": "0680b3ce6333da87afc4676d2032919f2934ae7621789cf222d6a50ce034d1fb"
+    },
+    {
+      "path": "wasm/map_position.c",
+      "bytes": 1133,
+      "sha256": "a6af8689e524d50942685cb011412f53cabbf4decff270e3939488414547a4f6"
     },
     {
       "path": "wasm/map_render.c",
       "bytes": 2835,
       "sha256": "d79884ce44784ea656822e6d8ffb930f7131923c5e1ab2c24964fa196a0c65af"
+    },
+    {
+      "path": "wasm/world_at.c",
+      "bytes": 659,
+      "sha256": "980e73be37f66b1b4aa6f8cf4d0eab71a2a2db92fa0c2a40931e4bab6831b9ad"
     },
     {
       "path": "web/app.css",
@@ -446,13 +556,13 @@
     },
     {
       "path": "web/app.mjs",
-      "bytes": 13156,
-      "sha256": "c873764007e0d303acccbec147786688bc2e0fda6065e2dd57aabf7391cab6b5"
+      "bytes": 13387,
+      "sha256": "543ce618391c1b5cbe98e47f1487d49bbe4ba10437467410910946922305f401"
     },
     {
       "path": "web/at-core.mjs",
-      "bytes": 10077,
-      "sha256": "8d3c7c91c5af99edaa482faa7741d2ecb21ff4873232c89f21110eddb113a9ff"
+      "bytes": 12173,
+      "sha256": "ac6c430a3508679685f023efe0987b2fb2983432bd0d160f3b9d226a2071b6c8"
     },
     {
       "path": "web/at-panel.css",
@@ -461,13 +571,13 @@
     },
     {
       "path": "web/at-panel.mjs",
-      "bytes": 10774,
-      "sha256": "dd6ab7d2cccfdf73e1819b7613d0a502ea4769ac30602caef92612c95fc7ebc8"
+      "bytes": 12179,
+      "sha256": "b7fbd469410ac1eb4be13a3c352b6888bcf6c249a13b9c5962c066ab58fe3408"
     },
     {
       "path": "web/at-worker.mjs",
-      "bytes": 2498,
-      "sha256": "b8cf1cc6debd1837b7ecb3b8d7e55a448100b0232a1f020ae9a16c3b4b29e13e"
+      "bytes": 3519,
+      "sha256": "7f4788759125c0c9a0ef7b90935650dc263c2c3a118adf94082de76daf94d095"
     },
     {
       "path": "web/camera-input.mjs",
@@ -520,6 +630,11 @@
       "sha256": "b8ca42489aa1ab354d0e3cf0909fade2b9814b653ebdadec41cb5d4787c2b6ee"
     },
     {
+      "path": "web/field-scheduler.mjs",
+      "bytes": 7879,
+      "sha256": "8eb0bbb006b0383a9366fdc9ee3d8a8f67a8df1409e5690812782435b23cac95"
+    },
+    {
       "path": "web/font-core.mjs",
       "bytes": 1167,
       "sha256": "76db3fcfe5164ec258f7f06784eac8602f537ff955f53b899b64106a95d914c8"
@@ -540,6 +655,11 @@
       "sha256": "dce716bf99d786144594cb5e7e1f4c8c819529da917613de57647edb65e6cbd7"
     },
     {
+      "path": "web/map-position.mjs",
+      "bytes": 4069,
+      "sha256": "46e3401f8f35e9b03873ed381669c514ed02e8374c517bba29b03d0c7b72219e"
+    },
+    {
       "path": "web/minimap-pac.mjs",
       "bytes": 2129,
       "sha256": "ff11e9af78e62fdf68a94d88215bb022a5cd1a53580fc0d8d40c3d44e1d1db5e"
@@ -548,6 +668,11 @@
       "path": "web/monster-catalog.mjs",
       "bytes": 598,
       "sha256": "694469d6943372eae4c1aa271a35b3f0fa2527d134a23c7eb3860cf5b394319a"
+    },
+    {
+      "path": "web/position-worker.mjs",
+      "bytes": 782,
+      "sha256": "8a4e2310a7c806f12834bc56d686ad826807f273b153ad2c4387bbb8c2e14b68"
     },
     {
       "path": "web/vendor/arand-reference.mjs",
@@ -606,19 +731,24 @@
     },
     {
       "path": "web/video-panel.mjs",
-      "bytes": 9635,
-      "sha256": "f5dc855188bcd6adf6c86778c0433c98aaea700281ae38f482de551e4d4cd5fe"
+      "bytes": 12510,
+      "sha256": "e4aad1dd409658be016c93ba32a8b2758c6723db9996e00425db8512028d5a64"
     },
     {
       "path": "web/wasm/map_render.wasm",
-      "bytes": 3292,
-      "sha256": "31fefd46d2656fecdd926eec94ae16aa257509d4a15f9e13bbf9a84e5d8f49fc"
+      "bytes": 5292,
+      "sha256": "280d1d50f4b28895e000e9cdeef51430800fb746dc70d21c8aede0c136812d5a"
     },
     {
       "path": "web/worker.mjs",
       "bytes": 1570,
       "sha256": "ef8311018a5a95ea65be878c19dad7c481c994f850820bee433b937be77a5ee4"
+    },
+    {
+      "path": "web/world-at.mjs",
+      "bytes": 2392,
+      "sha256": "bb47dd8e5795dd874f29eb7ca661c16117f76634ac724ffab8e9c92e10fd9ec9"
     }
   ],
-  "treeSha256": "bc7ee977480835b0161ff4d5e2854b35371aabb1682902fcbcee32cac7e3daa5"
+  "treeSha256": "d6e3767f66f8c5201f871e47d58357a6bf1cdb012441be956ee920b780ff6ae9"
 }
