@@ -1,5 +1,8 @@
+import {TreasureEntryKernel} from './treasure-entry.mjs';
+import {WorldATKernel,MovementATStep,replayWorldPairs} from './world-at.mjs';
 import {ATKernel,ATSession,replayObservedTrace} from './at-core.mjs';
 import {FieldATKernel} from './field-at.mjs';
+import {FieldScheduler,replaySchedulerTrace} from './field-scheduler.mjs';
 let session=null,kernel=null,tables=null,fieldKernel=null;
 const ready=(async()=>{const [r,t]=await Promise.all([fetch('./wasm/map_render.wasm'),fetch('./data/enc.json')]);if(!r.ok||!t.ok)throw Error('AT資産の取得に失敗しました');const {instance}=await WebAssembly.instantiate(await r.arrayBuffer(),{});kernel=new ATKernel(instance);fieldKernel=new FieldATKernel(kernel);tables=(await t.json()).main;})();
 self.onmessage=async({data:m})=>{try{await ready;let value;
@@ -13,7 +16,13 @@ self.onmessage=async({data:m})=>{try{await ready;let value;
   case 'forecast':if(!session)throw Error('initial seedを先に入力してください');value=session.forecast(tables,m.tableIds,m.targets,m.window,{conditional:m.conditional});break;
   case 'field-forecast':if(!session)throw Error('initial seedを先に入力してください');if(!m.context?.resolved)throw Error('フィールド条件が未解決です');value=fieldKernel.forecastNaturalTails({seed:session.seed,position:m.conditional?session.conditionalBound:session.lowerBound,rows:m.context.rows,areaMasks:m.context.areaMasks,timeValues:m.context.timeValues,targetIds:m.targets,window:m.window},tables);break;
   case 'boot-trace':if(!session)throw Error('initial seedを先に入力してください');value=session.ingestBootTrace(m.trace);break;
-  case 'replay':value=replayObservedTrace(m.trace,kernel,tables);break;
+  case 'replay':if(m.trace.format==='dq9-nonspawn-actual-pairs'){value={world:replayWorldPairs(m.trace,kernel),updates:m.trace.items.length,intCalls:0,spawns:[],mismatches:[]};value.mismatches=value.world.mismatches;break;}value=replayObservedTrace(m.trace,kernel,tables);if(m.trace.schedulerEvents){const contexts={...(m.trace.contexts||{})};const c=m.context;if(c?.resolved&&c.rows?.length&&c.rows.every(r=>(r.flags&7)>1))contexts[String(c.mapId)]={rows:c.rows,timeValue:0,basis:'time-invariant complete map rows'};value.scheduler=replaySchedulerTrace({...m.trace,contexts},fieldKernel,tables);}break;
+  case 'unresolved-consumption':if(!session)throw Error('initial seedを先に入力してください');value=session.noteUnresolvedConsumption(m.observation);break;
+  case 'treasure-entry':value=new TreasureEntryKernel(kernel).consume(m.state,m.source,{loadComplete:m.loadComplete,initialFlags:m.initialFlags});break;
+  case 'movement-elapsed-write':value=new MovementATStep(kernel).elapsedWrite(m.state,m.input);break;
+  case 'movement-timer-step':value=new MovementATStep(kernel).timerStep(m.state,m.input);break;
+  case 'world-consumers':value=new WorldATKernel(kernel).consume(m.state,m.events);break;
+  case 'field-step':value=new FieldScheduler(fieldKernel).step(m.state,m.input,tables);break;
   case 'export':value=session?.snapshot();break;
   default:throw Error('Unknown AT operation');
  }

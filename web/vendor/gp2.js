@@ -236,7 +236,8 @@
     };
   }
 
-  function parseGp2(bytes) {
+  // Optional exact-path Set: skip unrequested payload decompression.
+  function parseGp2(bytes, selectedPaths = null) {
     const reader = new BinaryReader(bytes);
     const magic = reader.readU32();
     if (magic !== 0x32435047) {
@@ -283,6 +284,7 @@
     const compressedFiles = (header.totalFileSize & 0x10000000) === 0;
     const files = [];
     for (let i = 0; i < fileCount; i++) {
+      if (selectedPaths && !selectedPaths.has(names[i])) continue;
       const entry = entries[i];
       const fileOffset = (entry.offs & 0xFFFFFF) * 4;
       reader.seek(fileOffset + firstFileOffs);

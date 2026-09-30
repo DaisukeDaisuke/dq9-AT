@@ -1,4 +1,12 @@
 import {getGPU,makeBuffer,maskInfo,buildPrefix} from './vendor/font-match-reference.mjs';
+import {GlyphAkinatorMatcher,buildGlyphAkinatorDictionary} from './font-akinator.mjs';
+export {GlyphAkinatorMatcher,buildGlyphAkinatorDictionary} from './font-akinator.mjs';
+// Explicit routes keep the existing whole-name reference available.
+export function createTextMatcher({route,glyphsBySize,records=[]}){
+ if(route==='glyph-akinator')return new GlyphAkinatorMatcher(buildGlyphAkinatorDictionary(glyphsBySize));
+ if(route==='whole-name-reference')return new MapNameMatcher(buildMapNameDictionary(glyphsBySize,records));
+ throw Error('Choose glyph-akinator or whole-name-reference');
+}
 // Use ROM glyph rows directly; no rendered system-font substitute and no TTF re-mining.
 export function buildMapNameDictionary(glyphsBySize,records){
  const names=new Map();for(const r of records){if(!r.name||r.name===r.fieldCode||/^0x|^map_/i.test(r.name))continue;const ids=names.get(r.name)||[];if(!ids.includes(r.mapId))ids.push(r.mapId);names.set(r.name,ids);}
@@ -13,7 +21,7 @@ export function buildMapNameDictionary(glyphsBySize,records){
  return {templates,coords:Uint32Array.from(coords),metas:Uint32Array.from(metas),source:'runtime NDS glyph rows + existing map names',scope:'dictionary candidates; unknown text remains possible'};
 }
 export class MapNameMatcher {
- constructor(dictionary){this.dictionary=dictionary;this.buffers=null;this.device=null;}
+ constructor(dictionary){this.dictionary=dictionary;this.buffers=null;this.device=null;this.route='whole-name-reference';}
  destroy(){if(this.buffers)for(const b of Object.values(this.buffers))b.destroy();this.buffers=null;this.device=null;}
  async match(image,{threshold=220,shift=2}={}){
   const {device,pipeline}=await getGPU(),d=this.dictionary;if(!d.templates.length)throw Error('マップ名辞書に対応する実フォントがありません');

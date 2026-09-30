@@ -490,7 +490,7 @@ class InfoSection {
         // No header, each name is 16 bytes long
         this.names = [];
         for (let i = 0; i < this.numberOfEntries; i++) {
-            this.names.push(raw.readChars(offset, offset + 16).replace(/\0/g, ""));
+            this.names.push(raw.readChars(offset, 16).replace(/\0/g, ""));
             offset += 16;
         }
     }

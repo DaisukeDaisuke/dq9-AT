@@ -1,0 +1,24 @@
+/** Bounded, pixel-only DS rectangle proposals. Scores are heuristics, not probabilities.
+ * A 4:3 rectangle alone never identifies a DS screen. Upper-map role additionally
+ * requires parchment, a dark label band and party UI; battle/black remain unknown.
+ */
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+function peaks(values,limit=22){const out=[0,values.length];const ranked=Array.from(values,(v,i)=>({v,i})).sort((a,b)=>b.v-a.v);for(const p of ranked){if(p.v<5||out.some(x=>Math.abs(x-p.i)<3))continue;out.push(p.i);if(out.length>=limit)break;}return out.sort((a,b)=>a-b);}
+export function detectDSScreens(image,{maxCandidates=8}={}){
+ const {width:W,height:H,data}=image;if(!W||!H||!data||data.length<W*H*4)throw new Error('Invalid RGBA frame');if(W>640||H>480)throw new Error('Downsample analysis frame to at most 640×480');maxCandidates=Math.max(1,Math.min(12,maxCandidates));
+ const dx=new Float32Array(W),dy=new Float32Array(H),warm=new Float32Array((W+1)*(H+1)),dark=new Float32Array(warm.length),bright=new Float32Array(warm.length);const stride=W+1;
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=(y*W+x)*4,r=data[i],g=data[i+1],b=data[i+2];if(x)dx[x]+=(Math.abs(r-data[i-4])+Math.abs(g-data[i-3])+Math.abs(b-data[i-2]))/(3*H);if(y)dy[y]+=(Math.abs(r-data[i-W*4])+Math.abs(g-data[i-W*4+1])+Math.abs(b-data[i-W*4+2]))/(3*W);const k=(y+1)*stride+x+1;for(const [arr,v]of [[warm,r>85&&r>g*1.06&&g>b*1.16&&g>65?1:0],[dark,Math.max(r,g,b)<105?1:0],[bright,Math.min(r,g,b)>170&&Math.max(r,g,b)-Math.min(r,g,b)<70?1:0]])arr[k]=v+arr[k-1]+arr[k-stride]-arr[k-stride-1];}
+ const region=(arr,x,y,w,h)=>{const x0=clamp(Math.round(x),0,W),y0=clamp(Math.round(y),0,H),x1=clamp(Math.round(x+w),x0+1,W),y1=clamp(Math.round(y+h),y0+1,H);return (arr[y1*stride+x1]-arr[y0*stride+x1]-arr[y1*stride+x0]+arr[y0*stride+x0])/Math.max(1,(x1-x0)*(y1-y0));};
+ const xs=peaks(dx),ys=peaks(dy),rects=new Map();
+ function add(x,y,w,h){if(w<64||h<48||x<0||y<0||x+w>W+1||y+h>H+1)return;w=Math.min(w,W-x);h=Math.min(h,H-y);if(Math.abs(w/h-4/3)>.025)return;rects.set([x,y,w,h].join(','),{x,y,w,h});}
+ // Dimensions come from detected edges, never from an OBS placement preset.
+ for(let a=0;a<xs.length;a++)for(let b=a+1;b<xs.length;b++){const x=xs[a],w=xs[b]-x,h=Math.round(w*.75);for(const y of ys){add(x,y,w,h);add(x,y-h,w,h);}}
+ for(let a=0;a<ys.length;a++)for(let b=a+1;b<ys.length;b++){const y=ys[a],h=ys[b]-y,w=Math.round(h*4/3);for(const x of xs){add(x,y,w,h);add(x-w,y,w,h);}}
+ const lineEdge=(x,y,w,h,vertical)=>{const p=vertical?x:y;if(p<=0||p>=(vertical?W:H))return 1;let sum=0,n=0;const length=vertical?h:w;for(let t=2;t<length-2;t+=Math.max(1,Math.floor(length/96))){const xx=Math.round(vertical?x:x+t),yy=Math.round(vertical?y+t:y),i=(yy*W+xx)*4,j=i-(vertical?4:W*4);if(i<0||i+2>=data.length||j<0)continue;sum+=(Math.abs(data[i]-data[j])+Math.abs(data[i+1]-data[j+1])+Math.abs(data[i+2]-data[j+2]))/3;n++;}return clamp(sum/Math.max(1,n)/25);};
+ const scored=[];
+ for(const r of rects.values()){const{x,y,w,h}=r;const parchment=region(warm,x+w*.04,y+h*.1,w*.92,h*.78),labelDark=region(dark,x+w*.59,y,w*.40,h*.08),labelInk=region(bright,x+w*.59,y,w*.40,h*.08),labelEndInk=region(bright,x+w*.90,y,w*.085,h*.08),partyDark=region(dark,x,y+h*.925,w,h*.075),contentDark=region(dark,x,y,w,h);const boundary=(lineEdge(x,y,w,h,true)+lineEdge(x+w,y,w,h,true)+lineEdge(x,y,w,h,false)+lineEdge(x,y+h,w,h,false))/4;const mapEvidence=clamp((parchment-.35)/.45)*.55+clamp(labelDark/.35)*.13+clamp(labelInk/.1)*.12+clamp(partyDark/.65)*.20;const score=(labelEndInk>.012?1:.7)*(mapEvidence*.63+boundary*.30+Math.sqrt(w*h/(W*H))*.07);scored.push({...r,score,mapEvidence,boundary,parchment,labelDark,labelInk,labelEndInk,partyDark,contentDark,role:parchment>.55&&labelDark>.08&&labelInk>.012&&labelEndInk>.012&&partyDark>.35?'upper-map-candidate':'screen-role-unknown'});}
+ scored.sort((a,b)=>b.score-a.score);const candidates=[];for(const r of scored){if(candidates.some(q=>intersectionOverUnion(r,q)>.88))continue;candidates.push(r);if(candidates.length>=maxCandidates)break;}
+ const best=candidates[0],second=candidates[1];const margin=best?best.score-(second?.score||0):0;const resolved=!!best&&best.role==='upper-map-candidate'&&best.score>=.80&&best.boundary>=.60&&margin>=.045;
+ return {version:1,state:resolved?'candidate':'unknown',resolved,reason:!best?'no-rectangles':best.contentDark>.97?'black-or-transition':best.role!=='upper-map-candidate'?'upper-map-role-unproven':margin<.045?'ambiguous-rectangles':resolved?'pixel-map-evidence':'weak-visual-evidence',confidenceCalibrated:false,margin,candidates,analysisSize:{width:W,height:H},minimumProvenATCalls:0};
+}
+export function intersectionOverUnion(a,b){const i=Math.max(0,Math.min(a.x+a.w,b.x+b.w)-Math.max(a.x,b.x))*Math.max(0,Math.min(a.y+a.h,b.y+b.h)-Math.max(a.y,b.y));return i/(a.w*a.h+b.w*b.h-i);}

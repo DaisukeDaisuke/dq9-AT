@@ -1,0 +1,3 @@
+import{MapPositionMatcher}from'./map-position.mjs';
+let matcher=null,epoch=0;const ready=(async()=>{const r=await fetch('./wasm/map_render.wasm');if(!r.ok)throw Error('位置照合WASM取得失敗');const {instance}=await WebAssembly.instantiate(await r.arrayBuffer(),{});matcher=new MapPositionMatcher(instance);})();
+self.onmessage=async({data:m})=>{try{await ready;if(m.type==='reference'){epoch=m.epoch;matcher.setReference(m.image);postMessage({type:'reference',epoch,ok:true});return;}if(m.type==='frame'){if(m.epoch!==epoch)return;const result=matcher.match(m.frame,m.options);postMessage({type:'position',epoch,frameSerial:m.frameSerial,capturedAt:m.capturedAt,videoTime:m.videoTime,result,ok:true});}}catch(e){postMessage({type:'error',epoch,ok:false,error:e.message});}};
