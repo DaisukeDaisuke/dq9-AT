@@ -1,14 +1,17 @@
 import {ATKernel,ATSession,replayObservedTrace} from './at-core.mjs';
-let session=null,kernel=null,tables=null;
-const ready=(async()=>{const [r,t]=await Promise.all([fetch('./wasm/map_render.wasm'),fetch('./data/enc.json')]);if(!r.ok||!t.ok)throw Error('AT資産の取得に失敗しました');const {instance}=await WebAssembly.instantiate(await r.arrayBuffer(),{});kernel=new ATKernel(instance);tables=(await t.json()).main;})();
+import {FieldATKernel} from './field-at.mjs';
+let session=null,kernel=null,tables=null,fieldKernel=null;
+const ready=(async()=>{const [r,t]=await Promise.all([fetch('./wasm/map_render.wasm'),fetch('./data/enc.json')]);if(!r.ok||!t.ok)throw Error('AT資産の取得に失敗しました');const {instance}=await WebAssembly.instantiate(await r.arrayBuffer(),{});kernel=new ATKernel(instance);fieldKernel=new FieldATKernel(kernel);tables=(await t.json()).main;})();
 self.onmessage=async({data:m})=>{try{await ready;let value;
  switch(m.type){
   case 'start':session=new ATSession(m.seed,kernel);value=session.snapshot();break;
   case 'restore':{const restored=ATSession.restore(m.saved,kernel,tables);session=restored;value=session.snapshot();break;}
   case 'context':if(!session)throw Error('initial seedを先に入力してください');session.setMap(m.map);value=session.snapshot();break;
   case 'input':if(!session)throw Error('initial seedを先に入力してください');session.noteInput(m.input);value=session.snapshot();break;
+  case 'video-observation':if(!session)throw Error('initial seedを先に入力してください');session.noteVideo(m.observation);value=session.snapshot();break;
   case 'observe':if(!session)throw Error('initial seedを先に入力してください');value=session.observeMonster(m.observation,tables,m.window);break;
   case 'forecast':if(!session)throw Error('initial seedを先に入力してください');value=session.forecast(tables,m.tableIds,m.targets,m.window,{conditional:m.conditional});break;
+  case 'field-forecast':if(!session)throw Error('initial seedを先に入力してください');if(!m.context?.resolved)throw Error('フィールド条件が未解決です');value=fieldKernel.forecastNaturalTails({seed:session.seed,position:m.conditional?session.conditionalBound:session.lowerBound,rows:m.context.rows,areaMasks:m.context.areaMasks,timeValues:m.context.timeValues,targetIds:m.targets,window:m.window},tables);break;
   case 'boot-trace':if(!session)throw Error('initial seedを先に入力してください');value=session.ingestBootTrace(m.trace);break;
   case 'replay':value=replayObservedTrace(m.trace,kernel,tables);break;
   case 'export':value=session?.snapshot();break;

@@ -1,0 +1,4599 @@
+{
+  "format": "dq9-at-encounter-contexts",
+  "version": 1,
+  "source": "data/prm/encfld.bin",
+  "groups": [
+    {
+      "mapId": 20001,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 12,
+          "flags": 14690320,
+          "sourceOffset": 60
+        },
+        {
+          "tableId": 14,
+          "flags": 14690329,
+          "sourceOffset": 124
+        },
+        {
+          "tableId": 15,
+          "flags": 6309914,
+          "sourceOffset": 188
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 32
+      }
+    },
+    {
+      "mapId": 7102,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 32,
+          "flags": 8390698,
+          "sourceOffset": 268
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 240
+      }
+    },
+    {
+      "mapId": 7103,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 33,
+          "flags": 8390706,
+          "sourceOffset": 348
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 320
+      }
+    },
+    {
+      "mapId": 7104,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 34,
+          "flags": 8390706,
+          "sourceOffset": 428
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 400
+      }
+    },
+    {
+      "mapId": 20002,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 0,
+          "flags": 14690344,
+          "sourceOffset": 508
+        },
+        {
+          "tableId": 2,
+          "flags": 14690353,
+          "sourceOffset": 572
+        },
+        {
+          "tableId": 3,
+          "flags": 10504250,
+          "sourceOffset": 636
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 480
+      }
+    },
+    {
+      "mapId": 20038,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 36,
+          "flags": 14708802,
+          "sourceOffset": 704
+        },
+        {
+          "tableId": 37,
+          "flags": 8424522,
+          "sourceOffset": 756
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 676
+      }
+    },
+    {
+      "mapId": 20063,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 293,
+          "flags": 14706744,
+          "sourceOffset": 824
+        },
+        {
+          "tableId": 294,
+          "flags": 14706753,
+          "sourceOffset": 888
+        },
+        {
+          "tableId": 295,
+          "flags": 10750018,
+          "sourceOffset": 952
+        },
+        {
+          "tableId": 296,
+          "flags": 10618962,
+          "sourceOffset": 992
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 796
+      }
+    },
+    {
+      "mapId": 20003,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 4,
+          "flags": 14690368,
+          "sourceOffset": 1048
+        },
+        {
+          "tableId": 6,
+          "flags": 14690377,
+          "sourceOffset": 1124
+        },
+        {
+          "tableId": 7,
+          "flags": 10504266,
+          "sourceOffset": 1200
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 1020
+      }
+    },
+    {
+      "mapId": 20004,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 8,
+          "flags": 14707784,
+          "sourceOffset": 1280
+        },
+        {
+          "tableId": 10,
+          "flags": 14707793,
+          "sourceOffset": 1344
+        },
+        {
+          "tableId": 11,
+          "flags": 14748770,
+          "sourceOffset": 1408
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 1252
+      }
+    },
+    {
+      "mapId": 7301,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 24,
+          "flags": 6294602,
+          "sourceOffset": 1488
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 1460
+      }
+    },
+    {
+      "mapId": 7303,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 25,
+          "flags": 6294610,
+          "sourceOffset": 1580
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 1552
+      }
+    },
+    {
+      "mapId": 7302,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 26,
+          "flags": 10488914,
+          "sourceOffset": 1672
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 1644
+      }
+    },
+    {
+      "mapId": 7305,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 27,
+          "flags": 10488914,
+          "sourceOffset": 1764
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 1736
+      }
+    },
+    {
+      "mapId": 7304,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 29,
+          "flags": 10488914,
+          "sourceOffset": 1856
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 1828
+      }
+    },
+    {
+      "mapId": 20005,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 16,
+          "flags": 14691408,
+          "sourceOffset": 1948
+        },
+        {
+          "tableId": 18,
+          "flags": 14691409,
+          "sourceOffset": 2000
+        },
+        {
+          "tableId": 19,
+          "flags": 11029594,
+          "sourceOffset": 2052
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 1920
+      }
+    },
+    {
+      "mapId": 20006,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 20,
+          "flags": 14707808,
+          "sourceOffset": 2132
+        },
+        {
+          "tableId": 21,
+          "flags": 14707809,
+          "sourceOffset": 2196
+        },
+        {
+          "tableId": 22,
+          "flags": 8916074,
+          "sourceOffset": 2260
+        },
+        {
+          "tableId": 23,
+          "flags": 6327402,
+          "sourceOffset": 2312
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 2104
+      }
+    },
+    {
+      "mapId": 7402,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 30,
+          "flags": 8391802,
+          "sourceOffset": 2380
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 2352
+      }
+    },
+    {
+      "mapId": 20007,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 40,
+          "flags": 14691432,
+          "sourceOffset": 2472
+        },
+        {
+          "tableId": 41,
+          "flags": 14691441,
+          "sourceOffset": 2536
+        },
+        {
+          "tableId": 42,
+          "flags": 10505330,
+          "sourceOffset": 2600
+        },
+        {
+          "tableId": 43,
+          "flags": 6360194,
+          "sourceOffset": 2640
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 2444
+      }
+    },
+    {
+      "mapId": 20062,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 45,
+          "flags": 10513512,
+          "sourceOffset": 2696
+        },
+        {
+          "tableId": 46,
+          "flags": 10513521,
+          "sourceOffset": 2736
+        },
+        {
+          "tableId": 47,
+          "flags": 6327418,
+          "sourceOffset": 2776
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 2668
+      }
+    },
+    {
+      "mapId": 9001,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 48,
+          "flags": 8391794,
+          "sourceOffset": 2832
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 2804
+      }
+    },
+    {
+      "mapId": 9002,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 49,
+          "flags": 8391794,
+          "sourceOffset": 2924
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 2896
+      }
+    },
+    {
+      "mapId": 9003,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 50,
+          "flags": 8391794,
+          "sourceOffset": 3016
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 2988
+      }
+    },
+    {
+      "mapId": 9004,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 51,
+          "flags": 8391802,
+          "sourceOffset": 3120
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 3092
+      }
+    },
+    {
+      "mapId": 9005,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 52,
+          "flags": 8392826,
+          "sourceOffset": 3236
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 3208
+      }
+    },
+    {
+      "mapId": 9006,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 53,
+          "flags": 8392826,
+          "sourceOffset": 3340
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 3312
+      }
+    },
+    {
+      "mapId": 7601,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 54,
+          "flags": 8391802,
+          "sourceOffset": 3444
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 3416
+      }
+    },
+    {
+      "mapId": 7602,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 55,
+          "flags": 4197506,
+          "sourceOffset": 3524
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 3496
+      }
+    },
+    {
+      "mapId": 7603,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 56,
+          "flags": 6294658,
+          "sourceOffset": 3616
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 3588
+      }
+    },
+    {
+      "mapId": 7604,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 57,
+          "flags": 6294658,
+          "sourceOffset": 3708
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 3680
+      }
+    },
+    {
+      "mapId": 7605,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 58,
+          "flags": 8391810,
+          "sourceOffset": 3800
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 3772
+      }
+    },
+    {
+      "mapId": 20009,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 59,
+          "flags": 14691456,
+          "sourceOffset": 3880
+        },
+        {
+          "tableId": 60,
+          "flags": 14691465,
+          "sourceOffset": 3920
+        },
+        {
+          "tableId": 61,
+          "flags": 14701706,
+          "sourceOffset": 3960
+        },
+        {
+          "tableId": 62,
+          "flags": 6327442,
+          "sourceOffset": 4000
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 3852
+      }
+    },
+    {
+      "mapId": 20011,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 63,
+          "flags": 14691464,
+          "sourceOffset": 4068
+        },
+        {
+          "tableId": 64,
+          "flags": 14691473,
+          "sourceOffset": 4120
+        },
+        {
+          "tableId": 65,
+          "flags": 8408210,
+          "sourceOffset": 4172
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 4040
+      }
+    },
+    {
+      "mapId": 20012,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 66,
+          "flags": 14692504,
+          "sourceOffset": 4240
+        },
+        {
+          "tableId": 67,
+          "flags": 14692593,
+          "sourceOffset": 4292
+        },
+        {
+          "tableId": 68,
+          "flags": 8474874,
+          "sourceOffset": 4344
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 4212
+      }
+    },
+    {
+      "mapId": 20040,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 69,
+          "flags": 8401048,
+          "sourceOffset": 4412
+        },
+        {
+          "tableId": 70,
+          "flags": 8401137,
+          "sourceOffset": 4440
+        },
+        {
+          "tableId": 71,
+          "flags": 6311162,
+          "sourceOffset": 4468
+        },
+        {
+          "tableId": 72,
+          "flags": 6327546,
+          "sourceOffset": 4508
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 4384
+      }
+    },
+    {
+      "mapId": 7701,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 74,
+          "flags": 6295714,
+          "sourceOffset": 4576
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 4548
+      }
+    },
+    {
+      "mapId": 7702,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 75,
+          "flags": 4198562,
+          "sourceOffset": 4644
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 4616
+      }
+    },
+    {
+      "mapId": 7703,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 76,
+          "flags": 6295714,
+          "sourceOffset": 4724
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 4696
+      }
+    },
+    {
+      "mapId": 7704,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 77,
+          "flags": 10490026,
+          "sourceOffset": 4804
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 4776
+      }
+    },
+    {
+      "mapId": 7705,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 297,
+          "flags": 10490026,
+          "sourceOffset": 4872
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 4844
+      }
+    },
+    {
+      "mapId": 7706,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 78,
+          "flags": 8391850,
+          "sourceOffset": 4940
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 4912
+      }
+    },
+    {
+      "mapId": 7707,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 80,
+          "flags": 8391850,
+          "sourceOffset": 5008
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 4980
+      }
+    },
+    {
+      "mapId": 20010,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 81,
+          "flags": 14692520,
+          "sourceOffset": 5088
+        },
+        {
+          "tableId": 82,
+          "flags": 14692529,
+          "sourceOffset": 5152
+        },
+        {
+          "tableId": 83,
+          "flags": 8408242,
+          "sourceOffset": 5216
+        },
+        {
+          "tableId": 84,
+          "flags": 6360250,
+          "sourceOffset": 5256
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 5060
+      }
+    },
+    {
+      "mapId": 20054,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 311,
+          "flags": 8426682,
+          "sourceOffset": 5312
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 5284
+      }
+    },
+    {
+      "mapId": 7901,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 85,
+          "flags": 4198578,
+          "sourceOffset": 5392
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 5364
+      }
+    },
+    {
+      "mapId": 7903,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 87,
+          "flags": 8392882,
+          "sourceOffset": 5472
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 5444
+      }
+    },
+    {
+      "mapId": 7904,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 88,
+          "flags": 6295738,
+          "sourceOffset": 5552
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 5524
+      }
+    },
+    {
+      "mapId": 7905,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 89,
+          "flags": 4198586,
+          "sourceOffset": 5644
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 5616
+      }
+    },
+    {
+      "mapId": 20015,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 90,
+          "flags": 14692544,
+          "sourceOffset": 5748
+        },
+        {
+          "tableId": 91,
+          "flags": 14692553,
+          "sourceOffset": 5800
+        },
+        {
+          "tableId": 92,
+          "flags": 6360274,
+          "sourceOffset": 5852
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 5720
+      }
+    },
+    {
+      "mapId": 20042,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 298,
+          "flags": 12595392,
+          "sourceOffset": 5920
+        },
+        {
+          "tableId": 299,
+          "flags": 12595401,
+          "sourceOffset": 5972
+        },
+        {
+          "tableId": 300,
+          "flags": 4214002,
+          "sourceOffset": 6024
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 5892
+      }
+    },
+    {
+      "mapId": 7802,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 94,
+          "flags": 8391882,
+          "sourceOffset": 6080
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 6052
+      }
+    },
+    {
+      "mapId": 7803,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 95,
+          "flags": 6295754,
+          "sourceOffset": 6172
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 6144
+      }
+    },
+    {
+      "mapId": 7805,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 96,
+          "flags": 4198602,
+          "sourceOffset": 6276
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 6248
+      }
+    },
+    {
+      "mapId": 7808,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 97,
+          "flags": 8392986,
+          "sourceOffset": 6380
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 6352
+      }
+    },
+    {
+      "mapId": 20020,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 98,
+          "flags": 8417472,
+          "sourceOffset": 6448
+        },
+        {
+          "tableId": 99,
+          "flags": 8417481,
+          "sourceOffset": 6500
+        },
+        {
+          "tableId": 100,
+          "flags": 13635834,
+          "sourceOffset": 6552
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 6420
+      }
+    },
+    {
+      "mapId": 20021,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 101,
+          "flags": 14692560,
+          "sourceOffset": 6632
+        },
+        {
+          "tableId": 102,
+          "flags": 14692569,
+          "sourceOffset": 6720
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 6604
+      }
+    },
+    {
+      "mapId": 20023,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 103,
+          "flags": 14708962,
+          "sourceOffset": 6836
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 6808
+      }
+    },
+    {
+      "mapId": 20022,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 104,
+          "flags": 14708970,
+          "sourceOffset": 6952
+        },
+        {
+          "tableId": 313,
+          "flags": 12652778,
+          "sourceOffset": 7004
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 6924
+      }
+    },
+    {
+      "mapId": 20059,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 105,
+          "flags": 8417514,
+          "sourceOffset": 7096
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 7068
+      }
+    },
+    {
+      "mapId": 8201,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 106,
+          "flags": 4198634,
+          "sourceOffset": 7176
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 7148
+      }
+    },
+    {
+      "mapId": 8202,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 107,
+          "flags": 6295794,
+          "sourceOffset": 7280
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 7252
+      }
+    },
+    {
+      "mapId": 8204,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 108,
+          "flags": 6295794,
+          "sourceOffset": 7336
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 7308
+      }
+    },
+    {
+      "mapId": 8206,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 109,
+          "flags": 6295794,
+          "sourceOffset": 7392
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 7364
+      }
+    },
+    {
+      "mapId": 8205,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 110,
+          "flags": 6295794,
+          "sourceOffset": 7448
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 7420
+      }
+    },
+    {
+      "mapId": 8203,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 111,
+          "flags": 4198650,
+          "sourceOffset": 7504
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 7476
+      }
+    },
+    {
+      "mapId": 20016,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 112,
+          "flags": 12595432,
+          "sourceOffset": 7596
+        },
+        {
+          "tableId": 113,
+          "flags": 12595441,
+          "sourceOffset": 7648
+        },
+        {
+          "tableId": 114,
+          "flags": 8408306,
+          "sourceOffset": 7700
+        },
+        {
+          "tableId": 115,
+          "flags": 6327546,
+          "sourceOffset": 7728
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 7568
+      }
+    },
+    {
+      "mapId": 20017,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 116,
+          "flags": 10514672,
+          "sourceOffset": 7796
+        },
+        {
+          "tableId": 117,
+          "flags": 10514681,
+          "sourceOffset": 7848
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 7768
+      }
+    },
+    {
+      "mapId": 20018,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 118,
+          "flags": 12611824,
+          "sourceOffset": 7928
+        },
+        {
+          "tableId": 119,
+          "flags": 12611833,
+          "sourceOffset": 8004
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 7900
+      }
+    },
+    {
+      "mapId": 20039,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 120,
+          "flags": 12610810,
+          "sourceOffset": 8108
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 8080
+      }
+    },
+    {
+      "mapId": 20019,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 122,
+          "flags": 12611832,
+          "sourceOffset": 8200
+        },
+        {
+          "tableId": 123,
+          "flags": 12611841,
+          "sourceOffset": 8252
+        },
+        {
+          "tableId": 124,
+          "flags": 6327552,
+          "sourceOffset": 8304
+        },
+        {
+          "tableId": 125,
+          "flags": 12619017,
+          "sourceOffset": 8344
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 8172
+      }
+    },
+    {
+      "mapId": 8301,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 126,
+          "flags": 4198658,
+          "sourceOffset": 8412
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 8384
+      }
+    },
+    {
+      "mapId": 8302,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 127,
+          "flags": 4198658,
+          "sourceOffset": 8492
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 8464
+      }
+    },
+    {
+      "mapId": 20024,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 128,
+          "flags": 12653816,
+          "sourceOffset": 8572
+        },
+        {
+          "tableId": 129,
+          "flags": 12653825,
+          "sourceOffset": 8636
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 8544
+      }
+    },
+    {
+      "mapId": 20025,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 130,
+          "flags": 12653824,
+          "sourceOffset": 8728
+        },
+        {
+          "tableId": 131,
+          "flags": 12653841,
+          "sourceOffset": 8792
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 8700
+      }
+    },
+    {
+      "mapId": 9101,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 132,
+          "flags": 6296978,
+          "sourceOffset": 8884
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 8856
+      }
+    },
+    {
+      "mapId": 9102,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 133,
+          "flags": 6296978,
+          "sourceOffset": 8988
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 8960
+      }
+    },
+    {
+      "mapId": 9103,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 134,
+          "flags": 6296978,
+          "sourceOffset": 9068
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 9040
+      }
+    },
+    {
+      "mapId": 9104,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 135,
+          "flags": 6296978,
+          "sourceOffset": 9172
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 9144
+      }
+    },
+    {
+      "mapId": 9105,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 136,
+          "flags": 6297018,
+          "sourceOffset": 9252
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 9224
+      }
+    },
+    {
+      "mapId": 9106,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 301,
+          "flags": 6297018,
+          "sourceOffset": 9356
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 9328
+      }
+    },
+    {
+      "mapId": 9107,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 137,
+          "flags": 8394170,
+          "sourceOffset": 9448
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 9420
+      }
+    },
+    {
+      "mapId": 20026,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 138,
+          "flags": 12595456,
+          "sourceOffset": 9552
+        },
+        {
+          "tableId": 139,
+          "flags": 12595465,
+          "sourceOffset": 9616
+        },
+        {
+          "tableId": 140,
+          "flags": 6343946,
+          "sourceOffset": 9680
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 9524
+      }
+    },
+    {
+      "mapId": 20027,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 141,
+          "flags": 12611848,
+          "sourceOffset": 9736
+        },
+        {
+          "tableId": 142,
+          "flags": 12611857,
+          "sourceOffset": 9800
+        },
+        {
+          "tableId": 143,
+          "flags": 6360346,
+          "sourceOffset": 9864
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 9708
+      }
+    },
+    {
+      "mapId": 8400,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 144,
+          "flags": 4197658,
+          "sourceOffset": 9932
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 9904
+      }
+    },
+    {
+      "mapId": 8402,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 145,
+          "flags": 4198682,
+          "sourceOffset": 10012
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 9984
+      }
+    },
+    {
+      "mapId": 8404,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 146,
+          "flags": 4197666,
+          "sourceOffset": 10128
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 10100
+      }
+    },
+    {
+      "mapId": 8405,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 147,
+          "flags": 4197666,
+          "sourceOffset": 10244
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 10216
+      }
+    },
+    {
+      "mapId": 20028,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 148,
+          "flags": 10514712,
+          "sourceOffset": 10348
+        },
+        {
+          "tableId": 149,
+          "flags": 10514721,
+          "sourceOffset": 10412
+        },
+        {
+          "tableId": 314,
+          "flags": 6359330,
+          "sourceOffset": 10476
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 10320
+      }
+    },
+    {
+      "mapId": 20029,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 150,
+          "flags": 10514712,
+          "sourceOffset": 10544
+        },
+        {
+          "tableId": 151,
+          "flags": 10514721,
+          "sourceOffset": 10596
+        },
+        {
+          "tableId": 152,
+          "flags": 6360354,
+          "sourceOffset": 10648
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 10516
+      }
+    },
+    {
+      "mapId": 20060,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 153,
+          "flags": 10514712,
+          "sourceOffset": 10716
+        },
+        {
+          "tableId": 154,
+          "flags": 10514721,
+          "sourceOffset": 10756
+        },
+        {
+          "tableId": 155,
+          "flags": 6361378,
+          "sourceOffset": 10796
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 10688
+      }
+    },
+    {
+      "mapId": 20030,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 156,
+          "flags": 10514720,
+          "sourceOffset": 10852
+        },
+        {
+          "tableId": 157,
+          "flags": 10514729,
+          "sourceOffset": 10904
+        },
+        {
+          "tableId": 158,
+          "flags": 6327594,
+          "sourceOffset": 10956
+        },
+        {
+          "tableId": 159,
+          "flags": 6360370,
+          "sourceOffset": 10996
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 10824
+      }
+    },
+    {
+      "mapId": 20032,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 160,
+          "flags": 8417568,
+          "sourceOffset": 11064
+        },
+        {
+          "tableId": 161,
+          "flags": 8417577,
+          "sourceOffset": 11140
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 11036
+      }
+    },
+    {
+      "mapId": 8602,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 162,
+          "flags": 6295842,
+          "sourceOffset": 11244
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 11216
+      }
+    },
+    {
+      "mapId": 8604,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 163,
+          "flags": 4198690,
+          "sourceOffset": 11336
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 11308
+      }
+    },
+    {
+      "mapId": 8605,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 164,
+          "flags": 6295842,
+          "sourceOffset": 11428
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 11400
+      }
+    },
+    {
+      "mapId": 8606,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 165,
+          "flags": 6294818,
+          "sourceOffset": 11496
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 11468
+      }
+    },
+    {
+      "mapId": 8607,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 166,
+          "flags": 10488098,
+          "sourceOffset": 11588
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 11560
+      }
+    },
+    {
+      "mapId": 8608,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 167,
+          "flags": 4197666,
+          "sourceOffset": 11644
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 11616
+      }
+    },
+    {
+      "mapId": 8609,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 168,
+          "flags": 8391970,
+          "sourceOffset": 11724
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 11696
+      }
+    },
+    {
+      "mapId": 8611,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 169,
+          "flags": 10489122,
+          "sourceOffset": 11804
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 11776
+      }
+    },
+    {
+      "mapId": 20033,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 171,
+          "flags": 8483120,
+          "sourceOffset": 11896
+        },
+        {
+          "tableId": 172,
+          "flags": 8483129,
+          "sourceOffset": 11960
+        },
+        {
+          "tableId": 173,
+          "flags": 6327610,
+          "sourceOffset": 12024
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 11868
+      }
+    },
+    {
+      "mapId": 20034,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 174,
+          "flags": 10498368,
+          "sourceOffset": 12080
+        },
+        {
+          "tableId": 175,
+          "flags": 10498377,
+          "sourceOffset": 12156
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 12052
+      }
+    },
+    {
+      "mapId": 400,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 176,
+          "flags": 6294866,
+          "sourceOffset": 12260
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 12232
+      }
+    },
+    {
+      "mapId": 401,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 177,
+          "flags": 6295898,
+          "sourceOffset": 12340
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 12312
+      }
+    },
+    {
+      "mapId": 402,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 178,
+          "flags": 6295898,
+          "sourceOffset": 12420
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 12392
+      }
+    },
+    {
+      "mapId": 403,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 179,
+          "flags": 6295898,
+          "sourceOffset": 12512
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 12484
+      }
+    },
+    {
+      "mapId": 404,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 180,
+          "flags": 4197722,
+          "sourceOffset": 12604
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 12576
+      }
+    },
+    {
+      "mapId": 405,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 181,
+          "flags": 6294874,
+          "sourceOffset": 12720
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 12692
+      }
+    },
+    {
+      "mapId": 406,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 182,
+          "flags": 6294874,
+          "sourceOffset": 12812
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 12784
+      }
+    },
+    {
+      "mapId": 407,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 183,
+          "flags": 4197730,
+          "sourceOffset": 12904
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 12876
+      }
+    },
+    {
+      "mapId": 408,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 184,
+          "flags": 6294882,
+          "sourceOffset": 12984
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 12956
+      }
+    },
+    {
+      "mapId": 8701,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 185,
+          "flags": 4197714,
+          "sourceOffset": 13088
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 13060
+      }
+    },
+    {
+      "mapId": 8702,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 186,
+          "flags": 4197714,
+          "sourceOffset": 13180
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 13152
+      }
+    },
+    {
+      "mapId": 8703,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 187,
+          "flags": 2100562,
+          "sourceOffset": 13272
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 13244
+      }
+    },
+    {
+      "mapId": 8704,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 188,
+          "flags": 4196706,
+          "sourceOffset": 13328
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 13300
+      }
+    },
+    {
+      "mapId": 8705,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 189,
+          "flags": 4197722,
+          "sourceOffset": 13408
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 13380
+      }
+    },
+    {
+      "mapId": 8706,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 190,
+          "flags": 4197730,
+          "sourceOffset": 13500
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 13472
+      }
+    },
+    {
+      "mapId": 4400,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 191,
+          "flags": 4197730,
+          "sourceOffset": 13604
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 13576
+      }
+    },
+    {
+      "mapId": 4401,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 192,
+          "flags": 4197730,
+          "sourceOffset": 13684
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 13656
+      }
+    },
+    {
+      "mapId": 4402,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 193,
+          "flags": 4197730,
+          "sourceOffset": 13764
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 13736
+      }
+    },
+    {
+      "mapId": 4404,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 195,
+          "flags": 4196714,
+          "sourceOffset": 13832
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 13804
+      }
+    },
+    {
+      "mapId": 4405,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 196,
+          "flags": 4198762,
+          "sourceOffset": 13900
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 13872
+      }
+    },
+    {
+      "mapId": 4406,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 197,
+          "flags": 4198762,
+          "sourceOffset": 13980
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 13952
+      }
+    },
+    {
+      "mapId": 4407,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 198,
+          "flags": 4198762,
+          "sourceOffset": 14060
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 14032
+      }
+    },
+    {
+      "mapId": 4408,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 199,
+          "flags": 4196714,
+          "sourceOffset": 14140
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 14112
+      }
+    },
+    {
+      "mapId": 4409,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 200,
+          "flags": 6295914,
+          "sourceOffset": 14232
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 14204
+      }
+    },
+    {
+      "mapId": 4410,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 201,
+          "flags": 6295922,
+          "sourceOffset": 14324
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 14296
+      }
+    },
+    {
+      "mapId": 4411,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 202,
+          "flags": 2099570,
+          "sourceOffset": 14404
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 14376
+      }
+    },
+    {
+      "mapId": 4412,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 203,
+          "flags": 6295922,
+          "sourceOffset": 14496
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 14468
+      }
+    },
+    {
+      "mapId": 4413,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 204,
+          "flags": 4196722,
+          "sourceOffset": 14588
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 14560
+      }
+    },
+    {
+      "mapId": 4416,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 207,
+          "flags": 4197754,
+          "sourceOffset": 14680
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 14652
+      }
+    },
+    {
+      "mapId": 4417,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 208,
+          "flags": 2100602,
+          "sourceOffset": 14760
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 14732
+      }
+    },
+    {
+      "mapId": 4418,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 209,
+          "flags": 2099578,
+          "sourceOffset": 14828
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 14800
+      }
+    },
+    {
+      "mapId": 4419,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 210,
+          "flags": 4197754,
+          "sourceOffset": 14896
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 14868
+      }
+    },
+    {
+      "mapId": 4420,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 211,
+          "flags": 4197754,
+          "sourceOffset": 14976
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 14948
+      }
+    },
+    {
+      "mapId": 40101,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 216,
+          "flags": 4197530,
+          "sourceOffset": 15056
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 15028
+      }
+    },
+    {
+      "mapId": 40102,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 217,
+          "flags": 4197562,
+          "sourceOffset": 15160
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 15132
+      }
+    },
+    {
+      "mapId": 40103,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 218,
+          "flags": 4198618,
+          "sourceOffset": 15264
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 15236
+      }
+    },
+    {
+      "mapId": 40104,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 219,
+          "flags": 4198658,
+          "sourceOffset": 15368
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 15340
+      }
+    },
+    {
+      "mapId": 40105,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 220,
+          "flags": 4198690,
+          "sourceOffset": 15472
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 15444
+      }
+    },
+    {
+      "mapId": 40106,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 221,
+          "flags": 4198722,
+          "sourceOffset": 15576
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 15548
+      }
+    },
+    {
+      "mapId": 40107,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 222,
+          "flags": 4198754,
+          "sourceOffset": 15680
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 15652
+      }
+    },
+    {
+      "mapId": 40108,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 223,
+          "flags": 4197818,
+          "sourceOffset": 15784
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 15756
+      }
+    },
+    {
+      "mapId": 40109,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 224,
+          "flags": 4197906,
+          "sourceOffset": 15888
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 15860
+      }
+    },
+    {
+      "mapId": 40110,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 225,
+          "flags": 4197994,
+          "sourceOffset": 15992
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 15964
+      }
+    },
+    {
+      "mapId": 40111,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 226,
+          "flags": 4198082,
+          "sourceOffset": 16096
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 16068
+      }
+    },
+    {
+      "mapId": 40112,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 227,
+          "flags": 4198170,
+          "sourceOffset": 16200
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 16172
+      }
+    },
+    {
+      "mapId": 40201,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 228,
+          "flags": 4197530,
+          "sourceOffset": 16304
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 16276
+      }
+    },
+    {
+      "mapId": 40202,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 229,
+          "flags": 4197562,
+          "sourceOffset": 16408
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 16380
+      }
+    },
+    {
+      "mapId": 40203,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 230,
+          "flags": 4198618,
+          "sourceOffset": 16512
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 16484
+      }
+    },
+    {
+      "mapId": 40204,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 231,
+          "flags": 4198658,
+          "sourceOffset": 16604
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 16576
+      }
+    },
+    {
+      "mapId": 40205,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 232,
+          "flags": 4198690,
+          "sourceOffset": 16708
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 16680
+      }
+    },
+    {
+      "mapId": 40206,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 233,
+          "flags": 4198722,
+          "sourceOffset": 16812
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 16784
+      }
+    },
+    {
+      "mapId": 40207,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 234,
+          "flags": 4198754,
+          "sourceOffset": 16916
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 16888
+      }
+    },
+    {
+      "mapId": 40208,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 235,
+          "flags": 4197818,
+          "sourceOffset": 17020
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 16992
+      }
+    },
+    {
+      "mapId": 40209,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 236,
+          "flags": 4197906,
+          "sourceOffset": 17124
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 17096
+      }
+    },
+    {
+      "mapId": 40210,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 237,
+          "flags": 4197994,
+          "sourceOffset": 17228
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 17200
+      }
+    },
+    {
+      "mapId": 40211,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 238,
+          "flags": 4198082,
+          "sourceOffset": 17332
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 17304
+      }
+    },
+    {
+      "mapId": 40212,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 239,
+          "flags": 4198170,
+          "sourceOffset": 17436
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 17408
+      }
+    },
+    {
+      "mapId": 40301,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 240,
+          "flags": 4197530,
+          "sourceOffset": 17540
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 17512
+      }
+    },
+    {
+      "mapId": 40302,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 241,
+          "flags": 4197562,
+          "sourceOffset": 17632
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 17604
+      }
+    },
+    {
+      "mapId": 40303,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 242,
+          "flags": 4198618,
+          "sourceOffset": 17736
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 17708
+      }
+    },
+    {
+      "mapId": 40304,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 243,
+          "flags": 4198658,
+          "sourceOffset": 17840
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 17812
+      }
+    },
+    {
+      "mapId": 40305,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 244,
+          "flags": 4198690,
+          "sourceOffset": 17944
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 17916
+      }
+    },
+    {
+      "mapId": 40306,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 245,
+          "flags": 4198722,
+          "sourceOffset": 18048
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 18020
+      }
+    },
+    {
+      "mapId": 40307,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 246,
+          "flags": 4198754,
+          "sourceOffset": 18152
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 18124
+      }
+    },
+    {
+      "mapId": 40308,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 247,
+          "flags": 4197818,
+          "sourceOffset": 18256
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 18228
+      }
+    },
+    {
+      "mapId": 40309,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 248,
+          "flags": 4197906,
+          "sourceOffset": 18360
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 18332
+      }
+    },
+    {
+      "mapId": 40310,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 249,
+          "flags": 4197994,
+          "sourceOffset": 18464
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 18436
+      }
+    },
+    {
+      "mapId": 40311,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 250,
+          "flags": 4198082,
+          "sourceOffset": 18556
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 18528
+      }
+    },
+    {
+      "mapId": 40312,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 251,
+          "flags": 4198170,
+          "sourceOffset": 18648
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 18620
+      }
+    },
+    {
+      "mapId": 40501,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 252,
+          "flags": 4197530,
+          "sourceOffset": 18740
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 18712
+      }
+    },
+    {
+      "mapId": 40502,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 253,
+          "flags": 4197562,
+          "sourceOffset": 18844
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 18816
+      }
+    },
+    {
+      "mapId": 40503,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 254,
+          "flags": 4198618,
+          "sourceOffset": 18948
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 18920
+      }
+    },
+    {
+      "mapId": 40504,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 255,
+          "flags": 4198658,
+          "sourceOffset": 19052
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 19024
+      }
+    },
+    {
+      "mapId": 40505,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 256,
+          "flags": 4198690,
+          "sourceOffset": 19156
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 19128
+      }
+    },
+    {
+      "mapId": 40506,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 257,
+          "flags": 4198722,
+          "sourceOffset": 19260
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 19232
+      }
+    },
+    {
+      "mapId": 40507,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 258,
+          "flags": 4198754,
+          "sourceOffset": 19364
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 19336
+      }
+    },
+    {
+      "mapId": 40508,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 259,
+          "flags": 4197818,
+          "sourceOffset": 19468
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 19440
+      }
+    },
+    {
+      "mapId": 40509,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 260,
+          "flags": 4197906,
+          "sourceOffset": 19572
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 19544
+      }
+    },
+    {
+      "mapId": 40510,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 261,
+          "flags": 4197994,
+          "sourceOffset": 19676
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 19648
+      }
+    },
+    {
+      "mapId": 40511,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 262,
+          "flags": 4198082,
+          "sourceOffset": 19780
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 19752
+      }
+    },
+    {
+      "mapId": 40512,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 263,
+          "flags": 4198170,
+          "sourceOffset": 19884
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 19856
+      }
+    },
+    {
+      "mapId": 40401,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 264,
+          "flags": 4197530,
+          "sourceOffset": 19988
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 19960
+      }
+    },
+    {
+      "mapId": 40402,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 265,
+          "flags": 4197562,
+          "sourceOffset": 20092
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 20064
+      }
+    },
+    {
+      "mapId": 40403,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 266,
+          "flags": 4198618,
+          "sourceOffset": 20196
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 20168
+      }
+    },
+    {
+      "mapId": 40404,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 267,
+          "flags": 4198658,
+          "sourceOffset": 20300
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 20272
+      }
+    },
+    {
+      "mapId": 40405,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 268,
+          "flags": 4198690,
+          "sourceOffset": 20404
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 20376
+      }
+    },
+    {
+      "mapId": 40406,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 269,
+          "flags": 4198722,
+          "sourceOffset": 20508
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 20480
+      }
+    },
+    {
+      "mapId": 40407,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 270,
+          "flags": 4198754,
+          "sourceOffset": 20612
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 20584
+      }
+    },
+    {
+      "mapId": 40408,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 271,
+          "flags": 4197818,
+          "sourceOffset": 20716
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 20688
+      }
+    },
+    {
+      "mapId": 40409,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 272,
+          "flags": 4197906,
+          "sourceOffset": 20820
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 20792
+      }
+    },
+    {
+      "mapId": 40410,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 273,
+          "flags": 4197994,
+          "sourceOffset": 20924
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 20896
+      }
+    },
+    {
+      "mapId": 40411,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 274,
+          "flags": 4198082,
+          "sourceOffset": 21028
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 21000
+      }
+    },
+    {
+      "mapId": 40412,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 275,
+          "flags": 4198170,
+          "sourceOffset": 21132
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 21104
+      }
+    },
+    {
+      "mapId": 10000,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 276,
+          "flags": 4199610,
+          "sourceOffset": 21236
+        },
+        {
+          "tableId": 277,
+          "flags": 4199634,
+          "sourceOffset": 21264
+        },
+        {
+          "tableId": 278,
+          "flags": 4199682,
+          "sourceOffset": 21292
+        },
+        {
+          "tableId": 279,
+          "flags": 4199746,
+          "sourceOffset": 21320
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 21208
+      }
+    },
+    {
+      "mapId": 20055,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 303,
+          "flags": 8416488,
+          "sourceOffset": 21376
+        },
+        {
+          "tableId": 304,
+          "flags": 8416489,
+          "sourceOffset": 21416
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 21348
+      }
+    },
+    {
+      "mapId": 20058,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 307,
+          "flags": 10514624,
+          "sourceOffset": 21484
+        },
+        {
+          "tableId": 308,
+          "flags": 10514633,
+          "sourceOffset": 21536
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 21456
+      }
+    },
+    {
+      "mapId": 20061,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 309,
+          "flags": 10573056,
+          "sourceOffset": 21616
+        },
+        {
+          "tableId": 310,
+          "flags": 10573057,
+          "sourceOffset": 21668
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 21588
+      }
+    },
+    {
+      "mapId": 20043,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 280,
+          "flags": 8418466,
+          "sourceOffset": 21748
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 21720
+      }
+    },
+    {
+      "mapId": 20045,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 281,
+          "flags": 8417618,
+          "sourceOffset": 21852
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 21824
+      }
+    },
+    {
+      "mapId": 20044,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 282,
+          "flags": 8450386,
+          "sourceOffset": 21956
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 21928
+      }
+    },
+    {
+      "mapId": 20041,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 283,
+          "flags": 8417618,
+          "sourceOffset": 22060
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 22032
+      }
+    },
+    {
+      "mapId": 20056,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 284,
+          "flags": 8483154,
+          "sourceOffset": 22164
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 22136
+      }
+    },
+    {
+      "mapId": 20046,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 285,
+          "flags": 8458578,
+          "sourceOffset": 22268
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 22240
+      }
+    },
+    {
+      "mapId": 20047,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 286,
+          "flags": 8417616,
+          "sourceOffset": 22372
+        },
+        {
+          "tableId": 312,
+          "flags": 8417617,
+          "sourceOffset": 22436
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 22344
+      }
+    },
+    {
+      "mapId": 20048,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 287,
+          "flags": 8450386,
+          "sourceOffset": 22540
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 22512
+      }
+    },
+    {
+      "mapId": 20049,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 288,
+          "flags": 9441618,
+          "sourceOffset": 22644
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 22616
+      }
+    },
+    {
+      "mapId": 20050,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 289,
+          "flags": 8466770,
+          "sourceOffset": 22748
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 22720
+      }
+    },
+    {
+      "mapId": 20052,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 291,
+          "flags": 8401234,
+          "sourceOffset": 22852
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 22824
+      }
+    },
+    {
+      "mapId": 20053,
+      "condition": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "rows": [
+        {
+          "tableId": 292,
+          "flags": 8417618,
+          "sourceOffset": 22956
+        }
+      ],
+      "source": {
+        "path": "data/prm/encfld.bin",
+        "callOffset": 22928
+      }
+    }
+  ],
+  "warnings": [],
+  "summary": {
+    "maps": 210,
+    "groups": 210,
+    "rows": 287
+  },
+  "distributionSource": "existing web/data/enc.json, unchanged"
+}

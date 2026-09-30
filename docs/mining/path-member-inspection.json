@@ -1,0 +1,2352 @@
+{
+  "memberCount": 151,
+  "names": [
+    "C04P00.bin",
+    "C04P01.bin",
+    "C04P02.bin",
+    "C04P03.bin",
+    "C04P04.bin",
+    "C04P05.bin",
+    "C04P06.bin",
+    "C04P07.bin",
+    "C04P08.bin",
+    "D01P02.bin",
+    "D01P03.bin",
+    "D01P04.bin",
+    "D03P01.bin",
+    "D03P02.bin",
+    "D03P03.bin",
+    "D03P04.bin",
+    "D03P05.bin",
+    "D04P02.bin",
+    "D06P01.bin",
+    "D06P02.bin",
+    "D06P03.bin",
+    "D06P04.bin",
+    "D06P05.bin",
+    "D07P01.bin",
+    "D07P02.bin",
+    "D07P03.bin",
+    "D07P04.bin",
+    "D07P05.bin",
+    "D07P06.bin",
+    "D07P07.bin",
+    "D08P02.bin",
+    "D08P03.bin",
+    "D08P05.bin",
+    "D08P08.bin",
+    "D09P01.bin",
+    "D09P03.bin",
+    "D09P04.bin",
+    "D09P05.bin",
+    "D12P01.bin",
+    "D12P02.bin",
+    "D12P03.bin",
+    "D12P04.bin",
+    "D12P05.bin",
+    "D12P06.bin",
+    "D13P01.bin",
+    "D13P02.bin",
+    "D14P00.bin",
+    "D14P02.bin",
+    "D14P03.bin",
+    "D14P04.bin",
+    "D14P05.bin",
+    "D16P02.bin",
+    "D16P04.bin",
+    "D16P05.bin",
+    "D16P06.bin",
+    "D16P07.bin",
+    "D16P08.bin",
+    "D16P09.bin",
+    "D16P11.bin",
+    "D17P01.bin",
+    "D17P02.bin",
+    "D17P03.bin",
+    "D17P04.bin",
+    "D17P05.bin",
+    "D17P06.bin",
+    "F01P00.bin",
+    "F02P00.bin",
+    "F03P00.bin",
+    "F04P00.bin",
+    "F05P00.bin",
+    "F06P00.bin",
+    "F07P00.bin",
+    "F09P00.bin",
+    "F10P00.bin",
+    "F11P00.bin",
+    "F12P00.bin",
+    "F15P00.bin",
+    "F16P00.bin",
+    "F17P00.bin",
+    "F18P00.bin",
+    "F19P00.bin",
+    "F20P00.bin",
+    "F21P00.bin",
+    "F22P00.bin",
+    "F23P00.bin",
+    "F24P00.bin",
+    "F25P00.bin",
+    "F26P00.bin",
+    "F27P00.bin",
+    "F28P00.bin",
+    "F29P00.bin",
+    "F30P00.bin",
+    "F32P00.bin",
+    "F33P00.bin",
+    "F34P00.bin",
+    "F38P00.bin",
+    "F39P00.bin",
+    "F40P00.bin",
+    "F41P00.bin",
+    "F42P00.bin",
+    "F43P00.bin",
+    "F44P00.bin",
+    "F45P00.bin",
+    "F46P00.bin",
+    "F47P00.bin",
+    "F48P00.bin",
+    "F49P00.bin",
+    "F50P00.bin",
+    "F52P00.bin",
+    "F53P00.bin",
+    "F54P00.bin",
+    "F55P00.bin",
+    "F56P00.bin",
+    "F58P00.bin",
+    "F59P00.bin",
+    "F60P00.bin",
+    "F61P00.bin",
+    "F62P00.bin",
+    "F63P00.bin",
+    "T01P01.bin",
+    "T01P02.bin",
+    "T01P03.bin",
+    "T01P04.bin",
+    "T01P05.bin",
+    "T01P06.bin",
+    "T02P01.bin",
+    "T02P02.bin",
+    "T02P03.bin",
+    "T02P04.bin",
+    "T02P05.bin",
+    "T02P06.bin",
+    "T02P07.bin",
+    "X04P00.bin",
+    "X04P01.bin",
+    "X04P02.bin",
+    "X04P04.bin",
+    "X04P05.bin",
+    "X04P06.bin",
+    "X04P07.bin",
+    "X04P08.bin",
+    "X04P09.bin",
+    "X04P10.bin",
+    "X04P11.bin",
+    "X04P12.bin",
+    "X04P13.bin",
+    "X04P16.bin",
+    "X04P17.bin",
+    "X04P18.bin",
+    "X04P19.bin",
+    "X04P20.bin",
+    "X04P21.bin"
+  ],
+  "result": [
+    {
+      "pack": "D04P02.bin",
+      "path": "D04P02.bin",
+      "size": 1376,
+      "opcodes": [
+        104,
+        100,
+        105,
+        106,
+        101,
+        107
+      ],
+      "calls": [
+        {
+          "opcode": 104,
+          "values": [
+            26
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            0,
+            0,
+            -24,
+            1,
+            0
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            1,
+            0,
+            24,
+            1,
+            -23
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            2,
+            0,
+            47,
+            1,
+            -24
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            3,
+            0,
+            24,
+            1,
+            -46
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            4,
+            0,
+            23,
+            1,
+            -74
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            5,
+            0,
+            -24,
+            1,
+            -46
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            6,
+            0,
+            -24,
+            1,
+            -72
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            7,
+            0,
+            -24,
+            1,
+            -96
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            8,
+            0,
+            -4,
+            1,
+            -1
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            9,
+            0,
+            4,
+            1,
+            -1
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            10,
+            0,
+            0,
+            1,
+            4
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            11,
+            0,
+            24,
+            1,
+            -2
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            12,
+            0,
+            50,
+            1,
+            2
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            13,
+            0,
+            50,
+            1,
+            -50
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            14,
+            0,
+            -26,
+            1,
+            -24
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            15,
+            0,
+            -48,
+            1,
+            -24
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            16,
+            0,
+            -46,
+            1,
+            -2
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            17,
+            0,
+            -46,
+            1,
+            -48
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            18,
+            0,
+            -46,
+            1,
+            -72
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            19,
+            0,
+            -50,
+            1,
+            -98
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            20,
+            0,
+            46,
+            1,
+            -72
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            21,
+            0,
+            2,
+            1,
+            -74
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            22,
+            0,
+            0,
+            1,
+            -50
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            23,
+            0,
+            -2,
+            1,
+            -98
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            24,
+            0,
+            24,
+            1,
+            -94
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            25,
+            0,
+            50,
+            1,
+            -98
+          ]
+        },
+        {
+          "opcode": 105,
+          "values": []
+        },
+        {
+          "opcode": 106,
+          "values": [
+            38
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            2,
+            1,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            3,
+            1,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            4,
+            3,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            6,
+            7,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            6,
+            5,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            8,
+            0,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            10,
+            8,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            10,
+            9,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            11,
+            9,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            11,
+            1,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            12,
+            11,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            12,
+            2,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            13,
+            2,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            13,
+            3,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            3,
+            22,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            4,
+            21,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            6,
+            21,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            5,
+            22,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            13,
+            20,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            20,
+            25,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            20,
+            4,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            4,
+            24,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            25,
+            24,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            0,
+            16,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            16,
+            15,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            0,
+            14,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            5,
+            14,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            14,
+            15,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            15,
+            17,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            17,
+            5,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            17,
+            18,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            18,
+            6,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            18,
+            19,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            19,
+            7,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            7,
+            23,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            23,
+            21,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            23,
+            24,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            21,
+            22,
+            0
+          ]
+        },
+        {
+          "opcode": 107,
+          "values": []
+        }
+      ]
+    },
+    {
+      "pack": "F03P00.bin",
+      "path": "F03P00.bin",
+      "size": 2896,
+      "opcodes": [
+        104,
+        100,
+        105,
+        106,
+        101,
+        107
+      ],
+      "calls": [
+        {
+          "opcode": 104,
+          "values": [
+            47
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            0,
+            1,
+            -111,
+            3,
+            -73
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            1,
+            1,
+            -101,
+            3,
+            -80
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            2,
+            1,
+            -94,
+            3,
+            -78
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            3,
+            1,
+            -101,
+            3,
+            -67
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            4,
+            1,
+            -94,
+            3,
+            -61
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            5,
+            1,
+            -103,
+            3,
+            -58
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            6,
+            1,
+            -107,
+            3,
+            -49
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            7,
+            1,
+            -94,
+            3,
+            -53
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            8,
+            1,
+            -102,
+            3,
+            -41
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            9,
+            1,
+            -98,
+            3,
+            -33
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            10,
+            1,
+            -85,
+            3,
+            -23
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            12,
+            1,
+            -82,
+            3,
+            -46
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            13,
+            1,
+            -88,
+            3,
+            -33
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            14,
+            1,
+            -61,
+            3,
+            -26
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            15,
+            1,
+            -72,
+            3,
+            -40
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            16,
+            1,
+            -73,
+            3,
+            -54
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            17,
+            1,
+            -75,
+            3,
+            -63
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            18,
+            1,
+            -64,
+            3,
+            -62
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            19,
+            1,
+            -64,
+            3,
+            -51
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            20,
+            1,
+            -52,
+            3,
+            -32
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            22,
+            1,
+            -53,
+            3,
+            -20
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            23,
+            1,
+            -46,
+            3,
+            -11
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            24,
+            1,
+            -42,
+            3,
+            -29
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            25,
+            1,
+            -39,
+            3,
+            -37
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            26,
+            1,
+            -38,
+            3,
+            -48
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            27,
+            1,
+            -29,
+            3,
+            -30
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            28,
+            1,
+            -19,
+            3,
+            -42
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            29,
+            1,
+            -15,
+            3,
+            -37
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            30,
+            1,
+            -10,
+            3,
+            -45
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            64,
+            2,
+            -91,
+            3,
+            -45
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            65,
+            2,
+            -86,
+            3,
+            -51
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            66,
+            2,
+            -83,
+            3,
+            -61
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            67,
+            2,
+            -91,
+            3,
+            -69
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            68,
+            2,
+            -83,
+            3,
+            -73
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            69,
+            2,
+            -75,
+            3,
+            -69
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            70,
+            2,
+            -64,
+            3,
+            -69
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            71,
+            2,
+            -29,
+            3,
+            -43
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            72,
+            2,
+            -33,
+            3,
+            -56
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            73,
+            2,
+            -22,
+            3,
+            -53
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            74,
+            2,
+            -10,
+            3,
+            -51
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            75,
+            2,
+            -2,
+            3,
+            -46
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            76,
+            2,
+            -5,
+            3,
+            -37
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            11,
+            1,
+            -42,
+            3,
+            -22
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            21,
+            1,
+            -66,
+            3,
+            -34
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            32,
+            1,
+            -59,
+            3,
+            -42
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            31,
+            1,
+            -76,
+            3,
+            -32
+          ]
+        },
+        {
+          "opcode": 100,
+          "values": [
+            33,
+            1,
+            -47,
+            3,
+            -42
+          ]
+        },
+        {
+          "opcode": 105,
+          "values": []
+        },
+        {
+          "opcode": 106,
+          "values": [
+            96
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            0,
+            3,
+            1
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            0,
+            5,
+            3
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            4,
+            7,
+            5
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            10,
+            13,
+            13
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            14,
+            20,
+            14
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            24,
+            27,
+            27
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            28,
+            30,
+            2
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            71,
+            72,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            8,
+            9,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            6,
+            8,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            66,
+            65,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            66,
+            67,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            70,
+            69,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            69,
+            68,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            68,
+            67,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            65,
+            64,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            16,
+            19,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            16,
+            18,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            16,
+            17,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            3,
+            5,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            3,
+            4,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            3,
+            2,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            3,
+            1,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            71,
+            25,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            71,
+            26,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            71,
+            27,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            27,
+            25,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            24,
+            25,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            28,
+            29,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            29,
+            27,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            29,
+            76,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            29,
+            30,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            30,
+            74,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            30,
+            75,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            75,
+            76,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            76,
+            30,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            73,
+            74,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            28,
+            71,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            73,
+            72,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            72,
+            26,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            12,
+            13,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            13,
+            9,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            13,
+            64,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            64,
+            9,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            64,
+            8,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            7,
+            6,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            7,
+            5,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            5,
+            6,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            4,
+            65,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            4,
+            67,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            67,
+            2,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            2,
+            68,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            2,
+            1,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            69,
+            17,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            17,
+            18,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            18,
+            70,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            18,
+            19,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            17,
+            66,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            12,
+            65,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            12,
+            16,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            20,
+            25,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            25,
+            26,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            11,
+            23,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            24,
+            11,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            11,
+            22,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            14,
+            22,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            21,
+            32,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            32,
+            19,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            21,
+            20,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            15,
+            21,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            21,
+            14,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            7,
+            65,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            64,
+            12,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            7,
+            8,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            65,
+            16,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            69,
+            18,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            67,
+            69,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            31,
+            13,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            31,
+            21,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            66,
+            16,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            75,
+            74,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            71,
+            73,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            33,
+            32,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            20,
+            33,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            33,
+            25,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            26,
+            33,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            20,
+            11,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            24,
+            20,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            64,
+            7,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            5,
+            4,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            3,
+            67,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            73,
+            28,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            28,
+            27,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            4,
+            66,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            66,
+            69,
+            0
+          ]
+        },
+        {
+          "opcode": 101,
+          "values": [
+            9,
+            10,
+            0
+          ]
+        },
+        {
+          "opcode": 107,
+          "values": []
+        }
+      ]
+    }
+  ],
+  "records": [
+    {
+      "key": "map:20",
+      "mapId": 20003,
+      "mapIdHex": "0x4e23",
+      "name": "エラフィタ地方",
+      "nameSource": "existing-map-id-names.csv",
+      "secondaryId": 1,
+      "fieldCode": "F03",
+      "internalLabel": "エラフィタちほう",
+      "modelResource": "F03M0000",
+      "candidates": [
+        {
+          "path": "F03.bmmp",
+          "relation": "field-code"
+        },
+        {
+          "path": "S02.bmmp",
+          "relation": "bmmp-map-group"
+        }
+      ],
+      "areaStatus": "encounter-area-unresolved",
+      "encounterTableId": null,
+      "source": {
+        "path": "data/map/maplist9.bin",
+        "callIndex": 20,
+        "callOffset": 1464
+      },
+      "rawArgs": [
+        {
+          "type": 1,
+          "value": 20003,
+          "string": null,
+          "raw": 20003
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "エラフィタ地方",
+          "raw": 437
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "F03",
+          "raw": 486
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "エラフィタちほう",
+          "raw": 490
+        },
+        {
+          "type": 1,
+          "value": 14,
+          "string": null,
+          "raw": 14
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "F03M0000",
+          "raw": 477
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": -400,
+          "string": null,
+          "raw": 4294966896
+        },
+        {
+          "type": 1,
+          "value": -256,
+          "string": null,
+          "raw": 4294967040
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 2,
+          "string": null,
+          "raw": 2
+        },
+        {
+          "type": 1,
+          "value": 8,
+          "string": null,
+          "raw": 8
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        }
+      ]
+    },
+    {
+      "key": "map:359",
+      "mapId": 7402,
+      "mapIdHex": "0x1cea",
+      "name": "ふういんのほこら　１Ｆ",
+      "nameSource": "existing-map-id-names.csv",
+      "secondaryId": 7400,
+      "fieldCode": "D04M02",
+      "internalLabel": "ないぶ1F",
+      "modelResource": "D04M0200",
+      "candidates": [
+        {
+          "path": "D04M02.bmmp",
+          "relation": "field-code"
+        }
+      ],
+      "areaStatus": "encounter-area-unresolved",
+      "encounterTableId": null,
+      "source": {
+        "path": "data/map/maplist9.bin",
+        "callIndex": 359,
+        "callOffset": 34904
+      },
+      "rawArgs": [
+        {
+          "type": 1,
+          "value": 7402,
+          "string": null,
+          "raw": 7402
+        },
+        {
+          "type": 1,
+          "value": 7400,
+          "string": null,
+          "raw": 7400
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "ふういんのほこら　１Ｆ",
+          "raw": 9385
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "D04M02",
+          "raw": 9437
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "ないぶ1F",
+          "raw": 2861
+        },
+        {
+          "type": 1,
+          "value": 19,
+          "string": null,
+          "raw": 19
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "D04M0200",
+          "raw": 9444
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 2,
+          "value": -59.391666412353516,
+          "string": null,
+          "raw": 3261960465
+        },
+        {
+          "type": 2,
+          "value": -67.08999633789062,
+          "string": null,
+          "raw": 3263573524
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 8,
+          "string": null,
+          "raw": 8
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        }
+      ]
+    }
+  ]
+}

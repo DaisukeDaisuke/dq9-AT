@@ -1,5 +1,7 @@
 import {parseMinimapPac,pacInfo} from './minimap-pac.mjs';
 import {NitroFS} from './vendor/nitro-fs.mjs';
+import {mineFieldGraphs,bindFieldGraphs} from './field-graph.mjs';
+import {decodeEncounterContexts,contextsForMap,ENCOUNTER_CONTEXT_PATH} from './encounter-context.mjs';
 import './vendor/gp2.js';
 import {parseCalls,decodeNumber,readPoolString,decodeMapRecords,u32} from './vendor/call-stream.mjs';
 
@@ -40,7 +42,7 @@ export function obgInfo(data) {
 }
 export class MapProject {
  constructor(buffer,csvText,onProgress=()=>{}) {
-  onProgress('NDSファイルシステム');const fs=NitroFS.fromRom(buffer);this.header=fs.cartridgeHeader;
+  onProgress('NDSファイルシステム');const fs=NitroFS.fromRom(buffer);this.header=fs.cartridgeHeader;this.nitro=fs;
   if(this.header.gameCode!=='YDQJ')throw Error(`日本語版DQ9 (YDQJ) が必要です。投入: ${this.header.gameCode}`);
   this.assets=new Map();this.descriptors=new Map();this.errors=[];this.archives=[];
   for(const path of ['data/pack_lv5/minimap.gp2','data/pack_lv5/minimapt.gp2']){
@@ -64,9 +66,13 @@ export class MapProject {
    }
    return {key:'map:'+r.callIndex,mapId:r.mapId,mapIdHex:'0x'+(r.mapId&65535).toString(16).padStart(4,'0'),name:names.get(r.mapId)||r.resource0||'',nameSource:names.has(r.mapId)?'existing-map-id-names.csv':'maplist9:arg2',secondaryId:r.secondaryId,fieldCode:r.fieldCode,internalLabel:r.resource1,modelResource:r.rawArgs[11]?.string??null,candidates,areaStatus:'encounter-area-unresolved',encounterTableId:null,source:{path:'data/map/maplist9.bin',callIndex:r.callIndex,callOffset:r.callOffset},rawArgs:r.rawArgs};
   });
+  this.fieldGraphs=mineFieldGraphs(fs,decodeCalls,onProgress);bindFieldGraphs(this.records,this.fieldGraphs);
+  this.encounterContexts=decodeEncounterContexts(decodeCalls(new Uint8Array(fs.readFile(ENCOUNTER_CONTEXT_PATH))));
+  for(const record of this.records){record.encounterContexts=contextsForMap(this.encounterContexts,record.mapId);record.areaStatus=record.encounterContexts.length?'node-area-and-time-table-candidates':'no-static-encounter-context';}
+  this.errors.push(...this.fieldGraphs.errors,...this.encounterContexts.warnings);
  }
  getAsset(name,archive='data/pack_lv5/minimap.gp2'){return this.assets.get(archive+'::'+name);}
- metadata(){return {format:'dq9-at-map-metadata',version:1,rom:this.header,archives:this.archives,summary:{records:this.records.length,descriptors:this.descriptors.size,images:[...this.assets.values()].filter(a=>a.path.endsWith('.obg')&&a.info).length,pacImages:[...this.assets.values()].filter(a=>a.path.endsWith('.pac')&&a.info).length,packs:[...this.assets.values()].filter(a=>a.path.endsWith('.pac')).length,recordsWithMap:this.records.filter(r=>r.candidates.length).length},records:this.records,descriptors:[...this.descriptors.values()],assets:[...this.assets.values()].map(({key,path,archive,data,info,error})=>({key,path,archive,size:data.length,info,error})),errors:this.errors,limitations:['encounter-area selection unresolved; no map->table assumption','AT boot proof and video navigation are later checkpoints']};}
+ metadata(){return {format:'dq9-at-map-metadata',version:1,rom:this.header,archives:this.archives,summary:{records:this.records.length,descriptors:this.descriptors.size,images:[...this.assets.values()].filter(a=>a.path.endsWith('.obg')&&a.info).length,pacImages:[...this.assets.values()].filter(a=>a.path.endsWith('.pac')&&a.info).length,packs:[...this.assets.values()].filter(a=>a.path.endsWith('.pac')).length,recordsWithMap:this.records.filter(r=>r.candidates.length).length,fieldGraphs:this.fieldGraphs.summary,recordsWithFieldGraph:this.records.filter(r=>r.fieldGraph.key).length,encounterContexts:this.encounterContexts.summary},fieldGraphs:this.fieldGraphs,encounterContexts:this.encounterContexts,records:this.records,descriptors:[...this.descriptors.values()],assets:[...this.assets.values()].map(({key,path,archive,data,info,error})=>({key,path,archive,size:data.length,info,error})),errors:this.errors,limitations:['Static monster path graph is not a player walkmesh; generated grotto graphs remain separate.','Natural table candidates use node area and time, not a fixed map-to-table mapping.','Map-browser selection is not a video observation; AT boot proof and continuous navigation remain separate checkpoints.']};}
 }
 export class MapRenderer {
  constructor(instance){this.e=instance.exports;this.heap=Number(this.e.__heap_base.value);this.cursor=this.heap;}

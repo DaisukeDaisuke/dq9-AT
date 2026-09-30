@@ -1,0 +1,126 @@
+{
+  "date": "2026-09-30T00:52:42.688Z",
+  "summary": {
+    "records": 1010,
+    "descriptors": 283,
+    "images": 268,
+    "pacImages": 150,
+    "packs": 150,
+    "recordsWithMap": 438,
+    "fieldGraphs": {
+      "graphs": 151,
+      "nodes": 3934,
+      "edges": 6044,
+      "errors": 0
+    },
+    "recordsWithFieldGraph": 151,
+    "encounterContexts": {
+      "maps": 210,
+      "groups": 210,
+      "rows": 287
+    }
+  },
+  "comparisons": [
+    {
+      "source": "docs/observations/map20003-field-tables.json",
+      "mapId": 20003,
+      "rowsMatch": true,
+      "actual": [
+        {
+          "tableId": 4,
+          "flags": 14690368
+        },
+        {
+          "tableId": 6,
+          "flags": 14690377
+        },
+        {
+          "tableId": 7,
+          "flags": 10504266
+        }
+      ],
+      "expected": [
+        {
+          "tableId": 4,
+          "flags": 14690368
+        },
+        {
+          "tableId": 6,
+          "flags": 14690377
+        },
+        {
+          "tableId": 7,
+          "flags": 10504266
+        }
+      ],
+      "nodeAreas": [
+        {
+          "areaMask": 1,
+          "time0": [
+            6
+          ],
+          "time2": [
+            4
+          ]
+        },
+        {
+          "areaMask": 2,
+          "time0": [
+            7
+          ],
+          "time2": [
+            7
+          ]
+        }
+      ]
+    },
+    {
+      "source": "docs/observations/metaru-soubi-field-v2.json",
+      "mapId": 7402,
+      "rowsMatch": true,
+      "actual": [
+        {
+          "tableId": 30,
+          "flags": 8391802
+        }
+      ],
+      "expected": [
+        {
+          "tableId": 30,
+          "flags": 8391802
+        }
+      ],
+      "nodeAreas": [
+        {
+          "areaMask": 0,
+          "time0": [
+            30
+          ],
+          "time2": [
+            30
+          ]
+        }
+      ]
+    }
+  ],
+  "missingExistingTables": [
+    {
+      "mapId": 10000,
+      "tableId": 276
+    },
+    {
+      "mapId": 10000,
+      "tableId": 277
+    },
+    {
+      "mapId": 10000,
+      "tableId": 278
+    },
+    {
+      "mapId": 10000,
+      "tableId": 279
+    }
+  ],
+  "errors": [],
+  "source": "production MapProject with actual ROM; existing encounter distributions unchanged"
+}

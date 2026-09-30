@@ -13,6 +13,7 @@ export class ATSession {
  constructor(seed,kernel){this.seed=parseSeed(seed);this.kernel=kernel;this.lowerBound=0n;this.conditionalBound=0n;this.createdAt=new Date().toISOString();this.events=[];this.ids=new Set();this.map=null;this.candidates=null;this.hypotheses=[];}
  setMap(map){this.map=map;this.events.push({kind:'map-context',map,lowerBound:String(this.lowerBound)});}
  noteInput(input){this.events.push({kind:'human-input',input,lowerBound:String(this.lowerBound),minimumProvenCalls:0});}
+ noteVideo(observation){if(!observation||!['video-map-name-candidates','video-gap'].includes(observation.kind))throw Error('未対応の映像観測です');this.events.push({kind:'video-observation',observation:structuredClone(observation),lowerBound:String(this.lowerBound),minimumProvenCalls:0,interpretation:'Uncalibrated video evidence only; no AT draw or exact map/area/position is inferred.'});}
  observeMonster({id,tableId,monsterId,source='human',naturalConfirmed=false},tables,window=50000){
   if(!id||this.ids.has(id))throw Error('観測IDが空または重複です。同じ出現を二重加算しません');
   const table=tables[String(tableId)];if(!table)throw Error('既存enc.jsonにテーブルがありません');
@@ -41,6 +42,7 @@ export class ATSession {
   for(const event of saved.events){
    if(event.kind==='map-context')s.setMap(event.map);
    else if(event.kind==='human-input')s.noteInput(event.input);
+   else if(event.kind==='video-observation')s.noteVideo(event.observation);
    else if(event.kind==='monster-observation')s.observeMonster(event,tables,event.window??50000);
    else if(event.kind==='verified-boot-exec-prefix'){if(!event.trace)throw Error('起動traceが保存されていないため下限を再評価できません');s.ingestBootTrace(event.trace);}
    else throw Error('未対応の証拠イベント: '+event.kind);
@@ -50,7 +52,7 @@ export class ATSession {
  }
  forecast(tables,tableIds,targetIds,window=50000,{conditional=false}={}){
   const start=conditional?this.conditionalBound:this.lowerBound,pairs=this.kernel.generate(this.seed,start,window),targets=new Set(targetIds.map(Number)),results=[];
-  for(const tableId of tableIds){const table=tables[String(tableId)];if(!table)continue;const hits=[];for(let i=0;i<window;i++){const outcome=monsterForRandom(table,pairs[i*2+1]);if(outcome.monster&&targets.has(Number(outcome.monster.monsterId))){hits.push({position:String(start+BigInt(i+1)),offset:i+1,seed:hex(pairs[i*2]),random:pairs[i*2+1],value:outcome.value,monsterId:Number(outcome.monster.monsterId),monsterName:outcome.monster.monsterName});if(hits.length===20)break;}}results.push({tableId:Number(tableId),hits});}
+  for(const tableId of tableIds){const table=tables[String(tableId)];if(!table)throw Error(`既存enc.jsonにtable ${tableId}の分布がありません。候補を除外せず未解決として保持してください`);const hits=[];for(let i=0;i<window;i++){const outcome=monsterForRandom(table,pairs[i*2+1]);if(outcome.monster&&targets.has(Number(outcome.monster.monsterId))){hits.push({position:String(start+BigInt(i+1)),offset:i+1,seed:hex(pairs[i*2]),random:pairs[i*2+1],value:outcome.value,monsterId:Number(outcome.monster.monsterId),monsterName:outcome.monster.monsterName});if(hits.length===20)break;}}results.push({tableId:Number(tableId),hits});}
   return {basis:conditional?'conditional-observation-branch':'proven-lower-bound',from:String(start+1n),through:String(start+BigInt(window)),results,unsearchedTailPossible:true,interpretation:'These are favorable weighted-draw positions, not a guaranteed current position or a frame countdown. Table-selection and monster-movement AT must also be modeled.'};
  }
  snapshot(){return {format:'dq9-at-session',version:1,initialSeed:hex(this.seed),origin:'external-known-seed-from-boot',createdAt:this.createdAt,lowerBound:String(this.lowerBound),conditionalBound:String(this.conditionalBound),map:this.map,candidates:this.candidates,events:this.events,exactCurrentPosition:false,unboundedFuturePossible:true};}

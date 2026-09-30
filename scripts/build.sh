@@ -10,7 +10,7 @@ fi
 if [[ -z "$LD" ]]; then printf 'wasm-ld missing: install the matching lld package\n' >&2; exit 1; fi
 mkdir -p web/wasm
 OBJECTS=()
-for SOURCE in wasm/map_render.c wasm/at_core.c; do
+for SOURCE in wasm/map_render.c wasm/at_core.c wasm/field_at.c; do
   [[ -f "$SOURCE" ]] || continue
   OBJECT="/tmp/dq9-at-$(basename "${SOURCE%.c}").o"
   "$CLANG" --target=wasm32-unknown-unknown -O3 -nostdlib -ffreestanding -fno-builtin -c "$SOURCE" -o "$OBJECT"

@@ -1,0 +1,544 @@
+{
+  "format": "dq9-at-production-observation-replay",
+  "version": 2,
+  "recordedAt": "2026-09-30T01:09:29.253Z",
+  "wasmSha256": "31fefd46d2656fecdd926eec94ae16aa257509d4a15f9e13bbf9a84e5d8f49fc",
+  "records": [
+    {
+      "path": "docs/observations/metaru-soubi-at32.json",
+      "format": "dq9-at-replay-result",
+      "sourceOrigin": "paused-state-not-boot",
+      "updates": 32,
+      "intCalls": 14,
+      "spawns": [
+        {
+          "sequence": 3,
+          "monsterId": 108,
+          "tableId": 30,
+          "mapId": 7402,
+          "value": 8,
+          "agrees": true
+        },
+        {
+          "sequence": 7,
+          "monsterId": 108,
+          "tableId": 30,
+          "mapId": 7402,
+          "value": 9,
+          "agrees": true
+        },
+        {
+          "sequence": 11,
+          "monsterId": 108,
+          "tableId": 30,
+          "mapId": 7402,
+          "value": 9,
+          "agrees": true
+        },
+        {
+          "sequence": 16,
+          "monsterId": 83,
+          "tableId": 30,
+          "mapId": 7402,
+          "value": 14,
+          "agrees": true
+        },
+        {
+          "sequence": 21,
+          "monsterId": 83,
+          "tableId": 30,
+          "mapId": 7402,
+          "value": 12,
+          "agrees": true
+        },
+        {
+          "sequence": 26,
+          "monsterId": 83,
+          "tableId": 30,
+          "mapId": 7402,
+          "value": 11,
+          "agrees": true
+        },
+        {
+          "sequence": 30,
+          "monsterId": 83,
+          "tableId": 30,
+          "mapId": 7402,
+          "value": 13,
+          "agrees": true
+        }
+      ],
+      "mismatches": [],
+      "finalSeed": "0xece8af4d",
+      "bootProof": false,
+      "tailReplay": {
+        "basis": "observed branch entries and observed map7402 context, not inferred frame timing",
+        "rows": [
+          {
+            "sequence": 3,
+            "monsterId": 108,
+            "tableId": 30,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 108
+          },
+          {
+            "sequence": 7,
+            "monsterId": 108,
+            "tableId": 30,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 108
+          },
+          {
+            "sequence": 11,
+            "monsterId": 108,
+            "tableId": 30,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 108
+          },
+          {
+            "sequence": 16,
+            "monsterId": 83,
+            "tableId": 30,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 83
+          },
+          {
+            "sequence": 21,
+            "monsterId": 83,
+            "tableId": 30,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 83
+          },
+          {
+            "sequence": 26,
+            "monsterId": 83,
+            "tableId": 30,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 83
+          },
+          {
+            "sequence": 30,
+            "monsterId": 83,
+            "tableId": 30,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 83
+          }
+        ],
+        "mismatches": []
+      }
+    },
+    {
+      "path": "docs/observations/metaru-nasi-at128.json",
+      "format": "dq9-at-replay-result",
+      "sourceOrigin": "paused-state-observation-not-boot",
+      "updates": 128,
+      "intCalls": 81,
+      "spawns": [
+        {
+          "sequence": 90,
+          "monsterId": 3,
+          "tableId": 30,
+          "mapId": 7402,
+          "value": 15,
+          "agrees": true
+        },
+        {
+          "sequence": 93,
+          "monsterId": 83,
+          "tableId": 30,
+          "mapId": 7402,
+          "value": 13,
+          "agrees": true
+        },
+        {
+          "sequence": 97,
+          "monsterId": 83,
+          "tableId": 30,
+          "mapId": 7402,
+          "value": 10,
+          "agrees": true
+        },
+        {
+          "sequence": 101,
+          "monsterId": 83,
+          "tableId": 30,
+          "mapId": 7402,
+          "value": 10,
+          "agrees": true
+        },
+        {
+          "sequence": 106,
+          "monsterId": 108,
+          "tableId": 30,
+          "mapId": 7402,
+          "value": 7,
+          "agrees": true
+        },
+        {
+          "sequence": 110,
+          "monsterId": 83,
+          "tableId": 30,
+          "mapId": 7402,
+          "value": 10,
+          "agrees": true
+        },
+        {
+          "sequence": 116,
+          "monsterId": 108,
+          "tableId": 30,
+          "mapId": 7402,
+          "value": 8,
+          "agrees": true
+        },
+        {
+          "sequence": 120,
+          "monsterId": 108,
+          "tableId": 30,
+          "mapId": 7402,
+          "value": 9,
+          "agrees": true
+        },
+        {
+          "sequence": 126,
+          "monsterId": 108,
+          "tableId": 30,
+          "mapId": 7402,
+          "value": 5,
+          "agrees": true
+        }
+      ],
+      "mismatches": [],
+      "finalSeed": "0x90bd4da0",
+      "bootProof": false,
+      "tailReplay": {
+        "basis": "observed branch entries and observed map7402 context, not inferred frame timing",
+        "rows": [
+          {
+            "sequence": 90,
+            "monsterId": 3,
+            "tableId": 30,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 3
+          },
+          {
+            "sequence": 93,
+            "monsterId": 83,
+            "tableId": 30,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 83
+          },
+          {
+            "sequence": 97,
+            "monsterId": 83,
+            "tableId": 30,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 83
+          },
+          {
+            "sequence": 101,
+            "monsterId": 83,
+            "tableId": 30,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 83
+          },
+          {
+            "sequence": 106,
+            "monsterId": 108,
+            "tableId": 30,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 108
+          },
+          {
+            "sequence": 110,
+            "monsterId": 83,
+            "tableId": 30,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 83
+          },
+          {
+            "sequence": 116,
+            "monsterId": 108,
+            "tableId": 30,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 108
+          },
+          {
+            "sequence": 120,
+            "monsterId": 108,
+            "tableId": 30,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 108
+          },
+          {
+            "sequence": 126,
+            "monsterId": 108,
+            "tableId": 30,
+            "matches": true,
+            "consumed": 2,
+            "selectedMonster": 108
+          }
+        ],
+        "mismatches": []
+      }
+    }
+  ],
+  "areaTables": [
+    {
+      "areaMask": 1,
+      "actualTime": 2,
+      "wasm": [
+        4
+      ],
+      "reference": [
+        4
+      ]
+    },
+    {
+      "areaMask": 2,
+      "actualTime": 2,
+      "wasm": [
+        7
+      ],
+      "reference": [
+        7
+      ]
+    }
+  ],
+  "metalCatalog": [
+    [
+      3,
+      "メタルスライム"
+    ],
+    [
+      76,
+      "メタルブラザーズ"
+    ],
+    [
+      27,
+      "はぐれメタル"
+    ],
+    [
+      181,
+      "メタルキング"
+    ],
+    [
+      242,
+      "プラチナキング"
+    ]
+  ],
+  "researchForecast": {
+    "origin": "observed-state-relative-not-boot",
+    "window": 50000,
+    "conditionalTailScenarios": [
+      {
+        "areaMask": 0,
+        "timeValue": 2,
+        "candidates": [
+          30
+        ],
+        "hits": [
+          {
+            "tablePosition": "26",
+            "monsterPosition": "27",
+            "offset": 26,
+            "tableId": 30,
+            "monsterId": 3,
+            "monsterName": "メタルスライム(normal)",
+            "value": 15
+          },
+          {
+            "tablePosition": "56",
+            "monsterPosition": "57",
+            "offset": 56,
+            "tableId": 30,
+            "monsterId": 3,
+            "monsterName": "メタルスライム(normal)",
+            "value": 15
+          },
+          {
+            "tablePosition": "71",
+            "monsterPosition": "72",
+            "offset": 71,
+            "tableId": 30,
+            "monsterId": 3,
+            "monsterName": "メタルスライム(normal)",
+            "value": 15
+          },
+          {
+            "tablePosition": "89",
+            "monsterPosition": "90",
+            "offset": 89,
+            "tableId": 30,
+            "monsterId": 3,
+            "monsterName": "メタルスライム(normal)",
+            "value": 15
+          },
+          {
+            "tablePosition": "94",
+            "monsterPosition": "95",
+            "offset": 94,
+            "tableId": 30,
+            "monsterId": 3,
+            "monsterName": "メタルスライム(normal)",
+            "value": 15
+          },
+          {
+            "tablePosition": "106",
+            "monsterPosition": "107",
+            "offset": 106,
+            "tableId": 30,
+            "monsterId": 3,
+            "monsterName": "メタルスライム(normal)",
+            "value": 15
+          },
+          {
+            "tablePosition": "118",
+            "monsterPosition": "119",
+            "offset": 118,
+            "tableId": 30,
+            "monsterId": 3,
+            "monsterName": "メタルスライム(normal)",
+            "value": 15
+          },
+          {
+            "tablePosition": "132",
+            "monsterPosition": "133",
+            "offset": 132,
+            "tableId": 30,
+            "monsterId": 3,
+            "monsterName": "メタルスライム(normal)",
+            "value": 15
+          },
+          {
+            "tablePosition": "164",
+            "monsterPosition": "165",
+            "offset": 164,
+            "tableId": 30,
+            "monsterId": 3,
+            "monsterName": "メタルスライム(normal)",
+            "value": 15
+          },
+          {
+            "tablePosition": "183",
+            "monsterPosition": "184",
+            "offset": 183,
+            "tableId": 30,
+            "monsterId": 3,
+            "monsterName": "メタルスライム(normal)",
+            "value": 15
+          },
+          {
+            "tablePosition": "184",
+            "monsterPosition": "185",
+            "offset": 184,
+            "tableId": 30,
+            "monsterId": 3,
+            "monsterName": "メタルスライム(normal)",
+            "value": 15
+          },
+          {
+            "tablePosition": "192",
+            "monsterPosition": "193",
+            "offset": 192,
+            "tableId": 30,
+            "monsterId": 3,
+            "monsterName": "メタルスライム(normal)",
+            "value": 15
+          },
+          {
+            "tablePosition": "196",
+            "monsterPosition": "197",
+            "offset": 196,
+            "tableId": 30,
+            "monsterId": 3,
+            "monsterName": "メタルスライム(normal)",
+            "value": 15
+          },
+          {
+            "tablePosition": "198",
+            "monsterPosition": "199",
+            "offset": 198,
+            "tableId": 30,
+            "monsterId": 3,
+            "monsterName": "メタルスライム(normal)",
+            "value": 15
+          },
+          {
+            "tablePosition": "210",
+            "monsterPosition": "211",
+            "offset": 210,
+            "tableId": 30,
+            "monsterId": 3,
+            "monsterName": "メタルスライム(normal)",
+            "value": 15
+          },
+          {
+            "tablePosition": "214",
+            "monsterPosition": "215",
+            "offset": 214,
+            "tableId": 30,
+            "monsterId": 3,
+            "monsterName": "メタルスライム(normal)",
+            "value": 15
+          },
+          {
+            "tablePosition": "251",
+            "monsterPosition": "252",
+            "offset": 251,
+            "tableId": 30,
+            "monsterId": 3,
+            "monsterName": "メタルスライム(normal)",
+            "value": 15
+          },
+          {
+            "tablePosition": "267",
+            "monsterPosition": "268",
+            "offset": 267,
+            "tableId": 30,
+            "monsterId": 3,
+            "monsterName": "メタルスライム(normal)",
+            "value": 15
+          },
+          {
+            "tablePosition": "311",
+            "monsterPosition": "312",
+            "offset": 311,
+            "tableId": 30,
+            "monsterId": 3,
+            "monsterName": "メタルスライム(normal)",
+            "value": 15
+          },
+          {
+            "tablePosition": "321",
+            "monsterPosition": "322",
+            "offset": 321,
+            "tableId": 30,
+            "monsterId": 3,
+            "monsterName": "メタルスライム(normal)",
+            "value": 15
+          }
+        ],
+        "unavailableTables": []
+      }
+    ],
+    "frameTimingKnown": false
+  },
+  "elapsedMs": 7.803919999999998,
+  "bootProof": false,
+  "mismatchCount": 0
+}

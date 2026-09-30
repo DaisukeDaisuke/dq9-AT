@@ -1,4 +1,13 @@
 # 決定仕様
+## D007（2026-09-30）: フィールドノードと自然生成表
+path.gp2の静的グラフは全件採掘する。node IDと配列indexは別、edgeの順番はROM順のまま保持。mapコードからP名へ変換する実loaderを使用。未圧縮16命令の先頭0x10をLZ10と誤認しない。既存typed-streamパーサを先に適用して識別する。enemy graphはplayer walkmeshではない。
+## D008: エリア・時間候補とAT再現範囲
+encfldからmap/table/flagsの不足参照だけを取得し、出現分布は既存enc.jsonを使う。時間不明・area不明は候補を併合し、一意と扱わない。table候補1件でも1消費。生成失敗のtable-only消費、monster移動の直接AT%count、weightedのATRandIntを分ける。占有・移動フラグ不明は未解決とする。連続2消費の候補はそのbranchへ到達した条件下でありフレーム予告ではない。
+## D009: 映像と証明の分離
+ROMフォントは投入NDSからメモリ内生成する。既存font_akinatorのGPU scorer、既存vision.jsのcamera取得方式を再利用。マップ名の上位候補は未校正であり、選択は表示mapを変えるだけ。映像候補・入力断はminimumProvenCalls0で保存し、既存AT証拠/下限を失わない。全文字・自位置・3D認識が完了したと偽らない。
+## D010: Codespace同期と配備
+指定fuzzy-goggles-r4vqvwgrw943p5r9でビルド/実測replay。コード・資料・ビルド成果をフォルダ単位で往復同期し、hashで差異を確認してからCodespaceでfull pushする。protocolは利用者所有のため上書きしない。
+
 ## D001: 先行スコープ
 P0は全mapを対象としたmap metadataと上画面map assetのブラウザ内採掘・表示。ふういんのほこら1Fは実測の具体例であり対応mapを限定しない。map→encounterを1対1固定しない。area切替の未解決を明示する。
 ## D002: データ境界

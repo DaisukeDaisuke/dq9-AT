@@ -1,19 +1,31 @@
 {
-  "createdAt": "2026-09-29T10:06:12.608Z",
+  "createdAt": "2026-09-30T01:17:10.638Z",
   "rom": {
     "name": "dq9_new2.nds",
     "size": 268435456,
     "gameCode": "YDQJ",
     "sha256": "3c9d809eb8e446b0da6a9b383c7a6c5146001636038384aa49cb1a2e367546d7"
   },
-  "wasmSha256": "59aef07eaba4177de7faaa6ca25385e8b33ec0c4da4be0c17898280ef25419bc",
+  "wasmSha256": "31fefd46d2656fecdd926eec94ae16aa257509d4a15f9e13bbf9a84e5d8f49fc",
   "summary": {
     "records": 1010,
     "descriptors": 283,
     "images": 268,
     "pacImages": 150,
     "packs": 150,
-    "recordsWithMap": 438
+    "recordsWithMap": 438,
+    "fieldGraphs": {
+      "graphs": 151,
+      "nodes": 3934,
+      "edges": 6044,
+      "errors": 0
+    },
+    "recordsWithFieldGraph": 151,
+    "encounterContexts": {
+      "maps": 210,
+      "groups": 210,
+      "rows": 287
+    }
   },
   "images": [
     {
@@ -28872,5 +28884,5 @@
       "signatures": []
     }
   ],
-  "elapsedMs": 1327.819
+  "elapsedMs": 1267.2094
 }

@@ -1,4 +1,18 @@
 # 作業ログ
+## 2026-09-30 / 続行: 全静的グラフ・AT実測・映像入力
+指定Codespace fuzzy-goggles-r4vqvwgrw943p5r9 を使用。詳細の現在地は `CONTINUATION_20260930.md`。以下の2026-09-29節は履歴であり、当時の未完了・protocol内容を現在状態として扱わない。
+
+- 既存call-stream/NitroFS/GP2/NARCを再利用し、path.gp2→151パック→151グラフ、3,934ノード、6,044接続を取得。IDとindex・接続順を保持。新しい26ノード/47ノード実RAM観測と全比較項目一致。
+- 途中の概算6,395/10,156は再実行結果と食い違ったため撤回。既存型付き命令ストリームの先頭16をLZ10と誤判定する問題を特定し修正。最終実ログは151/3,934/6,044、エラー0。`actual-field-mining.json`を根拠にする。
+- encfldから不足していたmap→table/flags参照だけを採掘し、210map/287参照。enc.jsonや日本語名/monster CSVは再採掘していない。map20003のtable4/6/7とarea/time分岐を実測と照合。map10000のtable276..279は既存分布がないので未解決として残す。
+- 装備なしstateの128消費を新規実測。最初の生成までに62回のtable draw、うち最初61回はweighted/createを挟まない。原因のtimer/branchを全件確定したとはしない。実測ファイルを起動seed証拠に転用しない。
+- 統合WASM3292bytesをCodespaceでビルド。装備あり32＋なし128の計160updates、95ATRandInt、16生成関数入力で差0。実際のbranch到達を与えた16件のtable→weightedも一致。結果 `actual-at-replay.json`。
+- メタル候補が名称の(normal)/(通常)接尾辞で消える問題を修正。既存ID3/76/27/181/242の5種を利用。
+- ROM font converter/既存WebGPU matcher/camera取得を接続。実ROMでは4サイズ2,588glyph、99名称434template。font binaryは保存しない。camera/GPU実映像精度は未測定。映像候補・途切れはminimumProvenCalls0でATログへ接続。
+- map/areaノード表示・座標・隣接順・JSON/CSVを既存HTMLへ追加。AT候補はarea/timeの不明部分を併合して保持。enemy graphに人間移動の最短線を描いたことにしない。
+- protocolを約10分ごとに再読。前任者transcript EPERM、MCP複合呼出の安全チェック、Ghidra不一致などは `ISSUES_20260930.md` に実際の対応を記録。
+- 公開R07は同期・履歴確認中。公開成功は実際のActions結果が得られた後に記録する。
+
 ## protocol追加 / map再入場
 最新pullで「下5秒・上5秒でエンカウントリセット。ただし入場時のたる/つぼ/青宝箱およびmap固有処理によるAT消費に注意」を受領。移動入力をそのまま一定AT数に変換しない。既存pickup研究は共通経路の証拠だけを再利用する。
 AT UI/coreを追加中。既存ARandを参照するWASM、前方探索、手動観測の条件付き分岐、証拠再評価による保存/復元を実装。途中stateの実測をboot-originへ偽装しない。実ROM32AT/14ATRandInt/7生成のproduction replayを次に実行する。

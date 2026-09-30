@@ -1,0 +1,3 @@
+import fs from 'node:fs/promises';
+const r=JSON.parse(await fs.readFile(new URL('../docs/mining/field-resource-inspection.json',import.meta.url),'utf8'));
+console.log(JSON.stringify({refs:r.refs.map(x=>({mapId:x.mapId,fieldCode:x.fieldCode,modelResource:x.modelResource,name:x.name})),extensions:r.extensions,candidates:r.candidates.filter(x=>!x.path.endsWith('.gp2')).slice(0,20),packNames:r.packNames.filter(x=>/map|field|enemy|npc|D04|F0/i.test(x)).slice(0,45),packCount:r.packNames.length,encKeys:r.encKeys,table30Keys:Object.keys(r.table30||{}),table30Rows:r.table30?.data?.slice(0,4),sampleNames:r.sampleNames.slice(0,4).map(x=>Object.fromEntries(Object.entries(x).filter(([k])=>/name|id|start|end/i.test(k))))},null,2));

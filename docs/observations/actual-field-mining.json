@@ -1,0 +1,49 @@
+{
+  "format": "dq9-at-actual-field-mining",
+  "createdAt": "2026-09-30T00:52:42.073Z",
+  "romSha256": "3c9d809eb8e446b0da6a9b383c7a6c5146001636038384aa49cb1a2e367546d7",
+  "summary": {
+    "graphs": 151,
+    "nodes": 3934,
+    "edges": 6044,
+    "errors": 0,
+    "boundRecords": 151,
+    "unboundRecords": 859
+  },
+  "observed": [
+    {
+      "source": "docs/observations/map7402-field-graph-fresh.json",
+      "mapId": 7402,
+      "graph": "D04P02.bin",
+      "matches": true,
+      "nodeCount": 26,
+      "orderedAdjacencyChecked": true,
+      "fields": [
+        "index",
+        "id",
+        "areaMask",
+        "position",
+        "neighbors"
+      ],
+      "mismatches": []
+    },
+    {
+      "source": "docs/observations/map20003-field-graph.json",
+      "mapId": 20003,
+      "graph": "F03P00.bin",
+      "matches": true,
+      "nodeCount": 47,
+      "orderedAdjacencyChecked": true,
+      "fields": [
+        "index",
+        "id",
+        "areaMask",
+        "position",
+        "neighbors"
+      ],
+      "mismatches": []
+    }
+  ],
+  "milliseconds": 145.894,
+  "errors": []
+}

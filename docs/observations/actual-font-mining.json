@@ -1,0 +1,59 @@
+{
+  "format": "dq9-actual-runtime-font-generation",
+  "recordedAt": "2026-09-30T01:07:01.012Z",
+  "romSha256": "3c9d809eb8e446b0da6a9b383c7a6c5146001636038384aa49cb1a2e367546d7",
+  "archives": [
+    {
+      "path": "data/pack/font.gp2",
+      "members": 528,
+      "bytes": 1247256
+    },
+    {
+      "path": "data/pack_lv5/font_lv5.gp2",
+      "members": 73,
+      "bytes": 489180
+    }
+  ],
+  "summary": {
+    "parsedSources": 503,
+    "glyphs": {
+      "10x10": 905,
+      "12x12": 1441,
+      "8x7": 80,
+      "8x8": 162
+    },
+    "fontFiles": 4
+  },
+  "fonts": [
+    {
+      "name": "font_10x10.ttf",
+      "bytes": 382440,
+      "sha256": "3ead589d7ee9c374a754008362f889b016766cd0c4ad8998482576833630a0e7"
+    },
+    {
+      "name": "font_12x12.ttf",
+      "bytes": 821432,
+      "sha256": "2c2ddb102159d32f75a8235edd87ad57ff2210e61e025f87799e2f856b1ca8a2"
+    },
+    {
+      "name": "font_8x7.ttf",
+      "bytes": 15864,
+      "sha256": "bc878236a10b003eddb7e59b529115ee944aa95df23e5538abac0a2dfcbf75cf"
+    },
+    {
+      "name": "font_8x8.ttf",
+      "bytes": 36672,
+      "sha256": "be7f37a503452688d15918de0790a6e9c72520e8e343c3946fd5247e6a874630"
+    }
+  ],
+  "milliseconds": 236.8625,
+  "retainedAssets": false,
+  "dictionary": {
+    "templates": 434,
+    "names": 99,
+    "coordinateBytes": 277792,
+    "metaBytes": 10416,
+    "source": "actual ROM glyphs and existing map-name records",
+    "gpuExecutionMeasured": false
+  }
+}

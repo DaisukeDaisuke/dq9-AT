@@ -1,0 +1,624 @@
+{
+  "format": "dq9-folder-sync-manifest",
+  "version": 1,
+  "generatedAt": "2026-09-30T01:17:38.003Z",
+  "source": "local dq9-AT selected complete source directories",
+  "folders": [
+    "web",
+    "wasm",
+    "scripts",
+    "docs",
+    ".github"
+  ],
+  "rootFiles": [
+    ".gitignore",
+    ".gitmodules",
+    "PLAN.md",
+    "DECISIONS.md",
+    "README.md",
+    "LICENSE",
+    "protocol.txt"
+  ],
+  "excluded": [
+    ".git",
+    "vendor gitlink worktrees",
+    ".idea",
+    "private",
+    "WebGPU.md",
+    "predecessor runtime transcript",
+    "docs/observations/source-sync-0930.json"
+  ],
+  "entries": [
+    {
+      "path": ".github/workflows/pages.yml",
+      "bytes": 1094,
+      "sha256": "1636c2ab13a0372a83c6c3027416513e87fd6ad12592c7f2f323fc67799d94d6"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 85,
+      "sha256": "2adbb83798eded58306d8509e7e3d532ddcddd13111dcc7382493a87b0b39e67"
+    },
+    {
+      "path": ".gitmodules",
+      "bytes": 335,
+      "sha256": "81b058899970898fb6399d872465baa37e5815d206d2b9c316046b864699a9f7"
+    },
+    {
+      "path": "DECISIONS.md",
+      "bytes": 3081,
+      "sha256": "fed5b6120ab645647527d3b5e549a5233f5880c4a743cddf4a68d150adf4bf40"
+    },
+    {
+      "path": "docs/ASSETS.md",
+      "bytes": 1599,
+      "sha256": "1a946f717282fe9a923e3ec528c31a11449b1a6b7a84d410882d698688615a0e"
+    },
+    {
+      "path": "docs/AT_TRACKING.md",
+      "bytes": 2799,
+      "sha256": "ec7548fe0e342cebeccff6981c213b918de4caa932e2beeb18c17607b5bae06a"
+    },
+    {
+      "path": "docs/CONTINUATION_20260930.md",
+      "bytes": 3608,
+      "sha256": "71c664d821959632b26c2aaab2afce30378b25aa6f9e127270bcc5625182dc8f"
+    },
+    {
+      "path": "docs/DEPLOYMENT.md",
+      "bytes": 2359,
+      "sha256": "77c84a0dfae105a52da26729859bfef66a47224254987e7a5e07ed7ee7403186"
+    },
+    {
+      "path": "docs/ghidra/01-map-resource-anchors.md",
+      "bytes": 1832,
+      "sha256": "6870ee9dce03d395e5ea9efbf05b8da3e406ea72e871da554fe948bb31c8729e"
+    },
+    {
+      "path": "docs/ghidra/02-at-raw.c",
+      "bytes": 935,
+      "sha256": "58e27c94fd7edb654a0ad884151bab2c034f6c0f54b1b0087f6121afbe69b691"
+    },
+    {
+      "path": "docs/ghidra/03-area-selection-raw.c",
+      "bytes": 932,
+      "sha256": "f7eea85bfa5a80bd20a43805055607f23077832b88e86cdfbc430daf7ffcfee7"
+    },
+    {
+      "path": "docs/ghidra/03-area-selection.md",
+      "bytes": 2160,
+      "sha256": "d8187c432deee6217d7730e895a15a67fde0a81b73fee966370859523efa6cc4"
+    },
+    {
+      "path": "docs/ghidra/04-field-spawn-selection.md",
+      "bytes": 2733,
+      "sha256": "0fde40b5296708f7ddee73c1f34562de614e8818b8892abded2f940fe1d5588d"
+    },
+    {
+      "path": "docs/ghidra/05-natural-spawn-path.md",
+      "bytes": 3271,
+      "sha256": "c17d6396f56e2736cd4cbe2229fbae13bc3a70d65cca91ea8d4a77c335c09458"
+    },
+    {
+      "path": "docs/ghidra/06-monster-movement-at.md",
+      "bytes": 1935,
+      "sha256": "6ddfe5554d9ec953e8280ce58401a65cb8bddc1f0518c1e8b8d17f99dc752712"
+    },
+    {
+      "path": "docs/ghidra/07-field-graph-loader.md",
+      "bytes": 3126,
+      "sha256": "d09b447b859714838f79694264ba0891c3245eef05452b02997635aa2c0e1985"
+    },
+    {
+      "path": "docs/ghidra/08-field-at-control-flow.md",
+      "bytes": 3414,
+      "sha256": "3f698f432a9aeeaa25348e07c84e2580f7e44cdd7f49bce1d9bfabbdb95ddfe4"
+    },
+    {
+      "path": "docs/HANDOFF.md",
+      "bytes": 3645,
+      "sha256": "d1a63f8473d0fd128688dc7ef564f8f643d23a9dacfdc2f7739e535720bc70d6"
+    },
+    {
+      "path": "docs/ISSUES_20260930.md",
+      "bytes": 4089,
+      "sha256": "cfcbe0db03454aba533526ad1281b49f2c089469e2d57c43d5102ad18614e63b"
+    },
+    {
+      "path": "docs/mining/encounter-contexts.json",
+      "bytes": 77866,
+      "sha256": "c0751ead232daa4e32b20457c6458f76b5cb5f39093043b47ae8596047398caf"
+    },
+    {
+      "path": "docs/mining/field-graphs.json",
+      "bytes": 1959369,
+      "sha256": "5f8a97451a4be69152f219ef2bd315978aeebc9d2e5e65f27bdd34093cac0c07"
+    },
+    {
+      "path": "docs/mining/field-resource-inspection.json",
+      "bytes": 40723,
+      "sha256": "be8baf51c6a169f664730f1fc2bd48e3d638fbdc7f434b436f10390e02d69b35"
+    },
+    {
+      "path": "docs/mining/MAP_FORMAT.md",
+      "bytes": 4097,
+      "sha256": "a42f151358fdd2bab4c17d7292f456aced640e59fd3e24eb8374b0db450a2d53"
+    },
+    {
+      "path": "docs/mining/map-metadata.json",
+      "bytes": 7255797,
+      "sha256": "994b399b6c32a464512363870ea2d968b6f72fe25b0b5245464a9a875461be59"
+    },
+    {
+      "path": "docs/mining/map-structure.json",
+      "bytes": 3257711,
+      "sha256": "d6b266ce4da72a617b63b774e21f8c1ac9900f07d89e63eb7c661f21f9fdee87"
+    },
+    {
+      "path": "docs/mining/PAC_FORMAT.md",
+      "bytes": 2109,
+      "sha256": "b9d9701ca796a2fa0723755ee019034aadad63dcecabf1e71c64d1a690879717"
+    },
+    {
+      "path": "docs/mining/pac-structure.json",
+      "bytes": 9300,
+      "sha256": "f6b65598548d0cd46958a6497af68a4b2e1464d15b9bf31f29ff3f1d18f0c1b0"
+    },
+    {
+      "path": "docs/mining/path-member-inspection.json",
+      "bytes": 38707,
+      "sha256": "d592235633e898a35d717070216b7f4c09a6db0d5112b9d77e9bf55bc9c5e271"
+    },
+    {
+      "path": "docs/mining/rom-inventory.json",
+      "bytes": 673524,
+      "sha256": "e1176072ab382c6f80c63b4970d874f81019ef4d8fbe772971a0345ee3cc4de8"
+    },
+    {
+      "path": "docs/observations/actual-at-replay.json",
+      "bytes": 13447,
+      "sha256": "0233e2cf82e5b72bd399f083e5d52c2408384b6b716d277fee8d7c86c7f76f43"
+    },
+    {
+      "path": "docs/observations/actual-field-mining.json",
+      "bytes": 1088,
+      "sha256": "5ba0a4cf083999bf4253f4fd5da6a0bce3e7e49b18fee2060cd8f797f5cd596d"
+    },
+    {
+      "path": "docs/observations/actual-font-mining.json",
+      "bytes": 1442,
+      "sha256": "b37b5245f4af8ad84c333410339dbe3042f0fa0bf6c86e7aba2a94a174df2a72"
+    },
+    {
+      "path": "docs/observations/actual-map-wasm.json",
+      "bytes": 442531,
+      "sha256": "53668bb26a1f19bc2306b13fb7a8b0d983570888bc60a988b4e7b4e0f79e6a16"
+    },
+    {
+      "path": "docs/observations/actual-production-contexts.json",
+      "bytes": 2238,
+      "sha256": "ba641553e7e263162db57dcec67a624505bcbd23d05510056a295610997df3d2"
+    },
+    {
+      "path": "docs/observations/build-return-0930.json",
+      "bytes": 320,
+      "sha256": "da195ac1e4d6d530434f8af4da2145a494e56bb9e81dc0e85f54488aa17178e9"
+    },
+    {
+      "path": "docs/observations/map20003-field-graph.json",
+      "bytes": 2066,
+      "sha256": "2fdbbeb3af0daee183f71d88b6f62fce50da86e00fcde90d8e7117792e48281b"
+    },
+    {
+      "path": "docs/observations/map20003-field-tables.json",
+      "bytes": 575,
+      "sha256": "fb319223ff6c2033579900a50b5ba1bab2f80f344ffe5b8e053aeaedd27c7d29"
+    },
+    {
+      "path": "docs/observations/map7402-field-graph-fresh.json",
+      "bytes": 1244,
+      "sha256": "ba719f59a836379580b465e60fec9cba938d436588468767817809bd7d1630f3"
+    },
+    {
+      "path": "docs/observations/map7402-field-graph.json",
+      "bytes": 1116,
+      "sha256": "f695923d6b842148b0a7d420c605beee77bff99f21d83c5c2113b71794626fb5"
+    },
+    {
+      "path": "docs/observations/metaru-nasi-at128.json",
+      "bytes": 6115,
+      "sha256": "c4cb1907dfb891c5febdda45912e4ea3626b05e45c3df909a8519fd5f52f1ec7"
+    },
+    {
+      "path": "docs/observations/metaru-nasi-frame10117.json",
+      "bytes": 842,
+      "sha256": "794d3af84308fdc521c7b67fead726065b2a9f8301c9be503470c23b5dd6bda1"
+    },
+    {
+      "path": "docs/observations/metaru-soubi-at32.json",
+      "bytes": 2156,
+      "sha256": "70c56fa7bd8cc189630328bc75335eda19bd05dae35da6fb50632dd2c1f9e59e"
+    },
+    {
+      "path": "docs/observations/metaru-soubi-field-v2.json",
+      "bytes": 646,
+      "sha256": "20a6a24afa40d45a0825706a3bcc01d4cd3b858a3c11d7c9b9349da6ac26c10e"
+    },
+    {
+      "path": "docs/observations/metaru-soubi-frame10118.json",
+      "bytes": 1305,
+      "sha256": "550fce48c46d4057f6a6c5a2f5e9935cae851b74ad1f396805c2b3f16c021e4b"
+    },
+    {
+      "path": "docs/PROGRESS.md",
+      "bytes": 7766,
+      "sha256": "dcc666fd233feadb8e113613ab0a2cab5e0bd7486a0cd9ae399fbf097bcde0fd"
+    },
+    {
+      "path": "docs/VIDEO_PIPELINE_20260930.md",
+      "bytes": 3411,
+      "sha256": "4cde057e07a6167a5d073e6c58639b7e88d2032e3d57257923760b8521355cc9"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 1092,
+      "sha256": "51dbd315dc9402975bb8a0ee94bbe357ab48a03df06547d9796bab50b9efdc49"
+    },
+    {
+      "path": "PLAN.md",
+      "bytes": 7824,
+      "sha256": "aed93f6f6e8c36163546dbc7249ae7e0e189c7e9061a27f4d24c98c9d5abbd72"
+    },
+    {
+      "path": "protocol.txt",
+      "bytes": 686,
+      "sha256": "f0418ac38d7411fdef377d406212439a653ec5f0c293a0a2b2d00f63540568f9"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4867,
+      "sha256": "8f4ed43047f2d08754ebb88b8a0b53be13828d7ed6845b159c10c688a4fdc944"
+    },
+    {
+      "path": "scripts/at-field-trace.pscript.js",
+      "bytes": 3667,
+      "sha256": "075157e36d287478f70080bec3c05e00fe40c0285c8b9e2466d201ef5d3b7d4d"
+    },
+    {
+      "path": "scripts/build.sh",
+      "bytes": 875,
+      "sha256": "5cf713112b20783b3c8aa9031827cd534a0d5eb3daaa052d78187f3537af9fa5"
+    },
+    {
+      "path": "scripts/enc_jp.reference.lua",
+      "bytes": 56170,
+      "sha256": "f94830000a2ba96af09f405d6804e2c682aba76033fba90356d91023aa8d5fa1"
+    },
+    {
+      "path": "scripts/field-graph.pscript.js",
+      "bytes": 1933,
+      "sha256": "c83d04e00d93c75d5a357ea3bdde650fbe34a2d9846c40b102659219c3fd065d"
+    },
+    {
+      "path": "scripts/field-observer.pscript.js",
+      "bytes": 4363,
+      "sha256": "a4ae40d65585ef69709aae7dc8149de6629c96a22f6f35fa24482de4c6ccfd2e"
+    },
+    {
+      "path": "scripts/folder-sync-manifest.mjs",
+      "bytes": 2379,
+      "sha256": "d226914aaca08348358e422dd8a5db3a6e196ccaa9bef49cd32793b888aa547f"
+    },
+    {
+      "path": "scripts/inspect-empty-paths.mjs",
+      "bytes": 852,
+      "sha256": "f67067bf3ab93af1c0f98377c58ca22f962745663232e93ba23cd9cf47ea9204"
+    },
+    {
+      "path": "scripts/inspect-encounter-context.mjs",
+      "bytes": 869,
+      "sha256": "f5b05c4fe0628adf9265f20e2e7cad45f5b3815652500659d3e462d240c518cc"
+    },
+    {
+      "path": "scripts/inspect-field-bindings.mjs",
+      "bytes": 1091,
+      "sha256": "5b265d4d312c00e77d8e349592a2b63369cf423c28d09588f79bd0c2bba85caa"
+    },
+    {
+      "path": "scripts/inspect-field-resources.mjs",
+      "bytes": 2359,
+      "sha256": "4d823f29a38d87ec6f47e4398d67f03432ed9ec297f341e0cdbb5bc3b1e3e7cc"
+    },
+    {
+      "path": "scripts/inspect-map-archives.mjs",
+      "bytes": 772,
+      "sha256": "8744d4cd33fd7d22721c50bb46c254f1ff4369fa9ebacfd09c9b99601b301077"
+    },
+    {
+      "path": "scripts/inspect-map-members.mjs",
+      "bytes": 1322,
+      "sha256": "dfcd4eb5240aaa19add50bc2e18d5bf6df1a4f49eba2efa9586799a3efb393e7"
+    },
+    {
+      "path": "scripts/inspect-map-structure.mjs",
+      "bytes": 1987,
+      "sha256": "57aeffd9ee0a0d0ef8a21b95b588d6308fa51341b34dad10f3ee82fdfd39dc2a"
+    },
+    {
+      "path": "scripts/inspect-metal-catalog.mjs",
+      "bytes": 577,
+      "sha256": "cf3ec2ba270d9f2158ef358e96bf30c2b9ffb75dbe72390e07a938031d889974"
+    },
+    {
+      "path": "scripts/inspect-pac.mjs",
+      "bytes": 1230,
+      "sha256": "99e9d056ede167fe1f6ea104ccbf040dfb3a9b6391e6240c2833b42d07f7e820"
+    },
+    {
+      "path": "scripts/inspect-path-pack.mjs",
+      "bytes": 1575,
+      "sha256": "21d0707b88921f953fa58ff040c109e9147d71ba2dbe9e644782ae2e7c6ec389"
+    },
+    {
+      "path": "scripts/inspect-rom.mjs",
+      "bytes": 2202,
+      "sha256": "419975eb4325a6773c6e25556b5ad59128dc3f77fc4b784bc40e45d9e452c773"
+    },
+    {
+      "path": "scripts/merge-codespace-build.mjs",
+      "bytes": 2217,
+      "sha256": "0bee6fe5e0dc77e7c0b38c891249dcc8b8c4ca33dbdce39f8a2151bf546a405f"
+    },
+    {
+      "path": "scripts/read-field-mining.mjs",
+      "bytes": 728,
+      "sha256": "3771362e8c0f56bc37d79e3008d2deec03226b13d7347d3278710092344768ac"
+    },
+    {
+      "path": "scripts/read-mining.mjs",
+      "bytes": 631,
+      "sha256": "c2b4d59dd34415ee7efa1580505e2c95915024af4a440541db38b64e8bb42b15"
+    },
+    {
+      "path": "scripts/record-production-contexts.mjs",
+      "bytes": 2224,
+      "sha256": "742dfdb03fdecf8a14b8c0817402cda99aff0bf0a70b541806c6d864ba191b42"
+    },
+    {
+      "path": "scripts/reuse-call-stream.mjs",
+      "bytes": 953,
+      "sha256": "459780f8055f8991de3fd18a1b71a8dd962e04a6bbafc7e5c76ad4d019fa0a03"
+    },
+    {
+      "path": "scripts/reuse-rand.mjs",
+      "bytes": 634,
+      "sha256": "707586f0812ee7579e61f98aafeea444fbd2ccdb86f83b8ee60d1cc8cdb6a789"
+    },
+    {
+      "path": "scripts/run-at-replay.mjs",
+      "bytes": 3275,
+      "sha256": "1e606153f5da9f3ff269e729a19be19c8bdaedba0e0628e07b279f995f36f5f1"
+    },
+    {
+      "path": "scripts/run-field-mining.mjs",
+      "bytes": 1965,
+      "sha256": "3fd41bc834d0bdfd17fb83a276383ee851dfc055358efdd998e756e8f530effe"
+    },
+    {
+      "path": "scripts/run-font-mining.mjs",
+      "bytes": 1550,
+      "sha256": "59a9f10be5c100b171a67bfa22ed8e9dbe0c1d7387df5406ec410a43e8d0ffb4"
+    },
+    {
+      "path": "scripts/run-map-mining.mjs",
+      "bytes": 4060,
+      "sha256": "2903769e492dbc1389814db72a8d3b7b7636829bc64861e0f7346050eba1c7c2"
+    },
+    {
+      "path": "scripts/summarize-structure.mjs",
+      "bytes": 711,
+      "sha256": "88db50b855aa3731812f90ca1194ad2cc0a62098d9843987d82e6d9f925a74d2"
+    },
+    {
+      "path": "scripts/vendor-font-kernel.mjs",
+      "bytes": 1220,
+      "sha256": "66491466096631d40971de8db7531ecb4fc306a7603b3ab9746c56bb753b92de"
+    },
+    {
+      "path": "wasm/at_core.c",
+      "bytes": 1172,
+      "sha256": "4a03c58b60677eb4b7283e1dc39d48f17c055606682227ddd4db5550cf7378cb"
+    },
+    {
+      "path": "wasm/field_at.c",
+      "bytes": 1300,
+      "sha256": "e24a561765f07abda14e9639e0c4b4f9b0c6accc47b5216159be6c35e279366d"
+    },
+    {
+      "path": "wasm/map_render.c",
+      "bytes": 2835,
+      "sha256": "d79884ce44784ea656822e6d8ffb930f7131923c5e1ab2c24964fa196a0c65af"
+    },
+    {
+      "path": "web/app.css",
+      "bytes": 5436,
+      "sha256": "7e028fae5e310fac927bdf15cab80d81e9d364c113140b2e956f12d9af362981"
+    },
+    {
+      "path": "web/app.mjs",
+      "bytes": 13156,
+      "sha256": "c873764007e0d303acccbec147786688bc2e0fda6065e2dd57aabf7391cab6b5"
+    },
+    {
+      "path": "web/at-core.mjs",
+      "bytes": 10077,
+      "sha256": "8d3c7c91c5af99edaa482faa7741d2ecb21ff4873232c89f21110eddb113a9ff"
+    },
+    {
+      "path": "web/at-panel.css",
+      "bytes": 1313,
+      "sha256": "267b10aa90a94724d2432a57e6f2429f18f0a511d5726ab59a0e92ea2d7ed7ac"
+    },
+    {
+      "path": "web/at-panel.mjs",
+      "bytes": 10774,
+      "sha256": "dd6ab7d2cccfdf73e1819b7613d0a502ea4769ac30602caef92612c95fc7ebc8"
+    },
+    {
+      "path": "web/at-worker.mjs",
+      "bytes": 2498,
+      "sha256": "b8cf1cc6debd1837b7ecb3b8d7e55a448100b0232a1f020ae9a16c3b4b29e13e"
+    },
+    {
+      "path": "web/camera-input.mjs",
+      "bytes": 2193,
+      "sha256": "ca265be5f9dd9ba76b266933d0c6e1284ad0fa0e75829e894dd82c390a9ce104"
+    },
+    {
+      "path": "web/data/enc.json",
+      "bytes": 557022,
+      "sha256": "e8609fc3669c8e5594d5ee4ac809ba5c4b35d6663c893a308badda05b91bce9f"
+    },
+    {
+      "path": "web/data/map-id-names.csv",
+      "bytes": 27688,
+      "sha256": "dee195597991dc241135c831c2b94696d57b280f5b63357af4894f691838faa3"
+    },
+    {
+      "path": "web/data/map-name-catalog.csv",
+      "bytes": 13772,
+      "sha256": "cbec090a62c39004bc0b2ccff2cf33ab81f0cce93bec53177ea8ae89467e73a7"
+    },
+    {
+      "path": "web/data/monsters.csv",
+      "bytes": 39438,
+      "sha256": "495f179d2ff79ebccffd33477a6e77a71ccdd2b5369bdca6d9a14f62a86e52a3"
+    },
+    {
+      "path": "web/encounter-context.mjs",
+      "bytes": 1782,
+      "sha256": "6f6573635a223d158e86700bd96d2fcd297e1c4989f49c8113fe1dea1f3cc035"
+    },
+    {
+      "path": "web/field-at.mjs",
+      "bytes": 5885,
+      "sha256": "8e7bb48b23b316bdfda4df2fce3b8c1f7728ed15f0a087cd58d3bb883ceb1066"
+    },
+    {
+      "path": "web/field-graph.mjs",
+      "bytes": 6363,
+      "sha256": "9b2a5215e09786dfa89073f040fb30479dd08888a60b0a844e9afb7b08099165"
+    },
+    {
+      "path": "web/field-panel.css",
+      "bytes": 1225,
+      "sha256": "e3c437d7640b8e5e66dfc887979aa754535529e854c71d92cdeaa2ea8b53fa22"
+    },
+    {
+      "path": "web/field-panel.mjs",
+      "bytes": 6750,
+      "sha256": "b8ca42489aa1ab354d0e3cf0909fade2b9814b653ebdadec41cb5d4787c2b6ee"
+    },
+    {
+      "path": "web/font-core.mjs",
+      "bytes": 1167,
+      "sha256": "76db3fcfe5164ec258f7f06784eac8602f537ff955f53b899b64106a95d914c8"
+    },
+    {
+      "path": "web/index.html",
+      "bytes": 4265,
+      "sha256": "13eaa2bc2ce3880d4e204df1a707b1cfed28b6ee4c49c64a3688f701f15dd12d"
+    },
+    {
+      "path": "web/map-core.mjs",
+      "bytes": 10228,
+      "sha256": "1f87dc178db01bfde33a7c657e62a0fb036de9496ded7a52978e349f2da7ac87"
+    },
+    {
+      "path": "web/map-name-match.mjs",
+      "bytes": 4957,
+      "sha256": "dce716bf99d786144594cb5e7e1f4c8c819529da917613de57647edb65e6cbd7"
+    },
+    {
+      "path": "web/minimap-pac.mjs",
+      "bytes": 2129,
+      "sha256": "ff11e9af78e62fdf68a94d88215bb022a5cd1a53580fc0d8d40c3d44e1d1db5e"
+    },
+    {
+      "path": "web/monster-catalog.mjs",
+      "bytes": 598,
+      "sha256": "694469d6943372eae4c1aa271a35b3f0fa2527d134a23c7eb3860cf5b394319a"
+    },
+    {
+      "path": "web/vendor/arand-reference.mjs",
+      "bytes": 430,
+      "sha256": "f90218ed4abc6af7c452a20fbc5f717e060c0cf162f854cb72e33a28f26b1cb0"
+    },
+    {
+      "path": "web/vendor/call-stream.mjs",
+      "bytes": 2797,
+      "sha256": "b20a5b6d0ab441435c3c89ead73ff196b28f1be5375b099d956b80945eb579c4"
+    },
+    {
+      "path": "web/vendor/font-match-reference.mjs",
+      "bytes": 4332,
+      "sha256": "cd2f73b6498480a7dffddd75ea19a3c86d5cc8cf3564204395cfd67cb4b4b43b"
+    },
+    {
+      "path": "web/vendor/font/constants.js",
+      "bytes": 2834,
+      "sha256": "80fd06244e2f21f95a0c7584685a98536594aa2f22a922bd575fae9a70a593a7"
+    },
+    {
+      "path": "web/vendor/font/font-parser.js",
+      "bytes": 16929,
+      "sha256": "d85f856a6165854a8e8928d67d8a1328ef2ed5da5593ff86635b403baa6c0d37"
+    },
+    {
+      "path": "web/vendor/font/ttf-writer.js",
+      "bytes": 17434,
+      "sha256": "171c613d06d792039b89fe0a3c66720df95343e4dd5429aad8fe7be750848aee"
+    },
+    {
+      "path": "web/vendor/gp2.js",
+      "bytes": 10035,
+      "sha256": "27f5f011c39da7ba8bdc79579e6396e79986553aff10aa7936718a424956464b"
+    },
+    {
+      "path": "web/vendor/narc-source.js",
+      "bytes": 11372,
+      "sha256": "d46b6e7c3a571c01e1ea5322a14a80f0bf341c5e8c7f7872fb5a6560f768abe6"
+    },
+    {
+      "path": "web/vendor/nitro-fs.mjs",
+      "bytes": 172257,
+      "sha256": "737b6a7d9f8f571f3f974adfb02c3b61f4300d02ff97bdceeb70b1701b83c026"
+    },
+    {
+      "path": "web/vendor/rand.js",
+      "bytes": 2544,
+      "sha256": "f37036738cc52e66d61c563ebdd6d369981fd32b136a763cecdb6cd2945ee10a"
+    },
+    {
+      "path": "web/video-panel.css",
+      "bytes": 1357,
+      "sha256": "878a4a0d83a2197704c478ae8a44cdf2c1d2c69cca71edeefff8a6d12c5e23e7"
+    },
+    {
+      "path": "web/video-panel.mjs",
+      "bytes": 9635,
+      "sha256": "f5dc855188bcd6adf6c86778c0433c98aaea700281ae38f482de551e4d4cd5fe"
+    },
+    {
+      "path": "web/wasm/map_render.wasm",
+      "bytes": 3292,
+      "sha256": "31fefd46d2656fecdd926eec94ae16aa257509d4a15f9e13bbf9a84e5d8f49fc"
+    },
+    {
+      "path": "web/worker.mjs",
+      "bytes": 1570,
+      "sha256": "ef8311018a5a95ea65be878c19dad7c481c994f850820bee433b937be77a5ee4"
+    }
+  ],
+  "treeSha256": "bc7ee977480835b0161ff4d5e2854b35371aabb1682902fcbcee32cac7e3daa5"
+}

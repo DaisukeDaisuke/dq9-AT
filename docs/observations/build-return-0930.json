@@ -1,0 +1,11 @@
+{
+  "source": "fuzzy-goggles-r4vqvwgrw943p5r9 folder return",
+  "recordedAt": "2026-09-30T01:16:30.452Z",
+  "wasmBytes": 3292,
+  "wasmSha256": "31fefd46d2656fecdd926eec94ae16aa257509d4a15f9e13bbf9a84e5d8f49fc",
+  "applied": [
+    "docs/observations/actual-at-replay.json"
+  ],
+  "preserved": [],
+  "unchangedCount": 13
+}

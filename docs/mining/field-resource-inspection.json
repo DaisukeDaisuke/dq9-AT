@@ -1,0 +1,2006 @@
+{
+  "date": "2026-09-30T00:25:22.723Z",
+  "header": {
+    "gameTitle": "DRAGONQUEST9",
+    "gameCode": "YDQJ",
+    "fntOffset": 2108928,
+    "fntLength": 91403,
+    "fatOffset": 2200576,
+    "fatLength": 60336
+  },
+  "refs": [
+    {
+      "key": "map:19",
+      "mapId": 20063,
+      "mapIdHex": "0x4e5f",
+      "name": "エラフィタ地方",
+      "nameSource": "existing-map-id-names.csv",
+      "secondaryId": 1,
+      "fieldCode": "F63",
+      "internalLabel": "きたセントシュタイン",
+      "modelResource": "F03M0000",
+      "candidates": [
+        {
+          "path": "F03.bmmp",
+          "relation": "bmmp-map-binding"
+        },
+        {
+          "path": "S02.bmmp",
+          "relation": "bmmp-map-group"
+        }
+      ],
+      "areaStatus": "encounter-area-unresolved",
+      "encounterTableId": null,
+      "source": {
+        "path": "data/map/maplist9.bin",
+        "callIndex": 19,
+        "callOffset": 1364
+      },
+      "rawArgs": [
+        {
+          "type": 1,
+          "value": 20063,
+          "string": null,
+          "raw": 20063
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "エラフィタ地方",
+          "raw": 437
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "F63",
+          "raw": 452
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "きたセントシュタイン",
+          "raw": 456
+        },
+        {
+          "type": 1,
+          "value": 14,
+          "string": null,
+          "raw": 14
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "F03M0000",
+          "raw": 477
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": -400,
+          "string": null,
+          "raw": 4294966896
+        },
+        {
+          "type": 1,
+          "value": -256,
+          "string": null,
+          "raw": 4294967040
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 2,
+          "string": null,
+          "raw": 2
+        },
+        {
+          "type": 1,
+          "value": 8,
+          "string": null,
+          "raw": 8
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        }
+      ]
+    },
+    {
+      "key": "map:20",
+      "mapId": 20003,
+      "mapIdHex": "0x4e23",
+      "name": "エラフィタ地方",
+      "nameSource": "existing-map-id-names.csv",
+      "secondaryId": 1,
+      "fieldCode": "F03",
+      "internalLabel": "エラフィタちほう",
+      "modelResource": "F03M0000",
+      "candidates": [
+        {
+          "path": "F03.bmmp",
+          "relation": "field-code"
+        },
+        {
+          "path": "S02.bmmp",
+          "relation": "bmmp-map-group"
+        }
+      ],
+      "areaStatus": "encounter-area-unresolved",
+      "encounterTableId": null,
+      "source": {
+        "path": "data/map/maplist9.bin",
+        "callIndex": 20,
+        "callOffset": 1464
+      },
+      "rawArgs": [
+        {
+          "type": 1,
+          "value": 20003,
+          "string": null,
+          "raw": 20003
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "エラフィタ地方",
+          "raw": 437
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "F03",
+          "raw": 486
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "エラフィタちほう",
+          "raw": 490
+        },
+        {
+          "type": 1,
+          "value": 14,
+          "string": null,
+          "raw": 14
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "F03M0000",
+          "raw": 477
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": -400,
+          "string": null,
+          "raw": 4294966896
+        },
+        {
+          "type": 1,
+          "value": -256,
+          "string": null,
+          "raw": 4294967040
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 2,
+          "string": null,
+          "raw": 2
+        },
+        {
+          "type": 1,
+          "value": 8,
+          "string": null,
+          "raw": 8
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        }
+      ]
+    },
+    {
+      "key": "map:163",
+      "mapId": 1200,
+      "mapIdHex": "0x04b0",
+      "name": "エラフィタ村",
+      "nameSource": "existing-map-id-names.csv",
+      "secondaryId": 1200,
+      "fieldCode": "M02",
+      "internalLabel": "がいかん",
+      "modelResource": "M02M0000",
+      "candidates": [
+        {
+          "path": "M02.bmmp",
+          "relation": "field-code"
+        }
+      ],
+      "areaStatus": "encounter-area-unresolved",
+      "encounterTableId": null,
+      "source": {
+        "path": "data/map/maplist9.bin",
+        "callIndex": 163,
+        "callOffset": 15488
+      },
+      "rawArgs": [
+        {
+          "type": 1,
+          "value": 1200,
+          "string": null,
+          "raw": 1200
+        },
+        {
+          "type": 1,
+          "value": 1200,
+          "string": null,
+          "raw": 1200
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "エラフィタ村",
+          "raw": 4660
+        },
+        {
+          "type": 1,
+          "value": 2,
+          "string": null,
+          "raw": 2
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "M02",
+          "raw": 4673
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "がいかん",
+          "raw": 2811
+        },
+        {
+          "type": 1,
+          "value": 5,
+          "string": null,
+          "raw": 5
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "M02M0000",
+          "raw": 4677
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 2,
+          "value": -75.20500183105469,
+          "string": null,
+          "raw": 3264637174
+        },
+        {
+          "type": 2,
+          "value": -51.711666107177734,
+          "string": null,
+          "raw": 3259947199
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 2,
+          "string": null,
+          "raw": 2
+        },
+        {
+          "type": 1,
+          "value": 8,
+          "string": null,
+          "raw": 8
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        }
+      ]
+    },
+    {
+      "key": "map:164",
+      "mapId": 1201,
+      "mapIdHex": "0x04b1",
+      "name": "エラフィタ村",
+      "nameSource": "existing-map-id-names.csv",
+      "secondaryId": 1200,
+      "fieldCode": "M02M01",
+      "internalLabel": "クロエのいえ",
+      "modelResource": "M02M0100",
+      "candidates": [
+        {
+          "path": "M02.bmmp",
+          "relation": "bmmp-map-binding"
+        }
+      ],
+      "areaStatus": "encounter-area-unresolved",
+      "encounterTableId": null,
+      "source": {
+        "path": "data/map/maplist9.bin",
+        "callIndex": 164,
+        "callOffset": 15588
+      },
+      "rawArgs": [
+        {
+          "type": 1,
+          "value": 1201,
+          "string": null,
+          "raw": 1201
+        },
+        {
+          "type": 1,
+          "value": 1200,
+          "string": null,
+          "raw": 1200
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "エラフィタ村",
+          "raw": 4660
+        },
+        {
+          "type": 1,
+          "value": 2,
+          "string": null,
+          "raw": 2
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "M02M01",
+          "raw": 4686
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "クロエのいえ",
+          "raw": 4693
+        },
+        {
+          "type": 1,
+          "value": 5,
+          "string": null,
+          "raw": 5
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "M02M0100",
+          "raw": 4706
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 2,
+          "value": -75.20500183105469,
+          "string": null,
+          "raw": 3264637174
+        },
+        {
+          "type": 2,
+          "value": -51.711666107177734,
+          "string": null,
+          "raw": 3259947199
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 8,
+          "string": null,
+          "raw": 8
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        }
+      ]
+    },
+    {
+      "key": "map:165",
+      "mapId": 1202,
+      "mapIdHex": "0x04b2",
+      "name": "エラフィタ村",
+      "nameSource": "existing-map-id-names.csv",
+      "secondaryId": 1200,
+      "fieldCode": "M02M02",
+      "internalLabel": "きょうかい",
+      "modelResource": "M02M0100",
+      "candidates": [
+        {
+          "path": "M02.bmmp",
+          "relation": "bmmp-map-binding"
+        }
+      ],
+      "areaStatus": "encounter-area-unresolved",
+      "encounterTableId": null,
+      "source": {
+        "path": "data/map/maplist9.bin",
+        "callIndex": 165,
+        "callOffset": 15688
+      },
+      "rawArgs": [
+        {
+          "type": 1,
+          "value": 1202,
+          "string": null,
+          "raw": 1202
+        },
+        {
+          "type": 1,
+          "value": 1200,
+          "string": null,
+          "raw": 1200
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "エラフィタ村",
+          "raw": 4660
+        },
+        {
+          "type": 1,
+          "value": 2,
+          "string": null,
+          "raw": 2
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "M02M02",
+          "raw": 4715
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "きょうかい",
+          "raw": 3411
+        },
+        {
+          "type": 1,
+          "value": 10,
+          "string": null,
+          "raw": 10
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "M02M0100",
+          "raw": 4706
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 2,
+          "value": -75.20500183105469,
+          "string": null,
+          "raw": 3264637174
+        },
+        {
+          "type": 2,
+          "value": -51.711666107177734,
+          "string": null,
+          "raw": 3259947199
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 8,
+          "string": null,
+          "raw": 8
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        }
+      ]
+    },
+    {
+      "key": "map:166",
+      "mapId": 1203,
+      "mapIdHex": "0x04b3",
+      "name": "エラフィタ村",
+      "nameSource": "existing-map-id-names.csv",
+      "secondaryId": 1200,
+      "fieldCode": "M02M03",
+      "internalLabel": "やどや",
+      "modelResource": "M02M0100",
+      "candidates": [
+        {
+          "path": "M02.bmmp",
+          "relation": "bmmp-map-binding"
+        }
+      ],
+      "areaStatus": "encounter-area-unresolved",
+      "encounterTableId": null,
+      "source": {
+        "path": "data/map/maplist9.bin",
+        "callIndex": 166,
+        "callOffset": 15788
+      },
+      "rawArgs": [
+        {
+          "type": 1,
+          "value": 1203,
+          "string": null,
+          "raw": 1203
+        },
+        {
+          "type": 1,
+          "value": 1200,
+          "string": null,
+          "raw": 1200
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "エラフィタ村",
+          "raw": 4660
+        },
+        {
+          "type": 1,
+          "value": 2,
+          "string": null,
+          "raw": 2
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "M02M03",
+          "raw": 4722
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "やどや",
+          "raw": 4429
+        },
+        {
+          "type": 1,
+          "value": 5,
+          "string": null,
+          "raw": 5
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "M02M0100",
+          "raw": 4706
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 2,
+          "value": -75.20500183105469,
+          "string": null,
+          "raw": 3264637174
+        },
+        {
+          "type": 2,
+          "value": -51.711666107177734,
+          "string": null,
+          "raw": 3259947199
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 8,
+          "string": null,
+          "raw": 8
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        }
+      ]
+    },
+    {
+      "key": "map:167",
+      "mapId": 1204,
+      "mapIdHex": "0x04b4",
+      "name": "エラフィタ村",
+      "nameSource": "existing-map-id-names.csv",
+      "secondaryId": 1200,
+      "fieldCode": "M02M04",
+      "internalLabel": "みんか",
+      "modelResource": "M02M0100",
+      "candidates": [
+        {
+          "path": "M02.bmmp",
+          "relation": "bmmp-map-binding"
+        }
+      ],
+      "areaStatus": "encounter-area-unresolved",
+      "encounterTableId": null,
+      "source": {
+        "path": "data/map/maplist9.bin",
+        "callIndex": 167,
+        "callOffset": 15888
+      },
+      "rawArgs": [
+        {
+          "type": 1,
+          "value": 1204,
+          "string": null,
+          "raw": 1204
+        },
+        {
+          "type": 1,
+          "value": 1200,
+          "string": null,
+          "raw": 1200
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "エラフィタ村",
+          "raw": 4660
+        },
+        {
+          "type": 1,
+          "value": 2,
+          "string": null,
+          "raw": 2
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "M02M04",
+          "raw": 4729
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "みんか",
+          "raw": 4736
+        },
+        {
+          "type": 1,
+          "value": 5,
+          "string": null,
+          "raw": 5
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "M02M0100",
+          "raw": 4706
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 2,
+          "value": -75.20500183105469,
+          "string": null,
+          "raw": 3264637174
+        },
+        {
+          "type": 2,
+          "value": -51.711666107177734,
+          "string": null,
+          "raw": 3259947199
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 8,
+          "string": null,
+          "raw": 8
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        }
+      ]
+    },
+    {
+      "key": "map:168",
+      "mapId": 1205,
+      "mapIdHex": "0x04b5",
+      "name": "エラフィタ村",
+      "nameSource": "existing-map-id-names.csv",
+      "secondaryId": 1200,
+      "fieldCode": "M02M05",
+      "internalLabel": "ほらあな",
+      "modelResource": "M02M0100",
+      "candidates": [
+        {
+          "path": "M02.bmmp",
+          "relation": "bmmp-map-binding"
+        }
+      ],
+      "areaStatus": "encounter-area-unresolved",
+      "encounterTableId": null,
+      "source": {
+        "path": "data/map/maplist9.bin",
+        "callIndex": 168,
+        "callOffset": 15988
+      },
+      "rawArgs": [
+        {
+          "type": 1,
+          "value": 1205,
+          "string": null,
+          "raw": 1205
+        },
+        {
+          "type": 1,
+          "value": 1200,
+          "string": null,
+          "raw": 1200
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "エラフィタ村",
+          "raw": 4660
+        },
+        {
+          "type": 1,
+          "value": 2,
+          "string": null,
+          "raw": 2
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "M02M05",
+          "raw": 4743
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "ほらあな",
+          "raw": 4750
+        },
+        {
+          "type": 1,
+          "value": 5,
+          "string": null,
+          "raw": 5
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "M02M0100",
+          "raw": 4706
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 2,
+          "value": -75.20500183105469,
+          "string": null,
+          "raw": 3264637174
+        },
+        {
+          "type": 2,
+          "value": -51.711666107177734,
+          "string": null,
+          "raw": 3259947199
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 8,
+          "string": null,
+          "raw": 8
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        }
+      ]
+    },
+    {
+      "key": "map:169",
+      "mapId": 1206,
+      "mapIdHex": "0x04b6",
+      "name": "エラフィタ村",
+      "nameSource": "existing-map-id-names.csv",
+      "secondaryId": 1200,
+      "fieldCode": "M02M06",
+      "internalLabel": "クロエのいえB1F",
+      "modelResource": "M02M0100",
+      "candidates": [
+        {
+          "path": "M02.bmmp",
+          "relation": "bmmp-map-binding"
+        }
+      ],
+      "areaStatus": "encounter-area-unresolved",
+      "encounterTableId": null,
+      "source": {
+        "path": "data/map/maplist9.bin",
+        "callIndex": 169,
+        "callOffset": 16088
+      },
+      "rawArgs": [
+        {
+          "type": 1,
+          "value": 1206,
+          "string": null,
+          "raw": 1206
+        },
+        {
+          "type": 1,
+          "value": 1200,
+          "string": null,
+          "raw": 1200
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "エラフィタ村",
+          "raw": 4660
+        },
+        {
+          "type": 1,
+          "value": 2,
+          "string": null,
+          "raw": 2
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "M02M06",
+          "raw": 4759
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "クロエのいえB1F",
+          "raw": 4766
+        },
+        {
+          "type": 1,
+          "value": 5,
+          "string": null,
+          "raw": 5
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "M02M0100",
+          "raw": 4706
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 2,
+          "value": -75.20500183105469,
+          "string": null,
+          "raw": 3264637174
+        },
+        {
+          "type": 2,
+          "value": -51.711666107177734,
+          "string": null,
+          "raw": 3259947199
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 8,
+          "string": null,
+          "raw": 8
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        }
+      ]
+    },
+    {
+      "key": "map:170",
+      "mapId": 1207,
+      "mapIdHex": "0x04b7",
+      "name": "エラフィタ村",
+      "nameSource": "existing-map-id-names.csv",
+      "secondaryId": 1200,
+      "fieldCode": "M02M07",
+      "internalLabel": "いど",
+      "modelResource": "M02M0700",
+      "candidates": [
+        {
+          "path": "M02.bmmp",
+          "relation": "bmmp-map-binding"
+        }
+      ],
+      "areaStatus": "encounter-area-unresolved",
+      "encounterTableId": null,
+      "source": {
+        "path": "data/map/maplist9.bin",
+        "callIndex": 170,
+        "callOffset": 16188
+      },
+      "rawArgs": [
+        {
+          "type": 1,
+          "value": 1207,
+          "string": null,
+          "raw": 1207
+        },
+        {
+          "type": 1,
+          "value": 1200,
+          "string": null,
+          "raw": 1200
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "エラフィタ村",
+          "raw": 4660
+        },
+        {
+          "type": 1,
+          "value": 2,
+          "string": null,
+          "raw": 2
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "M02M07",
+          "raw": 4782
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "いど",
+          "raw": 3137
+        },
+        {
+          "type": 1,
+          "value": 5,
+          "string": null,
+          "raw": 5
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "M02M0700",
+          "raw": 4789
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 2,
+          "value": -75.20500183105469,
+          "string": null,
+          "raw": 3264637174
+        },
+        {
+          "type": 2,
+          "value": -51.711666107177734,
+          "string": null,
+          "raw": 3259947199
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 8,
+          "string": null,
+          "raw": 8
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        }
+      ]
+    },
+    {
+      "key": "map:359",
+      "mapId": 7402,
+      "mapIdHex": "0x1cea",
+      "name": "ふういんのほこら　１Ｆ",
+      "nameSource": "existing-map-id-names.csv",
+      "secondaryId": 7400,
+      "fieldCode": "D04M02",
+      "internalLabel": "ないぶ1F",
+      "modelResource": "D04M0200",
+      "candidates": [
+        {
+          "path": "D04M02.bmmp",
+          "relation": "field-code"
+        }
+      ],
+      "areaStatus": "encounter-area-unresolved",
+      "encounterTableId": null,
+      "source": {
+        "path": "data/map/maplist9.bin",
+        "callIndex": 359,
+        "callOffset": 34904
+      },
+      "rawArgs": [
+        {
+          "type": 1,
+          "value": 7402,
+          "string": null,
+          "raw": 7402
+        },
+        {
+          "type": 1,
+          "value": 7400,
+          "string": null,
+          "raw": 7400
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "ふういんのほこら　１Ｆ",
+          "raw": 9385
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "D04M02",
+          "raw": 9437
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "ないぶ1F",
+          "raw": 2861
+        },
+        {
+          "type": 1,
+          "value": 19,
+          "string": null,
+          "raw": 19
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 0,
+          "value": null,
+          "string": "D04M0200",
+          "raw": 9444
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 2,
+          "value": -59.391666412353516,
+          "string": null,
+          "raw": 3261960465
+        },
+        {
+          "type": 2,
+          "value": -67.08999633789062,
+          "string": null,
+          "raw": 3263573524
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 8,
+          "string": null,
+          "raw": 8
+        },
+        {
+          "type": 1,
+          "value": 1,
+          "string": null,
+          "raw": 1
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        },
+        {
+          "type": 1,
+          "value": 0,
+          "string": null,
+          "raw": 0
+        }
+      ]
+    }
+  ],
+  "extensions": {
+    "ambl": 681,
+    "amdj": 669,
+    "chr": 18,
+    "mse": 12,
+    "bin": 6,
+    "gp2": 9
+  },
+  "candidates": [
+    {
+      "path": "data/map/D04.ambl",
+      "size": 33336,
+      "id": 5508
+    },
+    {
+      "path": "data/map/D04.amdj",
+      "size": 10960,
+      "id": 5509
+    },
+    {
+      "path": "data/map/D04M01.ambl",
+      "size": 19060,
+      "id": 5510
+    },
+    {
+      "path": "data/map/D04M01.amdj",
+      "size": 6656,
+      "id": 5511
+    },
+    {
+      "path": "data/map/D04M02.ambl",
+      "size": 67876,
+      "id": 5512
+    },
+    {
+      "path": "data/map/D04M02.amdj",
+      "size": 136196,
+      "id": 5513
+    },
+    {
+      "path": "data/map/D04M02E1.mse",
+      "size": 5376,
+      "id": 5514
+    },
+    {
+      "path": "data/map/D04M03.ambl",
+      "size": 19212,
+      "id": 5515
+    },
+    {
+      "path": "data/map/D04M03.amdj",
+      "size": 10312,
+      "id": 5516
+    },
+    {
+      "path": "data/map/F01.ambl",
+      "size": 50972,
+      "id": 5674
+    },
+    {
+      "path": "data/map/F01.amdj",
+      "size": 155292,
+      "id": 5675
+    },
+    {
+      "path": "data/map/F01M01.ambl",
+      "size": 52408,
+      "id": 5676
+    },
+    {
+      "path": "data/map/F01M01.amdj",
+      "size": 54608,
+      "id": 5677
+    },
+    {
+      "path": "data/map/F01M02.ambl",
+      "size": 25392,
+      "id": 5678
+    },
+    {
+      "path": "data/map/F01M02.amdj",
+      "size": 52888,
+      "id": 5679
+    },
+    {
+      "path": "data/map/F02.ambl",
+      "size": 46296,
+      "id": 5680
+    },
+    {
+      "path": "data/map/F02.amdj",
+      "size": 155952,
+      "id": 5681
+    },
+    {
+      "path": "data/map/F03.ambl",
+      "size": 57016,
+      "id": 5682
+    },
+    {
+      "path": "data/map/F03.amdj",
+      "size": 70660,
+      "id": 5683
+    },
+    {
+      "path": "data/pack_lv5/enemy.gp2",
+      "size": 15843860,
+      "id": 6494
+    }
+  ],
+  "packNames": [
+    "data/pack/font.gp2",
+    "data/pack_lv5/chara_mp.gp2",
+    "data/pack_lv5/chara_pc.gp2",
+    "data/pack_lv5/chara_pd.gp2",
+    "data/pack_lv5/enemy.gp2",
+    "data/pack_lv5/font_lv5.gp2",
+    "data/pack_lv5/minimap.gp2",
+    "data/pack_lv5/minimapt.gp2",
+    "data/pack_lv5/path.gp2"
+  ],
+  "packs": [],
+  "encKeys": [
+    "version",
+    "explanation",
+    "main"
+  ],
+  "table30": {
+    "id": "0x1e",
+    "maxRand": 16,
+    "step": 6.25,
+    "toString": "| モンスター | 確率 | % | 内部的な値 |\n|--------|--------|--------|--------|\n|しにがみ|0.0000%-31.2500%|31.2500%|0-4|\n|ミイラ男|31.2500%-62.5000%|31.2500%|5-9|\n|はにわナイト|62.5000%-93.7500%|31.2500%|10-14|\n|メタルスライム(normal)|93.7500%-100.0000%|6.2500%|15-15|\n",
+    "data": [
+      {
+        "monsterId": 31,
+        "monsterName": "しにがみ",
+        "startPercent": "0.0000",
+        "endPercent": "31.2500",
+        "percent": "31.2500",
+        "start": 0,
+        "end": 4,
+        "maxRand": 16,
+        "trapMonster": false
+      },
+      {
+        "monsterId": 108,
+        "monsterName": "ミイラ男",
+        "startPercent": "31.2500",
+        "endPercent": "62.5000",
+        "percent": "31.2500",
+        "start": 5,
+        "end": 9,
+        "maxRand": 16,
+        "trapMonster": false
+      },
+      {
+        "monsterId": 83,
+        "monsterName": "はにわナイト",
+        "startPercent": "62.5000",
+        "endPercent": "93.7500",
+        "percent": "31.2500",
+        "start": 10,
+        "end": 14,
+        "maxRand": 16,
+        "trapMonster": false
+      },
+      {
+        "monsterId": 3,
+        "monsterName": "メタルスライム(normal)",
+        "startPercent": "93.7500",
+        "endPercent": "100.0000",
+        "percent": "6.2500",
+        "start": 15,
+        "end": 15,
+        "maxRand": 16,
+        "trapMonster": false
+      }
+    ]
+  },
+  "sampleNames": [
+    {
+      "monsterId": 3,
+      "monsterName": "メタルスライム(normal)",
+      "startPercent": "93.7500",
+      "endPercent": "100.0000",
+      "percent": "6.2500",
+      "start": 15,
+      "end": 15,
+      "maxRand": 16,
+      "trapMonster": false
+    },
+    {
+      "monsterId": 123,
+      "monsterName": "メタルライダー",
+      "startPercent": "18.1818",
+      "endPercent": "54.5455",
+      "percent": "36.3636",
+      "start": 2,
+      "end": 5,
+      "maxRand": 11,
+      "trapMonster": false
+    },
+    {
+      "monsterId": 123,
+      "monsterName": "メタルライダー",
+      "startPercent": "18.1818",
+      "endPercent": "54.5455",
+      "percent": "36.3636",
+      "start": 2,
+      "end": 5,
+      "maxRand": 11,
+      "trapMonster": false
+    },
+    {
+      "monsterId": 123,
+      "monsterName": "メタルライダー",
+      "startPercent": "0.0000",
+      "endPercent": "33.3333",
+      "percent": "33.3333",
+      "start": 0,
+      "end": 2,
+      "maxRand": 9,
+      "trapMonster": false
+    },
+    {
+      "monsterId": 123,
+      "monsterName": "メタルライダー",
+      "startPercent": "0.0000",
+      "endPercent": "23.0769",
+      "percent": "23.0769",
+      "start": 0,
+      "end": 2,
+      "maxRand": 13,
+      "trapMonster": false
+    },
+    {
+      "monsterId": 177,
+      "monsterName": "メタルハンター",
+      "startPercent": "57.1429",
+      "endPercent": "90.4762",
+      "percent": "33.3333",
+      "start": 12,
+      "end": 18,
+      "maxRand": 21,
+      "trapMonster": false
+    }
+  ]
+}
