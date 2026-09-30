@@ -6,3 +6,368 @@
 エラフィタ地方のこのdstファイルはdq9の中でも屈指の複雑さを持っており、1マップで3エリアもある。1マップ1エンカウントであるダンジョンと違い、屋外はモンスター位置によってエンカウントテーブルが変わる。
 既存のデータマイニング: C:\Users\owner\Documents\tunnelworkspace\dq9-AT\vendor\encounter_jp\encounter_jp\README.md
 
+ghidra-mcpは、パッチデコンパイルを使うのが望ましい。関数search → 関数prefix → batch_デコンパイル
+あと、サンドボックスにある指示書はもう一回読んだほうがいい。君がするのは、dq9 at完全再現と、それの人間向けナビだから
+
+gp2ローダー"C:\Users\owner\Documents\tunnelworkspace\BattleArrow\gp2.js"
+
+script returned but is still running registered functions
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+0
+rand: 0x00003208
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+1
+rand: 0x00003711
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+2
+rand: 0x00000f2d
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+3
+rand: 0x000002e5
+1/32
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+4
+rand: 0x0000638d
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+5
+rand: 0x000048cd
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+6
+rand: 0x00001133
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+7
+rand: 0x0000500c
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+8
+rand: 0x000075ff
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+9
+rand: 0x00000178
+1/64
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+10
+rand: 0x00002820
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+11
+rand: 0x00006cbd
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+12
+rand: 0x00001ff8
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+13
+rand: 0x000071a9
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+14
+rand: 0x0000743b
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+15
+rand: 0x00003fb2
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+16
+rand: 0x000067a2
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+17
+rand: 0x000041f3
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+18
+rand: 0x0000007e
+1/256
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+19
+rand: 0x00007764
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+20
+rand: 0x00006926
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+21
+rand: 0x000016e2
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+22
+rand: 0x00001cde
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+23
+rand: 0x0000246f
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+24
+rand: 0x000017d8
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+25
+rand: 0x000038b4
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+26
+rand: 0x00001159
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+27
+rand: 0x00001da5
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+28
+rand: 0x00006623
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+29
+rand: 0x00007ad8
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+30
+rand: 0x000075c1
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+31
+rand: 0x000009ef
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+32
+rand: 0x00000036
+1/256
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+33
+rand: 0x00001f28
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+34
+rand: 0x00003a4a
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+35
+rand: 0x00002be8
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+36
+rand: 0x0000056b
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+37
+rand: 0x000030e5
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+38
+rand: 0x00002cd4
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+39
+rand: 0x00004b38
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+40
+rand: 0x00006c7c
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+41
+rand: 0x00001376
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+42
+rand: 0x000006f9
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+43
+rand: 0x000057b0
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+44
+rand: 0x00007e64
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+45
+rand: 0x000040e0
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+46
+rand: 0x000050d6
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+47
+rand: 0x0000222a
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+48
+rand: 0x00001416
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+49
+rand: 0x00007404
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+50
+rand: 0x0000249a
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+51
+rand: 0x0000471e
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+52
+rand: 0x000002e1
+1/32
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+53
+rand: 0x00003a9c
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+54
+rand: 0x00001ed0
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+55
+rand: 0x00002704
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+56
+rand: 0x0000639e
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+57
+rand: 0x00002af4
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+58
+rand: 0x0000076c
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+59
+rand: 0x0000086e
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+60
+rand: 0x0000209f
+2 prng called: 0x00000001
+2 prng called: 0x02075150
+61
+rand: 0x00003968
+2 prng called: 0x00000010
+2 prng called: 0x020751a0
+62
+rand: 0x00007f97
+
+
+function printf(...) print(string.format(...)) end
+function printhex(string, hex)
+    if hex == nil then
+        print(string .. ": nil")
+    else
+        printf("%s: %#.8x", string, hex)
+    end
+end
+
+reg = memory.getregister
+regw = memory.setregister
+read8 = memory.readbyte
+read16 = memory.readword
+-- read32 = memory.readdword
+write8 = memory.writebyte
+
+
+
+local counter = 0
+local memo = 0
+
+memory.registerwrite(0x020eee90, function()
+    print(counter)
+    counter = counter + 1
+    -- if counter == 236 then
+    --     emu.pause()
+    -- end
+end)
+
+memory.registerexec(0x02003c54, function()
+    printf("rand: %#.8x", reg("r0"))
+    -- if reg("r0") == 6353 then
+    --     emu.pause()
+    -- end
+    if reg("r0") < 128 then
+        print("1/256")
+    elseif reg("r0") < 256 then
+        print("1/128")
+    elseif reg("r0") < 512 then
+        print("1/64")
+    elseif reg("r0") < 1024 then
+        print("1/32")
+    -- elseif reg("r0") < 2048 then
+    --     print("1/16")
+    -- elseif reg("r0") < 4096 then
+    --     print("1/8")
+     end
+end)
+memory.registerexec(0x02031ea8, function()
+    if reg("r14") == 0x02197d20 then --
+        --print("hit")
+        --regw("r0", 1)
+    end
+    memo = reg("r14")
+    --if reg("r0") ~= 0x00000001 then
+      --  if reg("r0") ~= 0x00000010 then
+            printf("2 prng called: %#.8x", reg("r0"))
+            printf("2 prng called: %#.8x", reg("r14"))
+        --end
+    --end
+end)
+
+memory.registerexec(0x02031eb4, function()
+    --printf("prng called: %#.8x", reg("r0"))
+end)
+
+memory.registerexec(0x02031ef4, function()
+    if memo == 0x02197d20 then --tomadoi
+        print("hit")
+        regw("r0", 0)
+    end
+    if memo == 0x02197d58 then --ikinari
+        print("hit ikinari")
+        --pregw("r0", 6)
+    end
+
+    --printf("prng called: %#.8x", reg("r0"))
+end)
+memory.registerexec(0x02197d20, function()
+    printf("tomadoi: %#.8x", reg("r4"))
+end)
+memory.registerexec(0x02197d58, function()
+    printf("ikinari: %#.8x", reg("r4"))
+end)
+
+local a = 1;
+memory.registerexec(0x0207cfec, function()
+    -- if a == 3 then
+    --     regw("r0", 24) -- はやてのリング: 68~72
+    -- else
+    --     regw("r0", 100)
+    -- end
+    a = a + 1
+    print("takara: ", reg("r0"))
+end)
+
+
+memory.registerexec(0x2003C64, function()
+    printhex("setAT!!!!", reg("r0"))
+end)

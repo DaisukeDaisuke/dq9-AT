@@ -1,7 +1,7 @@
 {
   "format": "dq9-folder-sync-manifest",
   "version": 1,
-  "generatedAt": "2026-09-30T01:17:38.003Z",
+  "generatedAt": "2026-09-30T02:27:50.401Z",
   "source": "local dq9-AT selected complete source directories",
   "folders": [
     "web",
@@ -63,6 +63,11 @@
       "path": "docs/CONTINUATION_20260930.md",
       "bytes": 3608,
       "sha256": "71c664d821959632b26c2aaab2afce30378b25aa6f9e127270bcc5625182dc8f"
+    },
+    {
+      "path": "docs/CONTINUATION_C3_20260930.md",
+      "bytes": 2579,
+      "sha256": "ddf48e504504fe2cd7dc07bbd6389f7ca0e7b40ce18da67ca1b35b1d8db8a783"
     },
     {
       "path": "docs/DEPLOYMENT.md",
@@ -271,8 +276,8 @@
     },
     {
       "path": "protocol.txt",
-      "bytes": 686,
-      "sha256": "f0418ac38d7411fdef377d406212439a653ec5f0c293a0a2b2d00f63540568f9"
+      "bytes": 8361,
+      "sha256": "40813ffd8678e6306f075b6029a9bb27a1a0543092a8f7720a5b744d01b42094"
     },
     {
       "path": "README.md",
@@ -413,6 +418,11 @@
       "path": "scripts/run-map-mining.mjs",
       "bytes": 4060,
       "sha256": "2903769e492dbc1389814db72a8d3b7b7636829bc64861e0f7346050eba1c7c2"
+    },
+    {
+      "path": "scripts/stage-source-folder.mjs",
+      "bytes": 1484,
+      "sha256": "e6366711869a812684ca7126aaca6a329a9975f619666f886aa1d0034989f800"
     },
     {
       "path": "scripts/summarize-structure.mjs",
@@ -620,5 +630,5 @@
       "sha256": "ef8311018a5a95ea65be878c19dad7c481c994f850820bee433b937be77a5ee4"
     }
   ],
-  "treeSha256": "bc7ee977480835b0161ff4d5e2854b35371aabb1682902fcbcee32cac7e3daa5"
+  "treeSha256": "e1fe38c2bcfabf0992a2b3a99cf9f4aa9e9417791c791919dd38855104619a76"
 }
