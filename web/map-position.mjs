@@ -5,22 +5,24 @@ function resize(source,sw,sh,w,h){const out=new Uint8Array(w*h);for(let y=0;y<h;
 export class MapPositionMatcher {
  constructor(instance){this.e=instance.exports;this.base=Number(this.e.__heap_base.value);if(!this.e.map_registration)throw Error('マップ位置照合WASMがありません');this.reference=null;}
  setReference(image){if(!image||!image.width||!image.height){this.reference=null;return;}this.reference={...image,...luma(image)};}
- match(frame,{scales=[.5],excluded=[],minimumSamples=150}={}){
+ match(frame,{scales=[.5],excluded=[],minimumSamples=150,coarseSeeds=6,maxMilliseconds=Infinity}={}){
   if(!this.reference)return {resolved:false,reason:'ROM map not selected',candidates:[]};
+  coarseSeeds=Math.max(6,Math.min(24,Math.floor(coarseSeeds)||6));const started=performance.now(),deadline=started+Math.max(0,maxMilliseconds);let budgetExhausted=false,evaluatedTranslations=0;
   const fw=frame.width,fh=frame.height,values=frame.luma??luma(frame).v,valid=new Uint8Array(fw*fh).fill(1),reference=this.reference,candidates=[];
   for(const box of excluded)for(let y=Math.max(0,Math.floor(box.y));y<Math.min(fh,Math.ceil(box.y+box.h));y++)for(let x=Math.max(0,Math.floor(box.x));x<Math.min(fw,Math.ceil(box.x+box.w));x++)valid[y*fw+x]=0;
-  for(const scale of scales){if(!(scale>0))continue;const rw=Math.round(reference.width*scale),rh=Math.round(reference.height*scale);if(rw<4||rh<4||rw>2048||rh>2048)continue;
+  for(const scale of scales){if(performance.now()>=deadline){budgetExhausted=true;break;}if(!(scale>0))continue;const rw=Math.round(reference.width*scale),rh=Math.round(reference.height*scale);if(rw<4||rh<4||rw>2048||rh>2048)continue;
    const ref=resize(reference.v,reference.width,reference.height,rw,rh),alpha=resize(reference.a,reference.width,reference.height,rw,rh);
    const xmin=-rw+12,xmax=fw-12,ymin=-rh+12,ymax=fh-12;
-   const run=(x0,x1,y0,y1,stride,sample,min)=>{let ptr=this.base;const put=b=>{const p=ptr;ptr=(ptr+b.length+7)&~7;return p;};const rp=put(ref),ap=put(alpha),fp=put(values),vp=put(valid),op=ptr,count=(Math.floor((x1-x0)/stride)+1)*(Math.floor((y1-y0)/stride)+1),end=op+count*16;
+   const runBlock=(x0,x1,y0,y1,stride,sample,min)=>{let ptr=this.base;const put=b=>{const p=ptr;ptr=(ptr+b.length+7)&~7;return p;};const rp=put(ref),ap=put(alpha),fp=put(values),vp=put(valid),op=ptr,count=(Math.floor((x1-x0)/stride)+1)*(Math.floor((y1-y0)/stride)+1),end=op+count*16;
     if(end>this.e.memory.buffer.byteLength)this.e.memory.grow(Math.ceil((end-this.e.memory.buffer.byteLength)/65536));new Uint8Array(this.e.memory.buffer,rp,ref.length).set(ref);new Uint8Array(this.e.memory.buffer,ap,alpha.length).set(alpha);new Uint8Array(this.e.memory.buffer,fp,values.length).set(values);new Uint8Array(this.e.memory.buffer,vp,valid.length).set(valid);
-    const n=this.e.map_registration(rp,ap,rw,rh,fp,vp,fw,fh,x0,x1,y0,y1,stride,sample,min,op),v=new Float32Array(this.e.memory.buffer,op,n*4),out=[];for(let i=0;i<n;i++)if(v[i*4+2]>-.5)out.push({dx:v[i*4],dy:v[i*4+1],score:v[i*4+2],samples:v[i*4+3],scale});return out.sort((a,b)=>b.score-a.score);};
+    const n=this.e.map_registration(rp,ap,rw,rh,fp,vp,fw,fh,x0,x1,y0,y1,stride,sample,min,op),v=new Float32Array(this.e.memory.buffer,op,n*4),out=[];evaluatedTranslations+=n;for(let i=0;i<n;i++)if(v[i*4+2]>-.5)out.push({dx:v[i*4],dy:v[i*4+1],score:v[i*4+2],samples:v[i*4+3],scale});return out.sort((a,b)=>b.score-a.score);};
+   const run=(x0,x1,y0,y1,stride,sample,min)=>{if(maxMilliseconds===Infinity)return runBlock(x0,x1,y0,y1,stride,sample,min);const out=[];for(let y=y0;y<=y1;y+=stride*8){if(performance.now()>=deadline){budgetExhausted=true;break;}out.push(...runBlock(x0,x1,y,Math.min(y1,y+stride*7),stride,sample,min));}return out.sort((a,b)=>b.score-a.score);};
    const coarse=run(xmin,xmax,ymin,ymax,4,2,minimumSamples),seeds=[];
-   for(const p of coarse){if(seeds.every(q=>Math.abs(p.dx-q.dx)>6||Math.abs(p.dy-q.dy)>6))seeds.push(p);if(seeds.length>=6)break;}
+   for(const p of coarse){if(seeds.every(q=>Math.abs(p.dx-q.dx)>6||Math.abs(p.dy-q.dy)>6))seeds.push(p);if(seeds.length>=coarseSeeds)break;}
    for(const p of seeds)candidates.push(...run(Math.max(xmin,p.dx-4),Math.min(xmax,p.dx+4),Math.max(ymin,p.dy-4),Math.min(ymax,p.dy+4),1,1,minimumSamples*3));
   }
   candidates.sort((a,b)=>b.score-a.score);const peaks=[];for(const p of candidates){if(peaks.every(q=>p.scale!==q.scale||Math.abs(p.dx-q.dx)>3||Math.abs(p.dy-q.dy)>3))peaks.push(p);if(peaks.length===12)break;}
   const best=peaks[0],margin=best&&peaks[1]?best.score-peaks[1].score:0;
-  return {kind:'video-map-registration',resolved:!!best&&best.score>=.65&&margin>=.08,best,margin,candidates:peaks,mapId:reference.mapId,descriptor:reference.descriptor,imageWidth:reference.width,imageHeight:reference.height,coordinateSpace:'ROM-composed-image-pixels',worldPositionKnown:false,bootProof:false,interpretation:'Image alignment only. No player/world position unless independently observed marker/transform is supplied.'};
+  return {kind:'video-map-registration',resolved:!budgetExhausted&&!!best&&best.score>=.65&&margin>=.08,search:{method:'coarse-grid-then-local-refinement',coarseStride:4,coarseSampleStride:2,coarseSeeds,budgetExhausted,planComplete:!budgetExhausted,translationDomainComplete:false,evaluatedTranslations,elapsedMilliseconds:performance.now()-started},best,margin,candidates:peaks,mapId:reference.mapId,descriptor:reference.descriptor,imageWidth:reference.width,imageHeight:reference.height,coordinateSpace:'ROM-composed-image-pixels',worldPositionKnown:false,bootProof:false,interpretation:'Image alignment only. No player/world position unless independently observed marker/transform is supplied.'};
  }
 }
