@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; connect-src 'self'; img-src 'self' data: blob:; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>DQ9 モンスター移動・条件付き実験</title>
+<link rel="stylesheet" href="monster-explorer.css">
+</head>
+<body>
+<header><h1>モンスター移動・条件付き実験</h1><a href="index.html">ATナビへ</a></header>
+<main>
+<section class="notice" aria-label="対応範囲">
+<strong>7402・1 actor の仮想テスト構成。実ゲームの現在状態・全世界は不明です</strong>
+<p>ROMのグラフ・trig / atan・COL2を使い、C/WASMの数値モデルを実行します。記録済み軌跡の再生ではありません。種族別の生成初期化、他actor、自然生成、実フレーム順、戦闘・警戒は未対応です。</p>
+</section>
+<section class="toolbar">
+<label>自分の日本語版DQ9 revision 0 NDS<input id="rom" type="file" accept=".nds"></label>
+<button id="release" type="button" disabled>ROM・軌跡を解放</button>
+<p id="status" role="status">入力ファイルはブラウザ内だけで使用します。アップロード・自動保存はしません。</p>
+</section>
+<div class="layout">
+<section class="configuration">
+<h2>1. 初期条件</h2>
+<p id="map-info">7402のグラフをNDSから読み込みます。他マップを対応済みとは扱いません。</p>
+<form id="config" autocomplete="off">
+<fieldset id="inputs" disabled>
+<div class="grid2">
+<label>開始ノード<select id="start-node"></select></label>
+<label>目標（開始ノードの隣接先）<select id="target-node"></select></label>
+</div>
+<button type="button" id="node-position">開始ノードのXYZを初期値にする</button>
+<div class="grid3">
+<label>初期X（world）<input id="x" type="number" step="0.000244140625" min="-524288" max="524287.9997558594" value="0"></label>
+<label>初期Y（world）<input id="y" type="number" step="0.000244140625" min="-524288" max="524287.9997558594" value="0"></label>
+<label>初期Z（world）<input id="z" type="number" step="0.000244140625" min="-524288" max="524287.9997558594" value="0"></label>
+</div>
+<div class="grid2">
+<label>実際の向き（native 0..25736）<input id="angle" type="number" min="0" max="25736" step="1" value="0"></label>
+<label>初期AT seed（仮説）<input id="seed" value="0x00000001" maxlength="10"></label>
+<label>移動モード / 速度<select id="speed-mode"><option value="1">1 / 154</option><option value="2" selected>2 / 230</option><option value="3">3 / 450</option></select></label>
+<label>回転速度（native）<input id="turn-rate" type="number" min="0" max="32767" value="808"></label>
+<label>幅（native、仮の寸法）<input id="width" type="number" min="1" max="65536" value="4096"></label>
+<label>高さ（native、仮の寸法）<input id="height" type="number" min="1" max="65536" value="4096"></label>
+</div>
+<div class="grid3"><label>初期stateTimer<input id="state-timer" type="number" min="0" max="4294967295" value="0"></label><label>初期activeElapsed<input id="active-elapsed" type="number" min="0" max="4294967295" value="0"></label><label>初期updateCounter<input id="update-counter" type="number" min="0" max="4294967295" value="0"></label></div>
+<button type="button" id="face-target">初期実向きを目標方向に設定</button>
+<p class="muted">XYZの1 world = 4096 native。state 2から開始。寸法・header等は宣言したテスト値で、種族の能力や自然生成結果ではありません。</p>
+<h2>2. 固定環境の仮説</h2>
+<div class="grid2">
+<label>clock phase<input id="phase" type="number" min="0" max="65535" value="2"></label>
+<label>clock scaledDelta<input id="delta" type="number" min="0" max="65535" value="33"></label>
+<label>controller flags<input id="controller-flags" value="0x00000000" maxlength="10"></label>
+<label>world kind<input id="world-kind" type="number" min="-2147483648" max="2147483647" value="-1"></label>
+<label>script mode<input id="script-mode" type="number" min="0" max="255" value="0"></label>
+<label>検知モード<select id="detection"><option value="3">3（近接すると未解決停止）</option><option value="0">0（検知OFFという仮説）</option></select></label>
+</div>
+<h3>party 0–3：存在 / 不在 / 不明を明示</h3>
+<div id="parties"></div>
+<button type="button" id="party-near">party 0を初期位置のX+8に置く（仮説）</button>
+<p class="muted">存在するpartyは同じmap・typed header 0x802を仮定。位置は固定です。選択heroはparty 0。画面に見えないことから不在を推定しません。</p>
+<label class="check"><input id="no-other-actors" type="checkbox">このテスト構成では自分以外の自然生成11枠は不在</label>
+<label class="check"><input id="animation-type1" type="checkbox">アニメーションcomponentはtype 1のみ（既知guardの仮説）</label>
+<h3>動的anchor</h3>
+<label>状態<select id="anchor-mode"><option value="unknown">不明（接地・周期は実行不可）</option><option value="none">0件という仮説</option><option value="specified">下記の全件を指定</option></select></label>
+<div id="anchors"></div><button id="add-anchor" type="button">anchor追加（最大4）</button>
+<h3>順序付き静的COL2 object</h3>
+<div class="inline"><select id="resource" aria-label="ROM COL2 resource"></select><button type="button" id="add-object">末尾へ追加</button></div>
+<ol id="objects"></ol>
+<label class="check"><input id="scene-complete" type="checkbox">この一覧が全object。flags 0・祖先なし・位置/回転/追加bounds/origin 0・non-tiled 0という仮説</label>
+<p class="muted">空の一覧でチェックすると「地形objectなし」の仮説です。ROM内の存在だけでは実ゲーム中の有効object・順序は確定しません。</p>
+<button id="initial-ground" type="button">COL2照会で初期Yを設定</button>
+<p id="ground-note" class="muted">初期Y設定はユーザー初期化です。native birthや後続観測の注入ではありません。</p>
+<label class="check declaration"><input id="declared" type="checkbox">上記を自分の仮想テスト構成として実行する（ライブ状態の推定ではない）</label>
+<button id="initialize" class="primary" type="button">この条件で初期化 / やり直す</button>
+</fieldset>
+</form>
+<details><summary>条件のローカル保存・読込</summary><p>このページの初期設定だけを保存します。ROM・画像・生RAM・観測次状態・軌跡は含みません。</p><button id="export-config" type="button" disabled>設定JSONを保存</button><label>設定JSONを読む<input id="import-config" type="file" accept=".json,application/json" disabled></label></details>
+</section>
+<section class="experiment">
+<h2>3. モデルを実行</h2>
+<p id="readiness" role="status">NDSを読み込み、初期条件を指定してください。</p>
+<div class="actions">
+<button id="step-ai" type="button" disabled>AI 1回</button><button id="step-ai10" type="button" disabled>AI 10回</button>
+<button id="step-ground" type="button" disabled>接地 1回</button><button id="step-life" type="button" disabled>寿命判定</button>
+<button id="step-cycle" type="button" disabled>論理周期 1回</button><button id="step-cycle10" type="button" disabled>論理周期 10回</button>
+</div>
+<p class="muted">論理周期 = AI → 外側寿命判定 → 接地。フレーム数ではありません。未解決段階で停止し、それ以前の確定した投影とAT prefixを保持します。</p>
+<div class="inline"><label>外部AT消費（次操作の前に）<input id="external-count" type="number" min="1" max="100000" value="1"></label><button id="external" type="button" disabled>指定回数だけ進める</button></div>
+<p class="muted">外部消費の回数・順序は手入力です。他actorやschedulerから自動計算した値ではありません。</p>
+<div class="canvas-wrap"><canvas id="map" width="800" height="520" aria-label="ROMグラフとモデルが計算したXZ・実向き"></canvas></div>
+<label class="check"><input id="overlay" type="checkbox" checked>ROMマップ背景（7402の限定範囲で対応確認、全域保証なし）</label>
+<p id="canvas-note" class="muted">グラフ表示：モンスターの経路。プレイヤーの歩行領域ではありません。</p>
+<dl id="readout"><dt>モデル状態</dt><dd>未初期化</dd></dl>
+<section class="notice compact"><strong>常に未解決：world全体 / 実機AT下限</strong><p id="scope">表示ATはこの条件付き実験のprefixです。実機の総AT・生成抑制・安全性の保証には使えません。</p></section>
+<h3>適用中の仮説 / 未解決境界</h3><ul id="assumptions"><li>未初期化</li></ul>
+<h3>計算ログ（最新200段階）</h3><p class="muted">位置はモデルが返した結果のみ。補間アニメーションや後続観測は使いません。</p>
+<div class="log-wrap"><table><thead><tr><th>順</th><th>段階</th><th>XYZ native</th><th>向き</th><th>state</th><th>seed</th><th>owned AT</th></tr></thead><tbody id="log"></tbody></table></div>
+</section>
+</div>
+</main>
+<script type="module" src="monster-explorer.mjs"></script>
+</body>
+</html>

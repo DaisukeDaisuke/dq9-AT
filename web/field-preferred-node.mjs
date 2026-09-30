@@ -97,7 +97,7 @@ export function queryPreferredFieldNode({queryReached,player,graph,inventory,fie
  * extraction. Fixed addresses are guarded by this known ROM's instruction/data
  * signature. This is not a region/revision-independent ROM discovery routine.
  */
-export function preferredNodeTrigFromRom(input){
+export function preferredNodeTrigFromRom(input,{includeAtan=false}={}){
  const rom=input instanceof Uint8Array?input:new Uint8Array(input),v=new DataView(rom.buffer,rom.byteOffset,rom.byteLength);
  if(rom.length<0x200)throw Error('NDS header missing');
  const offset=v.getUint32(0x20,true),base=v.getUint32(0x28,true),size=v.getUint32(0x2c,true);
@@ -122,5 +122,16 @@ export function preferredNodeTrigFromRom(input){
  const d=new DataView(decoded.buffer,decoded.byteOffset,decoded.byteLength);
  if(decoded.length<0xed55c||d.getUint32(0x307cc,true)!==25736||d.getUint32(0x307d0,true)!==0x020e955c||d.getUint32(0x30808,true)!==25736||d.getUint32(0x3080c,true)!==0x020e955c||d.getUint32(0x307a8,true)!==0xe1a00800)throw Error('Unverified preferred-query ROM signature');
  const values=new Int16Array(8192);for(let i=0;i<values.length;i++)values[i]=d.getInt16(0xe955c+2*i,true);
- return {divisor:25736,values,source:{arm9Base:base,tableAddress:0x020e955c,tableBytes:16384,decodedArm9Bytes:decoded.length}};
+ const result={divisor:25736,values,source:{arm9Base:base,tableAddress:0x020e955c,tableBytes:16384,decodedArm9Bytes:decoded.length}};
+ // Optional movement-only table020ed55c..020ed65d, sharing this same verified
+ // ARM9 decoder. Default C13 return shape/data are deliberately unchanged.
+ if(includeAtan){
+  if(String.fromCharCode(...rom.subarray(12,16))!=='YDQJ'||rom[0x1e]!==0||decoded.length<0xed65e)throw Error('Unsupported movement atan ROM/version/range');
+  const constants=[6434,3217,12868,9651,-12868,-6434,-9651];
+  if(constants.some((x,i)=>d.getInt32(0xc4ff0+i*4,true)!==x)||d.getUint32(0xc500c,true)!==0x020ed55c)throw Error('Unverified movement atan constants/table pointer');
+  const atanValues=new Int16Array(129);for(let i=0;i<atanValues.length;i++)atanValues[i]=d.getInt16(0xed55c+i*2,true);
+  if(atanValues[0]!==0||atanValues[128]!==3217||atanValues.some((x,i)=>x<0||x>3217||(i>0&&x<atanValues[i-1])))throw Error('Unverified movement atan table domain');
+  result.atan={values:atanValues,source:{tableAddress:0x020ed55c,tableBytes:258,entries:129,signatureAddress:0x020c4ff0}};
+ }
+ return result;
 }

@@ -21,3 +21,4 @@ if "$LD" --help | grep -- '--export-memory' >/dev/null; then MEMORY_EXPORT+=(--e
 "$LD" --no-entry "${MEMORY_EXPORT[@]}" --export=__heap_base --initial-memory=33554432 --max-memory=134217728 "${OBJECTS[@]}" -o web/wasm/map_render.wasm
 printf 'Built '; wc -c < web/wasm/map_render.wasm
 bash scripts/build-monster.sh
+CLANG="$CLANG" WASM_LD="$LD" bash scripts/build-monster-movement.sh
