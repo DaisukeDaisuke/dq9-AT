@@ -1,0 +1,104 @@
+{
+  "evidenceStatus": "synthetic structural test; no video timestamps or native state",
+  "sightings": [],
+  "associationAlternatives": [
+    {
+      "id": "existing",
+      "status": "synthetic"
+    },
+    {
+      "id": "label-error",
+      "status": "synthetic"
+    },
+    {
+      "id": "prior-origin",
+      "status": "synthetic"
+    },
+    {
+      "id": "scripted-origin",
+      "status": "synthetic"
+    },
+    {
+      "id": "unknown-origin",
+      "status": "synthetic"
+    }
+  ],
+  "hypotheses": [
+    {
+      "id": "conditional",
+      "assumptions": [
+        "synthetic table/path/order only"
+      ],
+      "events": [
+        {
+          "id": "first",
+          "stateBoundary": "immediately-after-draw",
+          "operation": "weighted-species",
+          "tableSpeciesAlternatives": [
+            {
+              "tableId": 30,
+              "monsterId": 83
+            }
+          ],
+          "evidence": {
+            "status": "synthetic-test-only"
+          }
+        },
+        {
+          "id": "last",
+          "stateBoundary": "immediately-after-draw",
+          "operation": "weighted-species",
+          "tableSpeciesAlternatives": [
+            {
+              "tableId": 30,
+              "monsterId": 3
+            }
+          ],
+          "evidence": {
+            "status": "synthetic-test-only"
+          }
+        }
+      ],
+      "edges": [
+        {
+          "from": "first",
+          "to": "last",
+          "callsBetweenPostStates": {
+            "min": 1,
+            "max": null
+          },
+          "provenance": "synthetic unbounded order"
+        }
+      ]
+    },
+    {
+      "id": "existing",
+      "events": [],
+      "edges": []
+    },
+    {
+      "id": "label-error",
+      "events": [],
+      "edges": []
+    },
+    {
+      "id": "prior-origin",
+      "events": [],
+      "edges": []
+    },
+    {
+      "id": "scripted-origin",
+      "events": [],
+      "edges": []
+    },
+    {
+      "id": "unknown-origin",
+      "events": [],
+      "edges": []
+    }
+  ],
+  "coverage": {
+    "associationEnumerationComplete": false,
+    "eventHypothesesComplete": false
+  }
+}

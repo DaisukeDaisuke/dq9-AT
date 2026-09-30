@@ -22,3 +22,8 @@ if "$LD" --help | grep -- '--export-memory' >/dev/null; then MEMORY_EXPORT+=(--e
 printf 'Built '; wc -c < web/wasm/map_render.wasm
 bash scripts/build-monster.sh
 CLANG="$CLANG" WASM_LD="$LD" bash scripts/build-monster-movement.sh
+
+# This kernel has an exact reviewed hash. Rebuild separately with pinned emsdk 3.1.6.
+bash scripts/build-at-identify.sh --verify
+node scripts/test-at-identify.mjs
+node scripts/test-at-identify-page.mjs
