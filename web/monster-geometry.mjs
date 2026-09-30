@@ -62,8 +62,9 @@ export function inspectMonsterModel(bytes){
 export class MonsterGeometry {
  constructor(instance){this.w=instance.exports;this.w._initialize?.();}
  static async create(){const response=await fetch(new URL('./wasm/monster_geometry.wasm',import.meta.url));if(!response.ok)throw Error('Monster geometry WASM unavailable');const{instance}=await WebAssembly.instantiate(await response.arrayBuffer(),{});return new MonsterGeometry(instance);}
- decode(asset){
+ decode(asset,{localMatrices=null,poseSource=null}={}){
   const model=inspectMonsterModel(asset.model.bytes),{r,materials,objects,pieces,inverse}=model,w=this.w;w.monster_reset();
+  if(localMatrices!==null){if(!Array.isArray(localMatrices)||localMatrices.length!==objects.length||localMatrices.some(m=>!Array.isArray(m)||m.length!==16||!m.every(Number.isFinite))||!poseSource||poseSource.exactStoredFrame!==true||!Number.isInteger(poseSource.frame)||poseSource.frame<0)throw Error('Explicit exact-frame pose matrices required');for(let i=0;i<objects.length;i++)objects[i].matrix=localMatrices[i].slice();}
   let current=identity(),stack=Array(32).fill(null),material=-1,p=model.renderStart,finished=false,visibility=true;const drawCalls=[],sbcCommands={};
   const load=slot=>{if(slot>31||!stack[slot])throw Error('Uninitialized SBC matrix stack '+slot);current=stack[slot].slice();};
   const store=slot=>{if(slot>31)throw Error('SBC matrix stack out of bounds');stack[slot]=current.slice();};
@@ -94,8 +95,8 @@ export class MonsterGeometry {
   const gpuCommands=Object.fromEntries(Array.from(new Uint32Array(w.memory.buffer,w.monster_commands(),256),(count,op)=>[hex(op),count]).filter(([,n])=>n));
   return{format:'dq9-monster-preview',version:1,modelId:asset.modelId,variant:asset.variant,speciesCandidates:asset.speciesCandidates,source:{...asset.source,modelMember:asset.model.name},
    vertices,indices,materials,drawCalls,bounds,declared:model.declared,counts:{objects:objects.length,materials:materials.length,pieces:pieces.length,vertices:vertices.length/11,triangles:indices.length/3},sbcCommands,gpuCommands,
-   pose:'static-model-bind-pose',geometryBackend:'WebAssembly',materialBinding:'MDL0-name-to-embedded-TEX0',animationApplied:false,fieldVariantConfirmed:false,recognitionEvidence:false,
-   limitations:['Static bind pose; NSBCA not applied','Unlit texture preview; game lighting not reproduced','Variant field role unverified','No video identification or AT observation coupling']};
+   pose:localMatrices?'exact-nsbca-stored-frame':'static-model-bind-pose',poseSource:localMatrices?structuredClone(poseSource):null,geometryBackend:'WebAssembly',materialBinding:'MDL0-name-to-embedded-TEX0',animationApplied:localMatrices!==null,fieldVariantConfirmed:false,recognitionEvidence:false,
+   limitations:[localMatrices?'Exact stored NSBCA sample; native playback phase and blending unknown':'Static bind pose; NSBCA not applied','Unlit texture preview; game lighting not reproduced','Variant field role unverified','No video identification or AT observation coupling']};
  }
 }
 export const monsterPreviewTransfers=p=>[p.vertices.buffer,p.indices.buffer,...p.materials.map(m=>m.rgba.buffer)];

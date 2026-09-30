@@ -34,3 +34,8 @@ node scripts/test-at-identify-index-page.mjs
 
 # Capture identity must stay tied to frozen pixels across asynchronous analyses.
 node --experimental-vm-modules scripts/check-video-panel-capture.mjs
+
+# Experimental ROM-derived pose matching: portable CPU/Worker and parser checks.
+node scripts/test-monster-animation.mjs
+node scripts/test-monster-recognition.mjs
+node scripts/test-monster-recognize-page.mjs

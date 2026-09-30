@@ -1,4 +1,4 @@
-// Cancellable, GPU-resident static orientation templates. No classifier, video
+// Cancellable explicit pose/orientation templates. No classifier, video
 // loop, catalogue scan, persistent cache, or AT-observation side effect.
 export const DEFAULT_TEMPLATE_VIEWS=Object.freeze(Array.from({length:8},(_,i)=>Object.freeze({yaw:i*Math.PI/4,pitch:Math.PI/4})));
 export const TEMPLATE_LIMITS=Object.freeze({modelsPerJob:8,viewsPerModel:16,tileSizes:Object.freeze([32,64,128]),jobPixels:8*16*128*128,defaultCacheBytes:8*1024*1024,defaultCacheEntries:32,batchViews:2});
@@ -20,11 +20,13 @@ export class MonsterTemplateBank {
   const columns=Math.min(4,views.length),rows=Math.ceil(views.length/columns),atlasBytes=columns*rows*tileSize*tileSize*4,pixels=candidates.length*views.length*tileSize*tileSize;
   if(pixels>TEMPLATE_LIMITS.jobPixels)throw Error('Template job pixel budget exceeded');
   const seen=new Set(),items=candidates.map(model=>{
-   if(model?.format!=='dq9-monster-preview'||model.pose!=='static-model-bind-pose'||model.animationApplied!==false||model.recognitionEvidence!==false)throw Error('Only decoded static model previews are accepted');
+   const staticPose=model?.pose==='static-model-bind-pose'&&model.animationApplied===false; const p=model?.poseSource; const sampledPose=model?.pose==='exact-nsbca-stored-frame'&&model.animationApplied===true&&p?.exactStoredFrame===true&&typeof p.clip==='string'&&Number.isInteger(p.frame)&&p.frame>=0&&typeof p.decoderVersion==='string';
+   if(model?.format!=='dq9-monster-preview'||(!staticPose&&!sampledPose)||model.recognitionEvidence!==false)throw Error('Only decoded static or explicit exact-sample poses are accepted');
+   const poseKey=staticPose?'bind':JSON.stringify([p.clip,p.frame,p.decoderVersion]);
    if(typeof model.modelId!=='string'||!model.modelId.length||!['regular','_f'].includes(model.variant))throw Error('Explicit model identity and variant required');
    if(!Array.isArray(model.speciesCandidates)||!model.speciesCandidates.length||model.speciesCandidates.some(s=>!Number.isInteger(s.monsterId)))throw Error('All model species aliases are required');
-   const id=model.modelId+':'+model.variant;if(seen.has(id))throw Error('Duplicate template candidate '+id);seen.add(id);
-   const key=JSON.stringify(['static-unlit-sphere-v1',sessionKey,model.modelId,model.variant,tileSize,orientations]);
+   const id=model.modelId+':'+model.variant+':'+poseKey;if(seen.has(id))throw Error('Duplicate template candidate '+id);seen.add(id);
+   const key=JSON.stringify(['unlit-explicit-pose-v1',sessionKey,model.modelId,model.variant,poseKey,tileSize,orientations,model.templateBounds??model.bounds]);
    return{model,key,speciesCandidates:model.speciesCandidates.map(s=>({...s}))};
   });
   // A single returned lease pins every model in this bounded set.
@@ -53,11 +55,11 @@ export class MonsterTemplateBank {
     this.evictFor(plan.atlasBytes);
     const atlas=await this.renderer.createTemplateAtlas(item.model,{views:plan.views,tileSize:plan.tileSize,batchViews:TEMPLATE_LIMITS.batchViews,signal,onProgress:progress=>{valid();onProgress({modelId:item.model.modelId,variant:item.model.variant,modelIndex:i,totalModels:plan.items.length,...progress,cacheHit:false});}});
     try{valid();if(atlas.byteLength!==plan.atlasBytes||atlas.renderedViews!==plan.views.length)throw Error('Incomplete or over-budget GPU template atlas');}catch(error){atlas.destroy();throw error;}
-    entry={key:item.key,atlas,modelId:item.model.modelId,variant:item.model.variant,speciesCandidates:item.speciesCandidates,references:0,used:0};this.cache.set(item.key,entry);this.cacheBytes+=atlas.byteLength;stats.generatedModels++;stats.renderedViews+=atlas.renderedViews;
+    entry={key:item.key,atlas,modelId:item.model.modelId,variant:item.model.variant,speciesCandidates:item.speciesCandidates,pose:item.model.pose,poseSource:item.model.poseSource??null,references:0,used:0};this.cache.set(item.key,entry);this.cacheBytes+=atlas.byteLength;stats.generatedModels++;stats.renderedViews+=atlas.renderedViews;
    }
    entry.references++;entry.used=++this.tick;held.push(entry);onProgress({modelId:entry.modelId,variant:entry.variant,modelIndex:i,totalModels:plan.items.length,completedViews:plan.views.length,totalViews:plan.views.length,cacheHit,modelComplete:true});
   }
-  valid();let released=false;return{entries:held.map(e=>({modelId:e.modelId,variant:e.variant,speciesCandidates:e.speciesCandidates.map(s=>({...s})),atlas:e.atlas,pose:'static-model-bind-pose',fieldVariantConfirmed:false,recognitionEvidence:false})),stats:{...stats,logicalCacheBytes:this.cacheBytes,wallMs:performance.now()-start},release(){if(!released){released=true;release();}}};
+  valid();let released=false;return{entries:held.map(e=>({modelId:e.modelId,variant:e.variant,speciesCandidates:e.speciesCandidates.map(s=>({...s})),atlas:e.atlas,pose:e.pose,poseSource:e.poseSource,fieldVariantConfirmed:false,recognitionEvidence:false})),stats:{...stats,logicalCacheBytes:this.cacheBytes,wallMs:performance.now()-start},release(){if(!released){released=true;release();}}};
   }catch(error){release();throw error;}
  }
  cancel(){this.active?.controller.abort();}

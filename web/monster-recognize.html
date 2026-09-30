@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>敵の画像照合 · DQ9 実験室</title>
+  <link rel="stylesheet" href="./monster-recognize.css">
+  <script type="module" src="./monster-recognize-page.mjs"></script>
+</head>
+<body>
+  <header class="page-header">
+    <div><p class="eyebrow">DQ9 · ローカル画像照合</p><h1>敵の見た目から、候補を探す <span class="badge">実験版</span></h1></div>
+    <a href="./index.html">ツール一覧へ</a>
+  </header>
+  <main>
+    <div class="notice"><strong>選んだモデルの範囲だけで比較します。</strong> 距離スコアは確率ではありません。1位でも確定ではなく、候補外・判別不能の可能性があります。姿勢・背景・隠れ方によって順位が変わります。</div>
+    <div class="layout">
+      <section class="source-panel" aria-labelledby="source-heading">
+        <h2 id="source-heading"><span class="step">1</span> ローカルファイルを開く</h2>
+        <div class="file-grid">
+          <label class="file-field">NDSファイル <span class="muted">最大512 MiB</span><input id="rom-file" type="file" accept=".nds"><span id="rom-status" class="file-status">未選択</span></label>
+          <label class="file-field">動画 または 画像<input id="source-file" type="file" accept="video/*,image/png,image/jpeg,image/webp,image/bmp,image/gif,image/avif"><span id="source-status" class="file-status">未選択 · 画像は4096 × 4096 pxまで</span></label>
+        </div>
+        <p class="muted">ファイルはこのブラウザー内で処理します。読み込んだ画像・ROMから生成するデータは保存・アップロードしません。</p>
+        <div id="video-area" hidden>
+          <video id="source-video" controls playsinline preload="metadata" aria-label="入力動画"></video>
+          <div class="video-toolbar"><button id="play-pause" type="button" disabled>再生</button><label class="seek-label" for="video-seek">再生位置 <output id="video-time">0:00 / 0:00</output></label><input id="video-seek" type="range" min="0" max="0" step="0.01" value="0" disabled aria-label="動画の再生位置"></div>
+        </div>
+        <div class="section-title"><h2><span class="step">2</span> 静止画で敵の範囲を選ぶ</h2><button id="freeze" class="accent" type="button" disabled>フリーズして範囲を選ぶ</button></div>
+        <p id="capture-help" class="muted">動画の見やすい位置でフリーズするか、画像を開いてください。</p>
+        <div id="frozen-wrap" class="frozen-wrap empty"><canvas id="frozen-view" width="640" height="360" aria-label="固定した入力画像。敵の範囲は下の数値欄でも指定できます"></canvas><p id="frozen-placeholder">ここに固定した画像が表示されます</p></div>
+        <div class="roi-toolbar"><button id="redraw-roi" type="button" disabled>範囲を描き直す</button><p id="roi-hint" class="muted">画像上でドラッグして敵全体を囲みます。枠内をドラッグすると移動、右下の点でサイズ変更できます。</p></div>
+        <fieldset id="roi-fields" disabled>
+          <legend>敵の範囲（元画像のピクセル座標・最大1024 × 1024 px）</legend>
+          <div class="roi-inputs"><label>X<input id="roi-x" type="number" min="0" step="1" value="0"></label><label>Y<input id="roi-y" type="number" min="0" step="1" value="0"></label><label>幅<input id="roi-w" type="number" min="1" max="1024" step="1" value="128"></label><label>高さ<input id="roi-h" type="number" min="1" max="1024" step="1" value="128"></label><button id="apply-roi" type="button">範囲を適用</button></div>
+        </fieldset>
+        <details id="capture-details"><summary>固定した画像の情報</summary><dl id="capture-metadata"><dt>状態</dt><dd>未取得</dd></dl></details>
+      </section>
+      <aside class="configuration" aria-labelledby="settings-heading">
+        <h2 id="settings-heading"><span class="step">3</span> 比較する候補を選ぶ</h2>
+        <div class="crop-section"><div><h3>照合に使う切り抜き</h3><p id="crop-size" class="muted">範囲を選択してください</p></div><div class="crop-wrap"><canvas id="crop-preview" width="128" height="128" aria-label="敵の範囲の切り抜きプレビュー" hidden></canvas><span id="crop-placeholder" class="muted">未選択</span></div></div>
+        <div class="section-title"><h3 id="models-label">モデル候補（最大4種類）</h3><span id="model-count" class="badge">0 / 4</span></div>
+        <label for="model-filter" class="sr-only">候補を名前・モデルIDで絞り込む</label><input id="model-filter" type="search" placeholder="名前・モデルIDで絞り込む" disabled>
+        <div id="model-list" class="model-list" role="group" aria-labelledby="models-label"><p class="muted">NDSを読み込むと候補が表示されます。</p></div>
+        <p id="selection-summary" class="muted">初期候補: z019b / z021a / z064a / z000c</p>
+        <label class="control-label">モデルの種類<select id="variant"><option value="_f">_f（フィールド用という役割仮説）</option><option value="regular">通常モデル（接尾辞なし）</option><option value="both">両方を比較</option></select></label>
+        <p class="muted">_f の役割は未確定です。映像と異なる形・動きが含まれる場合があります。</p>
+        <div class="settings-grid"><label class="control-label">姿勢の探索<select id="preset"><option value="quick">クイック（少ない姿勢）</option><option value="standard">標準（より多くの姿勢）</option></select></label><label class="control-label">表示する順位<select id="top-k"><option value="4">上位4件</option><option value="3">上位3件</option><option value="1">上位1件</option></select></label></div>
+        <p class="muted">比較には時間がかかる場合があります。クイックで確認してから標準で再照合できます。</p>
+        <div class="actions"><button id="start" type="button" class="primary" disabled>この切り抜きを照合</button><button id="cancel" type="button" disabled>中止</button><button id="restart" type="button" disabled>最初から再照合</button></div>
+        <progress id="progress" max="1" value="0" aria-label="照合の進捗"></progress>
+        <p id="status" role="status" aria-live="polite">NDSと動画または画像を選択してください。</p>
+        <p id="error" class="error" role="alert" hidden></p>
+      </aside>
+    </div>
+    <section id="results" aria-labelledby="results-heading">
+      <div class="section-title"><h2 id="results-heading">照合結果</h2><span id="result-timing" class="muted"></span></div>
+      <div id="unknown-status" class="notice">候補外・判別不能の可能性を常に残します。照合後も、順位だけで種類を確定しないでください。</div>
+      <p id="result-empty" class="muted">固定した画像の敵を囲み、候補を選んで照合してください。</p>
+      <ol id="rankings" class="rankings"></ol>
+      <section id="coverage-section" hidden><h3>比較できた範囲</h3><p id="coverage"></p><ul id="unsupported"></ul><h3>この結果の制約</h3><ul id="limitations"></ul><p id="result-capture" class="muted"></p></section>
+    </section>
+    <noscript><p class="notice">この実験ページを使うにはJavaScriptが必要です。</p></noscript>
+  </main>
+</body>
+</html>
