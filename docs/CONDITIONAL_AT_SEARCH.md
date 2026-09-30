@@ -1,6 +1,6 @@
 # 条件付きAT探索
 
-`web/at-identify.html` は手入力の種・エンカウント表候補から、最後の種抽選直後の状態クラスを探す独立ページです。既存の ATPanel、ATSession、追跡画面のスタイルを変更しません。
+`web/at-identify.html` は手入力の種・エンカウント表候補から、最後の種抽選直後の状態を探す独立ページです。従来のlow31数値範囲に加え、外部で既知の初期seedと最終抽選index範囲を明示する別モードがあります。indexモードの制約と保存上限は [TERMINAL_INDEX_SEARCH.md](TERMINAL_INDEX_SEARCH.md) を参照してください。既存の ATPanel、ATSession、追跡画面のスタイルを変更しません。
 
 ## 操作
 

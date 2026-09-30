@@ -1,0 +1,1 @@
+import {parentPort} from 'node:worker_threads';import {handleWorkerMessage} from '../web/at-identify-index-worker.mjs';parentPort.on('message',message=>handleWorkerMessage(message,value=>parentPort.postMessage(value)));

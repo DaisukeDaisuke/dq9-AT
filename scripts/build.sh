@@ -27,3 +27,7 @@ CLANG="$CLANG" WASM_LD="$LD" bash scripts/build-monster-movement.sh
 bash scripts/build-at-identify.sh --verify
 node scripts/test-at-identify.mjs
 node scripts/test-at-identify-page.mjs
+# Separate known-origin / terminal-index mode. Never overwrite the low31 kernel.
+bash scripts/build-at-identify-stream.sh --verify
+node scripts/test-at-identify-index.mjs
+node scripts/test-at-identify-index-page.mjs
