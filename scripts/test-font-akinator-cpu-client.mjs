@@ -53,4 +53,11 @@ const diagnosticReplies=[],diagnosticHandler=createCpuAkinatorWorkerHandler(m=>d
 const workerURL=new URL('../web/font-akinator-cpu-worker.mjs',import.meta.url).href;
 class NodeAdapter{constructor(){this.w=new Worker(`import {parentPort} from 'node:worker_threads';import {createCpuAkinatorWorkerHandler} from ${JSON.stringify(workerURL)};const handle=createCpuAkinatorWorkerHandler(m=>parentPort.postMessage(m));parentPort.on('message',m=>handle(m));`,{eval:true,type:'module'});this.w.on('message',data=>this.onmessage?.({data}));this.w.on('error',e=>this.onerror?.({message:e.message}));}postMessage(m,t){this.w.postMessage(m,t)}terminate(){this.w.terminate()}}
 const real=new CPUTextClient({factory:()=>new NodeAdapter()});result=await real.match(image,request());eq(result.sequence,'家');eq(result.characters[0].winner.difference,0);eq(result.backend,'cpu-reference');eq(result.unsearchedTextPossible,true);eq(real.active,null);
+// Host termination remains immediate even while the disposable CPU Worker is
+// scoring between its less-frequent task yields.
+let cancelAdapter,cancelClient;
+class CancelAdapter extends NodeAdapter{constructor(){super();this.exited=new Promise(resolve=>this.w.once('exit',resolve));this.terminationCount=0;}postMessage(m,t){super.postMessage(m,t);if(m.type==='match')setTimeout(()=>cancelClient.cancel(),5);}terminate(){this.terminationCount++;super.terminate();}}
+cancelClient=new CPUTextClient({factory:()=>(cancelAdapter=new CancelAdapter())});
+const large=request();large.glyphsBySize={'8x8':Array.from({length:4096},()=>({char:'A',rows:Array(8).fill('########')}))};large.options={...large.options,maxMilliseconds:10000,scales:[.95,1,1.05],shiftX:1,shiftY:1};
+await assert.rejects(cancelClient.match(image,large),e=>e.name==='AbortError');checks++;await cancelAdapter.exited;eq(cancelAdapter.terminationCount,1);eq(cancelClient.active,null);
 console.log(JSON.stringify({passed:true,checks,actualCpuWorker:true,noGpuShim:true,scope:'frozen input snapshot, request identity, cancellation/stale replies, hard timeout, unknown/alias gate, one-glyph real Worker'}));

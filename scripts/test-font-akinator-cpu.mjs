@@ -25,6 +25,9 @@ const image=rgba(3,1,[0,2]);
 const options={sequenceMode:'greedy',scales:[1],shiftX:0,shiftY:0,shiftStep:1,maxMilliseconds:10000};
 
 eq(new GlyphAkinatorMatcher(dictionary).backend,'webgpu');
+eq(new GlyphAkinatorMatcher(dictionary).disposableWorker,false);
+bad(()=>new GlyphAkinatorMatcher(dictionary,{disposableWorker:true}));
+bad(()=>new GlyphAkinatorMatcher(dictionary,{backend:'cpu-reference',disposableWorker:'true'}));
 eq(validateCpuGlyphInput(one),{glyphs:1,glyphCells:1});
 bad(()=>validateCpuGlyphInput({'1x1':new Array(4097).fill(one['1x1'][0])}));
 bad(()=>validateCpuGlyphInput({'1025x1024':[{rows:[]}]}));
@@ -53,6 +56,14 @@ const full=await matcher().match(image,{...options,maxEvaluations:2});
 eq([full.sequence,full.evaluated,full.complete],['AA',2,true]);
 const shared=await matcher().match(image,{...options,sequenceMode:'line-font-hypotheses',maxEvaluations:7});
 eq([shared.evaluated,shared.sequence,shared.textResolved,shared.searchStopped],[7,'A',false,'evaluation-budget']);
+// Only scheduling changes in the disposable Worker, including child hypotheses.
+const workerMatcher=new GlyphAkinatorMatcher(dictionary,{...cpu,disposableWorker:true});
+const workerShared=await workerMatcher.match(image,{...options,sequenceMode:'line-font-hypotheses',maxEvaluations:7});
+const stableResult=({elapsedMilliseconds,...result})=>result;
+eq(stableResult(workerShared),stableResult(shared));
+eq(workerMatcher.hypothesisMatcher,null);
+const workerExpired=await new GlyphAkinatorMatcher(dictionary,{...cpu,disposableWorker:true}).match(image,{...options,maxMilliseconds:Number.MIN_VALUE});
+eq([workerExpired.reason,workerExpired.evaluated,workerExpired.characters.length],['time-budget',0,0]);
 const absent=await matcher().match(rgba(3,1,[]),options);
 eq([absent.sequence,absent.reason,absent.unknownTextPossible],['','white-pixels-absent',true]);
 const preCancelled=await matcher().match(image,{...options,signal:AbortSignal.abort()});

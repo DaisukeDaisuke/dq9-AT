@@ -13,7 +13,7 @@ export function createCpuAkinatorWorkerHandler(send){
     if(busy)throw Error('CPU worker is busy');
     matcher?.destroy();matcher=null;romEpoch=null;
     const dictionary=buildGlyphAkinatorDictionary(message.glyphsBySize,{backend:'cpu-reference'});
-    matcher=new GlyphAkinatorMatcher(dictionary,{backend:'cpu-reference'});romEpoch=requestEpoch;
+    matcher=new GlyphAkinatorMatcher(dictionary,{backend:'cpu-reference',disposableWorker:true});romEpoch=requestEpoch;
     send({type:'ready',id,romEpoch});return;
    }
    if(type!=='match')throw Error('Unknown CPU worker request');

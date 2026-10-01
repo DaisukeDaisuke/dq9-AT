@@ -125,10 +125,17 @@ export function eraseAkinatorCandidate(residual,dictionary,candidate,width,heigh
 
 // The JavaScript-number arithmetic here is the private CPU reference loop.
 // It intentionally does not emulate WGSL f32 rounding or install GPU globals.
-function createCpuScorer(d,spec,width,height){
- let prefix,info;
+function createCpuScorer(d,spec,width,height,disposableWorker){
+ let prefix,info,lastYield=performance.now();
+ // A dedicated Worker is terminated by its host on cancellation. Coalesce
+ // task yields there to avoid browser nested-timer clamping at every batch;
+ // scoring still checks its elapsed budget at every existing checkpoint.
+ async function yieldControl(){
+  if(disposableWorker&&performance.now()-lastYield<20)return;
+  await new Promise(resolve=>setTimeout(resolve,0));lastYield=performance.now();
+ }
  const edge=(a,max)=>Math.min(max,Math.max(0,Math.ceil(a-.5))),stride=width+1;
- return {cap:2048,beginPass(p,i){prefix=p;info=i;},destroy(){},async score(start,count,interrupted){
+ return {cap:2048,beginPass(p,i){prefix=p;info=i;},destroy(){},yieldControl,async score(start,count,interrupted){
   const scores=new Uint32Array(count);let cellsSinceYield=0;
   for(let j=0;j<count;j++){
    const reason=interrupted();if(reason)return {scores,evaluated:j,reason};
@@ -142,7 +149,7 @@ function createCpuScorer(d,spec,width,height){
     cw+=(x1-x0)*(y1-y0);inter+=prefix[y1*stride+x1]+prefix[y0*stride+x0]-prefix[y0*stride+x1]-prefix[y1*stride+x0];
     // Even one unusually dense glyph cannot monopolize the worker indefinitely.
     if(++cellsSinceYield>=32768){
-     cellsSinceYield=0;await new Promise(resolve=>setTimeout(resolve,0));
+     cellsSinceYield=0;await yieldControl();
      const stopped=interrupted();if(stopped)return {scores,evaluated:j,reason:stopped};
     }
    }
@@ -176,10 +183,11 @@ async function createGpuScorer(d,spec,width,height,total){
 }
 
 export class GlyphAkinatorMatcher{
- constructor(dictionary,{backend='webgpu'}={}){
+ constructor(dictionary,{backend='webgpu',disposableWorker=false}={}){
   if(!['webgpu','cpu-reference'].includes(backend))throw Error('Unknown Akinator scoring backend');
+  if(typeof disposableWorker!=='boolean'||disposableWorker&&backend!=='cpu-reference')throw Error('Disposable-worker yielding requires the CPU backend');
   if(backend==='cpu-reference')validateCpuDictionary(dictionary);
-  this.dictionary=dictionary;this.backend=backend;this.generation=0;this.route='glyph-akinator';
+  this.dictionary=dictionary;this.backend=backend;this.disposableWorker=disposableWorker;this.generation=0;this.route='glyph-akinator';
  }
  cancel(){this.generation++;this.hypothesisMatcher?.cancel();}
  destroy(){this.cancel();}
@@ -201,7 +209,7 @@ export class GlyphAkinatorMatcher{
    const remainingMilliseconds=timeBudget-(performance.now()-started),remainingEvaluations=budget-used;
    if(remainingMilliseconds<=0){stopped='time-budget';break;}
    if(remainingEvaluations<1){stopped='evaluation-budget';break;}
-   const child=new GlyphAkinatorMatcher(hypothesis.dictionary,{backend:this.backend});this.hypothesisMatcher=child;
+   const child=new GlyphAkinatorMatcher(hypothesis.dictionary,{backend:this.backend,disposableWorker:this.disposableWorker});this.hypothesisMatcher=child;
    const result=await child.matchGreedy(image,{...options,threshold:hypothesis.threshold,maxMilliseconds:remainingMilliseconds,maxEvaluations:remainingEvaluations,
     // Small kana sit below the line top. Permit their true baseline alignment.
     shiftY:Math.max(options.shiftY??1,3),shiftStep:options.shiftStep??1});
@@ -248,7 +256,7 @@ export class GlyphAkinatorMatcher{
   for(let i=0;i<residual.length;i++){const k=i*4;residual[i]=Number(image.data[k]>threshold||image.data[k+1]>threshold||image.data[k+2]>threshold);}
   if(!maskInfo(residual,width,height).white){result.reason='white-pixels-absent';return result;}
   if(interrupted()){result.reason=interrupted();return result;}
-  const scorer=await (this.backend==='cpu-reference'?createCpuScorer(d,spec,width,height):createGpuScorer(d,spec,width,height,total));
+  const scorer=await (this.backend==='cpu-reference'?createCpuScorer(d,spec,width,height,this.disposableWorker):createGpuScorer(d,spec,width,height,total));
   try{
    for(let passNo=0;passNo<charCount;passNo++){
     const info=maskInfo(residual,width,height);
@@ -266,7 +274,7 @@ export class GlyphAkinatorMatcher{
      for(let j=0;j<count;j++){
       const c={...decodeAkinatorIndex(start+j,spec),difference:batch.scores[j]},old=best.get(c.glyphIndex);if(!old||order(c,old)<0)best.set(c.glyphIndex,c);
      }
-     await new Promise(resolve=>setTimeout(resolve,0));
+     if(this.backend==='cpu-reference')await scorer.yieldControl();else await new Promise(resolve=>setTimeout(resolve,0));
     }
     if(aborted||interrupted()){result.reason=result.reason||interrupted();break;}
     const alternatives=[...best.values()].sort(order).slice(0,topN).map(c=>{
