@@ -1,0 +1,92 @@
+{
+  "version": 1,
+  "rendererIdentity": "f618b8f48f369fa142d7f799238b64843de275f02cc0942740e31f516c10af1e",
+  "targetSHA256": "ab851da1d673ab584ca6a71d1cc4b379a28e12a65f09046e73ea406af682333d",
+  "files": [
+    {
+      "path": "data/monsters.csv",
+      "bytes": 39438,
+      "sha256": "495f179d2ff79ebccffd33477a6e77a71ccdd2b5369bdca6d9a14f62a86e52a3"
+    },
+    {
+      "path": "encounter-context.mjs",
+      "bytes": 1782,
+      "sha256": "6f6573635a223d158e86700bd96d2fcd297e1c4989f49c8113fe1dea1f3cc035"
+    },
+    {
+      "path": "field-graph.mjs",
+      "bytes": 6363,
+      "sha256": "9b2a5215e09786dfa89073f040fb30479dd08888a60b0a844e9afb7b08099165"
+    },
+    {
+      "path": "map-core.mjs",
+      "bytes": 10264,
+      "sha256": "dfc3c0c4eca8764d12714697f19e4fdd6a5476a91843deb46004153c7e1a293f"
+    },
+    {
+      "path": "minimap-pac.mjs",
+      "bytes": 2129,
+      "sha256": "ff11e9af78e62fdf68a94d88215bb022a5cd1a53580fc0d8d40c3d44e1d1db5e"
+    },
+    {
+      "path": "monster-animation.mjs",
+      "bytes": 6670,
+      "sha256": "b057ba5f3d188e148f3ca1217e8d50c9b951b333c61851b6d7141d807f47e3e6"
+    },
+    {
+      "path": "monster-assets.mjs",
+      "bytes": 5543,
+      "sha256": "1e4d8c75731bd90cfc7c7cfa2181b2bd6e7043516629c8051037683c4b909626"
+    },
+    {
+      "path": "monster-cpu-template.mjs",
+      "bytes": 4508,
+      "sha256": "85fc1362d2ed327fdceffb34124d9204cd470e7aea2117f448d7e552137f9a5e"
+    },
+    {
+      "path": "monster-geometry.mjs",
+      "bytes": 16786,
+      "sha256": "d43e5e5b846aa9c9362cf960c541ee7213bca99ef217866ed50a4dde5540c8aa"
+    },
+    {
+      "path": "monster-render-state.mjs",
+      "bytes": 3896,
+      "sha256": "7b4e8b6e76904eae57f135128ead018d4268da4850c1118d2a44a822b23ae951"
+    },
+    {
+      "path": "monster-webgpu.mjs",
+      "bytes": 14876,
+      "sha256": "cb88ee426a8cb07b6ba679d64256cb2f0b617ac228d14331623bfde7a47e14ca"
+    },
+    {
+      "path": "vendor/call-stream.mjs",
+      "bytes": 2797,
+      "sha256": "b20a5b6d0ab441435c3c89ead73ff196b28f1be5375b099d956b80945eb579c4"
+    },
+    {
+      "path": "vendor/gp2.js",
+      "bytes": 9883,
+      "sha256": "f59faf7220dcccfa88b111bb401c5922a7b3f029029397e1624a4c0f4fae821a"
+    },
+    {
+      "path": "vendor/narc-source.js",
+      "bytes": 11372,
+      "sha256": "d46b6e7c3a571c01e1ea5322a14a80f0bf341c5e8c7f7872fb5a6560f768abe6"
+    },
+    {
+      "path": "vendor/nitro-fs.mjs",
+      "bytes": 167871,
+      "sha256": "1512993b53490a06f19839c21f58cc425ab066555c5e1e415610aaa58c5c1746"
+    },
+    {
+      "path": "wasm/monster_geometry.wasm",
+      "bytes": 4397,
+      "sha256": "a3439c303fb3a299a8c6454360ee5ba6111768747dd1917bf4d377577f412bf6"
+    },
+    {
+      "path": "detector-rom-source.mjs",
+      "bytes": 19645,
+      "sha256": "4a5610a8094b91530ac68e798153b9cfed81130c9e83e5379980277f30bc648a"
+    }
+  ]
+}
