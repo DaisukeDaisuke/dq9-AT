@@ -1,5 +1,9 @@
 # 次工程への具体的指示
 
+## 最新の入口（2026-10-02 JST / 復旧後）
+
+[CURRENT_STATUS.md](CURRENT_STATUS.md) → [PLAN.md](../PLAN.md) の順に現在の到達点・停止境界・次の完了条件を確認する。現在の許可と作業先は最新の利用者指示に従う。以下の旧Codespace指定、未接続一覧、公開待ち・検証待ち表記は当時の記録であり、現在の状態を示さない。`protocol.txt` は利用者所有の原文として保持し、上書きしない。
+
 ## 2026-09-30 現在の入口
 `protocol.txt` → `docs/CONTINUATION_20260930.md` → `PLAN.md` の最新節を読む。Codespaceは指定 **fuzzy-goggles-r4vqvwgrw943p5r9** のみ。以下のP0/H01記述は2026-09-29の履歴であり、別CodespaceやPages設定待ちの指示は現在の作業先ではない。全静的ノード採掘と160消費の本番照合は完了。未完了は全field scheduler・映像自位置/3D認識・起動からの追加下限証明・人間移動最適化。最新根拠は `docs/observations/actual-*.json`、公開状態は `docs/DEPLOYMENT.md` の最新節を参照する。
 
