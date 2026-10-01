@@ -1,6 +1,9 @@
-import {readCachedInferenceAsset} from './monster-inference-assets.mjs';
+import {readCachedInferenceAsset,inferenceProfile} from './monster-inference-assets.mjs';
 import {validateRGBA} from './monster-roi-descriptor.mjs';
-export const DINO_SPEC=Object.freeze({modelSHA256:'3afdc8bc63b50558d6e5770f5b799bb82455c2311183a2de43803f343a29d917',runtime:'1.23.2',provider:'wasm',size:224,components:384,maxTemplates:64,maxMs:90000,preprocessor:'alpha-tight-template/full-ROI-gray128-bicubic224-v1'});
+export const DINO_SPEC=Object.freeze({backend:'wasm',precision:'int8',modelRevision:'c2bb04a51fab207c420665f1946016107bffc701',modelId:'model',modelSHA256:'3afdc8bc63b50558d6e5770f5b799bb82455c2311183a2de43803f343a29d917',runtime:'1.23.2',provider:'wasm',size:224,components:384,maxTemplates:64,maxMs:90000,preprocessor:'alpha-tight-template/full-ROI-gray128-bicubic224-v1'});
+export const DINO_GPU_SPEC=Object.freeze({...DINO_SPEC,backend:'webgpu',provider:'webgpu',precision:'fp16',modelId:'model-fp16',modelSHA256:'4e9ea6fe106e2225e28ee3c1c3d53b5b92aa4af62142f6ed6b66b6a92213cf04'});
+export function dinoSpec(backend='wasm'){if(backend==='wasm')return DINO_SPEC;if(backend==='webgpu')return DINO_GPU_SPEC;throw Error('AI推論方式はCPU/WASMかWebGPUを選択してください');}
+export async function probeDinoWebGPU({gpu=globalThis.navigator?.gpu,signal}={}){abort(signal);need(gpu?.requestAdapter,'WebGPUを利用できません。CPU/WASMを明示的に選択してください');const adapter=await gpu.requestAdapter({powerPreference:'high-performance'});abort(signal);need(adapter,'WebGPUアダプターを取得できません。CPU/WASMを選択してください');need(adapter.features?.has('shader-f16'),'このGPUはFP16推論に必要なshader-f16に対応していません。CPU/WASMを選択してください');return adapter;}
 const abort=s=>{if(s?.aborted)throw new DOMException('AI特徴比較を中止しました','AbortError');};
 const need=(v,m)=>{if(!v)throw Error(m);};
 const roundEven=n=>{const a=Math.floor(n),f=n-a;return f===.5?(a%2?a+1:a):Math.round(n);};
@@ -21,20 +24,22 @@ export function dinoInput(image,{template=false}={}){
  const means=[.485,.456,.406],stds=[.229,.224,.225],tensor=new Float32Array(3*size*size);for(let k=0;k<3;k++)for(let i=0;i<size*size;i++)tensor[k*size*size+i]=Math.fround((Math.fround(Math.fround(square[i*3+k]/255)-Math.fround(means[k])))/Math.fround(stds[k]));return tensor;
 }
 export function cosineSimilarity(a,b){need(a.length===384&&b.length===384,'AI特徴量の長さが不正です');let n=0;for(let i=0;i<384;i++){need(Number.isFinite(a[i])&&Number.isFinite(b[i]),'AI特徴量が不正です');n+=a[i]*b[i];}return Math.max(-1,Math.min(1,n));}
-async function cachedRuntime(signal){
- const urls=[];try{const entry=await readCachedInferenceAsset('runtime-entry',{signal}),mjs=await readCachedInferenceAsset('runtime-mjs',{signal}),wasmBinary=await readCachedInferenceAsset('runtime-wasm',{signal});abort(signal);
+async function cachedRuntime(signal,backend='wasm'){
+ const profile=inferenceProfile(backend);
+ const urls=[];try{const entry=await readCachedInferenceAsset(profile.runtimeIds.entry,{signal}),mjs=await readCachedInferenceAsset(profile.runtimeIds.mjs,{signal}),wasmBinary=await readCachedInferenceAsset(profile.runtimeIds.wasm,{signal});abort(signal);
  const entryURL=URL.createObjectURL(new Blob([entry],{type:'text/javascript'}));urls.push(entryURL);const mjsURL=URL.createObjectURL(new Blob([mjs],{type:'text/javascript'}));urls.push(mjsURL);const wasmURL=URL.createObjectURL(new Blob([wasmBinary],{type:'application/wasm'}));urls.push(wasmURL);const ort=await import(entryURL);abort(signal);return{ort,mjsURL,wasmURL,dispose(){for(const u of urls)URL.revokeObjectURL(u);}};
  }catch(e){for(const u of urls)URL.revokeObjectURL(u);throw e;}
 }
-export async function createDinoFeatureBackend({signal,onProgress=()=>{},loadRuntime=cachedRuntime,readModel=()=>readCachedInferenceAsset('model',{signal})}={}){
- abort(signal);onProgress({phase:'init',message:'AI推論ランタイムを読込中'});const runtime=await loadRuntime(signal);let session;
+export async function createDinoFeatureBackend({backend='wasm',signal,onProgress=()=>{},loadRuntime=cachedRuntime,readModel,gpu=globalThis.navigator?.gpu}={}){
+ const spec=dinoSpec(backend),initStart=performance.now();abort(signal);if(backend==='webgpu')await probeDinoWebGPU({gpu,signal});onProgress({phase:'init',message:backend==='webgpu'?'WebGPU / FP16を初期化中':'CPU/WASM / int8を初期化中'});const runtime=await loadRuntime(signal,backend);let session;
  try{abort(signal);const {ort}=runtime;need(ort.env.versions.web==='1.23.2','AIランタイムの版が一致しません');ort.env.wasm.numThreads=1;ort.env.wasm.proxy=false;ort.env.wasm.wasmPaths={mjs:runtime.mjsURL,...(runtime.wasmURL?{wasm:runtime.wasmURL}:{})};ort.env.wasm.wasmBinary=runtime.wasmURL?undefined:runtime.wasmBinary;
- const model=await readModel();abort(signal);session=await ort.InferenceSession.create(model,{executionProviders:['wasm'],freeDimensionOverrides:{batch_size:1,num_channels:3,height:224,width:224}});ort.env.wasm.wasmBinary=undefined;runtime.wasmBinary=null;abort(signal);
- const cache=new Map();let disposed=false;return{spec:DINO_SPEC,cache,
- async encode(image,{template=false,cacheKey='',signal:innerSignal}={}){abort(innerSignal);need(!disposed,'AI特徴比較は終了しています');let key;
- if(template){const digest=new Uint8Array(await crypto.subtle.digest('SHA-256',image.rgba));key=cacheKey+':'+image.width+'x'+image.height+':'+Array.from(digest,b=>b.toString(16).padStart(2,'0')).join('');abort(innerSignal);if(cache.has(key))return cache.get(key);}
- const input=new ort.Tensor('float32',dinoInput(image,{template}),[1,3,224,224]);let output;
- try{output=await session.run({pixel_values:input});abort(innerSignal);const t=output.last_hidden_state;need(t&&t.dims.length===3&&t.dims[0]===1&&t.dims[1]===257&&t.dims[2]===384,'AI出力の形が不正です');const v=new Float32Array(384);let norm=0;for(let i=0;i<384;i++){need(Number.isFinite(t.data[i]),'AI出力が有限値ではありません');v[i]=t.data[i];norm+=v[i]*v[i];}need(norm>0,'AI特徴量が空です');norm=Math.sqrt(norm);for(let i=0;i<384;i++)v[i]/=norm;if(key){if(cache.size>=64)cache.delete(cache.keys().next().value);cache.set(key,v);}return v;
+ if(backend==='webgpu'){need(ort.env.webgpu,'WebGPU対応ランタイムが必要です');ort.env.webgpu.powerPreference='high-performance';}
+ const model=await (readModel?readModel():readCachedInferenceAsset(spec.modelId,{signal}));abort(signal);session=await ort.InferenceSession.create(model,{executionProviders:[spec.provider],freeDimensionOverrides:{batch_size:1,num_channels:3,height:224,width:224}});ort.env.wasm.wasmBinary=undefined;runtime.wasmBinary=null;abort(signal);if(backend==='webgpu')need(ort.env.webgpu.device?.features?.has('shader-f16'),'実際の推論GPUがshader-f16を利用できません。CPU/WASMを選択してください');
+ const cache=new Map(),stats={queryMs:0,templateEmbeddingMs:0,templateCacheHits:0,templateCacheMisses:0,backendInitMs:performance.now()-initStart};const identity=[spec.modelSHA256,spec.runtime,spec.provider,spec.precision,spec.preprocessor].join(':');let disposed=false;return{spec,cache,stats,identity,
+ async encode(image,{template=false,cacheKey='',signal:innerSignal,onCacheKey=()=>{}}={}){abort(innerSignal);need(!disposed,'AI特徴比較は終了しています');let key;
+ if(template){const digest=new Uint8Array(await crypto.subtle.digest('SHA-256',image.rgba));key=identity+':'+cacheKey+':'+image.width+'x'+image.height+':'+Array.from(digest,b=>b.toString(16).padStart(2,'0')).join('');abort(innerSignal);onCacheKey(key);if(cache.has(key)){stats.templateCacheHits++;const hit=cache.get(key);cache.delete(key);cache.set(key,hit);return hit;}}
+ const encodeStart=performance.now();const input=new ort.Tensor('float32',dinoInput(image,{template}),[1,3,224,224]);let output;
+ try{output=await session.run({pixel_values:input});abort(innerSignal);const t=output.last_hidden_state;need(t&&t.dims.length===3&&t.dims[0]===1&&t.dims[1]===257&&t.dims[2]===384,'AI出力の形が不正です');const v=new Float32Array(384);let norm=0;for(let i=0;i<384;i++){need(Number.isFinite(t.data[i]),'AI出力が有限値ではありません');v[i]=t.data[i];norm+=v[i]*v[i];}need(norm>0,'AI特徴量が空です');norm=Math.sqrt(norm);for(let i=0;i<384;i++)v[i]/=norm;if(template){stats.templateEmbeddingMs+=performance.now()-encodeStart;stats.templateCacheMisses++;}else stats.queryMs+=performance.now()-encodeStart;if(key){if(cache.size>=64)cache.delete(cache.keys().next().value);cache.set(key,v);}return v;
  }finally{input.dispose?.();if(output)for(const t of Object.values(output))t.dispose?.();}},
  async dispose(){if(disposed)return;disposed=true;cache.clear();try{await session.release();}finally{runtime.dispose?.();}}
  };

@@ -1,6 +1,7 @@
 import {inferenceAssetForRequest,inferenceAssetResponse,readCachedInferenceAsset} from './monster-inference-assets.mjs';
 
-// No install precache, navigation fallback, proxy, messages, ROMs, or captures.
+// Exactly eight pinned GET URLs across the WASM/WebGPU profiles; no profile is
+// fetched at install. No navigation fallback, proxy, ROMs, captures, or vectors.
 // Registration is explicit in the setup UI and refuses a different controller.
 self.addEventListener('install',event=>event.waitUntil(self.skipWaiting()));
 self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));

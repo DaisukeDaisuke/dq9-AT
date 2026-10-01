@@ -3,8 +3,10 @@ import { getFieldExclusion } from './monster-field-mask.mjs';
 export const LIMITS = Object.freeze({ romBytes: 512 * 1024 * 1024, sourceSide: 4096, roiSide: 1024, models: 4 });
 export const DEFAULT_MODELS = Object.freeze(['z019b', 'z021a', 'z064a', 'z000c']);
 export const CENTER_MASK = Object.freeze({ x: .42, y: .36, w: .16, h: .24 });
-const STAMP_KEYS = ['sourceId', 'sourceEpoch', 'timelineSegment', 'frameSerial', 'romEpoch', 'sourceFrame', 'videoTime', 'timestampBasis', 'capturedAt', 'enemyROI', 'featureMethod', 'sceneContext'];
+const STAMP_KEYS = ['sourceId', 'sourceEpoch', 'timelineSegment', 'frameSerial', 'romEpoch', 'sourceFrame', 'videoTime', 'timestampBasis', 'capturedAt', 'enemyROI', 'featureMethod', 'inferenceBackend', 'sceneContext'];
 const abortError = () => Object.assign(new Error('処理を中止しました。'), { name: 'AbortError' });
+const defaultProbeWebGPU = options => import('./monster-dinov2.mjs').then(m => m.probeDinoWebGPU(options));
+const defaultClearFeatureCache = () => import('./monster-feature-cache.mjs').then(m => m.createFeatureBankStore().clear());
 const defaultEnsureInferenceAssets = async options => (await import('./monster-inference-assets.mjs')).ensureInferenceAssets(options);
 const cloneValue = value => value === null || typeof value !== 'object' ? value : Object.fromEntries(Object.entries(value).map(([key, item]) => [key, cloneValue(item)]));
 const sameRect = (left, right) => left === right || !!left && !!right && ['x', 'y', 'w', 'h'].every(key => left[key] === right[key]);
@@ -117,7 +119,7 @@ export class RecognitionWorkerClient {
   }
 }
 
-export function mountRecognitionPage(document, window, { ensureInferenceAssets = defaultEnsureInferenceAssets } = {}) {
+export function mountRecognitionPage(document, window, { ensureInferenceAssets = defaultEnsureInferenceAssets, probeWebGPU = defaultProbeWebGPU, clearFeatureCache = defaultClearFeatureCache } = {}) {
   const $ = id => document.getElementById(id);
   const video = $('source-video'); const view = $('frozen-view'); const viewCtx = view.getContext('2d');
   const frozen = document.createElement('canvas'); const frozenCtx = frozen.getContext('2d', { willReadFrequently: true });
@@ -126,7 +128,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
   const state = {
     romFile: null, romEpoch: 0, sourceEpoch: 0, sourceId: null, sourceURL: null, sourceKind: null, image: null,
     sourceReady: false, timelineSegment: 0, frameSerial: 0, capture: null, roi: null, catalog: [], selected: new Set(DEFAULT_MODELS),
-    busy: false, loading: false, loadPromise: null, lastResult: null, sequence: 0, drag: null, drawMode: true, disposed: false, assetAbort: null,
+    busy: false, loading: false, loadPromise: null, lastResult: null, sequence: 0, drag: null, drawMode: true, disposed: false, assetAbort: null, clearingCache: false,
   };
   const client = new RecognitionWorkerClient({ onProgress: message => {
     if (!gate.accepts(message)) return;
@@ -141,18 +143,19 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
   function error(text = '') { $('error').textContent = text; $('error').hidden = !text; }
   function selectedIDs() { return [...state.selected].filter(id => state.catalog.some(model => model.modelId === id)); }
   function featureMethod() { return $('feature-method').value === 'dinov2' ? 'dinov2' : 'histogram'; }
+  function inferenceBackend() { return $('inference-backend').value === 'webgpu' ? 'webgpu' : 'wasm'; }
   function gameplayROI() { return gameplayROIForLayout($('gameplay-layout').value, state.capture?.sourceFrame, Object.fromEntries(['x', 'y', 'w', 'h'].map(key => [key, Number($(`gameplay-${key}`).value)]))); }
   function sceneContext() {
     const kind = $('scene-kind').value === 'field' ? 'field' : 'unspecified';
     return { kind, gameplayROI: kind === 'field' ? gameplayROI() : null, excludeCenter: kind === 'field' && !!$('exclude-center').checked, maskNormalized: { ...CENTER_MASK } };
   }
-  function currentStamp() { return { ...state.capture, enemyROI: state.roi ? { ...state.roi } : null, featureMethod: featureMethod(), sceneContext: sceneContext() }; }
+  function currentStamp() { return { ...state.capture, enemyROI: state.roi ? { ...state.roi } : null, featureMethod: featureMethod(), inferenceBackend: inferenceBackend(), sceneContext: sceneContext() }; }
   function configurationIssue() {
     if (featureMethod() === 'dinov2' && ($('variant').value === 'both' || $('preset').value !== 'quick')) return 'DINOv2は単一のモデル種類とクイック探索のみ対応します。設定を選び直してください。';
     try { if (state.capture && $('scene-kind').value === 'field') gameplayROI(); } catch (failure) { return failure.message; }
     return '';
   }
-  function ready() { const count = selectedIDs().length; return !!state.romFile && !!state.capture && !!state.roi && count > 0 && count <= LIMITS.models && !configurationIssue(); }
+  function ready() { if (state.clearingCache) return false; const count = selectedIDs().length; return !!state.romFile && !!state.capture && !!state.roi && count > 0 && count <= LIMITS.models && !configurationIssue(); }
   function controls() {
     $('freeze').disabled = !state.sourceReady;
     $('play-pause').disabled = !state.sourceReady || state.sourceKind !== 'video';
@@ -165,7 +168,8 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     $('restart').textContent = canReloadROM ? 'NDSを再読込' : '最初から再照合';
     $('cancel').disabled = !state.busy && !state.loading;
     $('model-filter').disabled = !state.catalog.length;
-    const dino = featureMethod() === 'dinov2'; $('dino-constraints').hidden = !dino;
+    const dino = featureMethod() === 'dinov2'; $('dino-constraints').hidden = !dino; $('inference-backend-control').hidden = !dino; $('clear-feature-cache').disabled = state.clearingCache;
+    $('backend-note').textContent = !dino ? '' : inferenceBackend() === 'webgpu' ? 'WebGPU / FP16: shader-f16対応GPUが必要です。形状など一部の処理はCPUを併用する場合があります。未対応ならCPU/WASMを選択してください。' : 'CPU / WASM・int8: 従来と同じ推論です。保存済みの姿勢特徴は再利用します。';
     $('feature-note').textContent = dino ? 'DINOv2のcosine類似度を比較します。大きいほど近く、確率ではありません。' : '色の分布を比較します。追加のAIモデルはダウンロードしません。';
     const issue = configurationIssue(); $('configuration-error').textContent = issue; $('configuration-error').hidden = !issue;
     $('gameplay-fields').hidden = $('gameplay-layout').value !== 'manual'; $('gameplay-fields').disabled = !state.capture;
@@ -199,7 +203,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
   function metadata() {
     const list = $('capture-metadata'); list.replaceChildren();
     if (!state.capture) return;
-    let stamp; try { stamp = currentStamp(); } catch { stamp = { ...state.capture, enemyROI: state.roi, featureMethod: featureMethod(), sceneContext: null }; }
+    let stamp; try { stamp = currentStamp(); } catch { stamp = { ...state.capture, enemyROI: state.roi, featureMethod: featureMethod(), inferenceBackend: inferenceBackend(), sceneContext: null }; }
     for (const key of STAMP_KEYS) { list.append(makeElement('dt', key), makeElement('dd', typeof stamp[key] === 'object' ? JSON.stringify(stamp[key]) : String(stamp[key]))); }
   }
   function paint() {
@@ -420,37 +424,43 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     invalidate('', { terminate: restart || state.busy }); error();
     const id = nextID(); const epoch = state.romEpoch;
     const captureStamp = cloneCaptureStamp(currentStamp());
-    const method = captureStamp.featureMethod; const scene = cloneValue(captureStamp.sceneContext);
+    const method = captureStamp.featureMethod; const backend = captureStamp.inferenceBackend; const scene = cloneValue(captureStamp.sceneContext);
     const modelIds = selectedIDs(); const variant = $('variant').value; const preset = $('preset').value;
     const r = captureStamp.enemyROI; const crop = { width: r.w, height: r.h, rgba: frozenCtx.getImageData(r.x, r.y, r.w, r.h).data };
     gate.begin(id, epoch, captureStamp); state.busy = true; controls(); $('progress').removeAttribute('value');
     status(client.loadedRomEpoch === epoch ? '選択したモデルを照合中です。' : 'NDSを再読込しています。中止後の再開時は最初から準備します。');
-    let preparation = null;
+    let preparation = null, assetPreparationMs = 0, assetDownloadMs = 0; const downloadStarts = new Map();
     try {
       await ensureLoaded();
       if (!gate.accepts({ id, romEpoch: epoch })) return;
       if (method === 'dinov2' && !getFieldExclusion(captureStamp, scene).excluded) {
         preparation = new AbortController(); state.assetAbort = preparation;
-        status('DINOv2の公開モデルと実行コードを準備しています（初回約34.75 MiB）。');
-        await ensureInferenceAssets({ signal: preparation.signal, onProgress: progress => {
+        const preparationStarted = performance.now();
+        if (backend === 'webgpu') await probeWebGPU({ signal: preparation.signal });
+        if (preparation.signal.aborted || !gate.accepts({ id, romEpoch: epoch })) return;
+        status(`DINOv2 ${backend === 'webgpu' ? 'WebGPU/FP16（初回約66.80 MiB）' : 'CPU/WASM・int8（初回約34.75 MiB）'}の公開ファイルを準備しています。`);
+        await ensureInferenceAssets({ backend, signal: preparation.signal, onProgress: progress => {
           if (preparation.signal.aborted || !gate.accepts({ id, romEpoch: epoch })) return;
+          if (progress.phase === 'download' && !downloadStarts.has(progress.assetId)) downloadStarts.set(progress.assetId, performance.now());
+          if (progress.phase === 'verified' && downloadStarts.has(progress.assetId)) { assetDownloadMs += performance.now() - downloadStarts.get(progress.assetId); downloadStarts.delete(progress.assetId); }
           const total = progress.total ?? progress.totalBytes; const done = progress.done ?? progress.loaded ?? progress.loadedBytes;
           if (Number.isFinite(total) && total > 0) { $('progress').max = total; $('progress').value = Math.min(total, Math.max(0, done || 0)); } else $('progress').removeAttribute('value');
           status(progress.message || phaseName(progress.phase || 'download'));
         } });
         if (preparation.signal.aborted || !gate.accepts({ id, romEpoch: epoch })) return;
+        assetPreparationMs = performance.now() - preparationStarted;
       }
-      const message = await client.recognize({ type: 'recognize', id, romEpoch: epoch, captureStamp, crop, modelIds, variant, preset, featureMethod: method, sceneContext: scene });
+      const message = await client.recognize({ type: 'recognize', id, romEpoch: epoch, captureStamp, crop, modelIds, variant, preset, featureMethod: method, inferenceBackend: backend, sceneContext: scene });
       if (!gate.accepts(message)) {
         if (gate.accepts({ id, romEpoch: epoch })) { state.busy = false; error('取得フレーム情報が一致しない結果を破棄しました。再照合してください。'); status('結果は表示していません。'); controls(); }
         return;
       }
-      state.busy = false; state.lastResult = message.result; renderResults(); $('progress').max = 1; $('progress').value = 1;
+      state.busy = false; state.lastResult = { ...message.result, timings: { ...message.result.timings, assetPreparationMs, assetDownloadMs } }; renderResults(); $('progress').max = 1; $('progress').value = 1;
       status(message.result.skipped === 'central-field-exclusion' ? '中央除外領域に重なるため未観測として扱いました。敵がいないという判定ではありません。' : '照合が終わりました。表示順位は選択したモデル内の比較結果です。候補外・判別不能の可能性があります。'); controls();
     } catch (failure) {
       if (!gate.accepts({ id, romEpoch: epoch })) return;
       state.busy = false; $('progress').max = 1; $('progress').value = 0; controls();
-      if (failure.name !== 'AbortError') { error(failure.message); status(method === 'dinov2' ? 'DINOv2の準備または照合に失敗しました。再試行するか、比較方法で「色ヒストグラム」を明示的に選択できます。方法は自動変更していません。' : '照合を完了できませんでした。候補や探索設定を調整して再試行できます。'); }
+      if (failure.name !== 'AbortError') { if (method === 'dinov2') { client.terminate(); state.loadPromise = null; state.loading = false; } error(failure.message); status(method === 'dinov2' ? 'DINOv2の準備または照合に失敗しました。再試行するか、実行方式で「CPU/WASM」、比較方法で「色ヒストグラム」を明示的に選択できます。方法は自動変更していません。' : '照合を完了できませんでした。候補や探索設定を調整して再試行できます。'); }
     } finally {
       if (state.assetAbort === preparation) state.assetAbort = null;
     }
@@ -483,10 +493,11 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     const coverage = result.coverage || {}; const valueText = value => Array.isArray(value) ? `${value.length} (${value.map(item => typeof item === 'object' ? item.modelId || '' : item).join(', ')})` : value ?? '不明';
     $('coverage').textContent = `比較方法: ${dino ? 'DINOv2画像特徴（cosine類似度）' : '色ヒストグラム（距離）'} · 要求モデル: ${valueText(coverage.requestedModels)} · 比較できたモデル: ${valueText(coverage.completedModels)} · 生成した比較画像: ${coverage.renderedTemplates ?? '不明'}${coverage.scope ? ` · 範囲: ${typeof coverage.scope === 'string' ? coverage.scope : JSON.stringify(coverage.scope)}` : ''}`;
     $('unsupported').replaceChildren(...(coverage.unsupported || []).map(item => makeElement('li', `${item.modelId}: ${item.reason}`)));
-    $('limitations').replaceChildren(...['端末内で行う実験的な照合です。敵の範囲は手動で指定しています。', '順位は選択したモデルと生成できた姿勢の範囲だけで比較しています。候補外の敵は判別できません。', ...(result.limitations || [])].map(text => makeElement('li', text)));
+    $('limitations').replaceChildren(...['端末内で行う実験的な照合です。敵の範囲は手動で指定しています。', '順位は選択したモデルと生成できた姿勢の範囲だけで比較しています。候補外の敵は判別できません。', ...(result.cacheWarnings || []), ...(result.limitations || [])].map(text => makeElement('li', text)));
     const stamp = result.captureStamp;
     $('result-capture').textContent = `固定画像 #${stamp.frameSerial} · ${stamp.videoTime === null ? '画像入力' : `動画 ${stamp.videoTime.toFixed(3)} 秒（概算）`} · 範囲 x ${stamp.enemyROI.x}, y ${stamp.enemyROI.y}, ${stamp.enemyROI.w} × ${stamp.enemyROI.h} px · ${stamp.capturedAt}`;
-    $('result-timing').textContent = Number.isFinite(result.elapsedMs) ? `${(result.elapsedMs / 1000).toFixed(1)} 秒` : '';
+    const t = result.timings || {}; const seconds = n => `${((Number(n) || 0) / 1000).toFixed(1)}秒`;
+    $('result-timing').textContent = dino && !skipped ? `${result.inference?.backend === 'webgpu' ? 'WebGPU/FP16' : 'CPU/WASM・int8'} · 公開ファイル準備${seconds(t.assetPreparationMs)}（取得・検証${seconds(t.assetDownloadMs)}） · 初期化${seconds(t.backendInitMs)} · 姿勢特徴${seconds(t.templateEmbeddingMs)}（新規${t.templateCacheMisses ?? '不明'} / 再利用${t.templateCacheHits ?? '不明'}、保存から${t.persistentRestored ?? 0}） · 切り抜き${seconds(t.queryMs)} · 照合全体${seconds(result.elapsedMs)}` : Number.isFinite(result.elapsedMs) ? seconds(result.elapsedMs) : '';
     $('coverage-section').hidden = false;
   }
   $('rom-file').addEventListener('change', selectROM); $('source-file').addEventListener('change', selectSource); $('freeze').addEventListener('click', freeze);
@@ -501,7 +512,14 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
   $('model-filter').addEventListener('input', renderCatalog);
   function configurationChanged() { invalidate('比較方法・場面・探索設定を変更しました。表示した範囲と設定を確認して再照合してください。'); error(); paint(); metadata(); }
   for (const id of ['variant', 'preset', 'feature-method', 'scene-kind', 'gameplay-layout', 'exclude-center']) $(id).addEventListener('change', configurationChanged);
+  $('inference-backend').addEventListener('change', () => { invalidate('AIの実行方式を変更しました。再照合時に専用Workerを読み直します。', { terminate: true }); error(); paint(); metadata(); });
   for (const key of ['x', 'y', 'w', 'h']) $(`gameplay-${key}`).addEventListener('input', configurationChanged);
+  $('clear-feature-cache').addEventListener('click', async () => {
+    if (state.clearingCache) return; invalidate('保存した姿勢特徴を消去しています。', { terminate: true }); error(); state.clearingCache = true; const revision = gate.revision; controls();
+    try { await clearFeatureCache(); if (revision === gate.revision) status('保存した姿勢特徴を消去しました。次の照合では要求したバンクを再生成します。公開AIファイルのキャッシュは保持します。'); }
+    catch (failure) { if (revision === gate.revision) error(`姿勢特徴を消去できませんでした: ${failure.message}`); }
+    finally { state.clearingCache = false; controls(); }
+  });
   $('top-k').addEventListener('change', renderResults);
   $('start').addEventListener('click', () => recognize());
   $('restart').addEventListener('click', async () => {

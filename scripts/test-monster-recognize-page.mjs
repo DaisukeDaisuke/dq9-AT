@@ -81,8 +81,8 @@ class Element {
 const html = await readFile(new URL('../web/monster-recognize.html', import.meta.url), 'utf8');
 const elements = new Map([...html.matchAll(/<([a-z][\w-]*)\b[^>]*\bid="([^"]+)"[^>]*>/g)].map(match => [match[2], new Element(match[1])]));
 const doc = { getElementById: id => { assert(elements.has(id), `missing HTML element ${id}`); return elements.get(id); }, createElement: tag => new Element(tag) };
-let prepareInference = async () => ({}); const preparationCalls = [];
-const win = new Element('window'); const ui = mountRecognitionPage(doc, win, { ensureInferenceAssets: options => { preparationCalls.push(options); return prepareInference(options); } }); const el = id => elements.get(id);
+let probeGPU = async () => ({}), clearLocalFeatures = async () => {}; let prepareInference = async () => ({}); const preparationCalls = [];
+const win = new Element('window'); const ui = mountRecognitionPage(doc, win, { probeWebGPU: options => probeGPU(options), clearFeatureCache: () => clearLocalFeatures(), ensureInferenceAssets: options => { preparationCalls.push(options); return prepareInference(options); } }); const el = id => elements.get(id);
 el('variant').value = '_f'; el('preset').value = 'quick'; el('top-k').value = '4';
 const uiWorkers = []; ui.client.factory = () => { const worker = new MockWorker(); uiWorkers.push(worker); return worker; };
 const catalog = [...DEFAULT_MODELS, 'z999x'].map(modelId => ({ modelId, speciesCandidates: [{ monsterId: 1, nameJa: `名前-${modelId}` }] }));
@@ -211,5 +211,22 @@ el('scene-kind').value = 'field'; el('gameplay-layout').value = 'manual'; await 
 for (const [key, value] of Object.entries({ x: 0, y: 0, w: 1921, h: 1080 })) el(`gameplay-${key}`).value = String(value);
 await el('gameplay-w').trigger('input');
 check('out-of-bounds manual game area blocks scoring with a visible explanation', () => { assert(el('start').disabled); assert.match(el('configuration-error').textContent, /はみ出/); });
+
+// Explicit provider selection, GPU availability, separate timings and cache clear lifecycle.
+el('scene-kind').value='unspecified';el('gameplay-layout').value='obs-right-upper';await el('scene-kind').trigger('change');prepareInference=async()=>({});
+el('inference-backend').value='webgpu';await el('inference-backend').trigger('change');
+probeGPU=async()=>{throw Error('shader-f16 unsupported');};let prepBefore=preparationCalls.length;dinoJob=await beginScoring();await dinoJob.completion;
+check('unsupported GPU stops before asset setup and leaves GPU explicitly selected',()=>{assert.equal(preparationCalls.length,prepBefore);assert.equal(el('inference-backend').value,'webgpu');assert.match(el('error').textContent,/shader-f16/);assert.match(el('status').textContent,/CPU\/WASM/);});
+probeGPU=async()=>({});dinoJob=await beginScoring();await settle();dinoRequest=dinoJob.worker.messages.at(-1).message;
+check('GPU provider is explicit in asset profile, request and capture identity',()=>{assert.equal(preparationCalls.at(-1).backend,'webgpu');assert.equal(dinoRequest.inferenceBackend,'webgpu');assert.equal(dinoRequest.captureStamp.inferenceBackend,'webgpu');const stale=cloneCaptureStamp(dinoRequest.captureStamp);stale.inferenceBackend='wasm';assert(!stampEquals(stale,dinoRequest.captureStamp));});
+emitResult(dinoJob.worker,dinoRequest,{inference:{backend:'webgpu',precision:'fp16'},timings:{backendInitMs:10,queryMs:20,templateEmbeddingMs:30,templateCacheHits:64,templateCacheMisses:0,persistentRestored:64,persistentSaved:true}});await dinoJob.completion;
+check('result separately labels GPU precision, template reuse, query and setup timings',()=>{assert.match(el('result-timing').textContent,/WebGPU\/FP16/);assert.match(el('result-timing').textContent,/再利用64/);assert.match(el('result-timing').textContent,/保存から64/);assert.match(el('result-timing').textContent,/切り抜き/);assert.match(el('result-timing').textContent,/公開ファイル準備/);});
+let resolveProbe;probeGPU=()=>new Promise(resolve=>{resolveProbe=resolve;});dinoJob=await beginScoring();prepBefore=preparationCalls.length;el('inference-backend').value='wasm';await el('inference-backend').trigger('change');resolveProbe({});await dinoJob.completion;
+check('provider change cancels pending GPU capability probe before download',()=>{assert.equal(preparationCalls.length,prepBefore);assert.equal(el('rankings').children.length,0);assert(dinoJob.worker.terminated);});
+probeGPU=async()=>({});let resolveClear;clearLocalFeatures=()=>new Promise(resolve=>{resolveClear=resolve;});
+dinoJob=await beginScoring();dinoRequest=dinoJob.worker.messages.at(-1).message;const pendingClear=el('clear-feature-cache').click();await settle();
+check('clear requested vectors terminates active scoring and blocks restart until complete',()=>{assert(dinoJob.worker.terminated);assert(ui.state.clearingCache);assert(el('start').disabled);assert(el('clear-feature-cache').disabled);});resolveClear();await pendingClear;await dinoJob.completion;
+check('clear reports local feature removal without deleting public dependencies',()=>{assert(!ui.state.clearingCache);assert.match(el('status').textContent,/公開AIファイルのキャッシュは保持/);assert(!el('start').disabled);});
+clearLocalFeatures=async()=>{throw Error('cache unavailable');};await el('clear-feature-cache').click();check('cache clear failure is visible and does not claim success',()=>{assert.match(el('error').textContent,/cache unavailable/);assert(!el('clear-feature-cache').disabled);});
 await win.trigger('pagehide');
 console.log(`\n${passed} UI and lifecycle checks passed (Node DOM harness; no browser launched).`);

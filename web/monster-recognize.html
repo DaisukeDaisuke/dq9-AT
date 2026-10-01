@@ -54,7 +54,11 @@
         <p id="selection-summary" class="muted">初期候補: z019b / z021a / z064a / z000c</p>
         <label class="control-label">画像の比較方法<select id="feature-method"><option value="histogram">色ヒストグラム（従来の実験）</option><option value="dinov2">DINOv2画像特徴（AI・追加実験）</option></select></label>
         <p id="feature-note" class="muted">色の分布を比較します。追加のAIモデルはダウンロードしません。</p>
-        <div id="dino-constraints" class="notice" hidden>DINOv2は1〜4モデル・単一のモデル種類・クイックのみ（比較画像は最大64枚）。初回に公開AIモデルと実行コード約34.75 MiBを、固定版のHugging Face・jsDelivrから準備しブラウザーにキャッシュします。入力画像・ROM・生成画像は端末内だけで処理します。失敗時は自動で別の比較方法に切り替えません。</div>
+        <label id="inference-backend-control" class="control-label" hidden>AIの実行方式<select id="inference-backend"><option value="wasm">CPU / WASM・int8（従来）</option><option value="webgpu">WebGPU・FP16（追加実験）</option></select></label>
+        <p id="backend-note" class="muted"></p>
+        <button id="clear-feature-cache" type="button">保存した姿勢特徴を消去</button>
+        <p id="feature-cache-note" class="muted">要求したモデルの姿勢特徴ベクトルだけを端末のバージョン付きCacheStorageに保存します（最大256バンク・32 MiB）。ROM・動画・生成画像は保存しません。全モンスターの一括生成は行いません。</p>
+        <div id="dino-constraints" class="notice" hidden>DINOv2は1〜4モデル・単一のモデル種類・クイックのみ（比較画像は最大64枚）。初回は選択した方式の公開AIモデルと実行コードを、固定版のHugging Face・jsDelivrから準備しブラウザーにキャッシュします。CPU/WASMは約34.75 MiB、WebGPU/FP16は約66.80 MiBです。入力画像・ROM・生成画像は端末内だけで処理します。GPU未対応・失敗時はCPU/WASMを明示的に選択できます。精度・実行方式を自動で切り替えません。GPUの実機速度は未確認で、初回生成の待ち時間がなくなる保証はありません。</div>
         <label class="control-label">モデルの種類<select id="variant"><option value="_f">_f（フィールド用という役割仮説）</option><option value="regular">通常モデル（接尾辞なし）</option><option value="both">両方を比較</option></select></label>
         <p class="muted">_f の役割は未確定です。映像と異なる形・動きが含まれる場合があります。</p>
         <div class="settings-grid"><label class="control-label">姿勢の探索<select id="preset"><option value="quick">クイック（少ない姿勢）</option><option value="standard">標準（より多くの姿勢）</option></select></label><label class="control-label">表示する順位<select id="top-k"><option value="4">上位4件</option><option value="3">上位3件</option><option value="1">上位1件</option></select></label></div>

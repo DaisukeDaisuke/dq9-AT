@@ -18,3 +18,6 @@ console.log(JSON.stringify({passed:true,checks,actualNodeWorkerErrorsVerified:tr
 // CI entrypoint also exercises the source-only optional inference and cache contracts.
 await import('./test-monster-dinov2.mjs');
 await import('./test-monster-inference-assets.mjs');
+
+await import('./test-monster-feature-cache.mjs');
+await import('./test-monster-feature-integration.mjs');

@@ -6,18 +6,27 @@
 const MODEL_BASE='https://huggingface.co/Xenova/dinov2-small/resolve/c2bb04a51fab207c420665f1946016107bffc701/';
 const RUNTIME_BASE='https://cdn.jsdelivr.net/npm/onnxruntime-web@1.23.2/dist/';
 export const INFERENCE_CACHE_PREFIX='dq9-monster-inference-';
-export const INFERENCE_CACHE_NAME=INFERENCE_CACHE_PREFIX+'v1-dino-c2bb04a51fab-ort-1.23.2';
-export const INFERENCE_CACHE_LIMIT=64*1024*1024;
+export const INFERENCE_CACHE_NAME=INFERENCE_CACHE_PREFIX+'v2-dino-c2bb04a51fab-ort-1.23.2';
+export const INFERENCE_CACHE_LIMIT=128*1024*1024;
 export const INFERENCE_ASSETS=Object.freeze([
  {id:'model',url:MODEL_BASE+'onnx/model_quantized.onnx',bytes:24451943,sha256:'3afdc8bc63b50558d6e5770f5b799bb82455c2311183a2de43803f343a29d917',mime:'application/octet-stream'},
  {id:'runtime-entry',url:RUNTIME_BASE+'ort.wasm.min.mjs',bytes:49856,sha256:'69751720f611e37d1ce2fa3c6ebaa80f949014752636c5f8887a63d40feadcc7',mime:'text/javascript'},
  {id:'runtime-mjs',url:RUNTIME_BASE+'ort-wasm-simd-threaded.mjs',bytes:20321,sha256:'90a557d15c02bac4504d95b67f431d8594635ed2a0a62a7f2cd83d090ff91d3e',mime:'text/javascript'},
- {id:'runtime-wasm',url:RUNTIME_BASE+'ort-wasm-simd-threaded.wasm',bytes:11905541,sha256:'45eaee27761ad883742a8d4b8fce1538d60ce43b51adf1726fafccc59b8c1a15',mime:'application/wasm'}
+ {id:'runtime-wasm',url:RUNTIME_BASE+'ort-wasm-simd-threaded.wasm',bytes:11905541,sha256:'45eaee27761ad883742a8d4b8fce1538d60ce43b51adf1726fafccc59b8c1a15',mime:'application/wasm'},
+ {id:'model-fp16',url:MODEL_BASE+'onnx/model_fp16.onnx',bytes:44427534,sha256:'4e9ea6fe106e2225e28ee3c1c3d53b5b92aa4af62142f6ed6b66b6a92213cf04',mime:'application/octet-stream'},
+ {id:'gpu-runtime-entry',url:RUNTIME_BASE+'ort.webgpu.min.mjs',bytes:66261,sha256:'8ae8f1340dd86f8aaa5acc0fd5ec2f42ae874ffd7c9cd804281b73fd177c9864',mime:'text/javascript'},
+ {id:'gpu-runtime-mjs',url:RUNTIME_BASE+'ort-wasm-simd-threaded.asyncify.mjs',bytes:51913,sha256:'249b4dc791f081d33bd11760bfd669fe85f97289e679bbeb291b874272125dff',mime:'text/javascript'},
+ {id:'gpu-runtime-wasm',url:RUNTIME_BASE+'ort-wasm-simd-threaded.asyncify.wasm',bytes:25499390,sha256:'babec0bbddb6d3082623b99b7e1391b75e0729bcca076ff8424d7753af97fada',mime:'application/wasm'}
 ].map(Object.freeze));
 export const INFERENCE_RUNTIME=Object.freeze({entry:INFERENCE_ASSETS[1].url,mjs:INFERENCE_ASSETS[2].url,wasm:INFERENCE_ASSETS[3].url});
 const need=(ok,message)=>{if(!ok)throw Error(message);};
 const abort=signal=>{if(signal?.aborted)throw new DOMException('推論用ファイルの準備を中止しました','AbortError');};
 const assetFor=id=>INFERENCE_ASSETS.find(asset=>asset.id===id);
+const profiles=Object.freeze(Object.fromEntries(['wasm','webgpu'].map((backend,index)=>{
+ const selected=INFERENCE_ASSETS.slice(index*4,index*4+4),assetIds=Object.freeze(selected.map(a=>a.id));
+ return [backend,Object.freeze({backend,assetIds,totalBytes:selected.reduce((sum,a)=>sum+a.bytes,0),modelId:assetIds[0],runtimeIds:Object.freeze({entry:assetIds[1],mjs:assetIds[2],wasm:assetIds[3]})})];
+})));
+export function inferenceProfile(backend='wasm'){need(backend==='wasm'||backend==='webgpu','推論バックエンドが不正です');return profiles[backend];}
 export const inferenceAssetForRequest=request=>request?.method==='GET'?INFERENCE_ASSETS.find(asset=>asset.url===request.url)??null:null;
 export function inferenceAssetResponse(asset,bytes){
  return new Response(bytes,{headers:{'Content-Type':asset.mime,'Content-Length':String(bytes.byteLength),'Access-Control-Allow-Origin':'*','Cache-Control':'no-store'}});
@@ -39,7 +48,7 @@ async function verifiedBytes(response,asset,{signal,onBytes=()=>{},cryptoImpl=gl
 // Public setup and reads below always use the immutable production manifest.
 export function createInferenceAssetCache({assets=INFERENCE_ASSETS,cacheStorage=globalThis.caches,fetcher=(...args)=>globalThis.fetch(...args),cryptoImpl=globalThis.crypto}={}){
  need(Array.isArray(assets)&&assets.length===INFERENCE_ASSETS.length&&new Set(assets.map(a=>a.id)).size===assets.length&&assets.every(a=>assetFor(a.id)?.url===a.url&&Number.isSafeInteger(a.bytes)&&a.bytes>0&&/^[0-9a-f]{64}$/.test(a.sha256)),'推論用ファイルの一覧が不正です');
- const totalBytes=assets.reduce((n,a)=>n+a.bytes,0);need(totalBytes<=INFERENCE_CACHE_LIMIT,'推論用キャッシュの64MiB制限を超えます');
+ const allBytes=assets.reduce((n,a)=>n+a.bytes,0);need(allBytes<=INFERENCE_CACHE_LIMIT,'推論用キャッシュの128MiB制限を超えます');
  const byId=id=>{const asset=assets.find(a=>a.id===id);need(asset,'許可されていない推論用ファイルです');return asset;};
  const open=()=>{need(cacheStorage?.open,'CacheStorageを利用できません');return cacheStorage.open(INFERENCE_CACHE_NAME);};
  async function read(id,{signal}={}){
@@ -47,15 +56,17 @@ export function createInferenceAssetCache({assets=INFERENCE_ASSETS,cacheStorage=
   try{return await verifiedBytes(response,asset,{signal,cryptoImpl});}
   catch(error){if(error.name!=='AbortError')await cache.delete(asset.url);throw error;}
  }
- async function ensure({signal,onProgress=()=>{}}={}){
+ async function ensure({backend='wasm',signal,onProgress=()=>{}}={}){
+  const profile=inferenceProfile(backend),selected=profile.assetIds.map(byId),totalBytes=selected.reduce((sum,a)=>sum+a.bytes,0);
   abort(signal);const cache=await open();abort(signal);
-  // Prune only this feature's caches, and only this version's unowned entries.
+  // Prune only this feature's caches and unowned entries. A valid asset in the
+  // other profile stays cached, without downloading that unselected profile.
   for(const name of await cacheStorage.keys()){abort(signal);if(name.startsWith(INFERENCE_CACHE_PREFIX)&&name!==INFERENCE_CACHE_NAME)await cacheStorage.delete(name);}
   for(const key of await cache.keys()){abort(signal);if(key.method!=='GET'||!assets.some(a=>a.url===key.url))await cache.delete(key);}
   let completedBytes=0;
-  for(let i=0;i<assets.length;i++){
-   const asset=assets[i];abort(signal);
-   const progress=(phase,assetLoadedBytes=0,fromCache=false)=>onProgress({phase,assetId:asset.id,assetIndex:i,totalAssets:assets.length,assetLoadedBytes,assetBytes:asset.bytes,loadedBytes:completedBytes+assetLoadedBytes,totalBytes,fromCache,message:`推論用ファイル ${i+1}/${assets.length}: ${asset.id}`});
+  for(let i=0;i<selected.length;i++){
+   const asset=selected[i];abort(signal);
+   const progress=(phase,assetLoadedBytes=0,fromCache=false)=>onProgress({phase,backend,assetId:asset.id,assetIndex:i,totalAssets:selected.length,assetLoadedBytes,assetBytes:asset.bytes,loadedBytes:completedBytes+assetLoadedBytes,totalBytes,fromCache,message:`推論用ファイル ${i+1}/${selected.length}: ${asset.id}`});
    progress('cache-check');let bytes,response=await cache.match(asset.url);abort(signal);
    if(response)try{bytes=await verifiedBytes(response,asset,{signal,cryptoImpl});}catch(error){if(error.name==='AbortError')throw error;await cache.delete(asset.url);progress('repair');}
    if(!bytes){
@@ -67,7 +78,7 @@ export function createInferenceAssetCache({assets=INFERENCE_ASSETS,cacheStorage=
    }else progress('cached',asset.bytes,true);
    completedBytes+=asset.bytes;
   }
-  return {cacheName:INFERENCE_CACHE_NAME,totalBytes};
+  return {cacheName:INFERENCE_CACHE_NAME,totalBytes,backend,modelId:profile.modelId,runtimeIds:profile.runtimeIds};
  }
  return {read,ensure};
 }
@@ -100,11 +111,12 @@ async function controlPage(context,signal){
   workers.addEventListener('controllerchange',check);signal?.addEventListener('abort',cancel,{once:true});timer=setTimeout(()=>done(Error('推論用Service Workerを開始できません。再読み込みして再試行してください')),15000);if(signal?.aborted)cancel();else check();
  });
 }
-export async function ensureInferenceAssets({signal,onProgress=()=>{}}={}){
+export async function ensureInferenceAssets({backend='wasm',signal,onProgress=()=>{}}={}){
+ const profile=inferenceProfile(backend),selected=profile.assetIds.map(assetFor),runtime=Object.freeze(Object.fromEntries(Object.entries(profile.runtimeIds).map(([key,id])=>[key,assetFor(id).url])));
  abort(signal);const context=serviceWorkerContext();await checkServiceWorker(context,signal);abort(signal);
- const info=await createInferenceAssetCache().ensure({signal,onProgress});abort(signal);
+ const info=await createInferenceAssetCache().ensure({backend,signal,onProgress});abort(signal);
  onProgress({phase:'service-worker',message:'検証済みの推論用ファイルをこのページで利用できるようにしています'});
  await controlPage(context,signal);abort(signal);
  onProgress({phase:'ready',loadedBytes:info.totalBytes,totalBytes:info.totalBytes,message:'推論用ファイルの準備ができました'});
- return {...info,assets:INFERENCE_ASSETS,runtime:INFERENCE_RUNTIME,modelId:'model'};
+ return {...info,assets:Object.freeze(selected),runtime:backend==='wasm'?INFERENCE_RUNTIME:runtime,modelId:profile.modelId};
 }
