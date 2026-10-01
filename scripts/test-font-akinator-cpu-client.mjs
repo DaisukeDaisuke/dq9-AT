@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import {Worker} from 'node:worker_threads';
 import {CPUTextClient} from '../web/font-akinator-cpu-client.mjs';
+import {cpuTextDiagnostic,formatCpuTextDiagnostic} from '../web/font-akinator-diagnostic.mjs';
+import {createCpuAkinatorWorkerHandler} from '../web/font-akinator-cpu-worker.mjs';
 import {mapCandidatesFromAkinator,planCandidateReferences,CandidateMapMatcher} from '../web/map-disambiguation.mjs';
 let checks=0;const eq=(a,b)=>{assert.deepEqual(a,b);checks++},ok=v=>{assert(v);checks++};
 const glyphs={'1x1':[{char:'家',assignedChar:'家',rows:['#']}]},stamp={sourceId:'local-A',sourceEpoch:1,timelineSegment:0,generation:3,romEpoch:7,referenceEpoch:2,frameSerial:4,videoTime:1.25,roi:{x:0,y:0,w:1,h:1},markerProfiles:[{rgb:[66,66,66]}]},image={width:1,height:1,data:new Uint8ClampedArray([255,255,255,255])};
@@ -37,6 +39,16 @@ try{
  const browserTimeout=new CPUTextClient({factory:()=>new FakeWorker(),now:()=>0});
  const browserTimed=browserTimeout.match(image,request());browserTimers.get(3)();const browserUnknown=await browserTimed;eq(browserUnknown.reason,'time-budget');eq(browserTimeout.active,null);eq(workers.at(-1).terminated,true);eq(browserCleared,[1,2,3]);eq(browserTimers.size,0);
 }finally{globalThis.setTimeout=originalSetTimeout;globalThis.clearTimeout=originalClearTimeout;}
+// Diagnostics retain bounded known source locations without input data or URLs.
+const hidden='PRIVATE_INPUT_SENTINEL',sourceError={stack:`TypeError: ${hidden}\n at f (https://example.invalid/${hidden}/font-akinator.mjs:146:19)\n at f (file:///tmp/${hidden}.mjs:1:2)\n at f (https://example.invalid/video-panel.mjs:102:84)`};
+const diagnostic=cpuTextDiagnostic(sourceError,'worker-match');eq(diagnostic,{revision:'cpu-text-diag-1',phase:'worker-match',frames:['font-akinator.mjs:146:19','video-panel.mjs:102:84']});ok(!JSON.stringify(diagnostic).includes(hidden));ok(!JSON.stringify(diagnostic).includes('https:'));
+eq(cpuTextDiagnostic({cpuDiagnostic:{...diagnostic,pixels:[1,2,3],frames:[...diagnostic.frames,'private.mjs:1:2','font-akinator.mjs:0:0']}},'client'),diagnostic);
+eq(cpuTextDiagnostic({stack:Array(20).fill(' at f (font-akinator.mjs:146:19)').join('\n')}).frames.length,1);
+eq(cpuTextDiagnostic({stack:Array.from({length:20},(_,i)=>` at f (font-akinator.mjs:${i+1}:1)`).join('\n')}).frames.length,6);
+eq(formatCpuTextDiagnostic({cpuDiagnostic:diagnostic}),'[cpu-text-diag-1/worker-match font-akinator.mjs:146:19 ← video-panel.mjs:102:84]');
+const diagnosticClient=new CPUTextClient({factory:()=>new FakeWorker(),now:()=>0,setTimer:()=>1,clearTimer:()=>{}}),diagnosticPending=diagnosticClient.match(image,request()),diagnosticWorker=workers.at(-1),diagnosticMessage=diagnosticWorker.messages[0];
+diagnosticWorker.reply({type:'error',id:diagnosticMessage.id,romEpoch:diagnosticMessage.romEpoch,message:'Illegal invocation',diagnostic:{...diagnostic,pixels:[1,2,3]}});await assert.rejects(diagnosticPending,error=>{eq(error.cpuDiagnostic,diagnostic);return error.message==='Illegal invocation';});checks++;eq(diagnosticWorker.terminated,true);
+const diagnosticReplies=[],diagnosticHandler=createCpuAkinatorWorkerHandler(m=>diagnosticReplies.push(m));await diagnosticHandler({type:'init',id:'diagnostic-init',romEpoch:0,glyphsBySize:null});eq(diagnosticReplies[0].diagnostic.phase,'worker-init');ok(diagnosticReplies[0].diagnostic.frames.some(f=>f.startsWith('font-akinator.mjs:')));eq(Object.keys(diagnosticReplies[0].diagnostic),['revision','phase','frames']);
 // An actual CPU Worker completes the same one-glyph request with no navigator/GPU shim.
 const workerURL=new URL('../web/font-akinator-cpu-worker.mjs',import.meta.url).href;
 class NodeAdapter{constructor(){this.w=new Worker(`import {parentPort} from 'node:worker_threads';import {createCpuAkinatorWorkerHandler} from ${JSON.stringify(workerURL)};const handle=createCpuAkinatorWorkerHandler(m=>parentPort.postMessage(m));parentPort.on('message',m=>handle(m));`,{eval:true,type:'module'});this.w.on('message',data=>this.onmessage?.({data}));this.w.on('error',e=>this.onerror?.({message:e.message}));}postMessage(m,t){this.w.postMessage(m,t)}terminate(){this.w.terminate()}}

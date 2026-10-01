@@ -1,4 +1,5 @@
 import {buildGlyphAkinatorDictionary,GlyphAkinatorMatcher,validateCpuAkinatorRequest} from './font-akinator.mjs';
+import {cpuTextDiagnostic} from './font-akinator-diagnostic.mjs';
 
 // A worker owns one ROM epoch and one frozen-frame request at a time. The host
 // terminates it on cancellation, ROM/frame changes, or its hard watchdog.
@@ -24,7 +25,7 @@ export function createCpuAkinatorWorkerHandler(send){
     const result=await matcher.match(message.image,message.options);
     send({type:'result',id,romEpoch,stamp:message.stamp,result});
    }finally{busy=false;}
-  }catch(error){send({type:'error',id,romEpoch:requestEpoch,message:error?.message||String(error)});}
+  }catch(error){send({type:'error',id,romEpoch:requestEpoch,message:error?.message||String(error),diagnostic:cpuTextDiagnostic(error,type==='init'?'worker-init':type==='match'?'worker-match':'worker-request')});}
  };
 }
 

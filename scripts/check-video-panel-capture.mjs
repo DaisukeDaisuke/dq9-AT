@@ -188,5 +188,10 @@ await run('whole CPU deadline also bounds automatic-layout waiting',async()=>{
  const f=await prepareCPU();f.$('screen-mode').value='auto';f.$('cpu-text-budget').value='5';await f.$('cpu-text-once').onclick();
  check('layout timeout releases busy without a reply',()=>assert.equal(f.api.getState().busy,false));check('layout timeout creates no scoring Worker',()=>assert(!f.workers.some(w=>w.url.includes('font-akinator-cpu-worker'))));check('layout timeout keeps unsearched status',()=>assert.match(f.$('cpu-text-status').textContent,/未探索/));check('layout timeout cannot nominate maps',()=>assert.equal(f.requests().length,0));f.finishLayout();
 });
+await run('CPU error UI retains only bounded worker source locations',async()=>{
+ const f=await prepareCPU(),pending=f.$('cpu-text-once').onclick(),{w,message}=readyCPU(f);
+ w.reply({type:'error',id:message.id,romEpoch:message.romEpoch,message:'Illegal invocation',diagnostic:{revision:'cpu-text-diag-1',phase:'worker-match',frames:['font-akinator.mjs:146:19','private-input.mjs:1:2'],secret:'PRIVATE_INPUT_SENTINEL'}});await pending;
+ check('CPU error source appears in the visible error area',()=>assert.match(f.$('name-candidates').textContent,/cpu-text-diag-1\/worker-match font-akinator\.mjs:146:19/));check('unapproved fields and source names stay absent',()=>assert(!/PRIVATE_INPUT_SENTINEL|private-input/.test(f.$('name-candidates').textContent)));check('failed CPU frame cannot nominate maps',()=>assert.equal(f.requests().length,0));check('diagnostic failure releases Worker',()=>assert.equal(w.terminated,true));
+});
 const summary={passed:cases.every(c=>c.passed),checks,cases,scope:'Node fake DOM/canvas/Worker control-flow test; real capture coordinator and input adapters; synthetic pixels and deferred OCR/layout; no browser/WebGPU/video-decoder accuracy claim'};
 console.log(JSON.stringify(summary,null,2));if(!summary.passed)process.exitCode=1;

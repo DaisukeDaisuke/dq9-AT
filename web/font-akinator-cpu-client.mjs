@@ -1,4 +1,5 @@
 import {snapshotCpuGlyphInput,validateCpuAkinatorRequest} from './font-akinator.mjs';
+import {cpuTextDiagnostic} from './font-akinator-diagnostic.mjs';
 // Explicit one-frame CPU jobs only. Every job owns one disposable Worker.
 const aborted=()=>new DOMException('CPU文字照合を中止しました','AbortError');
 const need=(value,message)=>{if(!value)throw Error(message);};
@@ -31,7 +32,7 @@ export class CPUTextClient {
    worker.onmessage=({data:m})=>{
     if(this.active!==token||token.settled||m?.id!==id||m.romEpoch!==romEpoch)return;
     if(this.now()-started>=budget){finish(null,cpuUnknownResult());return;}
-    if(m.type==='error'){finish(Error(m.message||'CPU文字照合を完了できませんでした'));return;}
+    if(m.type==='error'){const error=Error(m.message||'CPU文字照合を完了できませんでした');error.cpuDiagnostic=cpuTextDiagnostic({cpuDiagnostic:m.diagnostic},'client');finish(error);return;}
     if(m.type==='ready'){
      if(token.sent)return;token.sent=true;
      const remaining=budget-(this.now()-started);
