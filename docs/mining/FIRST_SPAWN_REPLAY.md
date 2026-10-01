@@ -209,3 +209,67 @@ Portable tests include source-row validation, sparse masks, the group-98
 forced-eight rule, missing and failed allocations, prefix preservation after a
 phase-write failure, and unknown destination state. Native RAM, source inputs,
 ROM-derived record tables, saves and screenshots remain private.
+
+## First F06 timer interval and recurring pickup updates
+
+Optional trajectory schema `dq9-pre-spawn-trajectory-v4` keeps the same v3
+world steps and reached transition phases, and adds `destinationContinuation`.
+The same runtime-v2 packet adds a matching `destinationContinuation` object.
+The existing inputs, seed controls and continuation checkbox are reused.
+
+The additional initial runtime consists of `initialSourceFrame`, pickup updater
+`cursor`, float32 `accumulatorBits`, and all 100 `groupWords` keyed 0..99. These
+are original-state inputs, not a later cursor or accumulator snapshot. Conditions
+must explicitly assert ordinary offline updates, no other pickup-word writers,
+no preceding motion writes that affect AT inputs, successful ordinary F06 loader
+completion, no other destination AT, complete ordered updater and destination
+tick streams, and no other destination field or natural-pool writes. Exact condition keys are
+validated by `prepareF06Continuation`.
+
+The trajectory supplies `pickupUpdates`, each with reached `sourceFrame` and
+`scaledDelta` 0..50, and `schedulerTicks`, each with reached `sourceFrame` and
+unscaled scheduler `delta` 0..50. They are distinct clocks. The packet contains no
+future seed, expected timer, cursor output, actor state, or hero pose. Clock and
+callback production remain explicit inputs; the model does not infer them from
+frame gaps. Updater events end strictly before the final supplied scheduler
+phase, and cannot share the materialization frame because that ordering would
+be ambiguous in this bounded packet.
+
+The recurring updater follows `0x0208f588`: float32 delta/1000 accumulation,
+60-second gate/reset, cursor-selected group, enabled-bit population and positive
+countdown behavior. Groups 98 and 99 decrement even when their enabled count
+matches capacity. Unknown group/type conditions and any zero-countdown refill
+branch suspend before a possible AT draw. The preceding pickup motion is not
+projected by this component. Its writes must remain disjoint from these inputs.
+
+The updater is independently projected over the declared ordered stream and
+must prove zero AT before it can compose with the existing replay. Its writes
+are disjoint from the existing actor/spawn state; no random state is reordered.
+The three source-selected F06 materialization words must equal their carried
+values before that load. A mismatch is rejected, rather than silently replacing
+an initial word with a future observation. This conservative contract does not
+implement general pickup regeneration.
+
+Successful graph load derives `field.active=1`; field-loader completion derives
+flag 8, and the fresh-field reset derives timer 0. F06 is outside the story-gated
+map range 400..409. The existing `FieldScheduler` then advances the explicit
+unscaled deltas. Before timer 1000 it needs neither a hero pose nor terrain or
+model allocations. Once due, the known reset pool can supply a free slot, but
+missing current hero XYZ, heading and node stop before geometry and any table
+selection. The final partial scheduler's updated timer is retained exactly once.
+The destination field's resources/tables and current coordinates remain unknown;
+`destinationWorld.resolved` stays false.
+
+The retained original 950 route projects 665 recurring updater calls before the
+stop: one scan of groups 0..99, 36 countdown changes and zero AT. All first 124
+replay events remain unchanged. Twenty-nine complete F06 timer-gated calls end
+at timer 986; the thirtieth reaches 1019 and stops before geometry. The displayed
+result is 154 phases, 132 conditional calls and prefix seed 0x16e2ca29, not the
+native seed after that unfinished invocation. Later native comparison calls
+at table selection and weighted selection are deliberately excluded, along
+with the subsequent 666th updater invocation. No later hero/actor state or
+settled position is imported.
+
+Portable checks: `test-pickup-updater.mjs` and `test-f06-continuation.mjs`.
+The latter optionally accepts a local ROM, runtime-v2 packet and trajectory-v4
+packet. Native captures and private fixtures are not public assets.

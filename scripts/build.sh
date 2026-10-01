@@ -66,6 +66,8 @@ node scripts/test-multi-actor-replay.mjs
 node scripts/test-map-transition-replay.mjs
 node scripts/test-pickup-materialization.mjs
 node scripts/test-pickup-transition.mjs
+node scripts/test-pickup-updater.mjs
+node scripts/test-f06-continuation.mjs
 
 # Static creator values from the local ROM; allocation bindings remain guarded.
 node scripts/test-monster-creation-resources.mjs
