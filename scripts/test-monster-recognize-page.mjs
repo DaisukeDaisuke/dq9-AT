@@ -80,7 +80,8 @@ class Element {
 }
 const html = await readFile(new URL('../web/monster-recognize.html', import.meta.url), 'utf8');
 const elements = new Map([...html.matchAll(/<([a-z][\w-]*)\b[^>]*\bid="([^"]+)"[^>]*>/g)].map(match => [match[2], new Element(match[1])]));
-const doc = { getElementById: id => { assert(elements.has(id), `missing HTML element ${id}`); return elements.get(id); }, createElement: tag => new Element(tag) };
+const documentEvents = new Element('document');
+const doc = { hidden: false, addEventListener: (...args) => documentEvents.addEventListener(...args), getElementById: id => { assert(elements.has(id), `missing HTML element ${id}`); return elements.get(id); }, createElement: tag => new Element(tag) };
 let probeGPU = async () => ({}), clearLocalFeatures = async () => {}; let prepareInference = async () => ({}); const preparationCalls = [];
 const proposalCalls = [];
 let proposalFactory = (image, captureStamp) => ({ captureStamp: cloneCaptureStamp(captureStamp), elapsedMs: 3, proposals: [{ proposalId: `${captureStamp.frameSerial}:0`, roi: { x: 40, y: 45, w: 50, h: 60 } }, { proposalId: `${captureStamp.frameSerial}:1`, roi: { x: 430, y: 80, w: 70, h: 90 } }], unknown: { suggested: true, calibrated: false } });
@@ -343,5 +344,61 @@ check('full CPU budget skips assets, bank preparation and encoder',()=>{assert.e
 Object.assign(video,{videoWidth:4096,videoHeight:3072});ui.freeze();proposalFactory=(image,captureStamp)=>({...defaultProposalFactory(image,captureStamp),proposals:[]});ui.generateProposals();prepCount=preparationCalls.length;await ui.supplementProposals();
 check('oversized dense gameplay is blocked before assets or worker submission',()=>{assert.equal(preparationCalls.length,prepCount);assert.match(el('dense-proposal-note').textContent,/1024px/);});
 proposalFactory=defaultProposalFactory;
+// Connected automatic video loop: same Worker client, separate current boxes and historical ranks.
+let observerClock=0,frameID=0;const frameCallbacks=new Map();video.requestVideoFrameCallback=fn=>{const id=++frameID;frameCallbacks.set(id,fn);return id;};video.cancelVideoFrameCallback=id=>frameCallbacks.delete(id);
+ui.observer.now=()=>observerClock;ui.observer.propose=(image,captureStamp)=>({...defaultProposalFactory(image,captureStamp),trackingFrame:{}});ui.observer.tracker={reset(){},update(r){return{observed:r.proposals.map((p,i)=>({...p,id:`observer-track-${i}`,sightings:2})),unobserved:[],camera:{reliable:true}}}};
+Object.assign(ui.state,{romFile:file,romEpoch:30,catalog,selected:new Set(DEFAULT_MODELS),sourceReady:true,sourceKind:'video',sourceId:'automatic-video',sourceEpoch:30});ui.client.loadedRomEpoch=30;
+Object.assign(video,{videoWidth:640,videoHeight:480,readyState:4,seeking:false,ended:false,frameValue:111,currentTime:0,paused:true});
+el('enable-roi-proposals').checked=true;el('scene-kind').value='field';el('exclude-center').checked=true;el('gameplay-layout').value='whole';el('feature-method').value='dinov2';el('inference-backend').value='wasm';el('variant').value='_f';el('preset').value='quick';el('video-observation-dense').checked=false;prepareInference=async()=>({});
+const autoCount=()=>uiWorkers.reduce((n,w)=>n+w.messages.filter(m=>['prepare','recognize','supplement'].includes(m.message.type)).length,0);
+async function fireFrame(ms,value=111){observerClock=ms;video.currentTime=ms/1000;video.frameValue=value;const next=frameCallbacks.entries().next().value;assert(next,'one video callback expected');frameCallbacks.delete(next[0]);next[1](ms,{mediaTime:ms/1000});await settle();}
+async function preparedWorker(){await settle();const worker=uiWorkers.at(-1);let req=worker.messages.at(-1).message;if(req.type==='load'){worker.emit({type:'loaded',id:req.id,romEpoch:req.romEpoch,catalog});await settle();req=worker.messages.at(-1).message;}assert.equal(req.type,'prepare');return{worker,req};}
+let nAuto=autoCount();await ui.startVideoObservation();let auto=await preparedWorker();
+check('automatic loop starts only explicitly and requests real pose preparation with no crop',()=>{assert.equal(autoCount(),nAuto+1);assert(!Object.hasOwn(auto.req,'crop'));assert(!Object.hasOwn(auto.req,'image'));assert(ui.observer.running);assert(video.paused===false);assert(el('start-video-observation').disabled);assert(!el('stop-video-observation').disabled);assert.equal(frameCallbacks.size,1);});
+for(let i=0;i<5;i++)await fireFrame(i*250,111+i);check('CPU observations progress during cold preparation without a query queue',()=>{assert.equal(ui.observer.stats.sampledFrames,5);assert.equal(auto.worker.messages.at(-1).message.type,'prepare');assert(!el('video-observation-view').hidden);assert.equal(frameCallbacks.size,1);});
+auto.worker.emit({type:'result',id:auto.req.id,romEpoch:30,result:{prepared:true,timings:{templateCacheHits:64}}});await settle();let automaticRequest=auto.worker.messages.at(-1).message;
+check('prepared loop dispatches newest frozen crop through existing classifier',()=>{assert.equal(automaticRequest.type,'recognize');assert.equal(automaticRequest.crop.rgba[0],115);assert.equal(automaticRequest.captureStamp.videoTime,1);assert.equal(automaticRequest.captureStamp.timestampBasis,'requestVideoFrameCallback.mediaTime');assert.equal(automaticRequest.inferenceBackend,'wasm');});
+const runningRequests=autoCount();for(let i=5;i<15;i++)await fireFrame(i*250,111+i);
+check('slow classification leaves current boxes updating with one pending worker request',()=>{assert.equal(autoCount(),runningRequests);assert.equal(ui.observer.stats.sampledFrames,15);assert.equal(ui.client.pending.size,1);assert.equal(frameCallbacks.size,1);});
+emitResult(auto.worker,automaticRequest);await settle();
+check('automatic result appears only in its own aged crop record, never manual or new-box rankings',()=>{assert.equal(el('video-observations').children.length,1);assert.equal(ui.state.observationRecords[0].captureStamp.videoTime,1);assert.match(ui.state.observationRecords[0].ageElement.textContent,/撮影から2.5秒/);assert.match(ui.state.observationRecords[0].ageElement.textContent,/引継ぎはしません/);assert.equal(ui.observer.latest.result.captureStamp.videoTime,3.5);assert(ui.observer.latest.result.proposals.every(p=>!p.rankings));assert.equal(ui.observer.stats.classificationsCompleted,1);});
+check('next automatic request reads current pixels after slow inference',()=>{const req=auto.worker.messages.at(-1).message;assert.equal(req.type,'recognize');assert.equal(req.captureStamp.videoTime,3.5);assert.equal(req.crop.rgba[0],125);});
+const beforeSeekRequest=auto.worker.messages.at(-1).message;await video.trigger('seeking');
+check('seeking cancels callback and active worker, clears prior automatic observations',()=>{assert(!ui.observer.running);assert.equal(frameCallbacks.size,0);assert(auto.worker.terminated);assert.equal(ui.state.observationRecords.length,0);assert(el('video-observation-view').hidden);});
+emitResult(auto.worker,beforeSeekRequest);await settle();check('late automatic response after seek cannot restore observations',()=>assert.equal(el('video-observations').children.length,0));
+await ui.startVideoObservation();auto=await preparedWorker();doc.hidden=true;await documentEvents.trigger('visibilitychange');
+check('hidden tab stops preparation and callbacks instead of accumulating work',()=>{assert(!ui.observer.running);assert(auto.worker.terminated);assert.equal(frameCallbacks.size,0);});
+nAuto=autoCount();await ui.startVideoObservation();check('hidden page cannot start a new automatic preparation',()=>assert.equal(autoCount(),nAuto));doc.hidden=false;await documentEvents.trigger('visibilitychange');
+check('returning to visible enables explicit restart without starting automatically',()=>{assert(!el('start-video-observation').disabled);assert(!ui.observer.running);assert.equal(frameCallbacks.size,0);});
+await ui.startVideoObservation();auto=await preparedWorker();await el('stop-video-observation').click();auto.worker.emit({type:'result',id:auto.req.id,romEpoch:30,result:{prepared:true}});await settle();
+check('stop during preparation cannot restart scheduling on late completion',()=>{assert(!ui.observer.running);assert.equal(frameCallbacks.size,0);assert.equal(ui.observer.active,null);});
+await ui.startVideoObservation();auto=await preparedWorker();el('inference-backend').value='webgpu';await el('inference-backend').trigger('change');
+check('backend changes stop the observer before a new provider can be used',()=>{assert(!ui.observer.running);assert(auto.worker.terminated);assert.equal(frameCallbacks.size,0);});
+el('inference-backend').value='wasm';await el('inference-backend').trigger('change');await ui.startVideoObservation();auto=await preparedWorker();el('source-file').files=[];ui.selectSource();
+check('source replacement stops all automatic jobs and releases current positions',()=>{assert(!ui.observer.running);assert.equal(ui.observer.latest,null);assert.equal(ui.state.observationRecords.length,0);assert.equal(frameCallbacks.size,0);});
+Object.assign(ui.state,{sourceReady:true,sourceKind:'video',sourceId:'automatic-final',sourceEpoch:ui.state.sourceEpoch+1});await ui.startVideoObservation();auto=await preparedWorker();await win.trigger('pagehide');auto.worker.emit({type:'result',id:auto.req.id,romEpoch:30,result:{prepared:true}});await settle();
+check('pagehide cancels automatic observation and rejects late preparation',()=>{assert(!ui.observer.running);assert.equal(frameCallbacks.size,0);assert.equal(ui.observer.active,null);});
+// Pending play is also a cancelable start intent, before any Worker job exists.
+await win.trigger('pageshow',{persisted:true});Object.assign(ui.state,{sourceReady:true,sourceKind:'video',sourceId:'pending-play-video',sourceEpoch:40,romFile:file,catalog,selected:new Set(DEFAULT_MODELS)});Object.assign(video,{videoWidth:640,videoHeight:480,readyState:4,seeking:false,ended:false,paused:true});el('video-observation-dense').checked=false;
+for(const interrupt of ['seek','stop','pause','hidden','dense-setting','cancel']){
+ let finishPlay;video.play=()=>new Promise(resolve=>{finishPlay=()=>{video.paused=false;resolve()}});const before=autoCount(),starting=ui.startVideoObservation();await settle();
+ assert(ui.state.observationStarting);assert(!el('stop-video-observation').disabled);assert(el('start-video-observation').disabled);
+ if(interrupt==='seek'){video.currentTime+=10;await video.trigger('seeking');}
+ if(interrupt==='stop')await el('stop-video-observation').click();
+ if(interrupt==='pause')await video.trigger('pause');
+ if(interrupt==='hidden'){doc.hidden=true;await documentEvents.trigger('visibilitychange');}
+ if(interrupt==='dense-setting')await el('video-observation-dense').trigger('change');
+ if(interrupt==='cancel')await el('cancel').click();
+ finishPlay();await starting;await settle();
+ check(`pending play cannot restart after ${interrupt}`,()=>{assert(!ui.observer.running);assert(!ui.state.observationStarting);assert.equal(frameCallbacks.size,0);assert.equal(autoCount(),before);});
+ if(interrupt==='hidden'){doc.hidden=false;await documentEvents.trigger('visibilitychange');}
+}
+let rejectOldPlay;video.play=()=>new Promise((resolve,reject)=>{rejectOldPlay=reject});const oldStart=ui.startVideoObservation();await settle();await el('stop-video-observation').click();video.play=async()=>{video.paused=false};await ui.startVideoObservation();auto=await preparedWorker();const newestActive=ui.observer.active;rejectOldPlay(new Error('late old play error'));await oldStart;await settle();
+check('old failed play cannot stop or clear a newer preparation',()=>{assert(ui.observer.running);assert.strictEqual(ui.observer.active,newestActive);assert(!auto.worker.terminated);});await el('stop-video-observation').click();
+// The independent display-age timer does no inference and handles missing video callbacks.
+let timerSerial=0;const ageTimers=new Map();win.setTimeout=fn=>{const id=++timerSerial;ageTimers.set(id,fn);return id};win.clearTimeout=id=>ageTimers.delete(id);
+await ui.startVideoObservation();auto=await preparedWorker();auto.worker.emit({type:'result',id:auto.req.id,romEpoch:ui.state.romEpoch,result:{prepared:true}});await settle();await fireFrame(10000,140);const beforeAgeJobs=autoCount();observerClock=12000;const ageTick=ageTimers.entries().next().value;assert(ageTick);ageTimers.delete(ageTick[0]);ageTick[1]();await settle();
+check('buffering updates wall-clock age and hides stale boxes without starting work',()=>{assert.match(el('video-position-age').textContent,/撮影から2.0秒/);assert.match(el('video-position-age').textContent,/現在は未観測/);assert(el('video-observation-view').hidden);assert.equal(autoCount(),beforeAgeJobs);assert.equal(ageTimers.size,1);});await el('stop-video-observation').click();
+check('stop cancels both frame and display-age callbacks',()=>{assert.equal(ageTimers.size,0);assert.equal(frameCallbacks.size,0);});delete win.setTimeout;delete win.clearTimeout;
 await win.trigger('pagehide');
 console.log(`\n${passed} UI and lifecycle checks passed (Node DOM harness; no browser launched).`);

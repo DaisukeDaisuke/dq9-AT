@@ -53,6 +53,19 @@
           <div id="roi-proposal-list" class="roi-proposal-list" role="group" aria-label="未確認の領域候補"></div>
           <p class="muted">候補を1つ選び、右の「この切り抜きを照合」で既存の分類器に渡します。WebGPUの選択と姿勢キャッシュはそのまま使います。自動の連続照合は行いません。</p>
         </section>
+        <section class="proposal-controls" aria-labelledby="video-observation-heading">
+          <h3 id="video-observation-heading">動画の自動観測（観測・デバッグ用の実験）</h3>
+          <p class="muted">位置候補は最大4回/秒。照合は同時1件、最大2件/秒で最新フレームから1枠ずつ選びます。処理待ちの動画列は作りません。画面の枠は未確認、下の順位はその撮影時刻の切り抜きだけの記録です。</p>
+          <p class="muted">開発用の短い動画窓では、照合した30枠の事後目視は明瞭な敵体を含む5枠・背景/UI 23枠・曖昧2枠でした。同じ録画の反復を含み、精度保証ではありません。信頼できる敵の自動受理やAT連携の完成版ではありません。</p>
+          <label class="check-label"><input id="video-observation-dense" type="checkbox">DINO補助も使う（3秒以上空け、照合の間に最大1回。背景候補・処理時間も増えます）</label>
+          <div class="proposal-actions"><button id="start-video-observation" type="button" disabled>観測を開始して再生</button><button id="stop-video-observation" type="button" disabled>自動観測を停止</button></div>
+          <p id="video-observation-requirements" class="muted"></p>
+          <p id="video-observation-status" role="status" aria-live="polite">停止中。開始を押すまで自動の観測・照合は行いません。</p>
+          <canvas id="video-observation-view" hidden aria-label="最新に観測した位置候補。すべて未確認"></canvas>
+          <p id="video-position-age" class="muted">現在の位置候補は未観測です。</p>
+          <ol id="video-observations" class="video-observations" aria-label="時刻付きの過去の切り抜き順位、最新4件"></ol>
+          <p class="muted">同じ画面上の候補の再照合は5秒以上空けます。これらは負荷の制限で、検出の採否基準ではありません。シーク・入力や設定の変更・タブの非表示で停止します。自動の種類確定やAT候補の削除には使いません。</p>
+        </section>
         <details id="capture-details"><summary>固定した画像の情報</summary><dl id="capture-metadata"><dt>状態</dt><dd>未取得</dd></dl></details>
       </section>
       <aside class="configuration" aria-labelledby="settings-heading">

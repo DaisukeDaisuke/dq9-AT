@@ -3,11 +3,11 @@ import {parseMonsterAssetCatalog} from './monster-assets.mjs';
 import {MonsterGeometry} from './monster-geometry.mjs';
 import {createDinoFeatureBackend} from './monster-dinov2.mjs';
 import {createFeatureBankStore} from './monster-feature-cache.mjs';
-import {recognizeROI,supplementEnemyROIs} from './monster-recognition-engine.mjs';
+import {recognizeROI,supplementEnemyROIs,prepareDinoPoseBank} from './monster-recognition-engine.mjs';
 let state=null,epoch=0,active=null;
 const post=message=>self.postMessage(message);
 self.onmessage=async({data:m})=>{
- if(!m||!['load','recognize','supplement','cancel'].includes(m.type))return;
+ if(!m||!['load','recognize','supplement','prepare','cancel'].includes(m.type))return;
  if(m.type==='cancel'){active?.abort();active=null;return;}
  const id=m.id,romEpoch=m.romEpoch;let requestEpoch=epoch,controller=null;
  try{
@@ -23,7 +23,8 @@ self.onmessage=async({data:m})=>{
   if(!state||state.romEpoch!==romEpoch)throw Error('現在のNDSを読み込み直してください');active?.abort();controller=new AbortController();const mine=epoch;active=controller;
   const runState=state,onProgress=p=>{if(active===controller&&mine===epoch)post({type:'progress',id,romEpoch,...p});};
   const getDino=async({backend:provider='wasm'}={})=>{if(runState.dino?.spec.backend===provider)return runState.dino;const previous=runState.dino;runState.dino=null;await previous?.dispose();const backend=await createDinoFeatureBackend({backend:provider,signal:controller.signal,onProgress});if(active!==controller||mine!==epoch){await backend.dispose();throw new DOMException('中止','AbortError');}runState.dino=backend;return backend;};
-  const result=await (m.type==='supplement'?supplementEnemyROIs:recognizeROI)(m,{...runState,signal:controller.signal,onProgress,getDino});
+  const outcome=await (m.type==='prepare'?prepareDinoPoseBank:m.type==='supplement'?supplementEnemyROIs:recognizeROI)(m,{...runState,signal:controller.signal,onProgress,getDino});
+  const result=m.type==='prepare'?{prepared:true,timings:outcome.timings,cacheWarnings:outcome.cacheWarnings}:outcome;
   if(active!==controller||mine!==epoch)return;active=null;post({type:'result',id,romEpoch,result});
  }catch(error){if(error.name==='AbortError'||requestEpoch!==epoch||(controller&&active!==controller))return;post({type:'error',id,romEpoch,message:String(error?.message??error)});}
 };

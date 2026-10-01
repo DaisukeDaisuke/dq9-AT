@@ -1,4 +1,5 @@
 /* Local-only experimental UI. The scoring worker owns ROM parsing and rendering. */
+import { LatestVideoObserver, VIDEO_OBSERVER_LIMITS } from './monster-video-observer.mjs';
 import { getFieldExclusion } from './monster-field-mask.mjs';
 import { proposeEnemyROIs } from './monster-position-proposals.mjs';
 export const LIMITS = Object.freeze({ romBytes: 512 * 1024 * 1024, sourceSide: 4096, roiSide: 1024, models: 4 });
@@ -114,6 +115,7 @@ export class RecognitionWorkerClient {
   }
   recognize(message) { return this.request(message, [message.crop.rgba.buffer], 'result'); }
   supplement(message) { return this.request(message, [message.image.rgba.buffer], 'result'); }
+  prepare(message) { return this.request(message, [], 'result'); }
   terminate() {
     this.generation++; this.worker?.terminate(); this.worker = null; this.loadedRomEpoch = null;
     for (const pending of this.pending.values()) pending.reject(abortError());
@@ -121,19 +123,22 @@ export class RecognitionWorkerClient {
   }
 }
 
-export function mountRecognitionPage(document, window, { ensureInferenceAssets = defaultEnsureInferenceAssets, probeWebGPU = defaultProbeWebGPU, clearFeatureCache = defaultClearFeatureCache, proposeROIs = proposeEnemyROIs } = {}) {
+export function mountRecognitionPage(document, window, { ensureInferenceAssets = defaultEnsureInferenceAssets, probeWebGPU = defaultProbeWebGPU, clearFeatureCache = defaultClearFeatureCache, proposeROIs = proposeEnemyROIs, observerOptions = {} } = {}) {
   const $ = id => document.getElementById(id);
   const video = $('source-video'); const view = $('frozen-view'); const viewCtx = view.getContext('2d');
   const frozen = document.createElement('canvas'); const frozenCtx = frozen.getContext('2d', { willReadFrequently: true });
   const cropView = $('crop-preview'); const cropCtx = cropView.getContext('2d');
   const gate = new RequestGate();
+  let observer = null, observationCallback = null, observationGeneration = 0, observationStartGeneration = 0, observationAgeTimer = null;
+  const observationCapture = document.createElement('canvas'), observationCaptureCtx = observationCapture.getContext('2d', { willReadFrequently: true });
   const state = {
     romFile: null, romEpoch: 0, sourceEpoch: 0, sourceId: null, sourceURL: null, sourceKind: null, image: null,
     sourceReady: false, timelineSegment: 0, frameSerial: 0, capture: null, roi: null, catalog: [], selected: new Set(DEFAULT_MODELS),
-    proposalResult: null, selectedProposalId: null, denseStatus: '', denseBusy: false,
+    observationRecords: [], observationStarting: false, proposalResult: null, selectedProposalId: null, denseStatus: '', denseBusy: false,
     busy: false, loading: false, loadPromise: null, lastResult: null, sequence: 0, drag: null, drawMode: true, disposed: false, assetAbort: null, clearingCache: false,
   };
   const client = new RecognitionWorkerClient({ onProgress: message => {
+    if (observer?.acceptsProgress(message)) { observer.progress(message); return; }
     if (!gate.accepts(message)) return;
     if (Number.isFinite(message.total) && message.total > 0) {
       $('progress').max = message.total; $('progress').value = Math.max(0, Math.min(message.done || 0, message.total));
@@ -141,6 +146,11 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     status(`${message.message || phaseName(message.phase)}${message.total ? ` · ${message.done || 0} / ${message.total}` : ''}`);
   } });
   const nextID = () => `request-${++state.sequence}`;
+  observer = new LatestVideoObserver({ ...observerOptions, nextID, prepare: prepareObservation, classify: request => client.recognize(request), supplement: request => client.supplement(request),
+    cancelActive: () => { client.terminate(); state.loadPromise = null; state.loading = false; },
+    onPositions: renderVideoPositions, onObservation: addVideoObservation, onState: videoObservationState,
+    onProgress: message => { $('video-observation-status').textContent = message.message || phaseName(message.phase); },
+  });
   function phaseName(phase) { return ({ render: 'モデル画像を生成中', score: '切り抜きと比較中', load: 'NDSを読込中', download: '公開AIモデルを準備中', init: 'DINOv2を初期化中', embed: 'DINOv2画像特徴を計算中' })[phase] || '照合中'; }
   function status(text) { $('status').textContent = text; }
   function error(text = '') { $('error').textContent = text; $('error').hidden = !text; }
@@ -165,11 +175,11 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     $('video-seek').disabled = !state.sourceReady || !Number.isFinite(video.duration) || video.duration <= 0;
     $('redraw-roi').disabled = !state.capture;
     $('roi-fields').disabled = !state.capture;
-    $('start').disabled = !ready() || state.busy || state.loading;
+    $('start').disabled = !ready() || state.busy || state.loading || observer.running;
     const canReloadROM = !!state.romFile && !state.loading && !state.busy && !state.catalog.length;
     $('restart').disabled = !(ready() || canReloadROM) || (state.loading && !state.busy);
     $('restart').textContent = canReloadROM ? 'NDSを再読込' : '最初から再照合';
-    $('cancel').disabled = !state.busy && !state.loading;
+    $('cancel').disabled = !state.busy && !state.loading && !observer.running && !state.observationStarting;
     $('model-filter').disabled = !state.catalog.length;
     const dino = featureMethod() === 'dinov2'; $('dino-constraints').hidden = !dino; $('inference-backend-control').hidden = !dino; $('clear-feature-cache').disabled = state.clearingCache;
     $('backend-note').textContent = !dino ? '' : inferenceBackend() === 'webgpu' ? 'WebGPU / FP16: shader-f16対応GPUが必要です。形状など一部の処理はCPUを併用する場合があります。未対応ならCPU/WASMを選択してください。' : 'CPU / WASM・int8: 従来と同じ推論です。保存済みの姿勢特徴は再利用します。';
@@ -178,12 +188,149 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     $('gameplay-fields').hidden = $('gameplay-layout').value !== 'manual'; $('gameplay-fields').disabled = !state.capture;
     updateSceneView();
     const proposalProblem = proposalIssue();
-    $('generate-roi-proposals').disabled = !!proposalProblem || state.busy || state.loading || state.clearingCache;
+    $('generate-roi-proposals').disabled = !!proposalProblem || state.busy || state.loading || state.clearingCache || observer.running;
     if ($('enable-roi-proposals').checked && proposalProblem && !state.proposalResult) $('proposal-status').textContent = proposalProblem;
     $('clear-roi-proposals').disabled = !state.proposalResult;
     const denseProblem = denseIssue();
-    $('supplement-roi-proposals').disabled = !!denseProblem || state.busy || state.loading || state.clearingCache;
+    $('supplement-roi-proposals').disabled = !!denseProblem || state.busy || state.loading || state.clearingCache || observer.running;
     $('dense-proposal-note').textContent = state.denseStatus || denseProblem || '任意の補助です。64姿勢を準備・再利用し、固定画像を1回だけ処理します。追加候補にも背景が含まれ、選んだ後の分類時間が別途かかります。';
+    const videoIssue = videoObservationIssue();
+    $('start-video-observation').disabled = !!videoIssue || state.busy || state.loading || state.clearingCache || observer.running || state.observationStarting;
+    $('stop-video-observation').disabled = !observer.running && !state.observationStarting;
+    if (!observer.running) $('video-observation-requirements').textContent = videoIssue || '準備できました。開始すると動画を再生し、位置候補と各時刻の切り抜き順位を自動で観測します。';
+  }
+  function videoObservationStamp(mediaTime, basis = 'video.currentTime (approximate)') {
+    const frame = { width: video.videoWidth, height: video.videoHeight };
+    const game = gameplayROIForLayout($('gameplay-layout').value, frame, Object.fromEntries(['x','y','w','h'].map(k => [k, Number($(`gameplay-${k}`).value)])));
+    return { sourceId: state.sourceId, sourceEpoch: state.sourceEpoch, timelineSegment: state.timelineSegment, frameSerial: state.frameSerial,
+      romEpoch: state.romEpoch, sourceFrame: frame, videoTime: mediaTime, timestampBasis: basis, capturedAt: new Date().toISOString(), enemyROI: null,
+      featureMethod: featureMethod(), inferenceBackend: inferenceBackend(), sceneContext: { kind: $('scene-kind').value === 'field' ? 'field' : 'unspecified', gameplayROI: game, excludeCenter: !!$('exclude-center').checked, maskNormalized: { ...CENTER_MASK } } };
+  }
+  function videoObservationIssue() {
+    if (document.hidden) return '非表示のタブでは自動観測を開始できません。';
+    if (state.disposed) return 'ページを読み直してください。';
+    if (!$('enable-roi-proposals').checked) return '上のshrine-blue-v1実験を有効にしてください。';
+    if (!state.sourceReady || state.sourceKind !== 'video') return '再生できる動画を選択してください。画像入力は固定画像の照合を使えます。';
+    if (!state.romFile) return 'NDSを読み込んでください。';
+    if (featureMethod() !== 'dinov2' || $('variant').value !== '_f' || $('preset').value !== 'quick') return 'DINOv2・フィールドモデル（_f）・クイックを選択してください。';
+    const ids = selectedIDs(); if (ids.length !== 4 || !DEFAULT_MODELS.every(id => ids.includes(id))) return '初期の4モデルを選択してください。';
+    try {
+      const stamp = videoObservationStamp(video.currentTime), frame = stamp.sourceFrame, scene = stamp.sceneContext, g = scene.gameplayROI;
+      if (!frame.width || !frame.height || frame.width > 4096 || frame.height > 4096 || frame.width * frame.height > VIDEO_OBSERVER_LIMITS.maxSourcePixels) return '自動観測の元動画は合計2,097,152画素以下（1920×1080対応）にしてください。';
+      if (scene.kind !== 'field' || !scene.excludeCenter) return 'フィールドを明示し、中央除外を有効にしてください。';
+      if (g.w * 3 !== g.h * 4 || g.w > 1024 || g.h > 1024) return 'ゲーム範囲は正確な4:3、各辺1024px以下にしてください。';
+    } catch (failure) { return failure.message; }
+    return '';
+  }
+  async function prepareObservation(config) {
+    const { signal, id } = config, epoch = config.captureStamp.romEpoch;
+    await ensureLoaded(); if (signal.aborted) throw abortError();
+    if (config.inferenceBackend === 'webgpu') await probeWebGPU({ signal }); if (signal.aborted) throw abortError();
+    await ensureInferenceAssets({ backend: config.inferenceBackend, signal, onProgress: p => observer.progress({ ...p, id, romEpoch: epoch }) });
+    if (signal.aborted) throw abortError();
+    const message = await client.prepare({ type: 'prepare', id, romEpoch: epoch, modelIds: config.modelIds, variant: config.variant, preset: config.preset, featureMethod: 'dinov2', inferenceBackend: config.inferenceBackend });
+    if (signal.aborted) throw abortError();
+    if (!message.result?.prepared) throw new Error('姿勢特徴を準備できませんでした。');
+    return message.result;
+  }
+  function cancelObservationFrame() {
+    if (observationAgeTimer) { (window.clearTimeout || globalThis.clearTimeout)(observationAgeTimer.id); observationAgeTimer = null; }
+    observationGeneration++; const token = observationCallback; observationCallback = null;
+    if (!token) return;
+    if (token.native) video.cancelVideoFrameCallback?.(token.id); else (window.clearTimeout || globalThis.clearTimeout)(token.id);
+  }
+  function stopVideoObservation(reason) {
+    observationStartGeneration++; state.observationStarting = false; observer.stop(reason); cancelObservationFrame(); controls();
+  }
+  function queueObservationAge() {
+    if (!observer.running || observationAgeTimer) return;
+    const token = { generation: observationGeneration, id: null }; observationAgeTimer = token;
+    token.id = (window.setTimeout || globalThis.setTimeout)(() => {
+      if (observationAgeTimer !== token || token.generation !== observationGeneration || !observer.running) return;
+      observationAgeTimer = null; updateObservationAges(); queueObservationAge();
+    }, 500);
+  }
+  function queueObservationFrame() {
+    if (!observer.running || observationCallback) return;
+    const generation = observationGeneration, token = { native: typeof video.requestVideoFrameCallback === 'function', id: null };
+    observationCallback = token;
+    const callback = (_now, metadata) => {
+      if (observationCallback !== token || generation !== observationGeneration || !observer.running) return;
+      observationCallback = null;
+      if (video.paused || video.ended || document.hidden || video.seeking) { stopVideoObservation('paused-or-hidden'); return; }
+      try {
+        const pts = Number.isFinite(metadata?.mediaTime) ? metadata.mediaTime : video.currentTime;
+        if (video.readyState >= 2 && observer.shouldSample(pts)) {
+          const stamp = videoObservationStamp(pts, Number.isFinite(metadata?.mediaTime) ? 'requestVideoFrameCallback.mediaTime' : 'video.currentTime (approximate)'); stamp.frameSerial = ++state.frameSerial;
+          const { width, height } = stamp.sourceFrame;
+          if (!width || !height || width > 4096 || height > 4096 || width * height > VIDEO_OBSERVER_LIMITS.maxSourcePixels) { stopVideoObservation('source-size-change'); return; }
+          if (observationCapture.width !== width) observationCapture.width = width;
+          if (observationCapture.height !== height) observationCapture.height = height;
+          observationCaptureCtx.drawImage(video, 0, 0, width, height);
+          observer.sample({ width, height, rgba: observationCaptureCtx.getImageData(0, 0, width, height).data }, stamp);
+        }
+        updateObservationAges();
+      } catch (failure) { observer.stop(`error: ${failure.message}`); }
+      queueObservationFrame();
+    };
+    token.id = token.native ? video.requestVideoFrameCallback(callback) : (window.setTimeout || globalThis.setTimeout)(callback, 250);
+  }
+  async function startVideoObservation() {
+    const issue = videoObservationIssue(); if (issue) { error(issue); return; }
+    if (observer.running || state.observationStarting || state.busy || state.loading || state.clearingCache) return;
+    invalidate('', { clear: false }); error(); const revision = gate.revision, intent = ++observationStartGeneration;
+    state.observationStarting = true; controls();
+    try {
+      await video.play(); if (intent !== observationStartGeneration || revision !== gate.revision || state.disposed || video.paused || videoObservationIssue()) return;
+      state.observationRecords = []; $('video-observations').replaceChildren(); cancelObservationFrame();
+      observer.start({ captureStamp: videoObservationStamp(video.currentTime), modelIds: [...DEFAULT_MODELS], variant: '_f', preset: 'quick', inferenceBackend: inferenceBackend(), denseSupplement: !!$('video-observation-dense').checked });
+      queueObservationFrame(); controls();
+    } catch (failure) { if (intent === observationStartGeneration) { error(failure.message); stopVideoObservation('start-failed'); } }
+    finally { if (intent === observationStartGeneration) { state.observationStarting = false; controls(); } }
+  }
+  function videoObservationState(info) {
+    if (!info.running) { observationStartGeneration++; state.observationStarting = false; cancelObservationFrame(); $('video-observation-view').hidden = true; $('video-position-age').textContent = '現在の位置候補は停止・未観測です。過去の切り抜き記録は現在位置に貼り付けません。'; }
+    const s = info.stats || {};
+    $('video-observation-status').textContent = info.running ? `${info.phase === 'preparing' ? '64姿勢を準備中（動画フレームは最新の1枚だけ保持）' : '自動観測中'} · CPU ${s.sampledFrames || 0}枚 / 照合 ${s.classificationsCompleted || 0}件 / 補助 ${s.supplementsStarted || 0}回` : `自動観測を停止しました（${info.phase}）。順位は観測した過去の切り抜きにだけ対応します。`;
+    if (String(info.phase).startsWith('error:')) error(info.phase.slice(7));
+    if (info.running) queueObservationAge();
+    updateObservationAges(); controls();
+  }
+  function renderVideoPositions({ image, result, association }) {
+    const canvas = $('video-observation-view'), ctx = canvas.getContext('2d');
+    if (canvas.width !== image.width) canvas.width = image.width; if (canvas.height !== image.height) canvas.height = image.height;
+    const pixels = ctx.createImageData(image.width, image.height); pixels.data.set(image.rgba); ctx.putImageData(pixels, 0, 0); canvas.hidden = false;
+    const scale = Math.max(1, image.width / 640); ctx.save(); ctx.strokeStyle = '#ffc878'; ctx.fillStyle = '#ffc878'; ctx.lineWidth = 2 * scale; ctx.font = `${14 * scale}px system-ui`;
+    for (const [i, p] of result.proposals.entries()) { const r = p.roi; ctx.strokeRect(r.x,r.y,r.w,r.h); ctx.fillText(String(i+1),r.x+2*scale,Math.max(16*scale,r.y-3*scale)); }
+    ctx.restore();
+    updateObservationAges();
+  }
+  function addVideoObservation(record) {
+    const source = document.createElement('canvas'); source.width = record.preview.width; source.height = record.preview.height;
+    const sourceCtx = source.getContext('2d'), pixels = sourceCtx.createImageData(source.width, source.height); pixels.data.set(record.preview.rgba); sourceCtx.putImageData(pixels, 0, 0);
+    const thumbnail = document.createElement('canvas'), scale = Math.min(1, 96 / Math.max(source.width, source.height)); thumbnail.width = Math.max(1,Math.round(source.width*scale)); thumbnail.height = Math.max(1,Math.round(source.height*scale));
+    thumbnail.getContext('2d').drawImage(source,0,0,source.width,source.height,0,0,thumbnail.width,thumbnail.height); thumbnail.setAttribute('aria-label','この観測時刻の元画像切り抜き'); source.width = source.height = 0;
+    const { preview, ...metadata } = record; const stored = { ...metadata, result: { ...record.result, rankings: (record.result.rankings || []).map(({ thumbnail, ...rank }) => rank) }, thumbnail };
+    state.observationRecords.unshift(stored); state.observationRecords.length = Math.min(4,state.observationRecords.length);
+    const list = $('video-observations'); list.replaceChildren();
+    for (const item of state.observationRecords) {
+      const card = makeElement('li',undefined,'video-observation-card'), r = item.roi;
+      card.append(makeElement('strong',`動画 ${item.captureStamp.videoTime.toFixed(3)}秒 · ${item.candidateSource === 'dino-patch' ? 'DINO補助枠' : 'CPU枠'}`),item.thumbnail);
+      card.append(makeElement('p',`この時刻の範囲: x ${r.x}, y ${r.y}, ${r.w} × ${r.h}px`));
+      for (const [index, rank] of (item.result.rankings || []).entries()) card.append(makeElement('p',`${index+1}. ${rank.modelId} · ${labels(rank)} · ${Number.isFinite(rank.similarity)?rank.similarity.toFixed(4):'類似度不明'}`));
+      card.append(makeElement('p','候補外・判別不能。背景にも順位が出ます。敵・種類・出現・ATは確定しません。','muted'));
+      item.ageElement = makeElement('p','','muted'); card.append(item.ageElement); list.append(card);
+    }
+    updateObservationAges();
+  }
+  function updateObservationAges() {
+    const now = observer?.now?.() ?? performance.now();
+    if (observer.running && observer.latest) {
+      const latest = observer.latest, age = Math.max(0,(now-latest.wallAt)/1000), stale = age > 1;
+      $('video-observation-view').hidden = stale;
+      $('video-position-age').textContent = `位置候補 ${latest.result.proposals.length}/8枠 · 動画 ${latest.result.captureStamp.videoTime.toFixed(3)}秒 · 撮影から${age.toFixed(1)}秒（実時間） · ${stale ? '古い位置のため枠を非表示・現在は未観測' : 'すべて未確認'}。不在や消滅の証拠ではありません。`;
+    }
+    for (const item of state.observationRecords) if (item.ageElement) item.ageElement.textContent = `撮影から${Math.max(0,(now-item.positionObservedAt)/1000).toFixed(1)}秒（実時間） · 処理${Math.max(0,(item.completedAt-item.dispatchedAt)/1000).toFixed(2)}秒 · ${observer.running ? '過去の切り抜き記録' : '停止時点の記録'}。新しい枠への種類の引継ぎはしません。`;
   }
   function proposalIssue() {
     if (state.disposed) return 'ページを読み直してください。';
@@ -327,6 +474,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     $('unknown-status').textContent = '候補外・判別不能の可能性を常に残します。照合後も、順位だけで種類を確定しないでください。';
   }
   function invalidate(reason, { terminate = state.busy, clear = true, clearProposalSet = false } = {}) {
+    if (observer) stopVideoObservation('configuration-or-manual-action'); state.observationRecords = []; $('video-observations').replaceChildren();
     gate.invalidate();
     state.assetAbort?.abort(); state.assetAbort = null;
     if (terminate) { client.terminate(); state.loadPromise = null; state.loading = false; }
@@ -577,6 +725,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     status('この切り抜きで照合できます。敵全体が入り、背景が少なくなるよう調整してください。'); controls();
   }
   async function recognize({ restart = false } = {}) {
+    if (observer.running) stopVideoObservation('manual-classification');
     if (!ready()) return;
     if (state.busy && !restart) return;
     invalidate('', { terminate: restart || state.busy }); error();
@@ -662,7 +811,9 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
   $('play-pause').addEventListener('click', async () => { if (!video.paused) video.pause(); else try { await video.play(); } catch (failure) { error(`動画を再生できません: ${failure.message}`); } });
   $('video-seek').addEventListener('input', () => { if (Number.isFinite(video.duration)) video.currentTime = Number($('video-seek').value); });
   for (const event of ['timeupdate', 'durationchange', 'play', 'pause', 'loadedmetadata']) video.addEventListener(event, updateVideoTime);
-  video.addEventListener('seeking', () => { state.timelineSegment++; });
+  video.addEventListener('seeking', () => { state.timelineSegment++; stopVideoObservation('seeking'); state.observationRecords = []; $('video-observations').replaceChildren(); });
+  for (const event of ['pause','ended']) video.addEventListener(event, () => stopVideoObservation(event));
+  document.addEventListener?.('visibilitychange', () => { if (document.hidden) stopVideoObservation('hidden-page'); controls(); });
   $('redraw-roi').addEventListener('click', () => { state.drawMode = true; $('redraw-roi').textContent = 'ドラッグで新しい範囲を選択'; status('固定した画像上で、新しい範囲をドラッグしてください。'); });
   $('apply-roi').addEventListener('click', () => { try { error(); setROI(Object.fromEntries(['x', 'y', 'w', 'h'].map(key => [key, Number($(`roi-${key}`).value)]))); } catch (failure) { error(failure.message); } });
   for (const key of ['x', 'y', 'w', 'h']) $(`roi-${key}`).addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); $('apply-roi').click(); } });
@@ -683,6 +834,9 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
   $('generate-roi-proposals').addEventListener('click', generateProposals);
   $('supplement-roi-proposals').addEventListener('click', supplementProposals);
   $('clear-roi-proposals').addEventListener('click', () => { if (state.denseBusy) invalidate('', { clear: false }); clearProposals('候補の枠を消しました。選択済みの切り抜きは手動で調整できます。'); paint(); controls(); });
+  $('start-video-observation').addEventListener('click', startVideoObservation);
+  $('stop-video-observation').addEventListener('click', () => stopVideoObservation('user-stop'));
+  $('video-observation-dense').addEventListener('change', () => { stopVideoObservation('supplement-setting-change'); controls(); });
   $('top-k').addEventListener('change', renderResults);
   $('start').addEventListener('click', () => recognize());
   $('restart').addEventListener('click', async () => {
@@ -695,7 +849,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
   });
   $('cancel').addEventListener('click', () => { invalidate('処理を中止しました。再照合すると、NDSを読み直して最初から実行します。', { terminate: true }); $('rom-status').textContent = state.romFile ? `${state.romFile.name} · 再照合時に再読込` : '未選択'; });
   window.addEventListener('resize', paint);
-  window.addEventListener('pagehide', () => { state.disposed = true; clearProposals(); gate.invalidate(); state.assetAbort?.abort(); state.assetAbort = null; client.terminate(); releaseSource(); });
+  window.addEventListener('pagehide', () => { stopVideoObservation('pagehide'); cancelObservationFrame(); state.disposed = true; clearProposals(); gate.invalidate(); state.assetAbort?.abort(); state.assetAbort = null; client.terminate(); releaseSource(); });
   window.addEventListener('pageshow', event => {
     if (!event.persisted) return;
     state.disposed = false; state.loadPromise = null; state.loading = false;
@@ -703,7 +857,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     $('source-file').value = ''; $('source-status').textContent = '画像・動画を選び直してください';
   });
   controls();
-  return { state, gate, client, freeze, recognize, invalidate, selectROM, selectSource, setROI, generateProposals, selectProposal, supplementProposals };
+  return { state, gate, client, freeze, recognize, invalidate, selectROM, selectSource, setROI, generateProposals, selectProposal, supplementProposals, observer, startVideoObservation };
 }
 
 if (typeof document !== 'undefined' && document.getElementById('rom-file')) mountRecognitionPage(document, window);

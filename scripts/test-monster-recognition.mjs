@@ -23,3 +23,5 @@ await import('./test-monster-feature-cache.mjs');
 await import('./test-monster-feature-integration.mjs');
 
 await import('./test-monster-dense-proposals.mjs');
+
+await import('./test-monster-video-observer.mjs');
