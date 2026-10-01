@@ -27,7 +27,8 @@ async function fixture({auto=false,track=true,registration=true}={}){
   set innerHTML(html){for(const m of html.matchAll(/<([a-z0-9]+)\b([^>]*\bid="([^"]+)"[^>]*)>/gi)){const e=new Element(m[1]);e.id=m[3];e.value=m[2].match(/\bvalue="([^"]*)"/)?.[1]??'';e.checked=/\bchecked\b/.test(m[2]);elements.set(e.id,e);}}
   getContext(){if(this.ctx)return this.ctx;const canvas=this;this.ctx=new Proxy({drawImage(input){canvas.pixel=input.pixel;},getImageData(_x,_y,w,h){const data=new Uint8ClampedArray(w*h*4);data.fill(canvas.pixel);return {width:w,height:h,data};},putImageData(image){canvas.pixel=image.data[0];}}, {get:(t,k)=>t[k]??(()=>{}),set:(t,k,v)=>(t[k]=v,true)});return this.ctx;}
   addEventListener(n,fn){(this.listeners[n]??=[]).push(fn);}emit(n){for(const fn of this.listeners[n]||[])fn();}
-  append(...items){this.children.push(...items);}replaceChildren(...items){this.children=[...items];}add(x){this.append(x);}
+  set textContent(value){this.text=String(value);this.children=[];}get textContent(){return (this.text||'')+this.children.map(child=>child.textContent).join('');}
+  append(...items){this.children.push(...items);}replaceChildren(...items){(this.replacements??=[]).push([...items]);this.text='';this.children=[...items];}add(x){this.append(x);}
   pause(){this.paused=true;this.emit('pause');}play(){this.paused=false;this.emit('play');return Promise.resolve();}load(){}removeAttribute(n){delete this[n];}requestVideoFrameCallback(fn){this.frameCallback=fn;return 1;}cancelVideoFrameCallback(){this.frameCallback=null;}
  }
  class FakeWorker{constructor(url){this.url=String(url);this.messages=[];workers.push(this);}postMessage(m){this.messages.push(structuredClone(m));}terminate(){this.terminated=true;}reply(m){this.onmessage?.({data:m});}}
@@ -246,18 +247,49 @@ await run('retained map skips repeated font and multi-map work while timestamps 
  check('font runs once over four frames',()=>assert.equal(f.matches.length,1));check('one acquisition plus three one-image requests',()=>assert.deepEqual(f.requests().map(r=>r.mode||'acquire'),['acquire','track-current','track-current','track-current']));check('manual reference registration not duplicated on tracked frames',()=>assert.equal(f.position.messages.filter(m=>m.type==='frame').length,registrationCount));
  const maps=f.api.getState().observations.filter(o=>o.mapDisambiguation).map(o=>o.mapDisambiguation);check('logged tracking timestamps current',()=>assert.deepEqual(structuredClone(maps.map(o=>o.stamp.videoTime)),[1,2,3,4]));check('aliases survive',()=>assert(maps.every(o=>JSON.stringify(o.bestMapIds)==='[7402,7403]')));check('no unique identity or AT promotion',()=>assert(maps.every(o=>o.mapIdentityResolved===false&&o.minimumProvenATCalls===0)));check('UI distinguishes acquisition time',()=>assert.match(f.$('map-disambiguation').children[0].textContent,/取得 t=1.000秒.*t=4.000秒/));
 });
+await run('pending retained matching preserves the last completed frame until one atomic replacement',async()=>{
+ const f=await fixture(),prior=await acquireRetained(f),host=f.$('map-disambiguation');
+ for(const t of [2,3,4]){
+  const previous=[...host.children],text=host.textContent,count=host.replacements.length;
+  const pending=f.api.readFrame(t,{...f.sample(),videoTime:t}),request=f.requests().at(-1);
+  check('pending work leaves every completed result node in place',()=>assert.deepEqual(host.children,previous));
+  check('pending work does not rewrite historical result text',()=>assert.equal(host.textContent,text));
+  check('completed frame label and prior timestamp remain visible',()=>assert.match(host.children[0].textContent,new RegExp('完了フレームの結果.*t='+String(t-1)+'\\.000秒')));
+  check('current position is explicitly unconfirmed during the wait',()=>assert.match(f.$('position-status').textContent,/現在フレーム.*未確定.*前回の完了フレーム/));
+  check('current coordinates are not carried forward as fresh evidence',()=>assert.equal(f.api.getState().positionSample,null));
+  check('no empty or pending replacement occurs',()=>assert.equal(host.replacements.length,count));
+  replyMap(f,request,trackedResult(request,prior));await pending;
+  check('successful result performs exactly one complete replacement',()=>assert.equal(host.replacements.length,count+1));
+  check('replacement is never an empty result tree',()=>assert(host.replacements.at(-1).length>=4));
+  check('replacement has the newly completed frame time',()=>assert.match(host.children[0].textContent,new RegExp('t='+String(t)+'\\.000秒')));
+  check('unknown alternatives stay visible after the swap',()=>assert.match(host.textContent,/7404.*unsearched-font-hypotheses/));
+ }
+ check('only acquisition invoked the font matcher',()=>assert.equal(f.matches.length,1));
+});
+for(const failure of ['error','timeout'])await run(`retained matching ${failure} clears the historical result before reacquisition`,async()=>{
+ const f=await fixture(),prior=await acquireRetained(f),pending=f.api.readFrame(2,{...f.sample(),videoTime:2}),request=f.requests().at(-1),host=f.$('map-disambiguation');
+ check('previous complete result stays present during the wait',()=>assert(host.children.length>=4));
+ if(failure==='error')f.emit('dq9-map-candidates-result',{type:'map-candidates-error',requestId:request.requestId,stamp:request.stamp,message:'synthetic-worker-error'});
+ else await new Promise(resolve=>setTimeout(resolve,2050));
+ for(let i=0;i<4;i++)await Promise.resolve();
+ check('failed match removes the completed result tree',()=>assert.equal(host.children.length,0));
+ check('failed match explicitly suspends result coordinates',()=>assert.match(host.textContent,/保留/));
+ check('failed retained image is no longer usable',()=>assert.equal(f.api.getState().retainedMap,null));
+ check('same-frame reacquisition starts after failure',()=>assert.equal(f.matches.length,2));
+ f.matches.at(-1).resolve(result);await pending;f.api.invalidateSource('test-cleanup');
+});
 await run('same-name image mismatch reacquires on the current frame without a multi-frame delay',async()=>{
  const f=await fixture(),prior=await acquireRetained(f);f.video.pixel=80;const pending=f.api.readFrame(80,{...f.sample(),videoTime:80});const tracking=f.requests().at(-1);replyMap(f,tracking,trackedResult(tracking,prior,false));for(let i=0;i<4;i++)await Promise.resolve();
- check('mismatch clears current coordinates immediately',()=>assert.match(f.$('player-coordinates').textContent,/保留/));check('font starts again on that same frame',()=>assert.equal(f.matches.length,2));check('same current pixels enter reacquisition',()=>assert.equal(f.matches[1].image.data[0],80));f.matches[1].resolve(result);await pending;const reacquisition=f.requests().at(-1);check('same frame used for new map candidates',()=>assert.equal(reacquisition.stamp.frameSerial,tracking.stamp.frameSerial));check('fresh all-nominated request follows mismatch',()=>assert.equal(reacquisition.mode,undefined));check('same displayed name can nominate a new image',()=>assert.equal(reacquisition.candidates.names[0],'TESTMAP'));replyMap(f,reacquisition,acquired(reacquisition,{descriptor:'map-two',mapIds:[7404]}));check('new leading image retained',()=>assert.equal(f.api.getState().retainedMap.descriptor,'map-two'));
+ check('mismatch removes the old completed result tree',()=>assert.equal(f.$('map-disambiguation').children.length,0));check('mismatch clears current coordinates immediately',()=>assert.match(f.$('player-coordinates').textContent,/保留/));check('font starts again on that same frame',()=>assert.equal(f.matches.length,2));check('same current pixels enter reacquisition',()=>assert.equal(f.matches[1].image.data[0],80));f.matches[1].resolve(result);await pending;const reacquisition=f.requests().at(-1);check('same frame used for new map candidates',()=>assert.equal(reacquisition.stamp.frameSerial,tracking.stamp.frameSerial));check('fresh all-nominated request follows mismatch',()=>assert.equal(reacquisition.mode,undefined));check('same displayed name can nominate a new image',()=>assert.equal(reacquisition.candidates.names[0],'TESTMAP'));replyMap(f,reacquisition,acquired(reacquisition,{descriptor:'map-two',mapIds:[7404]}));check('new leading image retained',()=>assert.equal(f.api.getState().retainedMap.descriptor,'map-two'));
 });
 for(const scene of ['black','battle','menu'])await run(`${scene} without a name frame suspends current coordinates without expensive OCR`,async()=>{
  const f=await fixture();await acquireRetained(f);f.setNameDetection({resolved:false,reason:scene+'-name-frame-absent'});await f.api.readFrame(2,{...f.sample(),videoTime:2});
- check('name gate applies even with manual text ROI',()=>assert.equal(f.$('name-roi-mode').value,'manual'));check('no additional font work',()=>assert.equal(f.matches.length,1));check('no additional map work',()=>assert.equal(f.requests().length,1));check('retained hypothesis dropped',()=>assert.equal(f.api.getState().retainedMap,null));check('coordinates suspended',()=>assert.match(f.$('player-coordinates').textContent,/保留|空白/));
+ check('name gate applies even with manual text ROI',()=>assert.equal(f.$('name-roi-mode').value,'manual'));check('no additional font work',()=>assert.equal(f.matches.length,1));check('no additional map work',()=>assert.equal(f.requests().length,1));check('retained hypothesis dropped',()=>assert.equal(f.api.getState().retainedMap,null));check('coordinates suspended',()=>assert.match(f.$('player-coordinates').textContent,/保留|空白/));check('non-map frame clears completed result rows',()=>assert.equal(f.$('map-disambiguation').children.length,0));
 });
 for(const discontinuity of ['seek','reference','rom-release','cancel','scale','pagehide'])await run(`retained matching ${discontinuity} releases wait and rejects late result`,async()=>{
  const f=await fixture(),prior=await acquireRetained(f),pending=f.api.readFrame(2,{...f.sample(),videoTime:2}),request=f.requests().at(-1);
  if(discontinuity==='pagehide')f.emit('pagehide');if(discontinuity==='seek')f.api.invalidateSource('seek');if(discontinuity==='reference')f.emit('dq9-map-image',null);if(discontinuity==='rom-release')f.emit('dq9-rom-release');if(discontinuity==='cancel')f.$('text-cancel').onclick();if(discontinuity==='scale')f.$('position-scales').onchange();
- await pending;const before=f.api.getState().observations.length;replyMap(f,request,trackedResult(request,prior));check('late tracked result not logged',()=>assert.equal(f.api.getState().observations.length,before));check('current image cleared',()=>assert.equal(f.api.getState().retainedMap,null));check('busy released',()=>assert.equal(f.api.getState().busy,false));check('no unrequested text re-run after cancel',()=>assert.equal(f.matches.length,1));
+ await pending;const before=f.api.getState().observations.length;replyMap(f,request,trackedResult(request,prior));check('late tracked result not logged',()=>assert.equal(f.api.getState().observations.length,before));check('current image cleared',()=>assert.equal(f.api.getState().retainedMap,null));check('discontinuity clears completed result rows',()=>assert.equal(f.$('map-disambiguation').children.length,0));check('busy released',()=>assert.equal(f.api.getState().busy,false));check('no unrequested text re-run after cancel',()=>assert.equal(f.matches.length,1));
 });
 await run('retained reply requires full immutable capture identity',async()=>{
  const f=await fixture(),prior=await acquireRetained(f),pending=f.api.readFrame(2,{...f.sample(),videoTime:2}),request=f.requests().at(-1),bad=trackedResult(request,prior);bad.stamp.mediaTime+=1;replyMap(f,request,bad);check('altered nested provenance does not finish request',()=>assert.equal(f.api.getState().busy,true));replyMap(f,request,trackedResult(request,prior));await pending;check('correct stamp finishes',()=>assert.equal(f.api.getState().busy,false));
