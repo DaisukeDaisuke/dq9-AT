@@ -6,6 +6,7 @@ import {MonsterMovementKernel} from './monster-movement.mjs';
 import {projectMonsterOuterReset} from './monster-lifecycle.mjs';
 import {ATKernel, parseSeed} from './at-core.mjs';
 import {FieldATKernel} from './field-at.mjs';
+import {setupFirstSpawnPanel} from './first-spawn-panel.mjs';
 
 export const EXPLORER_SCHEMA = 'dq9-monster-explorer-initial-config-v1';
 const PROFILE = 'hypothetical-state2-7402-v1';
@@ -156,11 +157,12 @@ if (typeof document !== 'undefined' && document.getElementById('config')) setupE
 function setupExplorer() {
  const $ = id => document.getElementById(id), canvas = $('map'), ctx = canvas.getContext('2d');
  let project = null, graph = null, record = null, image = null, background = null, rom = null, trig = null, model = null, fieldKernel = null, atKernel = null, session = null, config = null, resources = new Map(), resourceNames = [], epoch = 0, importSequence = 0, dirty = false, busy = false;
+ const firstSpawn = setupFirstSpawnPanel({document,getInputs:()=>({project,rom,kernel:model,fieldKernel,atKernel}),redraw:()=>draw()});
  const integerIds = {'angle':'angle','speed-mode':'speedMode','turn-rate':'turnRate','width':'width','height':'height','state-timer':'stateTimer','active-elapsed':'activeElapsed','update-counter':'updateCounter','world-kind':'worldKind','script-mode':'scriptMode','detection':'detectionMode'};
  const status = (text, error = false) => { $('status').textContent = text; $('status').classList.toggle('error', error); };
  const run = fn => { try { fn(); } catch (e) { status(e.message, true); } };
  const readNumber = id => { if ($(id).value.trim() === '') throw Error(`${id}: 未入力です`); return Number($(id).value); };
- const changed = () => { if (session) dirty = true; update(); draw(); };
+ const changed = () => { if (session) dirty = true; firstSpawn.controlsChanged(); update(); draw(); };
  function readConfig() {
   if (!config) throw Error('NDSを先に読み込んでください');
   const c = copy(config);
@@ -232,6 +234,7 @@ function setupExplorer() {
  function clear() {
   epoch++; importSequence++; project = graph = record = image = background = rom = trig = model = fieldKernel = atKernel = session = config = null;
   resources = new Map(); resourceNames = []; dirty = false; busy = false;
+  firstSpawn.release();
   $('inputs').disabled = true; $('release').disabled = true; $('rom').value = ''; $('start-node').replaceChildren(); $('target-node').replaceChildren(); $('resource').replaceChildren(); $('parties').replaceChildren(); $('anchors').replaceChildren(); $('objects').replaceChildren();
   $('map-info').textContent = '7402のグラフをNDSから読み込みます。'; $('ground-note').textContent = '初期Y設定はユーザー初期化です。native birthではありません。';
   update(); draw();
@@ -267,7 +270,7 @@ function setupExplorer() {
    $('map-info').textContent = `7402 ${record.name} / ${graph.nodes.length}ノード / ${graph.edges.length}辺 / ${graph.key}。COL2 ${resourceNames.length}候補。`;
    status(`ローカル読込完了。trig / atan・グラフはこのNDS由来です。${terrainWarning}${mapWarning}`);
   } catch (e) { if (stamp === epoch) { clear(); status(e.message,true); } }
-  finally { if (stamp === epoch) { busy = false; update(); draw(); } }
+  finally { if (stamp === epoch) { busy = false; update(); firstSpawn.refresh(); draw(); } }
  }
  function capability(kind) {
   if (busy) return '読込中';
@@ -317,12 +320,14 @@ function setupExplorer() {
   ctx.lineWidth=1;ctx.strokeStyle='#77818e';
   for (const [a,b] of graph.edges) { if (!graph.nodes[a] || !graph.nodes[b])continue; ctx.beginPath();ctx.moveTo(...point(graph.nodes[a].position));ctx.lineTo(...point(graph.nodes[b].position));ctx.stroke(); }
   for (const [i,n] of graph.nodes.entries()) {const [x,z]=point(n.position);ctx.fillStyle=i===session?.actor.currentNodeIndex?'#ffd679':'#b7c9d9';ctx.beginPath();ctx.arc(x,z,3,0,Math.PI*2);ctx.fill();ctx.font='10px system-ui';ctx.fillText(`${i}`,x+5,z-4);}
+  if(firstSpawn.draw(ctx,transform))return;
   if (!session)return;
   ctx.strokeStyle='#58efd1';ctx.lineWidth=2;ctx.beginPath();session.trace.forEach((p,i)=>{const xy=point(p.map(v=>v/WORLD));i?ctx.lineTo(...xy):ctx.moveTo(...xy);});ctx.stroke();
   session.profile.config.parties.forEach((p,i)=>{if(p.mode!=='present')return;const [x,z]=point(p.xyz.map(v=>v/WORLD));ctx.fillStyle='#ef9fbd';ctx.fillRect(x-4,z-4,8,8);ctx.fillText(`P${i}`,x+6,z+3);});
   const [x,z]=point(session.actor.xyz.map(v=>v/WORLD));ctx.fillStyle=session.stopped?'#ffc873':'#58efd1';ctx.beginPath();ctx.arc(x,z,5,0,Math.PI*2);ctx.fill();const direction=fieldNativeFacing(session.actor.angle,trig);if(direction){ctx.strokeStyle=ctx.fillStyle;ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x,z);ctx.lineTo(x+direction[0]/WORLD*23,z+direction[2]/WORLD*23);ctx.stroke();}
  }
  function initialize() {
+  firstSpawn.dismiss();
   const c = readConfig(); decodeResources(c);
   const tableRows = record.encounterContexts.flatMap(c => c.rows);
   const profile = createExplorerProfile({config:c,graph,tableRows,resources,kernel:model});

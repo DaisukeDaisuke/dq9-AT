@@ -12,7 +12,7 @@
 <main>
 <section class="notice" aria-label="対応範囲">
 <strong>7402・1 actor の仮想テスト構成。実ゲームの現在状態・全世界は不明です</strong>
-<p>ROMのグラフ・trig / atan・COL2を使い、C/WASMの数値モデルを実行します。記録済み軌跡の再生ではありません。種族別の生成初期化、他actor、自然生成、実フレーム順、戦闘・警戒は未対応です。</p>
+<p>ROMのグラフ・trig / atan・COL2を使い、C/WASMの数値モデルを実行します。下の1 actor実験とは別に、完全な初期runtimeとpre-spawn軌跡を指定した最初の自然生成までを計算できます。生成後の全世界、入力操作の復元、実フレーム順、戦闘・警戒は未対応です。</p>
 </section>
 <section class="toolbar">
 <label>自分の日本語版DQ9 revision 0 NDS<input id="rom" type="file" accept=".nds"></label>
@@ -78,6 +78,17 @@
 <details><summary>条件のローカル保存・読込</summary><p>このページの初期設定だけを保存します。ROM・画像・生RAM・観測次状態・軌跡は含みません。</p><button id="export-config" type="button" disabled>設定JSONを保存</button><label>設定JSONを読む<input id="import-config" type="file" accept=".json,application/json" disabled></label></details>
 </section>
 <section class="experiment">
+<details id="first-spawn-section"><summary>条件付き自然生成：軌跡から最初の1体まで</summary>
+<p>map7402・初期12枠が登録済み未使用・単一eligible party・外部ATなしの条件に限定します。座標はpre-spawn時点の有効XYZと実向きです。映像マーカーからphase・向き・操作キーを自動推定しません。</p>
+<p id="spawn-replay-inputs">初期runtimeと軌跡が未入力です。</p>
+<label>初期runtime JSON（8MiB以下）<input id="spawn-replay-runtime" type="file" accept=".json,application/json" disabled></label>
+<label>pre-spawn軌跡 JSON（1MiB以下）<input id="spawn-replay-trajectory" type="file" accept=".json,application/json" disabled></label>
+<p>左のseedを開始状態として使います。ROMはgraph・表の数値・地形resourceを供給します。pool/serial・model/AI/template・地形object配置・runtime flags・clock・party条件は別入力が必要です。データは端末内のみで使います。</p>
+<label class="check"><input id="spawn-replay-declared" type="checkbox">この初期runtimeと軌跡を条件付き仮説として実行する</label>
+<div class="actions"><button id="spawn-replay-start" type="button" disabled>seedから初期化</button><button id="spawn-replay-step" type="button" disabled>1段階</button><button id="spawn-replay-ten" type="button" disabled>10段階</button><button id="spawn-replay-run" type="button" disabled>最初の生成 / 未解決まで</button><button id="spawn-replay-cancel" type="button" disabled>停止</button><button id="spawn-replay-reset" type="button" disabled>やり直す</button></div>
+<p id="spawn-replay-status" role="status">初期runtimeと軌跡が未入力です。</p><pre id="spawn-replay-log"></pre>
+<p class="muted">初期seedは途中状態でも指定できます。現在映像のAT状態や起動からの総消費を証明しません。未知の条件で停止し、最初のcreator呼出以後は進めません。生RAM・観測済み次状態は読み込みません。</p>
+</details>
 <h2>3. モデルを実行</h2>
 <p id="readiness" role="status">NDSを読み込み、初期条件を指定してください。</p>
 <div class="actions">
