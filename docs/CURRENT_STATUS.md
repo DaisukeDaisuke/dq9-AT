@@ -11,7 +11,7 @@
 ## ソースと復旧境界
 
 - 復旧元: `adc4c9aca5928496c31752a7fa49fddde13e9e92`。動画EOFからの明示的・中止可能な巻き戻し修正まで含む
-- 最新push済みソース: `6be287bb1d37ac986fe41df61f0b80cedc477ea1`。自動map座標候補をplayer trajectory/exportへ渡す6ファイルの修正。exact-SHAのCI build/deploy成功（[run36888596374](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/36888596374)）。配信成功は実ROM/動画の動作確認とは別
+- 自位置接続の基準ソース: `6be287bb1d37ac986fe41df61f0b80cedc477ea1`。自動map座標候補をplayer trajectory/exportへ渡す6ファイルの修正。exact-SHAのCI build/deploy成功（[run36888596374](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/36888596374)）。配信成功は実ROM/動画の動作確認とは別
 - 2026-10-01 15:35 UTCのワークスペース置換で、未公開のcreator最終編集、private runtime入力、実行中の研究用capture、ブラウザ状態を失った。残った説明から推測して「復旧・再検証済み」とはしない
 - ソース、解析ツール、保存データは復旧。エミュレータは7件全ての元asset hashが変更していないlockと一致し、ROMなしnative smoke（shared memory、4 workers）は通過。Ghidraは合成ARM/Thumb確認まで通過。これはDQ9実ROM再現の成功ではない
 - 2026-10-02 07:42 JST（2026-10-01 22:42 UTC）にROM、動画4本、チェックポイントを復旧。`dq9_new2.nds`（268,435,456 bytes）のSHA-256は `3c9d809eb8e446b0da6a9b383c7a6c5146001636038384aa49cb1a2e367546d7` と一致。新しい実ROM観測と実動画検証を再開した。旧raw RAM・runtime・観測captureは未復旧で、復旧したチェックポイントをそれらの代替証拠にしない
@@ -80,3 +80,5 @@ ROMのgraph/table/terrainと明示的runtime・trajectoryを使うscheduler/crea
 各チェックポイントの保存内容は、使用したsource SHA、入力の所在/版（private入力は非公開）、実行方法、期待/実際、停止理由、次に必要な入力。再開時に説明だけで完了扱いせず、得られた証拠の範囲をここへ追記する。
 
 復元日報: [2026-10-02](DAILY_REPORT_RECONSTRUCTED_20261002.md)
+
+2026-10-02 08:50 JST更新: 新しい配信コードは `faf92a1f5bcbf999de9ecec731fd46666e80f50e`。CI/deploy成功後、warm splitの自動候補・既存分類器・動画EOF/Start/Stop・seek・checkbox解除を公開ページで確認した。詳細は上記復元日報の追記を参照。
