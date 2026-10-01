@@ -44,6 +44,31 @@ those halfword pairs. The field container offset is+0x5c. All four items match
 the retained native preinput. Other scale conversions remain unsupported, and
 conflicting legacy table inputs are rejected. Old encounter labels are unused.
 
+The ordinary loaded field's model and AI values are now mined from the ROM too.
+`encmons.bin` supplies the unconditioned selected-map species list;
+`mons_data2.nat` supplies signed model dimensions; `fld_mons_data.bin` supplies
+AI bytes/flags. The model list is sorted/deduplicated and the AI list is prepended
+in source order. Speed mode zero clears the low route-mode bits, as in0206fe98.
+The complete retained7402 preinput agrees for all four species.
+
+`resources.models.entries` may be omitted. Its nonzero `basePointer`, native
+`declaredCount` and field-bound `containerPointer` remain required. Each
+`resources.ai.records` entry can contain just its `pointer` and `next`; the known
+`head` and container pointer remain required. The complete linked list must have
+the ROM-derived length and terminate without cycles. Supplied legacy numeric
+values must agree with the ROM. Missing allocation counts, pointers, incomplete
+links, story-conditioned/ambiguous map lists or absent descriptors suspend.
+This binds the existing ordinary, stable resource-loading hypothesis; it does
+not prove that an arbitrary runtime allocation has loaded successfully. Templates,
+material/component bindings, pool/serial state and dynamic terrain remain explicit.
+An explicitly null model allocation or empty AI head stays absent and reaches the
+existing native creator-failure path; it is never populated from ROM as success.
+
+The reduced file removes the four imported model entries and all four static AI
+records' numeric values. Replaying it produces exactly the same429 event records
+and three actor outputs as the previous full packet:343 calls, seed560534860.
+
+
 Trajectory v1 has schema `dq9-pre-spawn-trajectory-v1`, phase
 `pre-spawn-effective`, `mapId` and1..2000 dense ordered steps. Each step contains
 `index`, optional `sourceFrame` (null or unsigned integer), scheduler `delta`

@@ -1,6 +1,7 @@
 // Browser composition of existing guarded source models. Optional continuation
 // carries only internally created actors under explicit phase/runtime inputs.
 import {decodeEncounterStream} from './encounter-distribution.mjs';
+import {mineCreatorResources,bindCreatorResources} from './monster-creation-resources.mjs';
 import {FieldScheduler} from './field-scheduler.mjs';
 import {queryPreferredFieldNode,preferredNodeTrigFromRom} from './field-preferred-node.mjs';
 import {evaluateFieldSpawnPoint} from './field-spawn-point.mjs';
@@ -73,6 +74,9 @@ export function createFirstSpawnReplay({project,rom,kernel,fieldKernel,atKernel,
  check(!Object.hasOwn(context,'graph')&&context.graphBindingVerified===true,'graphは投入ROMから取得します');
  check(dense(context.fields)&&context.fields.length===4&&context.fields.every((f,i)=>f&&f.index===i&&uint(f.mapId,65535)&&uint(f.flags,65535)),'4fieldの順序・map・flagsが必要です');
  const field=context.fields[runtime.fieldIndex];check(field.mapId===runtime.mapId&&context.fields.findIndex(f=>f.mapId===runtime.mapId)===runtime.fieldIndex,'最初に一致するfieldが必要です');
+ // The ordinary source loader owns static model/AI values. Runtime allocation
+ // counts/addresses/topology still have to match the selected ROM species.
+ field.resources=bindCreatorResources(field.resources,field.pointer,mineCreatorResources(project.nitro,runtime.mapId));
  const group=field.flags&3,inventory=context.inventory;
  check(dense(inventory?.slots)&&inventory.slots.length===48&&inventory.slots.every((s,i)=>s&&s.slot===112+i),'48slotの初期registry順序が必要です');
  for(let slot=112+group*12;slot<124+group*12;slot++){
