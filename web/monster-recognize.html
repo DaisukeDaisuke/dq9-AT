@@ -47,6 +47,7 @@
           <h3 id="proposal-heading">敵の領域候補（ふういんのほこら・実験）</h3>
           <label class="check-label"><input id="enable-roi-proposals" type="checkbox">shrine-blue-v1 の領域候補を使う</label>
           <p class="muted">固定した画像から最大8枠を探します。上でフィールド・4:3のゲーム範囲を指定し、中央除外を有効にしてください。コマンド表示も除外します。枠は敵と確定しておらず、壁・背景や見逃しが残ります。</p>
+          <p class="muted">固定画像・動画とも、大きすぎる色領域を暖色の差で1回だけ分け、既存の候補を保った空き枠に追加します。青い床と暖色の体を仮定した実験です。灰色のメタル系や他のマップへの効果は未確認で、背景候補と分類コストも増えます。</p>
           <div class="proposal-actions"><button id="generate-roi-proposals" type="button" disabled>この固定画像の領域候補を探す</button><button id="supplement-roi-proposals" type="button" disabled>DINOで候補を補う（任意）</button><button id="clear-roi-proposals" type="button" disabled>候補の枠を消す</button></div>
           <p id="proposal-status" class="muted" role="status" aria-live="polite">任意の実験です。手動の範囲指定もそのまま使えます。</p>
           <p id="dense-proposal-note" class="muted" role="status" aria-live="polite">補助は任意です。CPU候補を先に作り、DINOv2・フィールドモデル・クイック・初期の4モデルで使えます。初回は64姿勢の準備に時間がかかります。背景候補と、その後の分類コストも増えます。</p>
@@ -56,7 +57,7 @@
         <section class="proposal-controls" aria-labelledby="video-observation-heading">
           <h3 id="video-observation-heading">動画の自動観測（観測・デバッグ用の実験）</h3>
           <p class="muted">位置候補は最大4回/秒。照合は同時1件、最大2件/秒で最新フレームから1枠ずつ選びます。処理待ちの動画列は作りません。画面の枠は未確認、下の順位はその撮影時刻の切り抜きだけの記録です。</p>
-          <p class="muted">開発用の短い動画窓では、照合した30枠の事後目視は明瞭な敵体を含む5枠・背景/UI 23枠・曖昧2枠でした。同じ録画の反復を含み、精度保証ではありません。信頼できる敵の自動受理やAT連携の完成版ではありません。</p>
+          <p class="muted">暖色分割の追加前の短い開発用動画窓では、照合した30枠の事後目視は明瞭な敵体を含む5枠・背景/UI 23枠・曖昧2枠でした。同じ録画の反復を含み、精度保証ではありません。信頼できる敵の自動受理やAT連携の完成版ではありません。</p>
           <label class="check-label"><input id="video-observation-dense" type="checkbox">DINO補助も使う（3秒以上空け、照合の間に最大1回。背景候補・処理時間も増えます）</label>
           <div class="proposal-actions"><button id="start-video-observation" type="button" disabled>観測を開始して再生</button><button id="stop-video-observation" type="button" disabled>自動観測を停止</button></div>
           <p id="video-observation-requirements" class="muted"></p>

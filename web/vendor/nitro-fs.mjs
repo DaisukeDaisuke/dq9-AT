@@ -391,6 +391,7 @@ var CompressionType;
 // https://github.com/magical/nlzss/blob/master/lzss3.py
 class LZ10 {
     static decompress(indata, decompressedSize) {
+        if (decompressedSize > indata.bufferLength * 9) throw new Error('LZ10 expanded size exceeds encoded capacity');
         let data = new Uint8Array(decompressedSize);
         let dataIndex = 0;
         let rawIndex = 0;
@@ -433,7 +434,8 @@ class LZ10 {
                     const sh = readShort();
                     const count = (sh >> 0xC) + 3;
                     const disp = (sh & 0xFFF) + dispExtra;
-                    for (let j = 0; j < count; j++) {
+                    if (disp > dataIndex) throw new Error('Invalid LZ10 back-reference');
+                    for (let j = 0; j < count && dataIndex < decompressedSize; j++) {
                         const byte = data[dataIndex - disp];
                         writeByte(byte);
                     }

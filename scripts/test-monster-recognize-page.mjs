@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { proposeEnemyROIs, EnemyProposalTracker } from '../web/monster-position-proposals.mjs';
 import { CENTER_MASK, DEFAULT_MODELS, LIMITS, RequestGate, RecognitionWorkerClient, cloneCaptureStamp, gameplayROIForLayout, mountRecognitionPage, pointerROI, stampEquals, validateROI } from '../web/monster-recognize-page.mjs';
 
 let passed = 0;
@@ -71,7 +72,7 @@ class Element {
   hasPointerCapture(id) { return this.pointer === id; }
   releasePointerCapture() { this.pointer = null; }
   getContext() {
-    if (!this.context) this.context = { snapshot: 0, clearRect() {}, save() {}, restore() {}, fillRect() {}, strokeRect() {}, fillText() {}, putImageData() {}, drawImage(source) { this.snapshot = source.frameValue ?? source.context?.snapshot ?? 0; }, getImageData(x, y, width, height) { return { data: new Uint8ClampedArray(width * height * 4).fill(this.snapshot) }; }, createImageData(width, height) { return { data: new Uint8ClampedArray(width * height * 4) }; } };
+    if (!this.context) this.context = { snapshot: 0, clearRect() {}, save() {}, restore() {}, fillRect() {}, strokeRect() {}, fillText() {}, putImageData() {}, drawImage(source) { this.snapshot = source.frameValue ?? source.context?.snapshot ?? 0; this.pixels = source.frameRGBA ?? source.context?.pixels; this.pixelWidth = source.videoWidth ?? source.context?.pixelWidth; }, getImageData(x, y, width, height) { const data = new Uint8ClampedArray(width * height * 4).fill(this.snapshot); if (this.pixels) for (let row = 0; row < height; row++) data.set(this.pixels.subarray(((y + row) * this.pixelWidth + x) * 4, ((y + row) * this.pixelWidth + x + width) * 4), row * width * 4); return { data }; }, createImageData(width, height) { return { data: new Uint8ClampedArray(width * height * 4) }; } };
     return this.context;
   }
   pause() { this.paused = true; }
@@ -437,5 +438,39 @@ let timerSerial=0;const ageTimers=new Map();win.setTimeout=fn=>{const id=++timer
 await ui.startVideoObservation();auto=await preparedWorker();auto.worker.emit({type:'result',id:auto.req.id,romEpoch:ui.state.romEpoch,result:{prepared:true}});await settle();await fireFrame(10000,140);const beforeAgeJobs=autoCount();observerClock=12000;const ageTick=ageTimers.entries().next().value;assert(ageTick);ageTimers.delete(ageTick[0]);ageTick[1]();await settle();
 check('buffering updates wall-clock age and hides stale boxes without starting work',()=>{assert.match(el('video-position-age').textContent,/撮影から2.0秒/);assert.match(el('video-position-age').textContent,/現在は未観測/);assert(el('video-observation-view').hidden);assert.equal(autoCount(),beforeAgeJobs);assert.equal(ageTimers.size,1);});await el('stop-video-observation').click();
 check('stop cancels both frame and display-age callbacks',()=>{assert.equal(ageTimers.size,0);assert.equal(frameCallbacks.size,0);});delete win.setTimeout;delete win.clearTimeout;
+// Actual shrine proposer through both page paths. Only browser/Worker APIs are fixtures;
+// the proposal algorithm, tracker, crop contract and observer scheduler are real.
+const warmPixels = new Uint8ClampedArray(256 * 192 * 4);
+for (let i = 0; i < 256 * 192; i++) warmPixels.set([20,70,150,255], i * 4);
+const paintWarm = (x,y,w,h,c) => { for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++)warmPixels.set([...c,255],(yy*256+xx)*4); };
+paintWarm(5,40,180,125,[90,85,80]);paintWarm(30,60,20,30,[200,50,30]);
+Object.assign(video,{videoWidth:256,videoHeight:192,frameRGBA:warmPixels,ended:false,seeking:false,paused:true,currentTime:13});
+Object.assign(ui.state,{sourceReady:true,sourceKind:'video',sourceId:'warm-integration',sourceEpoch:ui.state.sourceEpoch+1});
+el('enable-roi-proposals').checked=true;el('scene-kind').value='field';el('exclude-center').checked=true;el('gameplay-layout').value='whole';el('video-observation-dense').checked=false;
+proposalFactory=proposeEnemyROIs;ui.observer.propose=proposeEnemyROIs;ui.observer.tracker=new EnemyProposalTracker();
+ui.freeze();await el('generate-roi-proposals').click();
+const warmFrozen=ui.state.proposalResult,warmROI=warmFrozen.proposals[0]?.roi;
+check('enabled shrine page really recovers the compact frozen component',()=>{assert.equal(proposalCalls.at(-1).options.oversizedWarmSplit,true);assert.equal(warmFrozen.warmSplitExperiment.added,1);assert.equal(warmFrozen.proposals.length,1);assert.equal(warmFrozen.proposals[0].proposalSource,'oversized-warm-chroma-split');assert(warmROI.x<=30&&warmROI.y<=60&&warmROI.x+warmROI.w>=50&&warmROI.y+warmROI.h>=90);});
+check('the same pixels stay unrecovered for outside callers using the core default',()=>{assert.equal(proposeEnemyROIs({width:256,height:192,rgba:warmPixels},warmFrozen.captureStamp,{profile:'shrine-blue-v1'}).proposals.length,0);});
+await el('roi-proposal-list').children[0].click();dinoJob=await beginScoring();dinoRequest=dinoJob.worker.messages.at(-1).message;
+check('compact frozen proposal reaches the unchanged classifier with exact crop pixels',()=>{assert.equal(dinoRequest.type,'recognize');assert.deepEqual(dinoRequest.captureStamp.enemyROI,warmROI);for(let y=0;y<warmROI.h;y++)for(let x=0;x<warmROI.w;x++)assert.deepEqual(dinoRequest.crop.rgba.subarray((y*warmROI.w+x)*4,(y*warmROI.w+x+1)*4),warmPixels.subarray(((y+warmROI.y)*256+x+warmROI.x)*4,((y+warmROI.y)*256+x+warmROI.x+1)*4));assert(!Object.hasOwn(dinoRequest,'oversizedWarmSplit'));});
+emitResult(dinoJob.worker,dinoRequest);await dinoJob.completion;
+await ui.startVideoObservation();auto=await preparedWorker();const warmPreparation=auto.req;
+check('page enables warm mode but keeps pose-cache preparation scope unchanged',()=>{assert.equal(ui.observer.config.oversizedWarmSplit,true);assert.deepEqual(Object.keys(warmPreparation).sort(),['featureMethod','id','inferenceBackend','modelIds','preset','romEpoch','type','variant'].sort());assert.deepEqual(warmPreparation.modelIds,[...DEFAULT_MODELS]);assert.equal(warmPreparation.variant,'_f');assert.equal(warmPreparation.preset,'quick');assert.equal(warmPreparation.inferenceBackend,'wasm');});
+auto.worker.emit({type:'result',id:auto.req.id,romEpoch:ui.state.romEpoch,result:{prepared:true}});await settle();await fireFrame(13000);
+const warmVideo=ui.observer.latest.result,warmVideoRequest=auto.worker.messages.at(-1).message;
+check('page to real observer enables the same warm ROI and bounded original-pixel request',()=>{assert.equal(warmVideo.warmSplitExperiment.added,1);assert.deepEqual(warmVideo.proposals.map(p=>p.roi),warmFrozen.proposals.map(p=>p.roi));assert.equal(warmVideoRequest.type,'recognize');assert.deepEqual(warmVideoRequest.captureStamp.enemyROI,warmROI);assert.deepEqual(warmVideoRequest.crop.rgba,dinoRequest.crop.rgba);assert.equal(warmVideoRequest.captureStamp.videoTime,13);assert.equal(ui.observer.stats.maxActiveJobs,1);assert(warmVideo.proposals.length<=8);});
+const oldWarmWorker=auto.worker,trackerGeneration=ui.observer.tracker.generation;let cacheClears=0;clearLocalFeatures=async()=>{cacheClears++;};
+el('enable-roi-proposals').checked=false;await el('enable-roi-proposals').trigger('change');emitResult(oldWarmWorker,warmVideoRequest);await settle();
+check('profile toggle cancels warm work and resets tracking without erasing pose caches',()=>{assert(!ui.observer.running);assert.equal(ui.observer.latest,null);assert.equal(ui.observer.tracker.previous,null);assert.equal(ui.observer.tracker.tracks.length,0);assert(ui.observer.tracker.generation>trackerGeneration);assert.equal(ui.state.proposalResult,null);assert.equal(ui.state.observationRecords.length,0);assert.equal(frameCallbacks.size,0);assert(oldWarmWorker.terminated);assert.equal(cacheClears,0);});
+const blockedCalls=proposalCalls.length,blockedJobs=autoCount();await ui.generateProposals();await ui.startVideoObservation();
+check('disabled shrine gate blocks both real paths before any proposal or inference',()=>{assert.equal(proposalCalls.length,blockedCalls);assert.equal(autoCount(),blockedJobs);assert(!ui.observer.running);});
+el('enable-roi-proposals').checked=true;await el('enable-roi-proposals').trigger('change');
+check('reenabling shrine does not automatically revive stale proposals or work',()=>{assert.equal(ui.state.proposalResult,null);assert(!ui.observer.running);assert.equal(autoCount(),blockedJobs);});
+await ui.startVideoObservation();auto=await preparedWorker();
+check('explicit shrine restart preserves the same bank key inputs',()=>{for(const key of ['romEpoch','modelIds','variant','preset','featureMethod','inferenceBackend'])assert.deepEqual(auto.req[key],warmPreparation[key]);assert.equal(cacheClears,0);assert.equal(ui.observer.config.oversizedWarmSplit,true);});
+await el('stop-video-observation').click();el('scene-kind').value='unspecified';await el('scene-kind').trigger('change');const offSceneCalls=proposalCalls.length,offSceneJobs=autoCount();await ui.generateProposals();await ui.startVideoObservation();
+check('unknown scene remains blocked even with the shrine checkbox enabled',()=>{assert.equal(proposalCalls.length,offSceneCalls);assert.equal(autoCount(),offSceneJobs);assert(!ui.observer.running);});
+check('UI states the warm shrine assumption and extra background/classification cost',()=>{assert.match(html,/青い床と暖色の体/);assert.match(html,/灰色のメタル系や他のマップ/);assert.match(html,/背景候補と分類コスト/);});
 await win.trigger('pagehide');
 console.log(`\n${passed} UI and lifecycle checks passed (Node DOM harness; no browser launched).`);

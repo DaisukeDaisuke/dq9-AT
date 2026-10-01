@@ -51,7 +51,7 @@ function appearanceMask(frame) {
   }
   return { mask, gray };
 }
-function components(mask, width, height, blocked) {
+function components(mask, width, height, blocked, keepOversizedPixels = false) {
   const dilated = new Uint8Array(mask.length), seen = new Uint8Array(mask.length), queue = new Int32Array(mask.length), out = [];
   for (let y = 0; y < height; y++) for (let x = 0; x < width; x++) if (mask[y * width + x]) {
     // One-pixel four-neighbor dilation connects narrow arms without large merges.
@@ -66,10 +66,35 @@ function components(mask, width, height, blocked) {
       if (mask[i]) { cx0 = Math.min(cx0, x); cy0 = Math.min(cy0, y); cx1 = Math.max(cx1, x); cy1 = Math.max(cy1, y); }
       for (const j of [x > 0 ? i - 1 : -1, x + 1 < width ? i + 1 : -1, y > 0 ? i - width : -1, y + 1 < height ? i + width : -1]) if (j >= 0 && dilated[j] && !seen[j]) { seen[j] = 1; queue[tail++] = j; }
     }
-    out.push({ x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1, coreROI: { x: cx0, y: cy0, w: cx1 - cx0 + 1, h: cy1 - cy0 + 1 }, foregroundPixels: pixels });
+    const component = { x: x0, y: y0, w: x1 - x0 + 1, h: y1 - y0 + 1, coreROI: { x: cx0, y: cy0, w: cx1 - cx0 + 1, h: cy1 - cy0 + 1 }, foregroundPixels: pixels };
+    if (keepOversizedPixels && (component.w > 100 || component.h > 115)) component.foregroundIndices = Array.from(queue.subarray(0, tail)).filter(i => mask[i]);
+    out.push(component);
   }
   return out;
 }
+// Isolated opt-in experiment, specific to shrine-blue-v1 warm foreground.
+// One data-derived split per rejected component; no per-frame coordinates or training.
+// Otsu ties choose the lowest threshold. Uniform/degenerate evidence produces no split.
+function warmSubcomponents(frame, parent, blocked) {
+  const indices = parent.foregroundIndices || [], histogram = new Uint32Array(511);
+  const chroma = i => frame.rgba[i * 4] - Math.max(frame.rgba[i * 4 + 1], frame.rgba[i * 4 + 2]) + 255;
+  let totalSum = 0, bins = 0;
+  for (const i of indices) { const c = chroma(i); if (!histogram[c]) bins++; histogram[c]++; totalSum += c; }
+  if (bins < 2) return null;
+  let lowCount = 0, lowSum = 0, bestScore = 0, threshold = -1;
+  for (let c = 0; c < histogram.length - 1; c++) {
+    lowCount += histogram[c]; lowSum += c * histogram[c];
+    const highCount = indices.length - lowCount; if (!lowCount || !highCount) continue;
+    const delta = lowSum / lowCount - (totalSum - lowSum) / highCount;
+    const score = lowCount * highCount * delta * delta;
+    if (score > bestScore) { bestScore = score; threshold = c; }
+  }
+  if (threshold < 0) return null;
+  const mask = new Uint8Array(256 * 192);
+  for (const i of indices) if (chroma(i) > threshold) mask[i] = 1;
+  return { threshold: threshold - 255, components: components(mask, 256, 192, blocked) };
+}
+
 function trimPaddingAtExclusions(padded, component, exclusions) {
   const r = { ...padded };
   for (const mask of exclusions) {
@@ -98,15 +123,16 @@ function sourceRect(rect, game) {
   const x1 = game.x + Math.ceil((rect.x + rect.w) * game.w / 256), y1 = game.y + Math.ceil((rect.y + rect.h) * game.h / 192);
   return { x, y, w: x1 - x, h: y1 - y };
 }
-function identity(stamp, profile, hud) {
-  return JSON.stringify({ sourceId: stamp.sourceId, sourceEpoch: stamp.sourceEpoch, timelineSegment: stamp.timelineSegment, sourceFrame: stamp.sourceFrame, sceneContext: stamp.sceneContext, profile, hud });
+function identity(stamp, profile, hud, warmSplit = false) {
+  return JSON.stringify({ sourceId: stamp.sourceId, sourceEpoch: stamp.sourceEpoch, timelineSegment: stamp.timelineSegment, sourceFrame: stamp.sourceFrame, sceneContext: stamp.sceneContext, profile, hud, ...(warmSplit ? { oversizedWarmSplit: true } : {}) });
 }
 
 /** Image-space suggestions only. Scene/profile selection is a required external gate. */
-export function proposeEnemyROIs(image, captureStamp, { profile, excludeCommandHUD = true, maxProposals = 8 } = {}) {
+export function proposeEnemyROIs(image, captureStamp, { profile, excludeCommandHUD = true, maxProposals = 8, oversizedWarmSplit = false } = {}) {
   const start = performance.now(), scene = validateStamp(image, captureStamp);
   need(profile === 'shrine-blue-v1', 'Select the explicit shrine-blue-v1 experimental scene profile');
   need(typeof excludeCommandHUD === 'boolean', 'HUD exclusion must be explicit boolean');
+  need(typeof oversizedWarmSplit === 'boolean', 'Warm split option must be explicit boolean');
   need(Number.isInteger(maxProposals) && maxProposals >= 1 && maxProposals <= 8, 'Proposal budget must be 1–8');
   const stamp = copy(captureStamp), base = { schema: 'dq9-enemy-roi-proposals-v1', revision: PROPOSAL_REVISION, captureStamp: stamp, profile, proposals: [], excluded: [], unknown: unknown(), safeForHardPruning: false, enemyIdentityCertified: false, birthCertified: false, ATDrawsCertified: 0 };
   if (scene.kind !== 'field') return { ...base, skipped: 'field-scene-required', elapsedMs: performance.now() - start };
@@ -118,37 +144,54 @@ export function proposeEnemyROIs(image, captureStamp, { profile, excludeCommandH
   if (excludeCommandHUD) localExclusions.push({ reason: 'command-hud-exclusion', x: 212, y: 0, w: 44, h: 39 });
   for (const r of localExclusions) for (let y = r.y; y < r.y + r.h; y++) for (let x = r.x; x < r.x + r.w; x++) { mask[y * 256 + x] = 0; blocked[y * 256 + x] = 1; }
   let oversizedComponents = 0;
-  const candidates = [];
-  for (const component of components(mask, 256, 192, blocked)) {
+  const candidates = [], splitCandidates = [], rejectedOversized = [];
+  const originalComponents = components(mask, 256, 192, blocked, oversizedWarmSplit);
+  const collect = (component, target, derived = false) => {
     const { x, y, w, h, foregroundPixels } = component;
     // Broad bounds only. This is not a calibrated y-to-world-size model.
     const minPixels = Math.max(8, 12 * (.6 + (y + h / 2) / 192 * 1.5) ** 2);
-    if (foregroundPixels < minPixels || w < 3 || h < 3 || foregroundPixels / (w * h) < .08) continue;
-    if (w > 100 || h > 115) { oversizedComponents++; continue; }
+    if (foregroundPixels < minPixels || w < 3 || h < 3 || foregroundPixels / (w * h) < .08) return;
+    if (w > 100 || h > 115) { if (!derived) { oversizedComponents++; rejectedOversized.push(component); } return; }
     const pad = Math.max(2, Math.ceil(Math.max(w, h) * .08)), x0 = Math.max(0, x - pad), y0 = Math.max(0, y - pad);
     const padded = { x: x0, y: y0, w: Math.min(256, x + w + pad) - x0, h: Math.min(192, y + h + pad) - y0 };
     const nativeROI = trimPaddingAtExclusions(padded, component.coreROI, localExclusions);
-    if (!nativeROI) { base.excluded.push({ roi: sourceRect(padded, game), reason: 'component-overlaps-exclusion', unknown: true }); continue; }
+    if (!nativeROI) { base.excluded.push({ roi: sourceRect(padded, game), reason: 'component-overlaps-exclusion', unknown: true }); return; }
     const roundedROI = sourceRect(nativeROI, game);
     const sourceExclusions = localExclusions.filter(r => r.reason === 'command-hud-exclusion').map(r => sourceRect(r, game));
     const fieldMask = getFieldExclusion({ ...stamp, enemyROI: roundedROI }, scene).mask;
     if (fieldMask) sourceExclusions.push(fieldMask);
     // Source-space trimming also removes conservative resampling/rounding padding.
     const roi = trimPaddingAtExclusions(roundedROI, sourceRect(component.coreROI, game), sourceExclusions);
-    if (!roi) { base.excluded.push({ roi: roundedROI, reason: 'core-overlaps-exclusion', unknown: true }); continue; }
+    if (!roi) { base.excluded.push({ roi: roundedROI, reason: 'core-overlaps-exclusion', unknown: true }); return; }
     const centerGate = getFieldExclusion({ ...stamp, enemyROI: roi }, scene);
     const exclusion = centerGate.excluded ? 'central-field-exclusion' : (sourceExclusions.some(r => overlaps(roi, r)) ? 'command-hud-exclusion' : null);
-    if (exclusion) { base.excluded.push({ roi, reason: exclusion, unknown: true }); continue; }
+    if (exclusion) { base.excluded.push({ roi, reason: exclusion, unknown: true }); return; }
     const edgeMean = componentEdgeMean(gray, component);
     const priority = foregroundPixels / Math.sqrt(w * h) * clamp(edgeMean / 8, .15, 3);
     const classificationEligible = roi.w <= 1024 && roi.h <= 1024 && roi.w * roi.h <= 1024 * 1024;
-    candidates.push({ roi, nativeROI, component: { ...component }, priority, edgeMean, paddingTrimmed: JSON.stringify(padded) !== JSON.stringify(nativeROI) || JSON.stringify(roundedROI) !== JSON.stringify(roi), classificationEligible, classificationStatus: classificationEligible ? 'unverified' : 'unprocessed-size-limit', clipped: x === 0 || y === 0 || x + w === 256 || y + h === 192, unknown: true, screenPosition: { x: roi.x + roi.w / 2, y: roi.y + roi.h, basis: 'proposal-box-bottom-center', calibrated: false } });
+    target.push({ roi, nativeROI, component: { ...component }, priority, edgeMean, paddingTrimmed: JSON.stringify(padded) !== JSON.stringify(nativeROI) || JSON.stringify(roundedROI) !== JSON.stringify(roi), classificationEligible, classificationStatus: classificationEligible ? 'unverified' : 'unprocessed-size-limit', clipped: x === 0 || y === 0 || x + w === 256 || y + h === 192, unknown: true, screenPosition: { x: roi.x + roi.w / 2, y: roi.y + roi.h, basis: 'proposal-box-bottom-center', calibrated: false } });
+  };
+  for (const component of originalComponents) collect(component, candidates);
+  const warmDiagnostics = [];
+  if (oversizedWarmSplit && candidates.length < maxProposals) {
+    for (const parent of rejectedOversized) {
+      if (!parent.foregroundIndices) continue;
+      const split = warmSubcomponents(sampled, parent, blocked); if (!split) continue;
+      const before = splitCandidates.length;
+      for (const component of split.components) collect(component, splitCandidates, true);
+      for (const p of splitCandidates.slice(before)) p.proposalSource = 'oversized-warm-chroma-split';
+      warmDiagnostics.push({ parent: { x: parent.x, y: parent.y, w: parent.w, h: parent.h }, threshold: split.threshold, compactCandidates: splitCandidates.length - before });
+    }
   }
+
   candidates.sort((a, b) => b.priority - a.priority || a.roi.y - b.roi.y || a.roi.x - b.roi.x);
-  base.proposals = candidates.slice(0, maxProposals).map((p, i) => ({ proposalId: `${stamp.frameSerial}:${i}`, ...p }));
+  splitCandidates.sort((a, b) => b.priority - a.priority || a.roi.y - b.roi.y || a.roi.x - b.roi.x);
+  const kept = candidates.slice(0, maxProposals), spare = maxProposals - kept.length;
+  base.proposals = [...kept, ...splitCandidates.slice(0, spare)].map((p, i) => ({ proposalId: `${stamp.frameSerial}:${i}`, ...p }));
+  if (oversizedWarmSplit) base.warmSplitExperiment = { enabled: true, diagnostics: warmDiagnostics, candidateCount: splitCandidates.length, added: Math.min(spare, splitCandidates.length), originalOrderPreserved: true };
   return { ...base, coverage: { candidateComponents: candidates.length, budgetDropped: Math.max(0, candidates.length - maxProposals), oversizedComponents, exclusions: localExclusions.map(r => ({ ...r, coordinateSystem: '256x192-gameplay' })), expectedScaleModel: 'uncalibrated broad y-dependent speckle floor only', absenceCertified: false }, elapsedMs: performance.now() - start,
     // Ephemeral small CPU buffers for camera registration; never inference inputs.
-    trackingFrame: { width: 256, height: 192, gray, mask, blocked, identity: identity(stamp, profile, excludeCommandHUD) } };
+    trackingFrame: { width: 256, height: 192, gray, mask, blocked, identity: identity(stamp, profile, excludeCommandHUD, oversizedWarmSplit) } };
 }
 
 /** Reuse the existing recognition request schema and original pixels unchanged. */

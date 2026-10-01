@@ -2,14 +2,14 @@
 import {BufferReader} from './nitro-fs.mjs';
 class BinReader {
  constructor(bytes){this.bytes=bytes instanceof Uint8Array?bytes:new Uint8Array(bytes);this.r=new BufferReader(this.bytes.buffer,this.bytes.byteOffset,this.bytes.byteLength);this.pos=0;}
- setPos(p){if(p<0||p>this.bytes.length)throw Error('NARC offset outside member');this.pos=p;}
+ setPos(p){if(!Number.isSafeInteger(p)||p<0||p>this.bytes.length)throw Error('NARC offset outside member');this.pos=p;}
  getPos(){return this.pos;}
  skip(n){this.setPos(this.pos+n);}
  getByte(){const n=this.r.readUint8(this.pos);this.pos++;return n;}
  getLShort(){const n=this.r.readUint16(this.pos);this.pos+=2;return n;}
  getLInt(){const n=this.r.readUint32(this.pos);this.pos+=4;return n;}
  readString(n){const s=this.r.readChars(this.pos,n);this.pos+=n;return s;}
- slice(n){const start=this.pos;this.skip(n);return this.bytes.subarray(start,this.pos);}
+ slice(n){if(!Number.isSafeInteger(n)||n<0)throw Error('Invalid NARC member length');const start=this.pos;this.skip(n);return this.bytes.subarray(start,this.pos);}
 }
 class FntFolder {
     constructor(name = ''){
@@ -201,9 +201,11 @@ export class Narc {
         narc.endian = (bom === 0xFFFE) ? 'big' : 'little';
 
         r.skip(2); // version
-        r.skip(4); // fileSize
-        r.skip(2); // headerSize
-        r.skip(2); // numBlocks
+        const fileSize = r.getLInt();
+        const headerSize = r.getLShort(), numBlocks = r.getLShort();
+        if(fileSize < 16 || fileSize > r.bytes.length || headerSize !== 16 || numBlocks !== 3) {
+            throw new Error('Invalid NARC header extent');
+        }
 
         // BTAF
         const fatbMagic = r.readString(4);
@@ -211,6 +213,9 @@ export class Narc {
 
         const fatbSize = r.getLInt();
         const numFiles = r.getLInt();
+        if(fatbSize < 12 + numFiles * 8 || 16 + fatbSize > fileSize) {
+            throw new Error('Invalid NARC FATB extent');
+        }
 
         const fileOffsets = [];
         for(let i = 0; i < numFiles; i++){
@@ -223,6 +228,9 @@ export class Narc {
         const fntbMagic = r.readString(4);
         if(fntbMagic !== 'BTNF') throw new Error('Invalid FNTB');
         const fntbSize = r.getLInt();
+        if(fntbSize < 8 || fntbOffset + fntbSize + 8 > fileSize) {
+            throw new Error('Invalid NARC FNTB extent');
+        }
 
         const fntData = r.slice(fntbSize - 8);
         narc.fnt = Fnt.load(fntData);
@@ -232,11 +240,15 @@ export class Narc {
         r.setPos(fimgOffset);
         const fimgMagic = r.readString(4);
         if(fimgMagic !== 'GMIF') throw new Error('Invalid FIMG');
-        r.skip(4); // size
+        const fimgSize = r.getLInt();
+        if(fimgSize < 8 || fimgOffset + fimgSize > fileSize) {
+            throw new Error('Invalid NARC FIMG extent');
+        }
 
         const rawDataOffset = r.getPos();
 
         for(const {start, end} of fileOffsets){
+            if(end < start || end > fimgSize - 8) throw new Error('NARC member outside FIMG');
             r.setPos(rawDataOffset + start);
             narc.files.push(r.slice(end - start));
         }

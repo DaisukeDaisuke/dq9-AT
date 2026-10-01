@@ -35,7 +35,7 @@ export class LatestVideoObserver{
   if(!this.shouldSample(captureStamp.videoTime,wall))return false;
   validateRGBA(image,VIDEO_OBSERVER_LIMITS.maxSourcePixels);need(image.width===captureStamp.sourceFrame.width&&image.height===captureStamp.sourceFrame.height,'Video pixels and source stamp differ');
   const owned={width:image.width,height:image.height,rgba:new Uint8ClampedArray(image.rgba)},stamp=clone(captureStamp);
-  const result=this.propose(owned,stamp,{profile:'shrine-blue-v1',excludeCommandHUD:true,maxProposals:8});
+  const result=this.propose(owned,stamp,{profile:'shrine-blue-v1',excludeCommandHUD:true,maxProposals:8,oversizedWarmSplit:this.config.oversizedWarmSplit===true});
   need(key(result.captureStamp)===key(stamp)&&result.proposals.length<=8,'Proposal stamp or budget mismatch');
   const association=this.tracker.update(result),{trackingFrame,...summary}=result;
   this.latest={image:owned,result:{...summary,proposals:association.observed},wallAt:wall,association};this.lastCPUAt=wall;this.lastPTS=stamp.videoTime;this.stats.sampledFrames++;this.stats.maxLatestSnapshots=1;

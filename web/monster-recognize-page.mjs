@@ -295,7 +295,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
       if (intent !== observationStartGeneration || revision !== gate.revision || state.disposed || videoObservationIssue()) return;
       await video.play(); if (intent !== observationStartGeneration || revision !== gate.revision || state.disposed || video.paused || videoObservationIssue()) return;
       state.observationRecords = []; $('video-observations').replaceChildren(); cancelObservationFrame();
-      observer.start({ captureStamp: videoObservationStamp(video.currentTime), modelIds: [...DEFAULT_MODELS], variant: '_f', preset: 'quick', inferenceBackend: inferenceBackend(), denseSupplement: !!$('video-observation-dense').checked });
+      observer.start({ captureStamp: videoObservationStamp(video.currentTime), modelIds: [...DEFAULT_MODELS], variant: '_f', preset: 'quick', inferenceBackend: inferenceBackend(), oversizedWarmSplit: true, denseSupplement: !!$('video-observation-dense').checked });
       queueObservationFrame(); controls();
     } catch (failure) { if (intent === observationStartGeneration) { error(failure.message); stopVideoObservation('start-failed'); } }
     finally { if (intent === observationStartGeneration) { state.observationStarting = false; controls(); } }
@@ -446,7 +446,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     try {
       const captureStamp = cloneCaptureStamp(currentStamp());
       const image = { width: frozen.width, height: frozen.height, rgba: frozenCtx.getImageData(0, 0, frozen.width, frozen.height).data };
-      const result = proposeROIs(image, captureStamp, { profile: 'shrine-blue-v1', excludeCommandHUD: true, maxProposals: 8 });
+      const result = proposeROIs(image, captureStamp, { profile: 'shrine-blue-v1', excludeCommandHUD: true, maxProposals: 8, oversizedWarmSplit: true });
       if (!stampEquals(result.captureStamp, captureStamp)) throw new Error('領域候補の固定画像情報が一致しないため破棄しました。');
       // Keep over-limit suggestions visible but unprocessed; never allocate their classifier crops.
       const valid = []; let invalidBounds = 0;
