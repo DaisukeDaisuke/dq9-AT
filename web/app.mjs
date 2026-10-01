@@ -1,22 +1,24 @@
 import {parseCSV} from './map-core.mjs';
 import {markerCoordinateBinding} from './map-marker-coordinate.mjs';
-const $=id=>document.getElementById(id),ui=Object.fromEntries(['rom','status','rom-name','release','mode','search','has-image','count','list','title','identity','descriptor','zoom','background','map','viewport','empty','image-info','facts','summary','raw','errors','export-all','export-csv','export-one','export-png','export-asset','enc-table','enc-results'].map(id=>[id,$(id)]));
+const $=id=>document.getElementById(id),ui=Object.fromEntries(['rom','status','rom-name','release','mode','search','has-image','count','list','title','identity','descriptor','zoom','background','map','viewport','empty','image-info','facts','summary','raw','errors','export-all','export-csv','export-exits','export-one','export-png','export-asset','enc-table','enc-results'].map(id=>[id,$(id)]));
 let metadata=null,worker=null,selection=null,selectedAsset=null,requestId=0,image=null,loadSerial=0,rows=[],nameCSV='',encounters=null;
 const state={mode:'maps'};
+let exitRequest=0,exitPending=null;
 const status=(text,error=false)=>{ui.status.textContent=text;ui.status.classList.toggle('error',error);};
 const pretty=x=>JSON.stringify(x,null,2);
 function download(name,content,type='application/json'){const blob=content instanceof Blob?content:new Blob([content],{type});const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
 const safeName=x=>(x||'map').replace(/[\\/:*?"<>|]/g,'_');
 function clearPreview(message){image=null;window.dispatchEvent(new CustomEvent('dq9-map-image',{detail:null}));ui.map.hidden=true;ui.empty.hidden=false;ui.empty.textContent=message;ui['export-png'].disabled=true;ui['image-info'].textContent='マップ素材の合成表示。カメラ・現在位置・アイコンはまだ重ねません。';}
-function release(){loadSerial++;worker?.terminate();worker=null;metadata=null;selection=null;selectedAsset=null;requestId++;ui.release.disabled=true;ui['rom-name'].textContent='ファイルをドロップ';for(const id of ['export-all','export-csv','export-one','export-asset'])ui[id].disabled=true;ui.descriptor.replaceChildren(new Option('未選択',''));ui.descriptor.disabled=true;ui.facts.replaceChildren();ui.raw.textContent='';ui.summary.textContent='NDS未読込';ui.errors.textContent='なし';ui.title.textContent='NDS未選択';ui.identity.textContent='既存の日本語マップ名を表示できます。';clearPreview('NDSをここへドロップ');window.dispatchEvent(new CustomEvent('dq9-rom-release'));renderList();}
+function release(){loadSerial++;exitPending=null;worker?.terminate();worker=null;metadata=null;selection=null;selectedAsset=null;requestId++;ui.release.disabled=true;ui['rom-name'].textContent='ファイルをドロップ';for(const id of ['export-all','export-csv','export-exits','export-one','export-asset'])ui[id].disabled=true;ui.descriptor.replaceChildren(new Option('未選択',''));ui.descriptor.disabled=true;ui.facts.replaceChildren();ui.raw.textContent='';ui.summary.textContent='NDS未読込';ui.errors.textContent='なし';ui.title.textContent='NDS未選択';ui.identity.textContent='既存の日本語マップ名を表示できます。';clearPreview('NDSをここへドロップ');window.dispatchEvent(new CustomEvent('dq9-rom-release'));renderList();}
 async function loadROM(file){if(!file)return;if(!/\.nds$/i.test(file.name)){status('NDSファイルを選択してください。',true);return;}release();const serial=loadSerial;status('NDSを読込中');ui['rom-name'].textContent=file.name;ui.release.disabled=false;
  try{await namesReady;const buffer=await file.arrayBuffer();if(serial!==loadSerial)return;
   worker=new Worker(new URL('./worker.mjs',import.meta.url),{type:'module'});worker.onerror=e=>status('Worker: '+e.message,true);
   worker.onmessage=({data:m})=>{
    if(serial!==loadSerial)return;
    if(m.type==='progress')status(m.message);
-   else if(m.type==='loaded'){metadata=m.metadata;window.dispatchEvent(new CustomEvent('dq9-rom-metadata',{detail:metadata}));ui['export-all'].disabled=false;ui['export-csv'].disabled=false;const s=metadata.summary;ui.summary.textContent=`マップ ${s.records}件 / 配置 ${s.descriptors}件 / 画像 ${s.images}件 / 特殊パック ${s.packs}件（画像化 ${s.pacImages}件）。配置候補を持つマップ ${s.recordsWithMap}件。`;ui.errors.textContent=metadata.errors.length?pretty(metadata.errors):'なし';status(`採掘完了 · ${metadata.rom.gameCode} · Worker + WebAssembly`);renderList();const preferred=rows.find(r=>r.data.mapId===7402)||rows[0];if(preferred)select(preferred);}
+   else if(m.type==='loaded'){metadata=m.metadata;window.dispatchEvent(new CustomEvent('dq9-rom-metadata',{detail:metadata}));ui['export-all'].disabled=false;ui['export-csv'].disabled=false;ui['export-exits'].disabled=false;const s=metadata.summary;ui.summary.textContent=`マップ ${s.records}件 / 配置 ${s.descriptors}件 / 画像 ${s.images}件 / 特殊パック ${s.packs}件（画像化 ${s.pacImages}件）。配置候補を持つマップ ${s.recordsWithMap}件。`;ui.errors.textContent=metadata.errors.length?pretty(metadata.errors):'なし';status(`採掘完了 · ${metadata.rom.gameCode} · Worker + WebAssembly`);renderList();const preferred=rows.find(r=>r.data.mapId===7402)||rows[0];if(preferred)select(preferred);}
    else if(m.type==='image'){if(m.requestId!==requestId)return;image=m.image;ui.map.width=image.width;ui.map.height=image.height;ui.map.getContext('2d').putImageData(new ImageData(image.rgba,image.width,image.height),0,0);ui.map.hidden=false;ui.empty.hidden=true;ui['export-png'].disabled=false;zoom();ui['image-info'].textContent=`${image.width} × ${image.height} px · ${image.parts?image.parts.length+' layer合成':image.format==='PAC'?'特殊マップ素材（生成階層の配置・探索状況とは別）':'タイル画像'}${image.originPixel?' · 原点 '+image.originPixel.join(', '):''} · WASM`;status('表示完了');window.dispatchEvent(new CustomEvent('dq9-map-image',{detail:{...image,markerCoordinateBinding:markerCoordinateBinding(image.descriptor,selection?.kind==='map'?selection.data.mapId:null),worldToMapScale:image.descriptor?.worldToMapScale??null,mapId:selection?.kind==='map'?selection.data.mapId:null,descriptor:ui.descriptor.value}}));}
+   else if(m.type==='map-exits'||m.type==='map-exits-error')finishExitExport(m);
    else if(m.type==='map-candidates')window.dispatchEvent(new CustomEvent('dq9-map-candidates-result',{detail:m}));
    else if(m.type==='map-candidates-error')window.dispatchEvent(new CustomEvent('dq9-map-candidates-result',{detail:m}));
    else if(m.type==='fonts')window.dispatchEvent(new CustomEvent('dq9-runtime-fonts',{detail:m.fonts}));
@@ -53,6 +55,18 @@ window.addEventListener('dq9-monster-assets-request',e=>{if(worker)worker.postMe
 window.addEventListener('dq9-monster-preview-request',e=>{if(worker)worker.postMessage({type:'monster-preview',requestId:e.detail?.requestId,model:e.detail?.model});else window.dispatchEvent(new CustomEvent('dq9-monster-preview-error',{detail:{requestId:e.detail?.requestId,message:'NDSを先に投入してください'}}));});
 window.addEventListener('dq9-view-map-request',e=>{const r=metadata?.records.find(r=>r.mapId===e.detail.mapId);if(r){ui.mode.value='maps';ui.search.value='';ui['has-image'].checked=false;renderList();const row=rows.find(x=>x.data===r);if(row){select(row);if(e.detail.descriptor&&r.candidates.some(c=>c.path===e.detail.descriptor)&&ui.descriptor.value!==e.detail.descriptor){ui.descriptor.value=e.detail.descriptor;renderDescriptor();}}}});
 ui.rom.onchange=()=>loadROM(ui.rom.files[0]);ui.release.onclick=()=>{release();ui.rom.value='';status('NDSを解放しました。');};ui.mode.onchange=renderList;ui.search.oninput=renderList;ui['has-image'].onchange=renderList;ui.descriptor.onchange=renderDescriptor;ui.zoom.onchange=zoom;ui.background.onchange=()=>ui.viewport.className='viewport '+ui.background.value;new ResizeObserver(()=>{if(ui.zoom.value==='fit')zoom();}).observe(ui.viewport);
+function requestExitExport(){
+ if(!worker||!metadata||exitPending)return;
+ const job={requestId:++exitRequest,loadSerial};exitPending=job;ui['export-exits'].disabled=true;status('端末内で静的な出口を採掘中 · NDS解放で中止できます');
+ try{worker.postMessage({type:'map-exits',requestId:job.requestId});}catch(error){finishExitExport({type:'map-exits-error',requestId:job.requestId,message:error.message});}
+}
+function finishExitExport(message){
+ if(!exitPending||message.requestId!==exitPending.requestId||exitPending.loadSerial!==loadSerial)return;
+ exitPending=null;ui['export-exits'].disabled=!metadata;
+ if(message.type==='map-exits-error'){status('静的出口の採掘を完了できません: '+message.message,true);return;}
+ download('dq9-map-exits-local.json',pretty(message.result));status(`静的出口 ${message.result.summary.exitRowCount}件をJSON保存 · 到達条件・不明な接続先を保持（経路の確定ではありません）`);
+}
+ui['export-exits'].onclick=requestExitExport;
 ui['export-all'].onclick=()=>download('dq9-map-metadata.json',pretty(metadata));
 ui['export-one'].onclick=()=>{if(selection)download(safeName(selection.label)+'.json',ui.raw.textContent);};
 ui['export-csv'].onclick=()=>{const columns=['mapIdHex','mapId','name','secondaryId','fieldCode','internalLabel','modelResource','areaStatus'];const quote=v=>'"'+String(v??'').replaceAll('"','""')+'"';download('dq9-map-catalog.csv','\ufeff'+[columns.map(quote).join(','),...metadata.records.map(r=>columns.map(c=>quote(r[c])).join(','))].join('\r\n'),'text/csv;charset=utf-8');};
