@@ -129,7 +129,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
   const frozen = document.createElement('canvas'); const frozenCtx = frozen.getContext('2d', { willReadFrequently: true });
   const cropView = $('crop-preview'); const cropCtx = cropView.getContext('2d');
   const gate = new RequestGate();
-  let observer = null, observationCallback = null, observationGeneration = 0, observationStartGeneration = 0, observationAgeTimer = null;
+  let observer = null, observationCallback = null, observationGeneration = 0, observationStartGeneration = 0, observationAgeTimer = null, observationRewind = null;
   const observationCapture = document.createElement('canvas'), observationCaptureCtx = observationCapture.getContext('2d', { willReadFrequently: true });
   const state = {
     romFile: null, romEpoch: 0, sourceEpoch: 0, sourceId: null, sourceURL: null, sourceKind: null, image: null,
@@ -240,7 +240,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     if (token.native) video.cancelVideoFrameCallback?.(token.id); else (window.clearTimeout || globalThis.clearTimeout)(token.id);
   }
   function stopVideoObservation(reason) {
-    observationStartGeneration++; state.observationStarting = false; observer.stop(reason); cancelObservationFrame(); controls();
+    observationStartGeneration++; state.observationStarting = false; observationRewind?.finish(false); observer.stop(reason); cancelObservationFrame(); controls();
   }
   function queueObservationAge() {
     if (!observer.running || observationAgeTimer) return;
@@ -275,12 +275,24 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     };
     token.id = token.native ? video.requestVideoFrameCallback(callback) : (window.setTimeout || globalThis.setTimeout)(callback, 250);
   }
+  // EOF play() performs an implicit seek. Own only our explicit rewind so the
+  // ordinary seeking handler can still cancel every unrelated seek/start.
+  function rewindVideoForObservation(intent) {
+    return new Promise((resolve, reject) => {
+      const token = { intent, seekingSeen: false, finish(ok) { if (observationRewind === token) observationRewind = null; resolve(ok); } };
+      observationRewind = token;
+      try { video.currentTime = 0; }
+      catch (failure) { if (observationRewind === token) observationRewind = null; reject(failure); }
+    });
+  }
   async function startVideoObservation() {
     const issue = videoObservationIssue(); if (issue) { error(issue); return; }
     if (observer.running || state.observationStarting || state.busy || state.loading || state.clearingCache) return;
     invalidate('', { clear: false }); error(); const revision = gate.revision, intent = ++observationStartGeneration;
     state.observationStarting = true; controls();
     try {
+      if (video.ended && !await rewindVideoForObservation(intent)) return;
+      if (intent !== observationStartGeneration || revision !== gate.revision || state.disposed || videoObservationIssue()) return;
       await video.play(); if (intent !== observationStartGeneration || revision !== gate.revision || state.disposed || video.paused || videoObservationIssue()) return;
       state.observationRecords = []; $('video-observations').replaceChildren(); cancelObservationFrame();
       observer.start({ captureStamp: videoObservationStamp(video.currentTime), modelIds: [...DEFAULT_MODELS], variant: '_f', preset: 'quick', inferenceBackend: inferenceBackend(), denseSupplement: !!$('video-observation-dense').checked });
@@ -811,7 +823,18 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
   $('play-pause').addEventListener('click', async () => { if (!video.paused) video.pause(); else try { await video.play(); } catch (failure) { error(`動画を再生できません: ${failure.message}`); } });
   $('video-seek').addEventListener('input', () => { if (Number.isFinite(video.duration)) video.currentTime = Number($('video-seek').value); });
   for (const event of ['timeupdate', 'durationchange', 'play', 'pause', 'loadedmetadata']) video.addEventListener(event, updateVideoTime);
-  video.addEventListener('seeking', () => { state.timelineSegment++; stopVideoObservation('seeking'); state.observationRecords = []; $('video-observations').replaceChildren(); });
+  video.addEventListener('seeking', () => {
+    state.timelineSegment++; state.observationRecords = []; $('video-observations').replaceChildren();
+    const rewind = observationRewind;
+    if (rewind && rewind.intent === observationStartGeneration && !rewind.seekingSeen && state.observationStarting && video.paused && Math.abs(video.currentTime) < 0.001) rewind.seekingSeen = true;
+    else stopVideoObservation('seeking');
+  });
+  video.addEventListener('seeked', () => {
+    const rewind = observationRewind; if (!rewind || !rewind.seekingSeen || video.seeking) return;
+    if (rewind.intent === observationStartGeneration && rewind.seekingSeen && state.observationStarting && !video.seeking && video.paused && Math.abs(video.currentTime) < 0.001) rewind.finish(true);
+    else stopVideoObservation('seek-interrupted');
+  });
+  video.addEventListener('error', () => stopVideoObservation('video-error'));
   for (const event of ['pause','ended']) video.addEventListener(event, () => stopVideoObservation(event));
   document.addEventListener?.('visibilitychange', () => { if (document.hidden) stopVideoObservation('hidden-page'); controls(); });
   $('redraw-roi').addEventListener('click', () => { state.drawMode = true; $('redraw-roi').textContent = 'ドラッグで新しい範囲を選択'; status('固定した画像上で、新しい範囲をドラッグしてください。'); });

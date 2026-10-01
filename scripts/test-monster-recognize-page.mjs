@@ -395,6 +395,43 @@ for(const interrupt of ['seek','stop','pause','hidden','dense-setting','cancel']
 }
 let rejectOldPlay;video.play=()=>new Promise((resolve,reject)=>{rejectOldPlay=reject});const oldStart=ui.startVideoObservation();await settle();await el('stop-video-observation').click();video.play=async()=>{video.paused=false};await ui.startVideoObservation();auto=await preparedWorker();const newestActive=ui.observer.active;rejectOldPlay(new Error('late old play error'));await oldStart;await settle();
 check('old failed play cannot stop or clear a newer preparation',()=>{assert(ui.observer.running);assert.strictEqual(ui.observer.active,newestActive);assert(!auto.worker.terminated);});await el('stop-video-observation').click();
+// Browser EOF replay implicitly seeks during play(). Explicit rewind must finish first.
+let replayPlayCalls=0;
+video.play=async()=>{replayPlayCalls++;if(video.ended){video.currentTime=0;video.seeking=true;await video.trigger('seeking');video.seeking=false;video.ended=false;await video.trigger('seeked');}video.paused=false;};
+Object.assign(video,{ended:true,paused:true,seeking:false,currentTime:16,duration:16});el('video-observation-dense').checked=true;
+const beforeReplay=autoCount(),replaySegment=ui.state.timelineSegment,replaying=ui.startVideoObservation();await settle();
+check('EOF restart owns an explicit rewind before any play or inference',()=>{assert.equal(video.currentTime,0);assert.equal(replayPlayCalls,0);assert(ui.state.observationStarting);assert.equal(autoCount(),beforeReplay);});
+video.seeking=true;await video.trigger('seeking');
+check('owned rewind seeking preserves only the pending start and advances timeline',()=>{assert(ui.state.observationStarting);assert.equal(ui.state.timelineSegment,replaySegment+1);assert(!ui.observer.running);assert.equal(frameCallbacks.size,0);});
+video.ended=false;video.seeking=false;await video.trigger('seeked');await replaying;auto=await preparedWorker();
+check('EOF restart begins one dense-enabled preparation after seek completion',()=>{assert.equal(replayPlayCalls,1);assert(ui.observer.running);assert(ui.observer.config.denseSupplement);assert.equal(frameCallbacks.size,1);assert.equal(autoCount(),beforeReplay+1);});
+auto.worker.emit({type:'result',id:auto.req.id,romEpoch:ui.state.romEpoch,result:{prepared:true}});await settle();await fireFrame(5000,144);
+check('restarted loop samples current frames after natural end',()=>{assert.equal(ui.observer.stats.sampledFrames,1);assert.equal(ui.observer.latest.image.rgba[0],144);});await el('stop-video-observation').click();
+for(const interrupt of ['stop','hidden','source','seek','duplicate-seeking','pause','error']){
+ Object.assign(ui.state,{sourceReady:true,sourceKind:'video',sourceId:`rewind-${interrupt}`,sourceEpoch:ui.state.sourceEpoch+1});Object.assign(video,{ended:true,paused:true,seeking:false,currentTime:16});
+ const calls=replayPlayCalls,before=autoCount(),start=ui.startVideoObservation();await settle();video.seeking=true;await video.trigger('seeking');
+ if(interrupt==='stop')await el('stop-video-observation').click();
+ if(interrupt==='hidden'){doc.hidden=true;await documentEvents.trigger('visibilitychange');}
+ if(interrupt==='source'){el('source-file').files=[];ui.selectSource();}
+ if(interrupt==='seek'){video.currentTime=7;await video.trigger('seeking');}
+ if(interrupt==='duplicate-seeking')await video.trigger('seeking');
+ if(interrupt==='pause')await video.trigger('pause');
+ if(interrupt==='error')await video.trigger('error');
+ video.seeking=false;video.ended=false;await video.trigger('seeked');await start;await settle();
+ check(`pending EOF rewind rejects late seeked after ${interrupt}`,()=>{assert(!ui.observer.running);assert(!ui.state.observationStarting);assert.equal(replayPlayCalls,calls);assert.equal(autoCount(),before);assert.equal(frameCallbacks.size,0);});
+ if(interrupt==='hidden'){doc.hidden=false;await documentEvents.trigger('visibilitychange');}
+}
+Object.assign(ui.state,{sourceReady:true,sourceKind:'video',sourceId:'rewind-cpu',sourceEpoch:ui.state.sourceEpoch+1});Object.assign(video,{ended:true,paused:true,seeking:false,currentTime:16});el('video-observation-dense').checked=false;
+const cpuReplay=ui.startVideoObservation();await settle();video.seeking=true;await video.trigger('seeking');video.seeking=false;video.ended=false;await video.trigger('seeked');await cpuReplay;auto=await preparedWorker();
+check('CPU-only EOF restart retains its unchanged mode and explicit Stop',()=>{assert(ui.observer.running);assert(!ui.observer.config.denseSupplement);});await el('stop-video-observation').click();
+// Late seeked notifications cannot interrupt a newer rewind that is still seeking.
+Object.assign(video,{ended:true,paused:true,seeking:false,currentTime:16});let staleRewind=ui.startVideoObservation();await settle();await el('stop-video-observation').click();await staleRewind;
+Object.assign(video,{ended:true,paused:true,seeking:false,currentTime:16});const newRewind=ui.startVideoObservation();await settle();await video.trigger('seeked');
+check('stale seeked before the newer rewind seeking event is ignored',()=>assert(ui.state.observationStarting));
+video.seeking=true;await video.trigger('seeking');await video.trigger('seeked');
+check('stale seeked cannot cancel a newer rewind still in progress',()=>{assert(ui.state.observationStarting);assert(!ui.observer.running);});
+video.seeking=false;video.ended=false;await video.trigger('seeked');await newRewind;auto=await preparedWorker();
+check('the newer rewind still starts once its own seek completes',()=>assert(ui.observer.running));await el('stop-video-observation').click();
 // The independent display-age timer does no inference and handles missing video callbacks.
 let timerSerial=0;const ageTimers=new Map();win.setTimeout=fn=>{const id=++timerSerial;ageTimers.set(id,fn);return id};win.clearTimeout=id=>ageTimers.delete(id);
 await ui.startVideoObservation();auto=await preparedWorker();auto.worker.emit({type:'result',id:auto.req.id,romEpoch:ui.state.romEpoch,result:{prepared:true}});await settle();await fireFrame(10000,140);const beforeAgeJobs=autoCount();observerClock=12000;const ageTick=ageTimers.entries().next().value;assert(ageTick);ageTimers.delete(ageTick[0]);ageTick[1]();await settle();

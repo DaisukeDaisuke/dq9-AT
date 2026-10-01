@@ -29,7 +29,7 @@ The observer reuses the current proposal code, tracker, Worker, classifier, ROM 
 
 Snapshots and crop stamps are immutable across asynchronous work. Result authenticity is checked against its dispatched capture, not the newest CPU frame. Since rankings are historical records rather than labels on current boxes, an association gap cannot transfer a species claim to another box.
 
-Seek, source/ROM/configuration changes, Stop/Cancel, pause/end, hidden tab and page lifecycle events invalidate work. Deferred video.play() has a separate cancelable start intent. Late success, rejection, progress or finally callbacks cannot restart a stopped loop or clear a newer job. Returning to a visible tab enables an explicit Start; it does not restart automatically. Manual actions stop the observer before using the shared worker.
+Seek, source/ROM/configuration changes, Stop/Cancel, pause/end, hidden tab and page lifecycle events invalidate work. At EOF, explicit Start owns a rewind to zero and waits for its seeked event before calling play(); this prevents the browser’s implicit EOF rewind from canceling the new start. Stop, unrelated seeks, source/configuration changes, hidden state and errors cancel that pending rewind. Deferred video.play() has a separate cancelable start intent. Late success, rejection, progress or finally callbacks cannot restart a stopped loop or clear a newer job. Returning to a visible tab enables an explicit Start; it does not restart automatically. Manual actions stop the observer before using the shared worker.
 
 ## Known HUD mismatch
 
@@ -47,3 +47,9 @@ Current controls can correct a wrong gameplay panel selection. They expose gamep
 The final replay sampled80 of84 supplied frames and completed30 classifications plus2 dense passes. Warm median classifier time was726ms; median completed observation age was904ms, maximum1.79s. Initial genuine pose preparation took30.9seconds before replay. Input frames were already decoded and supplied every270ms; this is a Node DOM/canvas acceptance harness, not actual-browser video decode or WebGPU timing. Scheduling and shared CPU load change which transient bodies are sampled between runs.
 
 Actual cloud browser/GPU QA and the parent aggregate build remain separate release gates. No new model, training, external inference, frame persistence or publication of ROM/video/model assets is part of this source change. The rejected temporal propagation experiment remains separate and stopped.
+
+## EOF replay correction
+
+The public first video run was exercised in cloud Chrome. A subsequent explicit Start at the natural end restarted playback but canceled observation because play() emitted its implicit rewind seek. The correction explicitly seeks to zero before play and accepts only that start intent's first zero-position seek. Other seeks and interruption paths still cancel. Early/stale seeked events are ignored while the owned rewind has not started or is still seeking.
+
+The page harness now passes167 checks, including15 EOF replay/interruption/order regressions; the new EOF regression fails against the pre-correction page. CPU-only and optional-dense restart are covered. The controller's24 checks and the recognition/cache focused suite remain passing. Actual cloud browser replay/Stop and aggregate checks belong to the release review.
