@@ -1,0 +1,42 @@
+{
+  "revision": "source-backup-20261001T0850Z",
+  "scope": "Partial standalone trainer source backup, no entrypoint/UI and no full-run admission. Helper and train core verified; pipeline/session/background modules syntax checked but integration still in progress.",
+  "files": {
+    "web/standalone-background-input.mjs": {
+      "bytes": 3657,
+      "sha256": "d6953f89d199adaae633103cdaf28bf2b7e73f9421e7f1f39b911d01ed9fbc26",
+      "preimageSha256": null
+    },
+    "web/standalone-checkpoint-store.mjs": {
+      "bytes": 21770,
+      "sha256": "ed9528d0de36c21363f406a9acb7104e28cd4dd6be55372d248ef046ac7ddd34",
+      "preimageSha256": null
+    },
+    "web/standalone-train-core.mjs": {
+      "bytes": 5643,
+      "sha256": "ffca27453df717fea8bf8cf70089469ad5f80c9330ba2efb5bfb52dbd2406169",
+      "preimageSha256": null
+    },
+    "web/standalone-train-run.mjs": {
+      "bytes": 13851,
+      "sha256": "c4e44508e53104a172bc95a4cf742d2e7af397ceb4f468f5dcbd0d015be60b2e",
+      "preimageSha256": null
+    },
+    "web/standalone-training-pipeline.mjs": {
+      "bytes": 14837,
+      "sha256": "0529dfd8b5cee52372b24e19c4cdb2d663bbca980ba8497a0f0cdc3f10b6f50f",
+      "preimageSha256": null
+    }
+  },
+  "verified": [
+    "checkpoint helper19 test groups including actual140.23MB local simulator roundtrip",
+    "train core19 deterministic sampler/deadline/metrics checks"
+  ],
+  "notYetVerified": [
+    "session integration",
+    "browser video extraction",
+    "full pipeline",
+    "real-video detector quality"
+  ],
+  "privateAssetsIncluded": false
+}
