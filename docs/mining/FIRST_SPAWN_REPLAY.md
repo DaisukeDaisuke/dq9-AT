@@ -1,139 +1,121 @@
-# Conditional first natural spawn replay
+# Conditional browser spawn and movement replay
 
-The existing `monster-explorer.html` has a second, explicit local experiment.
-It composes the guarded preferred-node, geometry, scheduler and creator models
-and normally ends at the first creator call. An explicit option chains its
-derived newborn through supported idle and movement states. It does not simulate all AI,
-the hero's controls, hidden actors, map transitions or the whole world.
+The existing monster explorer now composes ROM graph/table/terrain data with an
+explicit initial runtime, phase-specific hero trajectory and supplied seed.
+The default mode stops at the first creator call. The continuation option
+carries every actor it creates through supported body/lifetime/walking phases.
+It does not import later actors or reset the seed from observations.
 
-Load your Japanese revision-0 ROM, a runtime JSON, and a trajectory JSON. Enter
-the seed at the **start of those inputs**, confirm the conditions, initialize,
-then advance one/ten stages or run until the first creation/unknown boundary.
-The displayed hero path comes from the supplied trajectory; the birth comes
-from model output. No recorded future actor or seed is accepted as a step.
+Load a Japanese revision0 NDS and the two local JSON files, enter the seed at
+the start of those inputs, declare the conditions and initialize. Advance one,
+ten, or run until the input ends or an unsupported branch stops. The map draws
+only modeled actors, with slot/species labels and paths. The older manual
+1actor experiment is labeled separately. Files stay in the browser.
 
-## Input phase and limits
+## Supported context
 
-This first slice supports map7402, one selected eligible hero, the other three
-party registry pointers absent, and twelve registered inactive free natural
-objects. A null registry pointer is not an allocatable pool object.
-The runtime packet explicitly declares activity/story gates, sole eligible
-member/no next member, stable context and no additional AT consumers.
-Those conditions are not inferred from pixels or the loaded map.
+This slice is map7402 with a known registered unused12-object natural pool and
+one possible party member. Null registry pointers are not allocatable objects.
+The initial48-slot registry contains no pre-existing active natural actor and
+no duplicate non-null object pointers. Other party slots are explicitly absent.
+Story/activity, stable runtime and no external AT consumers are declared
+conditions, not conclusions from visibility.
 
-The runtime schema is `dq9-first-spawn-runtime-v1`. Its keys are `schema`,
-`mapId`, `fieldIndex`, `initialTimer`, `selectedHeroSlot`, `conditions`,
-`parties`, `runtimeNodeFlags` and `creatorContext`. The creator context is the
-existing `projectMonsterCreation` primitive contract: four fields, resources,
-model/AI/template descriptions, serial state,48-slot inventory, protected
-memory ranges and terrain object bindings. It contains no graph or decoded
-terrain bytes; both are obtained from the supplied ROM. Runtime conditions
-and binding declarations remain caller hypotheses. The maximum JSON file is8MiB.
+The nearby-actor member cap is computed from modeled active XYZ in the native
+asymmetric box. Each derived birth updates the pool, serial and field counters.
+Within a logical phase, all actors run in native slot order through body and
+lifetime; the separate walking traversal follows. Unresolved branches and the
+first lifetime reset stop the current projection. Later map transitions,
+alert/chase/collision branches and global-world completeness remain separate.
 
-The selected field's `tables` can now be omitted. They are mined from the ROM:
-for the supported7402 resource, opcode103 integer scale1 is shifted left12 by
-native0209d7e8, producing4096. All four measured native preinput items match.
-Other scale conversions remain unsupported. Legacy table inputs are checked
-if supplied; conflicting values cannot override ROM.
+## Local inputs
 
-The trajectory schema is `dq9-pre-spawn-trajectory-v1` with `phase` equal to
-`pre-spawn-effective`, `mapId` and1..2000 dense ordered `steps`:
+Runtime v1 has schema `dq9-first-spawn-runtime-v1` and keys `mapId`, `fieldIndex`,
+`initialTimer`, `selectedHeroSlot`, `conditions`, `parties`, `runtimeNodeFlags`
+and `creatorContext`. The creator primitives cover four fields, model/AI/template
+resources, serial state,48-slot inventory, protected ranges and terrain object
+bindings. No graph or decoded terrain bytes are imported: the loaded ROM owns
+those resources. Runtime JSON is limited to8MiB.
 
-```json
-{"schema":"dq9-pre-spawn-trajectory-v1","phase":"pre-spawn-effective","mapId":7402,"steps":[{"index":0,"sourceFrame":null,"delta":33,"timeValue":0,"hero":{"xyz":[0,0,0],"angle":0,"nodeIndex":0,"graphEnabled":true}}]}
-```
+The selected field's `tables` can be omitted. ROM encfld supplies the table
+IDs, flags and packed species/weights; native0209d7e8 shifts integer scale1
+left12, giving4096 for all four supported7402 items. Native0209dbbc appends
+those halfword pairs. The field container offset is+0x5c. All four items match
+the retained native preinput. Other scale conversions remain unsupported, and
+conflicting legacy table inputs are rejected. Old encounter labels are unused.
 
-XYZ is signed20.12 native fixed point; actual angle is signed16. Delta is an
-explicit native scheduler clock input0..50. `sourceFrame` is optional provenance,
-not an AT-call count or an automatic video→phase association. The maximum file
-is1MiB. No D-pad, facing or height is reconstructed from a marker.
+Trajectory v1 has schema `dq9-pre-spawn-trajectory-v1`, phase
+`pre-spawn-effective`, `mapId` and1..2000 dense ordered steps. Each step contains
+`index`, optional `sourceFrame` (null or unsigned integer), scheduler `delta`
+0..50, `timeValue`, and `hero` with native signed32 `xyz`, signed16 actual
+`angle`, current `nodeIndex` and explicit `graphEnabled:true`.
 
-## State and unknowns
+For continuation, the same files use v2 schemas. Runtime
+`dq9-first-spawn-runtime-v2` adds `continuation` with phaseOrder
+`spawn-hero-body-lifetime-walking`, `environmentStable:true`, and the existing
+guarded walking environment: controller/hero flags, map, anchors, script and
+call parameters. Its terrain is the same ROM-bound creator terrain.
+Trajectory `dq9-pre-spawn-trajectory-v2` uses phase
+`pre-spawn-and-post-hero-effective`; each step additionally supplies `postHero`
+with the same pose fields and `actorClock` with `phase` and `scaledDelta`0..50.
 
-The initial seed and timer are carried. Fallback-node, geometry and creator
-refinements rerun the **original** invocation, so neither time nor AT is counted
-twice. ROM opcode103 supplies numerical species/weights; legacy encounter names
-are not used. Unsupported conditional groups/traps remain unresolved.
+Pre-spawn and post-hero are separate inputs. Neither a prior rendered marker
+nor a pre-spawn pose is silently used as post-hero. XYZ remains the sole native
+coordinate source; chunk/local values can be derived losslessly. Camera L/R,
+diagonal/touch motion, facing and held keys are not inferred from screen motion.
+`sourceFrame` is provenance only; frame gaps do not imply AT calls. Trajectory
+JSON is limited to1MiB.
 
-At an unknown boundary the display contains only the computed prefix, including
-draws already required before that boundary. It is not a completed native
-invocation or the current video's state. A derived creator return0 stops as a
-rejection. Successful creation stops unless newborn continuation is selected.
-Cancellation retains the last computed stage. New ROM/import/seed invalidates
-the prior experiment; pending file reads and old async runs cannot restore it.
+## Seed, state and incomplete phases
 
-The eventual map+trajectory+seed experience still needs a source-backed runtime
-initializer for pool/resource/serial/object state, member/story/activity/clock
-conditions and other consumers. Input-phase and hidden-state uncertainty cannot
-be replaced with default success, zero calls or synthetic actors.
+The initial seed/timer are carried. Geometry and creator refinements rerun the
+original scheduler invocation, preventing duplicate time or draws. Every actor
+starts from creator output, reset constants and its initial pool object's known
+byte-sized e0. Component-family support is bound to that creation's validated
+structure. No animation-class pointer or future state is supplied as truth.
 
-## Verification
+A known draw before an unresolved boundary remains in the displayed prefix.
+It does not turn an incomplete phase into a completed native frame or current
+video state. Each actor retains its last completed phase. Cancellation retains
+completed work; ROM/import/seed/scope changes invalidate it, and stale async
+work cannot restore it. Initial seed means the start of the supplied experiment,
+not necessarily the game's initial boot state.
 
-Portable checks: `node scripts/test-first-spawn.mjs` and
-`node scripts/test-first-spawn-page.mjs`. Optional local-input regression:
+## Retained comparisons
+
+The first-birth mode still reaches90 steps/63 calls, species83/slot112/serial1,
+seed4044910212 and timer0. Continued execution derives births at90/279/370:
+species83/31/83, slots112/113/114, serials1/2/3. The429 complete controller
+inputs through native return1812 give343 calls, seed560534860, field timer1947
+and actor timers3036/3960/957.
+
+All429 native timer/seed/call triples agree.551 actor and551 walking projections
+agree with the earlier source compositor.179 native XZ snapshots agree. A
+separate65-snapshot check covers all three slots against adjacent completed
+predicted boundaries; it retains per-actor phase uncertainty and timer
+differences. These snapshots are not exact body-return PC measurements.
+The separate newborn leaf regression has417 PC comparisons,155 labeled
+snapshot comparisons and12 e0 comparisons. Historical expectations were already
+known; these are reproducibility checks, not blind real-video identification.
+
+The next recorded post-hero event is native completed-frame1813 within rendered
+capture boundary1814, with no controller return in that packet. That partial
+interval is not advanced. No ROM, save, runtime packet, trajectory, native
+expectation or raw capture is bundled publicly.
+
+Portable checks run from scripts/build.sh. Optional retained local inputs:
 
 ```
 node scripts/test-first-spawn.mjs ROM.nds runtime.json trajectory.json
-node scripts/replay-first-spawn.mjs ROM.nds runtime.json trajectory.json 2663044269
-```
-
-No ROM, runtime packet, trajectory or native output is bundled. The retained
-controlled SAV comparison reaches the first creator at step90/sourceFrame1133:
-63 calls, species83, slot112, serial1, seed4044910212, timer0. All90 native
-timer/seed/call-count triples agree. BirthXYZ[-53169,-3356,-2253] agrees with the
-previous source compositor; that fixture does not provide an independent exact
-creator-return XYZ capture. The historical expected result was already known,
-so this is a reproducibility check, not a blind prediction or real-video AT
-identification.
-
-## Optional derived newborn continuation
-
-The same two JSON inputs can include phase/environment data; there is no added
-import. Select the continuation checkbox explicitly.
-Runtime schema `dq9-first-spawn-runtime-v2` adds `continuation` with
-`phaseOrder:"spawn-hero-body-lifetime-walking"`, `environmentStable:true` and
-`environment`: the existing guarded walkingPass controller, hero flags,
-anchors, script and map context. Terrain remains the ROM-bound creator terrain.
-The complete natural registry must contain no other active actor or duplicate
-non-null object pointers.
-
-Trajectory schema `dq9-pre-spawn-trajectory-v2` uses phase
-`pre-spawn-and-post-hero-effective`. Each stage adds `postHero` with the same
-XYZ/actual-angle/node/graphEnabled fields as `hero`, plus `actorClock` containing
-`phase` and `scaledDelta`. These are separate explicit inputs. The replay never
-substitutes pre-spawn or rendered-marker coordinates for the post-hero pose.
-Native signed32 XYZ remains the sole coordinate source; chunk/local components
-can be derived losslessly. Camera rotation, diagonal/touch movement and held
-keys are not inferred from those coordinates.
-
-The actor starts from creator output, source reset constants, and the initial
-pool object's known byte-sized e0. Body, lifetime and walking results are then
-carried. Walking derives the normal exclusion for every collected triangle;
-unknown horizontal response suspends. No observed future actor, animation
-class pointer or seed is injected. A second creation, reset, unknown input or
-a second creation ends this single-generation slice. Unsupported alert/collision
-branches remain stopped.
-
-The retained controlled case reaches120 scheduler stages,31 newborn updates,
-first state1 at return1194, field timer990 and total63 calls. All120 native
-scheduler timer/seed/call triples match;31 actor projections match the accepted
-source compositor. The separate exact newborn leaf regression still passes417
-PC comparisons,155 labeled snapshot comparisons and12 e0 comparisons.
-The first31 body updates remain stationary. Continuing the same actor reaches
-state2 at pass242 and36 movement updates before pass279 tries the second
-creation. The last complete actor position at pass278 is[-67164,-3356,-739].
-All278 complete native timer/seed/call triples agree.179 native XZ snapshots
-agree, including26 moving snapshots at frames1440–1490; these are not exact
-body-PC captures. Pass279 retains only its3-draw scheduler prefix: total224,
-seed303624909, pre-creator timer6237. Native subsequently resets the timer to0,
-which this stopped replay does not apply. No second actor is invented.
-Later navigation, alert/chase, additional actors, map transitions and real-video
-current-state identification remain unresolved.
-
-Portable checks: `node scripts/test-monster-newborn.mjs` and
-`node scripts/test-newborn-replay.mjs`. Optional retained local inputs:
-
-```
-node scripts/test-newborn-replay.mjs ROM.nds runtime-v2.json trajectory-v2.json
+node scripts/test-multi-actor-replay.mjs ROM.nds runtime-v2.json trajectory-v2.json
 node scripts/replay-first-spawn.mjs ROM.nds runtime-v2.json trajectory-v2.json 2663044269 --newborn
 ```
+
+A separate synthetic held-pose extension checks that actor113's route-choice
+AT draw reaches actor114. It is not native/video continuation evidence.
+
+The map+trajectory+seed goal still needs source-backed initialization for the
+remaining runtime facts. Pool/serial state, active object bindings/transforms,
+phase clocks and consumer reachability are dynamic. Model/AI/template resource
+content may be mined from ROM, but its loader/selection mapping is not closed
+by this change. Unknown values are not replaced with success or zero draws.

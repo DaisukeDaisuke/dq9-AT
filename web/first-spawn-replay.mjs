@@ -1,5 +1,5 @@
-// Browser composition of existing guarded source models. It ends at the first
-// creator call; no post-birth actor, hidden world, input or seed is invented.
+// Browser composition of existing guarded source models. Optional continuation
+// carries only internally created actors under explicit phase/runtime inputs.
 import {decodeEncounterStream} from './encounter-distribution.mjs';
 import {FieldScheduler} from './field-scheduler.mjs';
 import {queryPreferredFieldNode,preferredNodeTrigFromRom} from './field-preferred-node.mjs';
@@ -19,6 +19,24 @@ const xyz=a=>dense(a)&&a.length===3&&a.every(i32);
 const check=(ok,message)=>{if(!ok)throw Error(message);};
 const copy=x=>structuredClone(x);
 const exact=(x,keys)=>x&&typeof x==='object'&&!Array.isArray(x)&&Object.keys(x).every(k=>keys.includes(k))&&keys.every(k=>Object.hasOwn(x,k));
+// A creator can safely project one birth while modifying a descriptor needed
+// only by a later birth. Multi-actor continuation requires those known future
+// reads to be disjoint from reset/visual/counter writes too.
+function futureCreatorInputsRemainStable(context,field,parties,creation){
+ const range=(start,size)=>{check(uint(start)&&Number.isInteger(size)&&size>0&&start+size<=0x100000000,'future creator metadata range is unknown');return {start,size};};
+ const overlap=(a,b)=>a.start<b.start+b.size&&b.start<a.start+a.size;
+ const deps=[];
+ for(const r of field.resources.models.entries)deps.push(range(r.pointer,20));
+ for(const r of field.resources.ai.records)deps.push(range(r.pointer,20));
+ for(const t of context.templates){if(!t?.pointer)continue;const v=t.visualContext,l=v?.layout;check(v?.complete===true&&dense(v.components)&&l&&uint(l.geometryCount,255)&&uint(l.entryOffset,65535),'future template layout is unknown');deps.push(range(t.pointer,0xb0),range(t.modelPointer+0x54,4),range(l.geometryPointer,32),range(l.materialBlockPointer,8+l.entryOffset+4*l.geometryCount));for(const c of v.components)deps.push(range(c.pointer,44));}
+ for(const p of parties)if(p.pointer)deps.push(range(p.pointer,0x198));
+ const fields=context.fields.slice(0,field.index+1).map(f=>range(f.pointer,0x314));
+ const pool=context.inventory.slots.find(s=>s.slot===creation.actor.registryIndex),reset=range(pool.pointer,0x198);
+ const counterWrites=[range(field.pointer+6,2),range(0x021d7a94,2)];
+ if([reset,...creation.animationBinding.visualWriteRanges].some(w=>[...deps,...fields].some(r=>overlap(w,r))))return false;
+ if(counterWrites.some(w=>deps.some(r=>overlap(w,r))))return false;
+ return !fields.slice(0,-1).some(r=>counterWrites.some(w=>overlap(w,r)));
+}
 
 export function validateSpawnTrajectory(input,mapId,graph,continueNewborn=false){
  const composed=input?.schema==='dq9-pre-spawn-trajectory-v2';
@@ -34,7 +52,7 @@ export function validateSpawnTrajectory(input,mapId,graph,continueNewborn=false)
 }
 
 /** Runtime facts cannot be mined from map/seed alone. They are a separate local
- * primitive input, declared valid until this first-creation boundary. */
+ * primitive input, declared stable within this conditional replay. */
 export function createFirstSpawnReplay({project,rom,kernel,fieldKernel,atKernel,runtime,trajectory,seed,continueNewborn=false}){
  check(uint(seed),'開始seedはu32が必要です');
  const composed=runtime?.schema==='dq9-first-spawn-runtime-v2';
@@ -61,7 +79,7 @@ export function createFirstSpawnReplay({project,rom,kernel,fieldKernel,atKernel,
   const d=describeInventorySlot(inventory.slots[slot-112]);
   check(d.allocated===true&&d.allocatorFree===true&&d.active===false,'自然生成groupは既知の登録済み・未使用12objectが必要です（null slotは空きobjectではありません）');
  }
- if(continueNewborn){const pointers=[];for(const slot of inventory.slots){const d=describeInventorySlot(slot);check(d.allocated!==null&&(d.allocated===false||(d.allocatorFree===true&&d.active===false)),'単一newborn区間には他の自然actor不在が必要です');if(d.allocated)pointers.push(d.pointer);}check(new Set(pointers).size===pointers.length,'registry別slotの同一object aliasは継続区間で未対応です');}
+ if(continueNewborn){const pointers=[];for(const slot of inventory.slots){const d=describeInventorySlot(slot);check(d.allocated!==null&&(d.allocated===false||(d.allocatorFree===true&&d.active===false)),'継続の初期状態には他の自然actor不在が必要です');if(d.allocated)pointers.push(d.pointer);}check(new Set(pointers).size===pointers.length,'registry別slotの同一object aliasは継続区間で未対応です');}
  const decoded=decodeEncounterStream(new Uint8Array(project.nitro.readFile('data/prm/encfld.bin'))),groups=decoded.groups.filter(g=>g.mapId===runtime.mapId);
  check(groups.length===1&&groups[0].conditions.every(n=>n===0),'ROMのmap/table runtime条件は未対応です');
  const rows=[],distributions={},romTableRows=[];
@@ -88,43 +106,53 @@ export function createFirstSpawnReplay({project,rom,kernel,fieldKernel,atKernel,
 }
 
 export class FirstSpawnReplay{
- constructor(input){Object.assign(this,input);this.scheduler=new FieldScheduler(input.fieldKernel);this.context=copy(input.context);this.parties=copy(input.parties);this.hero=this.parties[input.hero.slot];this.field=this.context.fields[input.field.index];this.seed=input.seed;this.timer=input.timer;this.consumed=0;this.events=[];this.heroTrace=[];this.actorTrace=[];this.actor=null;this.birth=null;this.stopped=false;this.status='ready';this.reason='';}
+ constructor(input){Object.assign(this,input);this.scheduler=new FieldScheduler(input.fieldKernel);this.context=copy(input.context);this.parties=copy(input.parties);this.hero=this.parties[input.hero.slot];this.field=this.context.fields[input.field.index];this.seed=input.seed;this.timer=input.timer;this.consumed=0;this.events=[];this.heroTrace=[];this.actors=new Map();this.actorTrace=[];this.actor=null;this.birth=null;this.births=[];this.generationCount=0;this.stopped=false;this.status='ready';this.reason='';}
  advance(){
   if(this.stopped)return false;
   const next=this.advanceSpawn();
   if(!this.continueNewborn||(!next&&this.status!=='created')||!this.creation)return next;
-  const row=this.events.at(-1),sample=this.steps[row.index];this.stopped=false;
-  const stop=(reason,status='unresolved')=>{this.status=status;this.reason=reason;this.stopped=true;Object.assign(row,{status,reason,invocationResolved:false});return false;};
+  const row=this.events.at(-1),sample=this.steps[row.index];this.stopped=false;row.bodies=[];row.environments=[];row.phaseOrder=['spawn'];
+  const stop=(reason,status='unresolved')=>{this.refreshPrimary();this.status=status;this.reason=reason;this.stopped=true;Object.assign(row,{status,reason,seed:this.seed,invocationResolved:false});return false;};
   try{
-   if(!this.actor){
-    const a=this.creation.actor,slot=this.context.inventory.slots.find(s=>s.slot===a.registryIndex);
-    check(uint(slot?.e0Byte,255),'pre-reset raw e0 byteが不明です');
-    this.actor={...copy(a),e0:slot.e0Byte&0xc0,c1:0,c2:0,cooldownByte:0,delayWord:0,correctionSpeed:0,gravity:0,turnRate:804,targetSpeed:450,acceleration:40,verticalVelocity:0,verticalLimit:0,verticalCounter:0,currentSeed:this.seed,routeMode:a.ai138to13c[0],speedMode:a.ai138to13c[1],detectionMode:a.ai138to13c[2],alertFlag:0,blockFlag:0,field17a:0,targetXYZ:[0,0,0],selectedComponentFamily:['null','bound-type1']};
-    this.identity={slot:a.registryIndex,pointer:slot.pointer,generationId:'derived-first-birth:1'};
-    this.field.creationCounter=this.creation.fieldCreationCounterAfter;
-    this.context.serialContext.counter=this.creation.serialCounterAfter;
-    const serial=this.context.serialContext.slots.find(s=>s.slot===a.registryIndex);serial.serial=a.serial;serial.rawHeader=a.header;
-    this.actorTrace.push([...a.xyz]);this.syncActor();
-   }
+   if(this.pendingCreation){this.addCreatedActor(this.pendingCreation,row.index);this.pendingCreation=null;}
    Object.assign(this.hero,{xyz:[...sample.postHero.xyz],angle:sample.postHero.angle,nodeIndex:sample.postHero.nodeIndex});
-   this.actor.currentSeed=this.seed;const binding=this.creation.animationBinding;
-   const bodyContext={tickReached:true,globalWord:this.context.globalWord,managerMapId:this.field.mapId,clock:sample.actorClock,visualBindingValidated:this.creation.creationProjectionResolved,animationComponents:{complete:true,headPointer:binding.componentListPointer,records:binding.records},derivedCreationProof:this.creation,parties:this.parties,fieldPresent:true,fieldMapId:this.field.mapId,fieldFlags:this.field.flags,tableBindingVerified:true,graphBindingVerified:true,graph:this.graph,inventory:this.context.inventory,tableRows:this.rows,terrain:this.context.terrain};
-   const body=this.actor.state===0?stepNewbornState0(this.kernel,this.actor,bodyContext):this.kernel.step(this.actor,bodyContext,this.fieldKernel);
-   if(!body.resolved){const n=body.minimumATConsumed;if(Number.isInteger(n)&&n>0){this.seed=this.atKernel.seedAt(this.seed,BigInt(n));this.consumed+=n;row.consumed+=n;row.seed=this.seed;row.body={resolved:false,knownATPrefix:n};}return stop(body.reason);}
-   this.actor=body.nextState;this.actorPhase={index:row.index,phase:'body'};this.seed=body.nextATSeed;this.consumed+=body.atConsumed;row.consumed+=body.atConsumed;row.body={xyz:[...this.actor.xyz],state:this.actor.state,timer:this.actor.stateTimer,counter:this.actor.updateCounter,atConsumed:body.atConsumed};this.syncActor();
-   const id=this.identity,lookup={known:true,...id};
-   const life=projectMonsterOuterReset(this.actor,{afterTickReached:true,globalWord:this.context.globalWord,fieldGroupFlags:this.field.flags,groupIndex:this.group,managerMapId:this.field.mapId,identity:id,typedMonsterLookup:lookup,parties:this.parties});
-   if(!life.resolved)return stop(life.reason);
-   row.lifetime=life.outcome;
-   if(life.outcome!=='retain')return stop('生成actorの寿命終了。最後の位置で停止します','reset');
-   const ground=this.kernel.walkingPass(this.actor,{...this.environment,identity:id,typedMonsterLookup:lookup,terrain:this.context.terrain});
-   if(!ground.resolved)return stop(ground.reason);
-   check(ground.atConsumed===0,'walkingの追加AT消費は未対応です');this.actor=ground.nextState;this.actorPhase={index:row.index,phase:'walking'};this.syncActor();this.actorTrace.push([...this.actor.xyz]);row.environment={xyz:[...this.actor.xyz],e0:this.actor.e0,atConsumed:0};row.actor={xyz:[...this.actor.xyz],state:this.actor.state,timer:this.actor.stateTimer,counter:this.actor.updateCounter};row.seed=this.seed;
-   this.status='running';this.reason=`生成後state${this.actor.state}のbody→寿命→接地を計算`;
-   Object.assign(row,{status:this.status,reason:this.reason});return !this.stopped;
+   // Native group order: every body/lifetime pair first, then the separate
+   // environment traversal. Walking actor1 before body2 would change inputs.
+   for(const slot of this.context.inventory.slots.filter(s=>s.slot>=112+12*this.group&&s.slot<124+12*this.group)){
+    if(!slot.pointer||!(slot.headerFlags&32)||(slot.actorFlags&1))continue;
+    const e=this.actors.get(slot.slot);check(e,'active natural actor has no derived generation');
+    const a=e.actor,binding=e.creation.animationBinding;a.currentSeed=this.seed;
+    const ctx={tickReached:true,globalWord:this.context.globalWord,managerMapId:this.field.mapId,clock:sample.actorClock,visualBindingValidated:e.creation.creationProjectionResolved,animationComponents:{complete:true,headPointer:binding.componentListPointer,records:binding.records},derivedCreationProof:e.creation,parties:this.parties,fieldPresent:true,fieldMapId:this.field.mapId,fieldFlags:this.field.flags,tableBindingVerified:true,graphBindingVerified:true,graph:this.graph,inventory:this.context.inventory,tableRows:this.rows,terrain:this.context.terrain};
+    row.phaseOrder.push(`body:${slot.slot}`);
+    const body=a.state===0?stepNewbornState0(this.kernel,a,ctx):this.kernel.step(a,ctx,this.fieldKernel);
+    if(!body.resolved){const n=body.minimumATConsumed;if(Number.isInteger(n)&&n>0){this.seed=this.atKernel.seedAt(this.seed,BigInt(n));this.consumed+=n;row.consumed+=n;row.seed=this.seed;const prefix={slot:slot.slot,resolved:false,knownATPrefix:n};row.bodies.push(prefix);if(slot.slot===this.birth.slot)row.body=prefix;}return stop(`slot${slot.slot}: ${body.reason}`);}
+    e.actor=body.nextState;e.phase={index:row.index,phase:'body'};this.seed=body.nextATSeed;this.consumed+=body.atConsumed;row.consumed+=body.atConsumed;
+    const b={slot:slot.slot,xyz:[...e.actor.xyz],state:e.actor.state,timer:e.actor.stateTimer,counter:e.actor.updateCounter,atConsumed:body.atConsumed};row.bodies.push(b);if(slot.slot===this.birth.slot)row.body=b;this.syncActor(e);
+    row.phaseOrder.push(`lifetime:${slot.slot}`);
+    const life=projectMonsterOuterReset(e.actor,{afterTickReached:true,globalWord:this.context.globalWord,fieldGroupFlags:this.field.flags,groupIndex:this.group,managerMapId:this.field.mapId,identity:e.identity,typedMonsterLookup:{known:true,...e.identity},parties:this.parties});
+    if(!life.resolved)return stop(`slot${slot.slot}: ${life.reason}`);b.lifetime=life.outcome;if(slot.slot===this.birth.slot)row.lifetime=life.outcome;
+    if(life.outcome!=='retain')return stop(`slot${slot.slot}: 寿命終了。最後の位置で停止します`,'reset');
+   }
+   for(const slot of this.context.inventory.slots){
+    if(!slot.pointer||!(slot.headerFlags&32)||(slot.monsterIdRaw&0x8000))continue;
+    const e=this.actors.get(slot.slot);check(e,'environment actor has no derived generation');row.phaseOrder.push(`walking:${slot.slot}`);
+    const ground=this.kernel.walkingPass(e.actor,{...this.environment,identity:e.identity,typedMonsterLookup:{known:true,...e.identity},terrain:this.context.terrain});
+    if(!ground.resolved)return stop(`slot${slot.slot}: ${ground.reason}`);
+    check(ground.atConsumed===0,'walkingの追加AT消費は未対応です');e.actor=ground.nextState;e.phase={index:row.index,phase:'walking'};this.syncActor(e);e.trace.push([...e.actor.xyz]);
+    const g={slot:slot.slot,xyz:[...e.actor.xyz],e0:e.actor.e0,atConsumed:0};row.environments.push(g);if(slot.slot===this.birth.slot)row.environment=g;
+   }
+   this.refreshPrimary();row.actor={xyz:[...this.actor.xyz],state:this.actor.state,timer:this.actor.stateTimer,counter:this.actor.updateCounter};row.seed=this.seed;
+   this.status='running';this.reason=`派生actor${this.actors.size}体のbody→寿命、全体の接地を計算`;Object.assign(row,{status:this.status,reason:this.reason});return true;
   }catch(error){return stop(error.message);}
  }
- syncActor(){const a=this.actor,s=this.context.inventory.slots.find(s=>s.slot===a.registryIndex);Object.assign(s,{headerFlags:a.header,monsterIdRaw:a.species,nativeSlot:a.registryIndex,mapId:a.mapId,actorFlags:a.actorFlags,nativeSerial:a.serial,tableId:a.tableId,nodeIndex:a.currentNodeIndex,xyz:[...a.xyz],e0Byte:a.e0,generationId:this.identity.generationId});}
+ addCreatedActor(creation,index){
+  const a=creation.actor,slot=this.context.inventory.slots.find(s=>s.slot===a.registryIndex);check(uint(slot?.e0Byte,255),'pre-reset raw e0 byteが不明です');check(!this.actors.has(a.registryIndex),'既存generationの置換は未対応です');
+  const actor={...copy(a),e0:slot.e0Byte&0xc0,c1:0,c2:0,cooldownByte:0,delayWord:0,correctionSpeed:0,gravity:0,turnRate:804,targetSpeed:450,acceleration:40,verticalVelocity:0,verticalLimit:0,verticalCounter:0,currentSeed:this.seed,routeMode:a.ai138to13c[0],speedMode:a.ai138to13c[1],detectionMode:a.ai138to13c[2],alertFlag:0,blockFlag:0,field17a:0,targetXYZ:[0,0,0],selectedComponentFamily:['null','bound-type1']};
+  const e={actor,creation,identity:{slot:a.registryIndex,pointer:slot.pointer,generationId:`derived-birth:${++this.generationCount}`},trace:[[...a.xyz]],phase:{index,phase:'creation'}};this.actors.set(a.registryIndex,e);
+  this.field.creationCounter=creation.fieldCreationCounterAfter;this.context.serialContext.counter=creation.serialCounterAfter;const serial=this.context.serialContext.slots.find(s=>s.slot===a.registryIndex);serial.serial=a.serial;serial.rawHeader=a.header;this.syncActor(e);this.refreshPrimary();
+ }
+ refreshPrimary(){const e=this.actors.get(this.birth?.slot);if(e){this.actor=e.actor;this.actorPhase=e.phase;this.actorTrace=e.trace;this.identity=e.identity;}}
+ syncActor(e){const a=e.actor,s=this.context.inventory.slots.find(s=>s.slot===a.registryIndex);Object.assign(s,{headerFlags:a.header,monsterIdRaw:a.species,nativeSlot:a.registryIndex,mapId:a.mapId,actorFlags:a.actorFlags,nativeSerial:a.serial,tableId:a.tableId,nodeIndex:a.currentNodeIndex,xyz:[...a.xyz],e0Byte:a.e0,generationId:e.identity.generationId});}
  advanceSpawn(){
   if(this.stopped)return false;
   const sample=this.steps[this.events.length];
@@ -141,6 +169,10 @@ export class FirstSpawnReplay{
    // Obtain the selected node using the original seed/timer. Refinements below
    // rerun this immutable invocation; none commits its draws twice.
    if(this.fieldKernel.e.field_spawn_timer(original.timer,sample.delta)>=1000&&allocation.freeSlot>=0){
+    const near=[];for(const s of this.context.inventory.slots.filter(s=>s.slot>=112+12*this.group&&s.slot<124+12*this.group)){const d=describeInventorySlot(s);check(d.allocated!==null&&d.active!==null,'member proximity inventory is unknown');if(!d.allocated||!d.active)continue;check(xyz(d.xyz),'active actor XYZ is unknown');if(d.xyz.every((v,i)=>v>=((this.hero.xyz[i]-[61440,2048,61440][i])|0)&&v<=((this.hero.xyz[i]+[61440,6144,61440][i])|0)))near.push(s.slot);}
+    row.nearbyActorSlots=near;
+    if(near.length>=3)input.attempts=[{memberId:-1}];
+    else{
     const query=queryPreferredFieldNode({queryReached:true,player:{position:this.hero.xyz,angle:this.hero.angle,nodeIndex:this.hero.nodeIndex,graphEnabled:sample.hero.graphEnabled},graph:this.graph,inventory:this.context.inventory,fieldFlags:this.field.flags,trig:this.trig});
     if(!query.resolved)return finish('unresolved',query.reason);
     input.attempts=[{memberId:this.hero.slot,direction:{nodeIds:query.nodeIds,dots:query.dots}},{memberId:-1}];
@@ -152,18 +184,19 @@ export class FirstSpawnReplay{
      row.candidateXYZ=geometry.point?[...geometry.point]:null;
      Object.assign(input.attempts[0],{geometryEligible:geometry.geometryEligible,areaMask:geometry.areaMask});
     }
+    }
    }
    result=this.scheduler.step(original,input,this.distributions);
    row.monsterId=result.monsterId??null;row.tableId=result.tableId??null;
    if(!result.resolved&&result.reason==='creation-result-unknown'){
-    if(this.creation)return finish('unresolved','2体目の生成はこの単一newborn区間の対象外です');
     const context={...this.context,heroXYZ:[...this.hero.xyz]};
     creation=projectMonsterCreation({mapId:this.field.mapId,species:result.monsterId,tableId:result.tableId,nodeId:row.selectedNodeId,candidateXYZ:row.candidateXYZ,routeFlags:0},context,this.kernel);
     if(!creation.resolved)return finish('unresolved',creation.reason);
+    if(this.continueNewborn&&creation.created&&!futureCreatorInputsRemainStable(this.context,this.field,this.parties,creation))return finish('unresolved','creator writes alias a later runtime dependency; continuation cannot keep stale primitives');
     if(creation.atConsumed!==0)return finish('unresolved','creatorの追加AT消費は未対応です');
     const prefix=result;result=this.scheduler.step(original,{...input,creationResult:creation.result},this.distributions);
     check(result.resolved&&result.consumed===prefix.consumed&&JSON.stringify(result.events)===JSON.stringify(prefix.events),'original-state refinement changed AT events');
-    if(creation.created){this.creation=creation;this.birth=row.birth={xyz:[...creation.actor.xyz],species:creation.actor.species,slot:creation.actor.registryIndex,serial:creation.actor.serial};return finish('created','最初の生成を計算。生成後の移動・他consumerはこのsliceの対象外です');}
+    if(creation.created){this.creation??=creation;this.pendingCreation=creation;row.birth={xyz:[...creation.actor.xyz],species:creation.actor.species,slot:creation.actor.registryIndex,serial:creation.actor.serial};this.birth??=row.birth;this.births.push({...copy(row.birth),index:row.index});return finish('created','生成を計算。追加更新は明示した継続条件のみ適用します');}
     return finish('rejected',`creatorが0を返す条件付き生成失敗で停止: ${creation.reason}`);
    }
    return finish(result.resolved?'running':'unresolved',result.reason);

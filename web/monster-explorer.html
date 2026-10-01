@@ -11,8 +11,8 @@
 <header><h1>モンスター移動・条件付き実験</h1><a href="index.html">ATナビへ</a></header>
 <main>
 <section class="notice" aria-label="対応範囲">
-<strong>7402・1 actor の仮想テスト構成。実ゲームの現在状態・全世界は不明です</strong>
-<p>ROMのグラフ・trig / atan・COL2を使い、C/WASMの数値モデルを実行します。下の1 actor実験とは別に、完全な初期runtimeとpre-spawn軌跡を指定した最初の自然生成までを計算できます。生成後の全世界、入力操作の復元、実フレーム順、戦闘・警戒は未対応です。</p>
+<strong>7402の条件付き実験。実ゲームの現在状態・全世界は不明です</strong>
+<p>ROMのグラフ・trig / atan・COL2を使い、C/WASMの数値モデルを実行します。手動1actor実験とは別に、初期runtimeとphaseごとの軌跡から自然生成と対応済み移動を計算します。生成後の全世界、入力操作の復元、実フレーム順、戦闘・警戒は未対応です。</p>
 </section>
 <section class="toolbar">
 <label>自分の日本語版DQ9 revision 0 NDS<input id="rom" type="file" accept=".nds"></label>
@@ -78,7 +78,7 @@
 <details><summary>条件のローカル保存・読込</summary><p>このページの初期設定だけを保存します。ROM・画像・生RAM・観測次状態・軌跡は含みません。</p><button id="export-config" type="button" disabled>設定JSONを保存</button><label>設定JSONを読む<input id="import-config" type="file" accept=".json,application/json" disabled></label></details>
 </section>
 <section class="experiment">
-<details id="first-spawn-section"><summary>条件付き自然生成：軌跡から最初の1体まで</summary>
+<details id="first-spawn-section"><summary>条件付き自然生成：軌跡から派生actorの移動まで</summary>
 <p>map7402・初期12枠が登録済み未使用・単一eligible party・外部ATなしの条件に限定します。座標はpre-spawn時点の有効XYZと実向きです。映像マーカーからphase・向き・操作キーを自動推定しません。</p>
 <p id="spawn-replay-inputs">初期runtimeと軌跡が未入力です。</p>
 <label>初期runtime JSON（8MiB以下）<input id="spawn-replay-runtime" type="file" accept=".json,application/json" disabled></label>
@@ -88,9 +88,9 @@
 <label class="check"><input id="spawn-replay-declared" type="checkbox">この初期runtimeと軌跡を条件付き仮説として実行する</label>
 <div class="actions"><button id="spawn-replay-start" type="button" disabled>seedから初期化</button><button id="spawn-replay-step" type="button" disabled>1段階</button><button id="spawn-replay-ten" type="button" disabled>10段階</button><button id="spawn-replay-run" type="button" disabled>最初の生成 / 未解決まで</button><button id="spawn-replay-cancel" type="button" disabled>停止</button><button id="spawn-replay-reset" type="button" disabled>やり直す</button></div>
 <p id="spawn-replay-status" role="status">初期runtimeと軌跡が未入力です。</p><pre id="spawn-replay-log"></pre>
-<p class="muted">初期seedは途中状態でも指定できます。現在映像のAT状態や起動からの総消費を証明しません。通常は最初のcreator呼出で停止。追加更新はbody→寿命→接地。2体目生成/寿命終了/未解決で停止します。生RAM・観測済み次状態は読み込みません。</p>
+<p class="muted">初期seedは途中状態でも指定できます。現在映像のAT状態や起動からの総消費を証明しません。通常は最初のcreator呼出で停止。追加更新はbody→寿命→接地。軌跡終端/寿命終了/未解決で停止します。生RAM・観測済み次状態は読み込みません。</p>
 </details>
-<h2>3. モデルを実行</h2>
+<h2>3. 手動1actor実験</h2>
 <p id="readiness" role="status">NDSを読み込み、初期条件を指定してください。</p>
 <div class="actions">
 <button id="step-ai" type="button" disabled>AI 1回</button><button id="step-ai10" type="button" disabled>AI 10回</button>
@@ -103,7 +103,7 @@
 <div class="canvas-wrap"><canvas id="map" width="800" height="520" aria-label="ROMグラフとモデルが計算したXZ・実向き"></canvas></div>
 <label class="check"><input id="overlay" type="checkbox" checked>ROMマップ背景（7402の限定範囲で対応確認、全域保証なし）</label>
 <p id="canvas-note" class="muted">グラフ表示：モンスターの経路。プレイヤーの歩行領域ではありません。</p>
-<dl id="readout"><dt>モデル状態</dt><dd>未初期化</dd></dl>
+<dl id="readout"><dt>手動1actor状態</dt><dd>未初期化</dd></dl>
 <section class="notice compact"><strong>常に未解決：world全体 / 実機AT下限</strong><p id="scope">表示ATはこの条件付き実験のprefixです。実機の総AT・生成抑制・安全性の保証には使えません。</p></section>
 <h3>適用中の仮説 / 未解決境界</h3><ul id="assumptions"><li>未初期化</li></ul>
 <h3>計算ログ（最新200段階）</h3><p class="muted">位置はモデルが返した結果のみ。補間アニメーションや後続観測は使いません。</p>

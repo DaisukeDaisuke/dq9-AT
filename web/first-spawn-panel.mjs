@@ -20,6 +20,7 @@ export function setupFirstSpawnPanel({document,getInputs,redraw,eventTarget=glob
   if(session){
    const last=session.events.at(-1),birth=session.birth;
    message(`${session.status}: ${session.events.length} 段階 / 条件付きAT prefix ${session.consumed} / prefix seed ${hex(session.seed)} / timer ${session.timer}\n${session.status==='unresolved'?'未解決段階の途中までの既知prefixです。呼出完了・実機の現在seedではありません。\n':''}${birth?`生成 species ${birth.species}, slot ${birth.slot}, XYZ ${birth.xyz.join(', ')}\n`:''}${session.actor?`最後の計算actor（段階${(session.actorPhase?.index??-1)+1}/${session.actorPhase?.phase??'unknown'}）: state ${session.actor.state}, body ${session.actor.updateCounter}回, XYZ ${session.actor.xyz.join(', ')}\n`:''}${session.reason||'pre-spawn入力を順に適用中'}${last?.sourceFrame!==null&&last?.sourceFrame!==undefined?`\n入力のsourceFrame ${last.sourceFrame}（呼出回数ではありません）`:''}`);
+   if(session.actors?.size>1)$('spawn-replay-status').textContent+='\n派生actor '+session.actors.size+'体\n'+[...session.actors.values()].map(e=>`slot${e.identity.slot} / species${e.actor.species} / serial${e.actor.serial} / state${e.actor.state} / XYZ[${e.actor.xyz}] / 段階${e.phase.index+1}/${e.phase.phase}`).join('\n');
    $('spawn-replay-log').textContent=session.events.slice(-200).map(e=>`${e.index}: hero[${e.heroXYZ}] → node ${e.selectedNodeId??'?'} / species ${e.monsterId??'?'} / AT+${e.consumed} / ${hex(e.seed)} / ${e.reason}`).join('\n');
   }else $('spawn-replay-log').textContent='';
  }
@@ -74,8 +75,9 @@ export function setupFirstSpawnPanel({document,getInputs,redraw,eventTarget=glob
    if(!session)return false;const point=p=>[transform.x+p[0]/4096*transform.scale,transform.z+p[2]/4096*transform.scale];
    ctx.strokeStyle='#ef9fbd';ctx.lineWidth=2;ctx.beginPath();session.heroTrace.forEach((p,i)=>{const q=point(p);i?ctx.lineTo(...q):ctx.moveTo(...q);});ctx.stroke();
    const last=session.heroTrace.at(-1);if(last){const[x,z]=point(last);ctx.fillStyle='#ef9fbd';ctx.fillRect(x-4,z-4,8,8);ctx.fillText('hero input',x+7,z);}
-   if(session.birth){const[x,z]=point(session.birth.xyz);ctx.fillStyle='#58efd1';ctx.beginPath();ctx.arc(x,z,6,0,Math.PI*2);ctx.fill();ctx.fillText(`species ${session.birth.species}`,x+8,z);}
-   if(session.actorTrace?.length){ctx.strokeStyle='#58efd1';ctx.beginPath();session.actorTrace.forEach((p,i)=>{const q=point(p);i?ctx.lineTo(...q):ctx.moveTo(...q);});ctx.stroke();}
+   if(session.birth&&!session.actors?.size){const[x,z]=point(session.birth.xyz);ctx.fillStyle='#58efd1';ctx.beginPath();ctx.arc(x,z,6,0,Math.PI*2);ctx.fill();ctx.fillText(`species ${session.birth.species}`,x+8,z);}
+   if(session.actors?.size){let index=0;for(const e of session.actors.values()){const color=['#58efd1','#ffd679','#b1a0ff','#ffb1c8'][index++%4];ctx.strokeStyle=color;ctx.beginPath();e.trace.forEach((p,i)=>{const q=point(p);i?ctx.lineTo(...q):ctx.moveTo(...q);});ctx.stroke();const[x,z]=point(e.actor.xyz);ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,z,5,0,Math.PI*2);ctx.fill();ctx.fillText(`${e.identity.slot}: species${e.actor.species}`,x+7,z+12);}}
+   else if(session.actorTrace?.length){ctx.strokeStyle='#58efd1';ctx.beginPath();session.actorTrace.forEach((p,i)=>{const q=point(p);i?ctx.lineTo(...q):ctx.moveTo(...q);});ctx.stroke();}
    return true;
   }
  };
