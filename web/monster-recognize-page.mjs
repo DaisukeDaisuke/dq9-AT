@@ -1,5 +1,6 @@
 /* Local-only experimental UI. The scoring worker owns ROM parsing and rendering. */
 import { getFieldExclusion } from './monster-field-mask.mjs';
+import { proposeEnemyROIs } from './monster-position-proposals.mjs';
 export const LIMITS = Object.freeze({ romBytes: 512 * 1024 * 1024, sourceSide: 4096, roiSide: 1024, models: 4 });
 export const DEFAULT_MODELS = Object.freeze(['z019b', 'z021a', 'z064a', 'z000c']);
 export const CENTER_MASK = Object.freeze({ x: .42, y: .36, w: .16, h: .24 });
@@ -119,7 +120,7 @@ export class RecognitionWorkerClient {
   }
 }
 
-export function mountRecognitionPage(document, window, { ensureInferenceAssets = defaultEnsureInferenceAssets, probeWebGPU = defaultProbeWebGPU, clearFeatureCache = defaultClearFeatureCache } = {}) {
+export function mountRecognitionPage(document, window, { ensureInferenceAssets = defaultEnsureInferenceAssets, probeWebGPU = defaultProbeWebGPU, clearFeatureCache = defaultClearFeatureCache, proposeROIs = proposeEnemyROIs } = {}) {
   const $ = id => document.getElementById(id);
   const video = $('source-video'); const view = $('frozen-view'); const viewCtx = view.getContext('2d');
   const frozen = document.createElement('canvas'); const frozenCtx = frozen.getContext('2d', { willReadFrequently: true });
@@ -128,6 +129,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
   const state = {
     romFile: null, romEpoch: 0, sourceEpoch: 0, sourceId: null, sourceURL: null, sourceKind: null, image: null,
     sourceReady: false, timelineSegment: 0, frameSerial: 0, capture: null, roi: null, catalog: [], selected: new Set(DEFAULT_MODELS),
+    proposalResult: null, selectedProposalId: null,
     busy: false, loading: false, loadPromise: null, lastResult: null, sequence: 0, drag: null, drawMode: true, disposed: false, assetAbort: null, clearingCache: false,
   };
   const client = new RecognitionWorkerClient({ onProgress: message => {
@@ -174,6 +176,86 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     const issue = configurationIssue(); $('configuration-error').textContent = issue; $('configuration-error').hidden = !issue;
     $('gameplay-fields').hidden = $('gameplay-layout').value !== 'manual'; $('gameplay-fields').disabled = !state.capture;
     updateSceneView();
+    const proposalProblem = proposalIssue();
+    $('generate-roi-proposals').disabled = !!proposalProblem || state.busy || state.loading || state.clearingCache;
+    if ($('enable-roi-proposals').checked && proposalProblem && !state.proposalResult) $('proposal-status').textContent = proposalProblem;
+    $('clear-roi-proposals').disabled = !state.proposalResult;
+  }
+  function proposalIssue() {
+    if (state.disposed) return 'ページを読み直してください。';
+    if (!$('enable-roi-proposals').checked) return '領域候補を使う場合は、実験のチェックを入れてください。';
+    if (!state.capture) return '先に動画のフレームを固定するか画像を開いてください。';
+    try {
+      const scene = sceneContext();
+      if (scene.kind !== 'field') return 'フィールドであると明示指定してください。';
+      if (!scene.excludeCenter) return '領域候補を使うには、上の中央除外を有効にしてください。';
+      if (Math.abs(scene.gameplayROI.w / scene.gameplayROI.h - 4 / 3) >= .04) return '4:3のゲーム画面の範囲を指定してください。';
+    } catch (failure) { return failure.message; }
+    return '';
+  }
+  function proposalsMatchCapture() {
+    if (!state.proposalResult || !state.capture) return false;
+    try {
+      const saved = state.proposalResult.captureStamp;
+      return stampEquals(saved, { ...currentStamp(), enemyROI: saved.enemyROI, featureMethod: saved.featureMethod, inferenceBackend: saved.inferenceBackend });
+    } catch { return false; }
+  }
+  function clearProposals(message = '任意の実験です。手動の範囲指定もそのまま使えます。') {
+    state.proposalResult = null; state.selectedProposalId = null;
+    $('roi-proposal-list').replaceChildren(); $('proposal-status').textContent = message;
+  }
+  function renderProposals() {
+    const list = $('roi-proposal-list'); list.replaceChildren();
+    if (!proposalsMatchCapture()) return;
+    const sourceSet = state.proposalResult;
+    for (const [index, proposal] of sourceSet.proposals.entries()) {
+      const r = proposal.roi, button = makeElement('button', `候補 ${index + 1} · 未確認`);
+      button.type = 'button'; button.disabled = proposal.classificationEligible === false; button.setAttribute('aria-pressed', String(state.selectedProposalId === proposal.proposalId));
+      button.setAttribute('data-proposal-id', proposal.proposalId);
+      button.append(makeElement('small', `x ${r.x}, y ${r.y} · ${r.w} × ${r.h} px${proposal.classificationEligible === false ? ' · サイズ上限のため未処理（手動で調整）' : ''}`));
+      button.addEventListener('click', () => selectProposal(proposal.proposalId, sourceSet)); list.append(button);
+    }
+  }
+  function generateProposals() {
+    const issue = proposalIssue();
+    if (issue) { error(issue); $('proposal-status').textContent = issue; return; }
+    if (state.busy || state.loading || state.clearingCache) return;
+    invalidate('', { clearProposalSet: true }); error();
+    try {
+      const captureStamp = cloneCaptureStamp(currentStamp());
+      const image = { width: frozen.width, height: frozen.height, rgba: frozenCtx.getImageData(0, 0, frozen.width, frozen.height).data };
+      const result = proposeROIs(image, captureStamp, { profile: 'shrine-blue-v1', excludeCommandHUD: true, maxProposals: 8 });
+      if (!stampEquals(result.captureStamp, captureStamp)) throw new Error('領域候補の固定画像情報が一致しないため破棄しました。');
+      // Keep over-limit suggestions visible but unprocessed; never allocate their classifier crops.
+      const valid = []; let invalidBounds = 0;
+      for (const candidate of result.proposals ?? []) {
+        const r = candidate.roi, frame = captureStamp.sourceFrame;
+        if (!r || !['x','y','w','h'].every(key => Number.isInteger(r[key])) || r.x < 0 || r.y < 0 || r.w < 1 || r.h < 1 || r.x + r.w > frame.width || r.y + r.h > frame.height) { invalidBounds++; continue; }
+        const classificationEligible = r.w <= LIMITS.roiSide && r.h <= LIMITS.roiSide && r.w * r.h <= LIMITS.roiSide ** 2;
+        valid.push({ ...candidate, roi: { ...r }, classificationEligible });
+        if (valid.length === 8) break;
+      }
+      const { trackingFrame, ...summary } = result;
+      state.proposalResult = { ...summary, proposals: valid, captureStamp };
+      renderProposals(); paint(); controls();
+      const milliseconds = Number.isFinite(result.elapsedMs) ? `${result.elapsedMs.toFixed(1)} ms` : '時間不明';
+      const unprocessed = valid.filter(p => !p.classificationEligible).length;
+      const omittedNote = `${unprocessed ? ` ${unprocessed}件はサイズ上限のため未処理です。手動で範囲を調整してください。` : ''}${invalidBounds ? ` 範囲不正${invalidBounds}件は表示しません。` : ''}`;
+      $('proposal-status').textContent = valid.length ? `${valid.length}候補 · CPU領域探索 ${milliseconds}（分類時間は別）。候補を1つ選んでから照合してください。枠は未確認です。${omittedNote}` : `領域候補は0件でした（CPU領域探索 ${milliseconds}）。敵がいない証拠ではありません。手動で範囲を指定できます。`;
+      status('固定した画像だけの領域候補を表示しました。分類はまだ行っていません。');
+    } catch (failure) {
+      clearProposals('領域候補を作れませんでした。手動の範囲指定は使えます。'); error(failure.message); paint(); controls();
+    }
+  }
+  function selectProposal(proposalId, sourceSet = state.proposalResult) {
+    if (sourceSet !== state.proposalResult) return;
+    if (!proposalsMatchCapture()) { clearProposals('画像や場面が変わりました。領域候補を作り直してください。'); paint(); controls(); return; }
+    const proposal = state.proposalResult.proposals.find(item => item.proposalId === proposalId);
+    if (!proposal) return;
+    if (proposal.classificationEligible === false) { error('この候補はサイズ上限のため未処理です。1024×1024 px以内へ手動で範囲を調整してください。'); return; }
+    error(); setROI(proposal.roi, { proposalId });
+    $('proposal-status').textContent = `選んだ領域は未確認です。切り抜きを確認し、既存の「この切り抜きを照合」を押してください。`;
+    status('領域候補を切り抜きに設定しました。分類はまだ行っていません。');
   }
   function clearResults() {
     state.lastResult = null; $('rankings').replaceChildren(); $('coverage-section').hidden = true; $('result-empty').hidden = false;
@@ -181,17 +263,19 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     $('result-timing').textContent = '';
     $('unknown-status').textContent = '候補外・判別不能の可能性を常に残します。照合後も、順位だけで種類を確定しないでください。';
   }
-  function invalidate(reason, { terminate = state.busy, clear = true } = {}) {
+  function invalidate(reason, { terminate = state.busy, clear = true, clearProposalSet = false } = {}) {
     gate.invalidate();
     state.assetAbort?.abort(); state.assetAbort = null;
     if (terminate) { client.terminate(); state.loadPromise = null; state.loading = false; }
     state.busy = false;
     if (clear) clearResults();
+    if (clearProposalSet) clearProposals();
     $('progress').max = 1; $('progress').value = 0;
     if (reason) status(reason);
     controls();
   }
   function dropCapture() {
+    clearProposals();
     state.capture = null; state.roi = null; state.drag = null; state.drawMode = true;
     frozen.width = 0; frozen.height = 0; view.width = 640; view.height = 360;
     viewCtx.clearRect(0, 0, view.width, view.height); $('frozen-wrap').classList.add('empty'); $('frozen-placeholder').hidden = false;
@@ -230,6 +314,16 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
       if (exclusion.enabled && exclusion.mask) { const mask = exclusion.mask; viewCtx.fillStyle = 'rgba(244, 181, 85, .34)'; viewCtx.fillRect(mask.x, mask.y, mask.w, mask.h); viewCtx.strokeStyle = '#ffc878'; viewCtx.strokeRect(mask.x, mask.y, mask.w, mask.h); }
       viewCtx.restore();
     } catch { /* Invalid manual geometry is explained next to its fields. */ }
+    if (proposalsMatchCapture()) {
+      const scale = Math.max(1, view.width / Math.max(1, view.getBoundingClientRect().width));
+      viewCtx.save(); viewCtx.lineWidth = 2 * scale; viewCtx.font = `${14 * scale}px system-ui`;
+      for (const [index, proposal] of state.proposalResult.proposals.entries()) {
+        const r = proposal.roi; viewCtx.strokeStyle = state.selectedProposalId === proposal.proposalId ? '#bcffe9' : '#ffc878';
+        viewCtx.strokeRect(r.x, r.y, r.w, r.h); viewCtx.fillStyle = viewCtx.strokeStyle;
+        viewCtx.fillText(String(index + 1), r.x + 2 * scale, Math.max(16 * scale, r.y - 4 * scale));
+      }
+      viewCtx.restore();
+    }
   }
   function updateSceneView() {
     const field = $('scene-kind').value === 'field';
@@ -241,14 +335,14 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
       $('mask-status').textContent = exclusion.enabled ? `橙色の中央領域は未観測です。${exclusion.excluded ? '現在の敵範囲はここに重なるため、照合せず判別不能として扱います。' : '重なる敵範囲は照合しません。'}` : '中央除外は無効です。フィールドの明示指定とチェックの両方が必要です。';
     } catch (failure) { $('gameplay-bounds').textContent = failure.message; $('mask-status').textContent = 'ゲーム画面の範囲を修正してから中央領域を確認してください。'; }
   }
-  function setROI(rect, { invalidateResult = true } = {}) {
+  function setROI(rect, { invalidateResult = true, proposalId = null } = {}) {
     if (!state.capture) return;
     const roi = validateROI(rect, state.capture.sourceFrame);
     if (invalidateResult) invalidate('範囲を変更しました。この切り抜きで照合できます。');
-    state.roi = roi;
+    state.roi = roi; state.selectedProposalId = proposalId;
     for (const key of ['x', 'y', 'w', 'h']) $(`roi-${key}`).value = roi[key];
     state.drawMode = false; $('redraw-roi').textContent = '範囲を描き直す';
-    paint(); metadata(); controls();
+    renderProposals(); paint(); metadata(); controls();
   }
   function freeze() {
     if (!state.sourceReady) return;
@@ -257,7 +351,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     const width = state.sourceKind === 'video' ? video.videoWidth : state.image.naturalWidth;
     const height = state.sourceKind === 'video' ? video.videoHeight : state.image.naturalHeight;
     if (!width || !height || width > LIMITS.sourceSide || height > LIMITS.sourceSide) { error('固定する元画像は幅・高さとも4096 px以下にしてください。'); return; }
-    video.pause(); invalidate(); error();
+    video.pause(); invalidate('', { clearProposalSet: true }); error();
     frozen.width = width; frozen.height = height; frozenCtx.drawImage(source, 0, 0, width, height);
     view.width = width; view.height = height;
     state.capture = {
@@ -493,7 +587,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     const coverage = result.coverage || {}; const valueText = value => Array.isArray(value) ? `${value.length} (${value.map(item => typeof item === 'object' ? item.modelId || '' : item).join(', ')})` : value ?? '不明';
     $('coverage').textContent = `比較方法: ${dino ? 'DINOv2画像特徴（cosine類似度）' : '色ヒストグラム（距離）'} · 要求モデル: ${valueText(coverage.requestedModels)} · 比較できたモデル: ${valueText(coverage.completedModels)} · 生成した比較画像: ${coverage.renderedTemplates ?? '不明'}${coverage.scope ? ` · 範囲: ${typeof coverage.scope === 'string' ? coverage.scope : JSON.stringify(coverage.scope)}` : ''}`;
     $('unsupported').replaceChildren(...(coverage.unsupported || []).map(item => makeElement('li', `${item.modelId}: ${item.reason}`)));
-    $('limitations').replaceChildren(...['端末内で行う実験的な照合です。敵の範囲は手動で指定しています。', '順位は選択したモデルと生成できた姿勢の範囲だけで比較しています。候補外の敵は判別できません。', ...(result.cacheWarnings || []), ...(result.limitations || [])].map(text => makeElement('li', text)));
+    $('limitations').replaceChildren(...[state.selectedProposalId ? '端末内で行う実験的な照合です。未確認の領域候補を選び、元画像の切り抜きを比較しています。' : '端末内で行う実験的な照合です。敵の範囲は手動で指定しています。', '順位は選択したモデルと生成できた姿勢の範囲だけで比較しています。候補外の敵は判別できません。', ...(result.cacheWarnings || []), ...(result.limitations || [])].map(text => makeElement('li', text)));
     const stamp = result.captureStamp;
     $('result-capture').textContent = `固定画像 #${stamp.frameSerial} · ${stamp.videoTime === null ? '画像入力' : `動画 ${stamp.videoTime.toFixed(3)} 秒（概算）`} · 範囲 x ${stamp.enemyROI.x}, y ${stamp.enemyROI.y}, ${stamp.enemyROI.w} × ${stamp.enemyROI.h} px · ${stamp.capturedAt}`;
     const t = result.timings || {}; const seconds = n => `${((Number(n) || 0) / 1000).toFixed(1)}秒`;
@@ -510,16 +604,20 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
   for (const key of ['x', 'y', 'w', 'h']) $(`roi-${key}`).addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); $('apply-roi').click(); } });
   view.addEventListener('pointerdown', pointerDown); view.addEventListener('pointermove', pointerMove); view.addEventListener('pointerup', pointerEnd); view.addEventListener('pointercancel', pointerEnd);
   $('model-filter').addEventListener('input', renderCatalog);
-  function configurationChanged() { invalidate('比較方法・場面・探索設定を変更しました。表示した範囲と設定を確認して再照合してください。'); error(); paint(); metadata(); }
-  for (const id of ['variant', 'preset', 'feature-method', 'scene-kind', 'gameplay-layout', 'exclude-center']) $(id).addEventListener('change', configurationChanged);
+  function configurationChanged(clearProposalSet = false) { invalidate('比較方法・場面・探索設定を変更しました。表示した範囲と設定を確認して再照合してください。', { clearProposalSet }); error(); paint(); metadata(); }
+  for (const id of ['variant', 'preset', 'feature-method']) $(id).addEventListener('change', () => configurationChanged());
+  for (const id of ['scene-kind', 'gameplay-layout', 'exclude-center']) $(id).addEventListener('change', () => configurationChanged(true));
   $('inference-backend').addEventListener('change', () => { invalidate('AIの実行方式を変更しました。再照合時に専用Workerを読み直します。', { terminate: true }); error(); paint(); metadata(); });
-  for (const key of ['x', 'y', 'w', 'h']) $(`gameplay-${key}`).addEventListener('input', configurationChanged);
+  for (const key of ['x', 'y', 'w', 'h']) $(`gameplay-${key}`).addEventListener('input', () => configurationChanged(true));
   $('clear-feature-cache').addEventListener('click', async () => {
     if (state.clearingCache) return; invalidate('保存した姿勢特徴を消去しています。', { terminate: true }); error(); state.clearingCache = true; const revision = gate.revision; controls();
     try { await clearFeatureCache(); if (revision === gate.revision) status('保存した姿勢特徴を消去しました。次の照合では要求したバンクを再生成します。公開AIファイルのキャッシュは保持します。'); }
     catch (failure) { if (revision === gate.revision) error(`姿勢特徴を消去できませんでした: ${failure.message}`); }
     finally { state.clearingCache = false; controls(); }
   });
+  $('enable-roi-proposals').addEventListener('change', () => { invalidate('', { clearProposalSet: true }); error(); paint(); controls(); if ($('enable-roi-proposals').checked) $('proposal-status').textContent = proposalIssue() || '固定画像の領域候補を探せます。分類は候補を選んでから実行します。'; });
+  $('generate-roi-proposals').addEventListener('click', generateProposals);
+  $('clear-roi-proposals').addEventListener('click', () => { clearProposals('候補の枠を消しました。選択済みの切り抜きは手動で調整できます。'); paint(); controls(); });
   $('top-k').addEventListener('change', renderResults);
   $('start').addEventListener('click', () => recognize());
   $('restart').addEventListener('click', async () => {
@@ -532,7 +630,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
   });
   $('cancel').addEventListener('click', () => { invalidate('処理を中止しました。再照合すると、NDSを読み直して最初から実行します。', { terminate: true }); $('rom-status').textContent = state.romFile ? `${state.romFile.name} · 再照合時に再読込` : '未選択'; });
   window.addEventListener('resize', paint);
-  window.addEventListener('pagehide', () => { state.disposed = true; gate.invalidate(); state.assetAbort?.abort(); state.assetAbort = null; client.terminate(); releaseSource(); });
+  window.addEventListener('pagehide', () => { state.disposed = true; clearProposals(); gate.invalidate(); state.assetAbort?.abort(); state.assetAbort = null; client.terminate(); releaseSource(); });
   window.addEventListener('pageshow', event => {
     if (!event.persisted) return;
     state.disposed = false; state.loadPromise = null; state.loading = false;
@@ -540,7 +638,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     $('source-file').value = ''; $('source-status').textContent = '画像・動画を選び直してください';
   });
   controls();
-  return { state, gate, client, freeze, recognize, invalidate, selectROM, selectSource, setROI };
+  return { state, gate, client, freeze, recognize, invalidate, selectROM, selectSource, setROI, generateProposals, selectProposal };
 }
 
 if (typeof document !== 'undefined' && document.getElementById('rom-file')) mountRecognitionPage(document, window);

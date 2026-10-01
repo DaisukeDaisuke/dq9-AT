@@ -71,7 +71,7 @@ class Element {
   hasPointerCapture(id) { return this.pointer === id; }
   releasePointerCapture() { this.pointer = null; }
   getContext() {
-    if (!this.context) this.context = { snapshot: 0, clearRect() {}, save() {}, restore() {}, fillRect() {}, strokeRect() {}, putImageData() {}, drawImage(source) { this.snapshot = source.frameValue ?? source.context?.snapshot ?? 0; }, getImageData(x, y, width, height) { return { data: new Uint8ClampedArray(width * height * 4).fill(this.snapshot) }; }, createImageData(width, height) { return { data: new Uint8ClampedArray(width * height * 4) }; } };
+    if (!this.context) this.context = { snapshot: 0, clearRect() {}, save() {}, restore() {}, fillRect() {}, strokeRect() {}, fillText() {}, putImageData() {}, drawImage(source) { this.snapshot = source.frameValue ?? source.context?.snapshot ?? 0; }, getImageData(x, y, width, height) { return { data: new Uint8ClampedArray(width * height * 4).fill(this.snapshot) }; }, createImageData(width, height) { return { data: new Uint8ClampedArray(width * height * 4) }; } };
     return this.context;
   }
   pause() { this.paused = true; }
@@ -82,7 +82,10 @@ const html = await readFile(new URL('../web/monster-recognize.html', import.meta
 const elements = new Map([...html.matchAll(/<([a-z][\w-]*)\b[^>]*\bid="([^"]+)"[^>]*>/g)].map(match => [match[2], new Element(match[1])]));
 const doc = { getElementById: id => { assert(elements.has(id), `missing HTML element ${id}`); return elements.get(id); }, createElement: tag => new Element(tag) };
 let probeGPU = async () => ({}), clearLocalFeatures = async () => {}; let prepareInference = async () => ({}); const preparationCalls = [];
-const win = new Element('window'); const ui = mountRecognitionPage(doc, win, { probeWebGPU: options => probeGPU(options), clearFeatureCache: () => clearLocalFeatures(), ensureInferenceAssets: options => { preparationCalls.push(options); return prepareInference(options); } }); const el = id => elements.get(id);
+const proposalCalls = [];
+let proposalFactory = (image, captureStamp) => ({ captureStamp: cloneCaptureStamp(captureStamp), elapsedMs: 3, proposals: [{ proposalId: `${captureStamp.frameSerial}:0`, roi: { x: 40, y: 45, w: 50, h: 60 } }, { proposalId: `${captureStamp.frameSerial}:1`, roi: { x: 430, y: 80, w: 70, h: 90 } }], unknown: { suggested: true, calibrated: false } });
+const defaultProposalFactory = proposalFactory;
+const win = new Element('window'); const ui = mountRecognitionPage(doc, win, { proposeROIs: (image, captureStamp, options) => { proposalCalls.push({ firstPixel: image.rgba[0], captureStamp: cloneCaptureStamp(captureStamp), options }); return proposalFactory(image, captureStamp, options); }, probeWebGPU: options => probeGPU(options), clearFeatureCache: () => clearLocalFeatures(), ensureInferenceAssets: options => { preparationCalls.push(options); return prepareInference(options); } }); const el = id => elements.get(id);
 el('variant').value = '_f'; el('preset').value = 'quick'; el('top-k').value = '4';
 const uiWorkers = []; ui.client.factory = () => { const worker = new MockWorker(); uiWorkers.push(worker); return worker; };
 const catalog = [...DEFAULT_MODELS, 'z999x'].map(modelId => ({ modelId, speciesCandidates: [{ monsterId: 1, nameJa: `名前-${modelId}` }] }));
@@ -228,5 +231,78 @@ dinoJob=await beginScoring();dinoRequest=dinoJob.worker.messages.at(-1).message;
 check('clear requested vectors terminates active scoring and blocks restart until complete',()=>{assert(dinoJob.worker.terminated);assert(ui.state.clearingCache);assert(el('start').disabled);assert(el('clear-feature-cache').disabled);});resolveClear();await pendingClear;await dinoJob.completion;
 check('clear reports local feature removal without deleting public dependencies',()=>{assert(!ui.state.clearingCache);assert.match(el('status').textContent,/公開AIファイルのキャッシュは保持/);assert(!el('start').disabled);});
 clearLocalFeatures=async()=>{throw Error('cache unavailable');};await el('clear-feature-cache').click();check('cache clear failure is visible and does not claim success',()=>{assert.match(el('error').textContent,/cache unavailable/);assert(!el('clear-feature-cache').disabled);});
+
+// Opt-in frozen-frame region suggestions, using the exact existing classification client.
+Object.assign(video, { videoWidth: 640, videoHeight: 480, currentTime: 12, frameValue: 61, seeking: false, readyState: 4 });
+Object.assign(ui.state, { sourceReady: true, sourceKind: 'video', sourceId: 'proposal-source', sourceEpoch: ui.state.sourceEpoch + 1 });
+el('scene-kind').value = 'unspecified'; el('gameplay-layout').value = 'whole'; el('exclude-center').checked = false; el('enable-roi-proposals').checked = false;
+el('feature-method').value = 'dinov2'; el('inference-backend').value = 'webgpu'; el('preset').value = 'quick'; el('variant').value = '_f';
+probeGPU = async () => ({}); prepareInference = async () => ({}); ui.freeze();
+check('ROI suggestions are opt-in and freeze does not start detection', () => { assert(el('generate-roi-proposals').disabled); assert.equal(proposalCalls.length, 0); assert.equal(ui.state.proposalResult, null); });
+ui.generateProposals();
+check('direct generation cannot bypass the opt-in gate', () => { assert.equal(proposalCalls.length, 0); assert.match(el('error').textContent, /チェック/); });
+el('enable-roi-proposals').checked = true; await el('enable-roi-proposals').trigger('change');
+check('opt-in alone does not infer a field scene', () => { assert(el('generate-roi-proposals').disabled); assert.match(el('proposal-status').textContent, /フィールド/); });
+el('scene-kind').value = 'field'; await el('scene-kind').trigger('change');
+check('suggestions require the explicit central exclusion', () => assert(el('generate-roi-proposals').disabled));
+el('exclude-center').checked = true; await el('exclude-center').trigger('change');
+el('gameplay-layout').value = 'manual'; for (const [key, value] of Object.entries({x:0,y:0,w:600,h:480})) el(`gameplay-${key}`).value = String(value); await el('gameplay-layout').trigger('change');
+check('non-4:3 proposal scene is blocked without changing layout', () => { assert(el('generate-roi-proposals').disabled); assert.equal(el('gameplay-layout').value, 'manual'); });
+el('gameplay-layout').value = 'whole'; await el('gameplay-layout').trigger('change');
+video.frameValue = 99; video.currentTime = 13;
+const recognitionCount = () => uiWorkers.reduce((n,w) => n + w.messages.filter(m => m.message.type === 'recognize').length, 0);
+let countBeforeProposals = recognitionCount();
+await el('generate-roi-proposals').click();
+check('proposal generation uses frozen pixels/time and never classifies automatically', () => { const call=proposalCalls.at(-1); assert.equal(call.firstPixel,61); assert.equal(call.captureStamp.videoTime,12); assert.equal(call.options.profile,'shrine-blue-v1'); assert.equal(call.options.maxProposals,8); assert(call.options.excludeCommandHUD); assert.equal(recognitionCount(),countBeforeProposals); });
+check('candidate list is unverified and leaves manual ROI unset until selection', () => { assert.equal(el('roi-proposal-list').children.length,2); assert.equal(ui.state.roi,null); assert.match(el('proposal-status').textContent,/分類時間は別/); assert.match(el('roi-proposal-list').children[0].textContent,/未確認/); });
+const firstProposalButton = el('roi-proposal-list').children[0];
+await firstProposalButton.click();
+check('choosing a proposal sets the existing ROI without changing WebGPU or launching inference', () => { assert.deepEqual(ui.state.roi,{x:40,y:45,w:50,h:60}); assert.equal(el('inference-backend').value,'webgpu'); assert.equal(recognitionCount(),countBeforeProposals); assert.equal(el('roi-proposal-list').children[0].getAttribute('aria-pressed'),'true'); assert(!el('start').disabled); });
+dinoJob = await beginScoring(); await settle(); dinoRequest = dinoJob.worker.messages.at(-1).message;
+check('proposal selection flows through one unchanged capture-bound WebGPU request', () => { assert.equal(recognitionCount(),countBeforeProposals+1); assert.equal(dinoRequest.inferenceBackend,'webgpu'); assert.deepEqual(dinoRequest.captureStamp.enemyROI,{x:40,y:45,w:50,h:60}); assert.equal(dinoRequest.crop.rgba[0],61); assert.equal(dinoRequest.captureStamp.videoTime,12); assert.equal(dinoRequest.captureStamp.sceneContext.kind,'field'); assert.deepEqual(dinoRequest.modelIds,[...DEFAULT_MODELS]); });
+emitResult(dinoJob.worker,dinoRequest,{inference:{backend:'webgpu',precision:'fp16'}}); await dinoJob.completion;
+check('existing ranked and unknown result UI describes selected proposal honestly', () => { assert.equal(el('rankings').children.length,1); assert.match(el('unknown-status').textContent,/候補外・判別不能/); assert.match(el('limitations').children[0].textContent,/未確認の領域候補/); });
+dinoJob = await beginScoring(); await settle(); const oldProposalRequest = dinoJob.worker.messages.at(-1).message;
+await el('roi-proposal-list').children[1].click(); await dinoJob.completion;
+dinoJob.worker.emit({type:'result',id:oldProposalRequest.id,romEpoch:oldProposalRequest.romEpoch,result:{captureStamp:oldProposalRequest.captureStamp,rankings:[{modelId:'stale'}]}});
+check('selecting another candidate cancels old scoring and rejects late replies', () => { assert(dinoJob.worker.terminated); assert.deepEqual(ui.state.roi,{x:430,y:80,w:70,h:90}); assert.equal(el('rankings').children.length,0); assert.equal(el('roi-proposal-list').children.length,2); });
+const preservedProposalSet=ui.state.proposalResult; el('inference-backend').value='wasm'; await el('inference-backend').trigger('change');
+check('backend change preserves frozen proposals while retaining normal classifier invalidation', () => { assert.strictEqual(ui.state.proposalResult,preservedProposalSet); assert.equal(el('rankings').children.length,0); });
+ui.setROI({x:25,y:30,w:30,h:40});
+check('manual adjustment remains usable and removes candidate selection highlighting',()=>{assert.equal(ui.state.selectedProposalId,null);assert.equal(el('roi-proposal-list').children.length,2);assert.equal(el('roi-proposal-list').children[0].getAttribute('aria-pressed'),'false');});
+const retained = ui.state.proposalResult; await video.trigger('seeking');
+check('seeking live video does not regenerate or relabel the frozen image',()=>{assert.strictEqual(ui.state.proposalResult,retained);assert.equal(retained.captureStamp.videoTime,12);});
+ui.freeze();
+check('new frozen frame clears proposal set and previous results',()=>{assert.equal(ui.state.proposalResult,null);assert.equal(el('roi-proposal-list').children.length,0);assert.equal(ui.state.roi,null);assert.equal(el('rankings').children.length,0);});
+await el('generate-roi-proposals').click();const newSet=ui.state.proposalResult;await firstProposalButton.click();
+check('an obsolete candidate button cannot select or erase a newer proposal set',()=>{assert.strictEqual(ui.state.proposalResult,newSet);assert.equal(ui.state.roi,null);});
+el('exclude-center').checked=false;await el('exclude-center').trigger('change');
+check('scene mask changes clear proposals and disable regeneration',()=>{assert.equal(ui.state.proposalResult,null);assert(el('generate-roi-proposals').disabled);});
+el('exclude-center').checked=true;await el('exclude-center').trigger('change');await el('generate-roi-proposals').click();
+el('enable-roi-proposals').checked=false;await el('enable-roi-proposals').trigger('change');
+check('turning the experiment off removes all proposal state',()=>{assert.equal(ui.state.proposalResult,null);assert.equal(el('roi-proposal-list').children.length,0);assert(el('generate-roi-proposals').disabled);});
+el('enable-roi-proposals').checked=true;await el('enable-roi-proposals').trigger('change');ui.setROI({x:25,y:30,w:30,h:40});
+proposalFactory=(image,captureStamp)=>({captureStamp:cloneCaptureStamp(captureStamp),proposals:[],elapsedMs:2});await el('generate-roi-proposals').click();
+check('zero proposals retain unknown and manual classification remains possible',()=>{assert.match(el('proposal-status').textContent,/敵がいない証拠ではありません/);assert(!el('start').disabled);});
+proposalFactory=()=>{throw new Error('proposal fixture failure');};await el('generate-roi-proposals').click();
+check('proposal failure leaves manual ROI workflow usable and clears stale suggestions',()=>{assert.equal(ui.state.proposalResult,null);assert.match(el('error').textContent,/proposal fixture failure/);assert(!el('start').disabled);});
+proposalFactory=(image,captureStamp)=>({...defaultProposalFactory(image,captureStamp),captureStamp:{...captureStamp,frameSerial:captureStamp.frameSerial+1}});await el('generate-roi-proposals').click();
+check('mismatched proposal capture stamp is rejected rather than rewritten as current',()=>{assert.equal(ui.state.proposalResult,null);assert.match(el('error').textContent,/一致しない/);});
+proposalFactory=(image,captureStamp)=>({captureStamp:cloneCaptureStamp(captureStamp),elapsedMs:2,proposals:Array.from({length:12},(_,i)=>({proposalId:`${captureStamp.frameSerial}:${i}`,roi:{x:10+i*5,y:10,w:20,h:20}}))});await el('generate-roi-proposals').click();
+check('UI independently limits proposal choices to eight',()=>{assert.equal(ui.state.proposalResult.proposals.length,8);assert.equal(el('roi-proposal-list').children.length,8);});
+Object.assign(video,{videoWidth:4096,videoHeight:3072});ui.freeze();proposalFactory=(image,captureStamp)=>({captureStamp:cloneCaptureStamp(captureStamp),elapsedMs:2,proposals:[{proposalId:`${captureStamp.frameSerial}:0`,roi:{x:16,y:16,w:1408,h:1728}},{proposalId:`${captureStamp.frameSerial}:1`,roi:{x:3000,y:2000,w:100,h:100}}]});await el('generate-roi-proposals').click();
+let beforeLarge=recognitionCount();const largeButton=el('roi-proposal-list').children[0];await largeButton.click();
+check('oversized suggestion is visibly unprocessed and cannot allocate a classifier crop',()=>{assert(largeButton.disabled);assert.match(largeButton.children[0].textContent,/サイズ上限のため未処理/);assert.match(el('proposal-status').textContent,/1件はサイズ上限のため未処理/);assert.equal(ui.state.roi,null);assert.equal(recognitionCount(),beforeLarge);});
+await el('roi-proposal-list').children[1].click();
+check('a supported sibling candidate remains selectable after an oversized one',()=>assert.deepEqual(ui.state.roi,{x:3000,y:2000,w:100,h:100}));
+await el('clear-roi-proposals').click();
+check('clearing suggestion overlays preserves the manually adjustable selected crop',()=>{assert.equal(ui.state.proposalResult,null);assert.deepEqual(ui.state.roi,{x:3000,y:2000,w:100,h:100});assert(!el('start').disabled);});
+Object.assign(video,{videoWidth:640,videoHeight:480});proposalFactory=defaultProposalFactory;ui.freeze();await el('generate-roi-proposals').click();
+el('source-file').files=[];ui.selectSource();
+check('source replacement clears proposals as well as its frozen capture',()=>{assert.equal(ui.state.capture,null);assert.equal(ui.state.proposalResult,null);assert.equal(el('roi-proposal-list').children.length,0);});
+Object.assign(ui.state,{sourceReady:true,sourceKind:'video',sourceId:'proposal-new-source',sourceEpoch:ui.state.sourceEpoch+1});ui.freeze();await el('generate-roi-proposals').click();el('rom-file').files=[];await ui.selectROM();
+check('ROM epoch replacement cannot retain proposal capture or old results',()=>{assert.equal(ui.state.capture,null);assert.equal(ui.state.proposalResult,null);assert.equal(el('rankings').children.length,0);});
+proposalFactory=defaultProposalFactory;
+
 await win.trigger('pagehide');
 console.log(`\n${passed} UI and lifecycle checks passed (Node DOM harness; no browser launched).`);

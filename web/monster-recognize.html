@@ -43,6 +43,15 @@
           <p id="mask-status" class="muted">中央除外は、フィールドを明示指定しチェックした場合だけ有効です。</p>
           <p class="muted">配置は映像サイズから自動推定しません。色付き枠を確認してください。中央除外に重なる敵範囲は未観測として扱い、敵がいないという判定には使いません。</p>
         </section>
+        <section class="proposal-controls" aria-labelledby="proposal-heading">
+          <h3 id="proposal-heading">敵の領域候補（ふういんのほこら・実験）</h3>
+          <label class="check-label"><input id="enable-roi-proposals" type="checkbox">shrine-blue-v1 の領域候補を使う</label>
+          <p class="muted">固定した画像から最大8枠を探します。上でフィールド・4:3のゲーム範囲を指定し、中央除外を有効にしてください。コマンド表示も除外します。枠は敵と確定しておらず、壁・背景や見逃しが残ります。</p>
+          <div class="proposal-actions"><button id="generate-roi-proposals" type="button" disabled>この固定画像の領域候補を探す</button><button id="clear-roi-proposals" type="button" disabled>候補の枠を消す</button></div>
+          <p id="proposal-status" class="muted" role="status" aria-live="polite">任意の実験です。手動の範囲指定もそのまま使えます。</p>
+          <div id="roi-proposal-list" class="roi-proposal-list" role="group" aria-label="未確認の領域候補"></div>
+          <p class="muted">候補を1つ選び、右の「この切り抜きを照合」で既存の分類器に渡します。WebGPUの選択と姿勢キャッシュはそのまま使います。自動の連続照合は行いません。</p>
+        </section>
         <details id="capture-details"><summary>固定した画像の情報</summary><dl id="capture-metadata"><dt>状態</dt><dd>未取得</dd></dl></details>
       </section>
       <aside class="configuration" aria-labelledby="settings-heading">
