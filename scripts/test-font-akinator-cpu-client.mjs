@@ -22,6 +22,21 @@ const fake={project:{records:[records[0]]},image:()=>({width:2,height:2,originPi
 const mapped=CandidateMapMatcher.prototype.match.call(fake,{width:128,height:96,rgba:new Uint8Array(128*96*4)},{mapIds:[101],unsearchedTextPossible:true});eq(mapped.mapIdentityResolved,false);eq(mapped.resolvedMapId,null);ok(mapped.unknown.some(x=>x.reason==='unsearched-font-hypotheses'));eq(mapped.minimumProvenATCalls,0);eq(mapped.automaticATConsumption,false);
 // Message delivery after the deadline cannot bypass a delayed timer task.
 let clock=0;const late=new CPUTextClient({factory:()=>new FakeWorker(),now:()=>clock,setTimer:()=>1,clearTimer:()=>{}});const latePending=late.match(image,request()),lateWorker=workers.at(-1),lateMessage=ready(lateWorker);clock=5000;answer(lateWorker,lateMessage);const lateResult=await latePending;eq(lateResult.reason,'time-budget');eq(lateResult.sequence,'');eq(lateResult.complete,false);eq(lateWorker.terminated,true);
+// Window timers enforce their receiver in browsers; Node timers do not. Exercise
+// the production defaults with strict browser-style receiver checks.
+const originalSetTimeout=globalThis.setTimeout,originalClearTimeout=globalThis.clearTimeout;
+const browserTimers=new Map(),browserCleared=[];let browserTimerID=0;
+try{
+ globalThis.setTimeout=function(callback,delay){if(this!==globalThis)throw new TypeError('Illegal invocation: setTimeout');eq(delay,1000);const id=++browserTimerID;browserTimers.set(id,callback);return id;};
+ globalThis.clearTimeout=function(id){if(this!==globalThis)throw new TypeError('Illegal invocation: clearTimeout');browserCleared.push(id);browserTimers.delete(id);};
+ class ImmediateBrowserWorker extends FakeWorker{postMessage(m){super.postMessage(m);if(m.type==='init')this.reply({type:'ready',id:m.id,romEpoch:m.romEpoch});else if(m.type==='match')answer(this,m);}}
+ const browserClient=new CPUTextClient({factory:()=>new ImmediateBrowserWorker(),now:()=>0});
+ const browserResult=await browserClient.match(image,request());eq(browserResult.sequence,'家');eq(browserClient.active,null);eq(workers.at(-1).terminated,true);eq(browserCleared,[1]);eq(browserTimers.size,0);
+ const browserCancel=new CPUTextClient({factory:()=>new FakeWorker(),now:()=>0});
+ const browserPending=browserCancel.match(image,request()),browserRejected=assert.rejects(browserPending,e=>e.name==='AbortError');browserCancel.cancel();await browserRejected;checks++;eq(workers.at(-1).terminated,true);eq(browserCleared,[1,2]);eq(browserTimers.size,0);
+ const browserTimeout=new CPUTextClient({factory:()=>new FakeWorker(),now:()=>0});
+ const browserTimed=browserTimeout.match(image,request());browserTimers.get(3)();const browserUnknown=await browserTimed;eq(browserUnknown.reason,'time-budget');eq(browserTimeout.active,null);eq(workers.at(-1).terminated,true);eq(browserCleared,[1,2,3]);eq(browserTimers.size,0);
+}finally{globalThis.setTimeout=originalSetTimeout;globalThis.clearTimeout=originalClearTimeout;}
 // An actual CPU Worker completes the same one-glyph request with no navigator/GPU shim.
 const workerURL=new URL('../web/font-akinator-cpu-worker.mjs',import.meta.url).href;
 class NodeAdapter{constructor(){this.w=new Worker(`import {parentPort} from 'node:worker_threads';import {createCpuAkinatorWorkerHandler} from ${JSON.stringify(workerURL)};const handle=createCpuAkinatorWorkerHandler(m=>parentPort.postMessage(m));parentPort.on('message',m=>handle(m));`,{eval:true,type:'module'});this.w.on('message',data=>this.onmessage?.({data}));this.w.on('error',e=>this.onerror?.({message:e.message}));}postMessage(m,t){this.w.postMessage(m,t)}terminate(){this.w.terminate()}}

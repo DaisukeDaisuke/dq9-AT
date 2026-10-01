@@ -7,7 +7,7 @@ export function cpuUnknownResult(reason='time-budget'){
  return {route:'glyph-akinator',backend:'cpu-reference',cpuOneFrame:true,sequence:'',characters:[],candidates:[],hypotheses:[],evaluated:0,evaluationCountKnown:false,complete:false,reason,searchStopped:reason,hypothesisSearchComplete:false,thresholdSearchComplete:false,textResolved:false,fontIdentityResolved:false,confidenceCalibrated:false,unknownTextPossible:true,unsearchedTextPossible:true,provisional:true,whitespaceUnresolved:true,workerTerminated:true};
 }
 export class CPUTextClient {
- constructor({factory=()=>new Worker(new URL('./font-akinator-cpu-worker.mjs',import.meta.url),{type:'module'}),setTimer=setTimeout,clearTimer=clearTimeout,now=()=>performance.now()}={}){
+ constructor({factory=()=>new Worker(new URL('./font-akinator-cpu-worker.mjs',import.meta.url),{type:'module'}),setTimer=(callback,delay)=>globalThis.setTimeout(callback,delay),clearTimer=timer=>globalThis.clearTimeout(timer),now=()=>performance.now()}={}){
   Object.assign(this,{factory,setTimer,clearTimer,now,active:null,sequence:0});
  }
  match(image,{glyphsBySize,romEpoch,stamp,options={}}={}){
