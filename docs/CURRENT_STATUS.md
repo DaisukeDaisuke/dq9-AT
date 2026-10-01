@@ -14,7 +14,7 @@
 - 最新push済みソース: `6be287bb1d37ac986fe41df61f0b80cedc477ea1`。自動map座標候補をplayer trajectory/exportへ渡す6ファイルの修正。exact-SHAのCI build/deploy成功（[run36888596374](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/36888596374)）。配信成功は実ROM/動画の動作確認とは別
 - 2026-10-01 15:35 UTCのワークスペース置換で、未公開のcreator最終編集、private runtime入力、実行中の研究用capture、ブラウザ状態を失った。残った説明から推測して「復旧・再検証済み」とはしない
 - ソース、解析ツール、保存データは復旧。エミュレータは7件全ての元asset hashが変更していないlockと一致し、ROMなしnative smoke（shared memory、4 workers）は通過。Ghidraは合成ARM/Thumb確認まで通過。これはDQ9実ROM再現の成功ではない
-- ROMは現在利用できない。新しい実ROM観測、失われたruntime/captureの再取得、実動画の再検証はROM復旧待ち
+- 2026-10-02 07:42 JST（2026-10-01 22:42 UTC）にROM、動画4本、チェックポイントを復旧。`dq9_new2.nds`（268,435,456 bytes）のSHA-256は `3c9d809eb8e446b0da6a9b383c7a6c5146001636038384aa49cb1a2e367546d7` と一致。新しい実ROM観測と実動画検証を再開した。旧raw RAM・runtime・観測captureは未復旧で、復旧したチェックポイントをそれらの代替証拠にしない
 
 この文書にはROM、保存データ、private入力、RAM、映像、抽出ゲームアセットを含めない。配布済みソース・解析メタデータと私有の再実行入力を混同しない。
 
@@ -36,7 +36,7 @@
 
 過去の限定計測ではCPUが18対象中11、補完後14をcoverし、別の選択済み窓は6中2→4だった。一方、negativeにも最大8候補が出る。動画observerの事後30crop監査はbodyあり5、背景/UI23、曖昧2。これらは既知・反復閲覧データの開発記録であり、汎用精度やfreshな独立評価ではない。
 
-最初の実ブラウザ動画runは動き、EOFまで停止した。EOF後の再開不具合を`adc4c9`で修正したが、その実ブラウザ再試験は復旧後まだ行えていない。rankはunknownを残し、出生・native個体ID・世界位置・AT消費を確定しない。追加のjoint detector学習は現在の前提にしない。
+最初の実ブラウザ動画runは動き、EOFまで停止した。EOF後の再開不具合を`adc4c9`で修正し、復旧後のCPU/WASM実ブラウザで自然EOF→Start一回の巻き戻し・分類再開→明示Stopを再確認した。rankはunknownを残し、出生・native個体ID・世界位置・AT消費を確定しない。追加のjoint detector学習は現在の前提にしない。
 
 根拠: [MONSTER_POSITION_PROPOSALS_20261001.md](MONSTER_POSITION_PROPOSALS_20261001.md)、[MONSTER_DENSE_SUPPLEMENT_20261001.md](MONSTER_DENSE_SUPPLEMENT_20261001.md)、[MONSTER_VIDEO_OBSERVER_20261001.md](MONSTER_VIDEO_OBSERVER_20261001.md)
 
@@ -48,7 +48,7 @@ ROMのgraph/table/terrainと明示的runtime・trajectoryを使うscheduler/crea
 
 別の歴史的shrine継続は343 calls、controller return1812までの完成prefixを記録する。134と343は異なる経路・入力の境界であり、現在の到達点の大小比較に使わない。後続1814 captureの部分controllerを完成frameとして進めない。
 
-失われた未公開creator研究にはsource-carriedな生成射影の報告があるが、最終parser/allocation/heap/scale変更をすべて再検査した証拠はない。公開実装の停止境界を越えた完成物として扱わず、ROM復旧後に元条件から再構成・照合する。
+失われた未公開creator研究にはsource-carriedな生成射影の報告があるが、最終parser/allocation/heap/scale変更をすべて再検査した証拠はない。公開実装の停止境界を越えた完成物として扱わず、復旧したROMとSAVから元条件を再構成・照合する。
 
 根拠: [AT_TRACKING.md](AT_TRACKING.md)、[CONDITIONAL_AT_SEARCH.md](CONDITIONAL_AT_SEARCH.md)、[TERMINAL_INDEX_SEARCH.md](TERMINAL_INDEX_SEARCH.md)、[FIRST_SPAWN_REPLAY.md](mining/FIRST_SPAWN_REPLAY.md)、[f06-continuation.mjs](../web/f06-continuation.mjs)
 
@@ -64,7 +64,7 @@ ROMのgraph/table/terrainと明示的runtime・trajectoryを使うscheduler/crea
 ## 検証台帳
 
 - 復旧後に実行済み: `6be287b`のcapture403 checks、range UI12、registration147、marker modes60、既存aggregate `scripts/build.sh` exit0。source/synthetic/Node検査の通過であり、fresh ROM/video精度の検証ではない
-- 置換前の報告: `adc4c9`のpage167/controller24とaggregate、正確なSHAの2 workflow成功。実ブラウザEOF再開確認は未完了
+- 置換前の報告: `adc4c9`のpage167/controller24とaggregate、正確なSHAの2 workflow成功。実ブラウザEOF再開は復旧後のCPU/WASM経路で確認済み
 - 公開文書に残る過去の実ROM採掘: 151 graphs / 3934 nodes / 6044 edges、26/47-node RAM照合、160 AT updates / 95整数戻り値 / 16生成入力。再取得した新しい測定とは呼ばない
 - 失われた私有captureを必要とするcreator、native↔表示個体対応、実動画精度は再現未完了。テスト件数を代わりの証拠にしない
 
@@ -72,9 +72,11 @@ ROMのgraph/table/terrainと明示的runtime・trajectoryを使うscheduler/crea
 
 ## 次の小さいチェックポイント
 
-1. **実入力を復旧して既存接続を再確認**: 所有ROMを読み込めることを確認。動画observerのEOF→Start/Stop、player自動座標→同captureのtrajectory/exportを実ブラウザで再検査。起動、backend、入力版、出力、未検証点を分けて残す
+1. **復旧した実入力で既存接続を再検証**: 復旧ROMと動画で新しい再現・検査を実行。動画observerのEOF→Start/Stop、player自動座標→同captureのtrajectory/exportを実ブラウザで再検査。WebGPU adapter取得不可を確認。CPU/WASMの実分類、自然EOFからStart一回で巻き戻し再開、明示Stopを実ブラウザで確認済み。自位置精度・AT候補更新は引き続き未検証。起動、backend、入力版、出力、未検証点を分けて残す
 2. **creatorの停止境界を1つ進める**: 元の到達経路と必要runtimeを再取得し、resource identity、allocation/link、template/component、地形/scaleの根拠を確保。scheduler/creator return直後までを照合し、その後の同pass hero/bodyとは分けて完成判定する
 3. **観測がATを絞る最小例を通す**: 元capture時刻とlifetimeの重複を保った少数観測で、条件付き候補が何によって減ったかを示す。背景rank、既存個体、unknownも残す。方法は固定しない
 4. **移動案内へ接続**: 自位置とATの残存候補で未来を比較し、実行可能性が確認できた移動だけを案内。再観測で予測との差と候補更新を記録する
 
 各チェックポイントの保存内容は、使用したsource SHA、入力の所在/版（private入力は非公開）、実行方法、期待/実際、停止理由、次に必要な入力。再開時に説明だけで完了扱いせず、得られた証拠の範囲をここへ追記する。
+
+復元日報: [2026-10-02](DAILY_REPORT_RECONSTRUCTED_20261002.md)
