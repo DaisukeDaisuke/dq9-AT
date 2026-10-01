@@ -58,7 +58,7 @@ API("monster_motion_prefix") int mm_prefix(uint32_t phase,uint32_t scaled_delta)
  int32_t angle=signed32(s[3]),target=signed16(s[4]),turn=signed16(s[5]);
  /* This first contract excludes angle-completion animation callbacks, special
   * motion modes and vertical impulses. The caller must keep them unresolved. */
- if((s[11]&4U)||(s[14]&32768U)||s[9]>1U||s[16]!=0U||s[17]!=0U||s[18]!=0U||angle<0||angle>25736||target<0||target>25736||turn<0||phase>65535U)return 0;
+ if((s[11]&4U)||(s[14]&32768U)||(s[9]>1U&&!(s[9]==5U&&signed16(s[6])==0&&angle==target&&signed16(s[15])==0))||s[16]!=0U||s[17]!=0U||s[18]!=0U||angle<0||angle>25736||target<0||target>25736||turn<0||phase>65535U)return 0;
  int32_t diff=angle_diff(angle,target),rate=mul32(turn,signed32(phase));
  if(rate<0)return 0;
  if(diff>0)angle=diff<rate?target:add32(angle,rate);

@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import {setupFirstSpawnPanel} from '../web/first-spawn-panel.mjs';
 let checks=0;const eq=(a,b)=>{assert.deepEqual(a,b);checks++;};
-const ids=['spawn-replay-status','spawn-replay-start','spawn-replay-step','spawn-replay-ten','spawn-replay-run','spawn-replay-cancel','spawn-replay-reset','spawn-replay-runtime','spawn-replay-trajectory','spawn-replay-declared','spawn-replay-inputs','spawn-replay-log','seed'];
+const ids=['spawn-replay-newborn','spawn-replay-status','spawn-replay-start','spawn-replay-step','spawn-replay-ten','spawn-replay-run','spawn-replay-cancel','spawn-replay-reset','spawn-replay-runtime','spawn-replay-trajectory','spawn-replay-declared','spawn-replay-inputs','spawn-replay-log','seed'];
 const els=new Map(ids.map(id=>[id,{disabled:false,checked:false,value:id==='seed'?'1':'',files:[],textContent:'',listeners:{},addEventListener(n,f){this.listeners[n]=f;}}]));const $=id=>els.get(id);
 let inputs={},draws=0,created=[],yields=[];
 const controller=setupFirstSpawnPanel({document:{getElementById:$},getInputs:()=>inputs,redraw:()=>draws++,yieldTask:()=>new Promise(resolve=>yields.push(resolve)),create:o=>{
@@ -28,4 +28,5 @@ let resolveC;const c=new Promise(r=>resolveC=r);$('spawn-replay-runtime').files=
 inputs={project:{}};controller.refresh();await load('runtime',{},9*1024*1024);assert.match($('spawn-replay-status').textContent,/8MiB/);checks++;eq($('spawn-replay-start').disabled,true);
 await load('runtime',{});await load('trajectory',{});start();$('seed').value='3';controller.controlsChanged();eq($('spawn-replay-step').disabled,true);eq($('spawn-replay-declared').checked,false);eq($('spawn-replay-log').textContent,'');start();eq(created.at(-1).o.seed,3);
 await load('runtime',{});await load('trajectory',{});start();const releasing=$('spawn-replay-run').onclick();controller.release();yields.shift()();await releasing;eq($('spawn-replay-cancel').disabled,true);eq($('spawn-replay-log').textContent,'');
+await load('runtime',{});await load('trajectory',{});$('spawn-replay-newborn').checked=true;$('spawn-replay-newborn').onchange();eq($('spawn-replay-declared').checked,false);start();eq(created.at(-1).o.continueNewborn,true);$('spawn-replay-newborn').checked=false;$('spawn-replay-newborn').onchange();eq($('spawn-replay-step').disabled,true);eq($('spawn-replay-log').textContent,'');controller.release();eq($('spawn-replay-newborn').checked,false);
 console.log(JSON.stringify({passed:true,checks,scope:'Node-only small DOM controller; no browser/rendering claim',draws},null,2));

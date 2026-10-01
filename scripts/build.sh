@@ -60,3 +60,5 @@ node scripts/test-map-exits-ui.mjs
 # Explicit first-spawn replay; portable inputs only, no private fixture required.
 node scripts/test-first-spawn.mjs
 node scripts/test-first-spawn-page.mjs
+node scripts/test-monster-newborn.mjs
+node scripts/test-newborn-replay.mjs

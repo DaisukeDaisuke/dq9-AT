@@ -1,6 +1,7 @@
 // Partial source-derived native motion arithmetic. No renderer, tween, recorded
 // next position, collision result or full-FSM completion is hidden in this API.
 import {fieldNodeOccupied} from './field-preferred-node.mjs';
+import {unarmedCurrentNodeTransition} from './monster-unarmed.mjs';
 const i32=n=>Number.isInteger(n)&&n>=-2147483648&&n<=2147483647;
 const u32=n=>Number.isInteger(n)&&n>=0&&n<=0xffffffff;
 const i16=n=>Number.isInteger(n)&&n>=-32768&&n<=32767;
@@ -8,6 +9,13 @@ const byte=n=>Number.isInteger(n)&&n>=0&&n<=255;
 const dense=a=>{if(!Array.isArray(a))return false;for(let i=0;i<a.length;i++)if(!Object.hasOwn(a,i))return false;return true;};
 const xyz=p=>Array.isArray(p)&&p.length===3&&dense(p)&&p.every(i32);
 const fields=['angle','targetAngle','turnRate','speed','targetSpeed','acceleration','movementByte','header','e0','c1','c2','delayWord','gravity','verticalVelocity','verticalLimit','verticalCounter'];
+function boundDerivedFamily(actor,context){
+ const family=actor.selectedComponentFamily,c=context.animationComponents,proof=context.derivedCreationProof;
+ if(actor.animationClass!==undefined||actor.animationClassPointer!==undefined||!dense(family)||family.length!==2||family[0]!=='null'||family[1]!=='bound-type1'||proof?.created!==true||proof.creationProjectionResolved!==true||!proof.actor||proof.actor.registryIndex!==actor.registryIndex||proof.actor.species!==actor.species||!dense(c?.records)||!c.records.length||c.complete!==true||!u32(c.headPointer)||!c.headPointer)return false;
+ const binding=proof.animationBinding;if(!binding||binding.templatePointer!==proof.templatePointer||binding.componentListPointer!==c.headPointer||!dense(binding.records)||binding.records.length!==c.records.length||proof.actor.serial!==actor.serial)return false;
+ for(let i=0;i<c.records.length;i++){const r=c.records[i],b=binding.records[i];if(!r||!b||b.pointer!==r.pointer||b.typeWord!==r.typeWord||b.nextPointer!==r.nextPointer)return false;}
+ let pointer=c.headPointer;const seen=new Set();for(const r of c.records){if(!r||r.pointer!==pointer||!u32(r.pointer)||seen.has(pointer)||r.typeWord!==1||!u32(r.nextPointer))return false;seen.add(pointer);pointer=r.nextPointer;}return pointer===0;
+}
 export class MonsterMovementKernel {
  constructor(instance,trig){this.e=instance.exports;if(typeof this.e.monster_motion_prefix!=='function')throw Error('Monster motion WASM export missing');if(trig?.divisor!==25736||!(trig.values instanceof Int16Array)||trig.values.length!==8192)throw Error('Verified ROM trig resource required');new Int16Array(this.e.memory.buffer,this.e.monster_motion_trig(),8192).set(trig.values);this.atanReady=trig.atan?.values instanceof Int16Array&&trig.atan.values.length===129&&typeof this.e.monster_motion_atan_table==='function';if(this.atanReady)new Int16Array(this.e.memory.buffer,this.e.monster_motion_atan_table(),129).set(trig.atan.values);}
  state2Steering(currentXYZ,targetXYZ){return this.steering(currentXYZ,targetXYZ,true);}
@@ -26,22 +34,22 @@ export class MonsterMovementKernel {
   // Source closure for this 3D animation family: both callback branches only
   // change animation fields. Mode0/1 next-mode bytes are -1; BE stays unchanged.
   // Do not return copied animation state as if it had been predicted.
-  if(before.e0!==0||(before.c2&64)!==0||before.correctionSpeed!==0||before.cooldownByte!==0||before.animationClass!==1||before.animationEventIndex!==65535||(before.actorFlags&0x40000)!==0)return unresolved('base correction/path/animation projection outside supported guards');
+  if(before.e0!==0||(before.c2&64)!==0||before.correctionSpeed!==0||before.cooldownByte!==0||(before.animationClass!==1&&!boundDerivedFamily(before,context))||before.animationEventIndex!==65535||(before.actorFlags&0x40000)!==0)return unresolved('base correction/path/animation projection outside supported guards');
   const selectable=context.animationComponents;
   if(selectable?.complete!==true||!dense(selectable.records)||!selectable.records.length||!selectable.records.every(c=>c&&c.typeWord===1))return unresolved('complete all-type1 selectable animation component list required');
   const prefix=this.kinematicPrefix(before,context.clock,{reached:true});if(!prefix.resolved)return unresolved(prefix.reason);
   const current={...prefix.kinematic,stateTimer:(before.stateTimer+context.clock.scaledDelta)>>>0,activeElapsed:(before.activeElapsed+context.clock.scaledDelta)>>>0,updateCounter:(before.updateCounter+1)>>>0};
   if(current.activeElapsed>1999&&current.alertFlag===0&&current.detectionMode!==0){
-   if(current.detectionMode!==3||!dense(context.parties)||context.parties.some(p=>!p||typeof p!=='object'))return unresolved('alert detector mode/party pre-state unresolved');
+   if(![1,2,3].includes(current.detectionMode)||!dense(context.parties)||context.parties.some(p=>!p||typeof p!=='object'))return unresolved('alert detector mode/party pre-state unresolved');
    const parties=new Map(context.parties.map(p=>[p.slot,p]));if(parties.size!==context.parties.length)return unresolved('duplicate party records');
-   const radius=0x3800;
+   const radius=current.detectionMode===2?0x7800:0x3800;
    for(let slot=0;slot<4;slot++){
     const p=parties.get(slot);if(p?.registryKnown!==true||!u32(p.pointer))return unresolved('party registry incomplete');
     if(p.pointer===0){if(slot===0)break;continue;}
     if(!Number.isInteger(p.headerFlags)||p.headerFlags<0||p.headerFlags>65535)return unresolved('typed-party header unknown');
     if((p.headerFlags&0x800)===0){if(slot===0)break;continue;}
     const distance=this.state2EntrySteering(current.xyz,p.xyz);
-    if(!distance.resolved||distance.steeringDistance<radius)return unresolved('near/unknown party requires unsupported alert/eligibility branch');
+    if(!distance.resolved||(current.detectionMode===3?distance.steeringDistance<radius:distance.steeringDistance<=radius))return unresolved('near/unknown party requires unsupported alert/eligibility branch');
    }
   }
   let result;
@@ -95,8 +103,11 @@ export class MonsterMovementKernel {
  walkingGround(beforeXYZ,width,height,actorFlags,context){
   const no=reason=>({resolved:false,reason,environmentStepResolved:false});
   if(!xyz(beforeXYZ)||!Number.isInteger(width)||width<=0||width>0x7fffffff||!Number.isInteger(height)||height<=0||height>0x7fffffff||!u32(actorFlags))return no('explicit signed-positive native dimensions and XYZ/flags required');
-  if(!Number.isInteger(context?.mapId)||context.mapId<0||context.mapId>65535||context.mapId===4401||(actorFlags&0x4000100)!==0||(actorFlags&0x80)===0)return no('walking ground map/force/horizontal branch outside supported domain');
-  return {...this.#queryTerrain(beforeXYZ,context,{width,height}),environmentStepResolved:false};
+  if(!Number.isInteger(context?.mapId)||context.mapId<0||context.mapId>65535||context.mapId===4401||(actorFlags&0x4000100)!==0)return no('walking ground map/force branch outside supported domain');
+  const result=this.#queryTerrain(beforeXYZ,context,{width,height});if(!result.resolved)return result;
+  const horizontalChecks=[];
+  if(!(actorFlags&128))for(let i=0;i<result.objects.length;i++){const q=result.objects[i];if(q.skipped)continue;const resource=context.objects[i].resource;for(const id of q.candidateIds){const normalY=resource.triangleWords[id*12+10];if(!Number.isInteger(normalY)||normalY<=2048)return no('horizontal triangle response outside bounded normal exclusion');horizontalChecks.push({object:i,id,normalY});}}
+  return {...result,horizontalExclusionDerived:!(actorFlags&128),horizontalChecks,environmentStepResolved:false};
  }
  #queryTerrain(queryXYZ,context,walking){
   const no=reason=>({resolved:false,reason,atConsumedKnown:false});
@@ -131,8 +142,10 @@ export class MonsterMovementKernel {
   if(context?.handlerReached!==true||before?.state!==1)return unknown('state1 handler reachability unknown');
   if(context.globalWord!==0||context.fieldPresent!==true||context.tableBindingVerified!==true||context.graphBindingVerified!==true||!Number.isInteger(before.mapId)||before.mapId<0||before.mapId>65535||context.fieldMapId!==before.mapId)return unknown('field/global/table/graph binding unresolved');
   if(!xyz(before.xyz)||!u32(before.currentSeed)||!u32(before.stateTimer)||!u32(before.actorFlags)||!Number.isInteger(before.delayWord)||before.delayWord<0||before.delayWord>65535||!byte(before.routeFlags)||!Number.isInteger(before.tableId)||!Number.isInteger(before.currentNodeIndex)||!Number.isInteger(before.previousState)||before.previousState<0||before.previousState>12)return unknown('complete handler-entry state required');
-  if(before.routeMode!==1||before.alertFlag!==0||before.blockFlag!==0||before.movementByte!==0||before.e0!==0||(before.actorFlags&0x40000)!==0||![0,1,2,3,7,8,9,10,11,12].includes(before.previousState)||(before.routeFlags&64)===0)return unknown('unsupported state1 route/path/target dependency');
+  if(before.alertFlag!==0||before.blockFlag!==0)return unknown('state1 upstream flag gate unresolved');
   if(before.stateTimer<4001)return {resolved:true,scope:'reached02077d10 handler only',nextState:structuredClone(before),atConsumed:0,nextATSeed:before.currentSeed,fullMonsterStepResolved:false,reason:'state1 timer below4001'};
+  if((before.routeFlags&64)===0)return unarmedCurrentNodeTransition(this,before,context);
+  if(before.routeMode!==1||before.movementByte!==0||before.e0!==0||(before.actorFlags&0x40000)!==0||![0,1,2,3,7,8,9,10,11,12].includes(before.previousState))return unknown('unsupported state1 route/path/target dependency');
   const {graph,inventory}=context,group=context.fieldFlags&3,current=graph?.nodes?.[before.currentNodeIndex];
   if(!dense(graph?.nodes)||graph.nodes.some(n=>!n||!byte(n.id))||!current||!dense(current.neighbors)||!current.neighbors.length||!Number.isInteger(context.fieldFlags)||context.fieldFlags<0||context.fieldFlags>65535||typeof fieldKernel?.movement!=='function'||!dense(inventory?.slots)||inventory.slots.some(r=>!r||typeof r!=='object'))return unknown('ordered graph/current node, inventory or natural group unresolved');
   if(!dense(context.tableRows)||context.tableRows.some(r=>!r||!Number.isInteger(r.tableId)||r.tableId<0||r.tableId>65535||!u32(r.flags)))return unknown('complete dense native table rows required');

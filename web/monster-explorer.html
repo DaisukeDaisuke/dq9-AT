@@ -83,11 +83,12 @@
 <p id="spawn-replay-inputs">初期runtimeと軌跡が未入力です。</p>
 <label>初期runtime JSON（8MiB以下）<input id="spawn-replay-runtime" type="file" accept=".json,application/json" disabled></label>
 <label>pre-spawn軌跡 JSON（1MiB以下）<input id="spawn-replay-trajectory" type="file" accept=".json,application/json" disabled></label>
-<p>左のseedを開始状態として使います。ROMはgraph・表の数値・地形resourceを供給します。pool/serial・model/AI/template・地形object配置・runtime flags・clock・party条件は別入力が必要です。データは端末内のみで使います。</p>
+<p>左のseedを開始状態として使います。ROMはgraph・表の数値とcreator用table・地形resourceを供給します。table項目/scaleの手入力は不要です。pool/serial・model/AI/template・地形object配置・runtime flags・clock・party条件は別入力が必要です。データは端末内のみで使います。</p>
+<label class="check"><input id="spawn-replay-newborn" type="checkbox">生成結果から対応済みの移動まで計算する（同じJSON内にpost-hero pose・body clock・walking環境が必要）</label>
 <label class="check"><input id="spawn-replay-declared" type="checkbox">この初期runtimeと軌跡を条件付き仮説として実行する</label>
 <div class="actions"><button id="spawn-replay-start" type="button" disabled>seedから初期化</button><button id="spawn-replay-step" type="button" disabled>1段階</button><button id="spawn-replay-ten" type="button" disabled>10段階</button><button id="spawn-replay-run" type="button" disabled>最初の生成 / 未解決まで</button><button id="spawn-replay-cancel" type="button" disabled>停止</button><button id="spawn-replay-reset" type="button" disabled>やり直す</button></div>
 <p id="spawn-replay-status" role="status">初期runtimeと軌跡が未入力です。</p><pre id="spawn-replay-log"></pre>
-<p class="muted">初期seedは途中状態でも指定できます。現在映像のAT状態や起動からの総消費を証明しません。未知の条件で停止し、最初のcreator呼出以後は進めません。生RAM・観測済み次状態は読み込みません。</p>
+<p class="muted">初期seedは途中状態でも指定できます。現在映像のAT状態や起動からの総消費を証明しません。通常は最初のcreator呼出で停止。追加更新はbody→寿命→接地。2体目生成/寿命終了/未解決で停止します。生RAM・観測済み次状態は読み込みません。</p>
 </details>
 <h2>3. モデルを実行</h2>
 <p id="readiness" role="status">NDSを読み込み、初期条件を指定してください。</p>
