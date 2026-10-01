@@ -21,7 +21,7 @@ const result={route:'glyph-akinator',sequence:'TEST MAP',candidates:[],character
 let checks=0;
 function check(name,fn){try{fn();checks++;}catch(e){throw Error(name+': '+e.message);}}
 async function fixture({auto=false,track=true,registration=true}={}){
- const elements=new Map(),windows=new Map(),events=[],workers=[],captures=[],names=[],markerPixels=[],matches=[];
+ const elements=new Map(),windows=new Map(),events=[],workers=[],captures=[],names=[],markerPixels=[],matches=[];let nameDetection={resolved:true,roi:{x:0,y:0,w:1,h:.1}};
  class Element{
   constructor(tag='div'){this.tagName=tag.toUpperCase();this.children=[];this.listeners={};this.value='';this.checked=false;this.width=256;this.height=192;this.pixel=0;this.currentTime=1;this.videoWidth=256;this.videoHeight=192;this.readyState=2;this.paused=true;this.seeking=false;this.duration=100;}
   set innerHTML(html){for(const m of html.matchAll(/<([a-z0-9]+)\b([^>]*\bid="([^"]+)"[^>]*)>/gi)){const e=new Element(m[1]);e.id=m[3];e.value=m[2].match(/\bvalue="([^"]*)"/)?.[1]??'';e.checked=/\bchecked\b/.test(m[2]);elements.set(e.id,e);}}
@@ -39,13 +39,13 @@ async function fixture({auto=false,track=true,registration=true}={}){
  const window={addEventListener(n,fn){if(!windows.has(n))windows.set(n,[]);windows.get(n).push(fn);},dispatchEvent(e){events.push(e);for(const fn of windows.get(e.type)||[])fn(e);}};
  const sandbox={document,window,Worker:FakeWorker,Option:class extends Element{constructor(text,value){super('option');this.textContent=text;this.value=value;}},ImageData:class{constructor(data,width,height){Object.assign(this,{data,width,height});}},CustomEvent:class{constructor(type,init){this.type=type;this.detail=init.detail;}},localStorage:{getItem(){return null;},setItem(){}},navigator:{mediaDevices:{enumerateDevices:async()=>[]}},URL,Blob,Date,performance,structuredClone,Uint8ClampedArray,console,setTimeout,clearTimeout,AbortController,DOMException,queueMicrotask,testMatcher:match};
  const context=vm.createContext(sandbox);
- const module=new vm.SourceTextModule(source+`\nexport const captureTest={readFrame,invalidateSource,setup(){matcher=testMatcher;records=[{mapId:7402,name:'TEST MAP'}];positionReady=true;positionHasReference=true;},getFile:()=>fileInput,getCamera:()=>camera,resetGPU(){gpuUnavailable=false;},setupCPU(){runtimeGlyphs={'1x1':[{char:'T',assignedChar:'T',rows:['#']}]};},getState:()=>({generation,romEpoch,positionEpoch,frameSerial,busy,pendingRead,observations,positionSample,mapCandidatePending,gpuUnavailable,cpuHeld})};`,{context,identifier:pathToFileURL(panel).href,initializeImportMeta(meta){meta.url=pathToFileURL(panel).href;}});
+ const module=new vm.SourceTextModule(source+`\nexport const captureTest={readFrame,invalidateSource,setup(){matcher=testMatcher;records=[{mapId:7402,name:'TEST MAP'}];positionReady=true;positionHasReference=true;},getFile:()=>fileInput,getCamera:()=>camera,resetGPU(){gpuUnavailable=false;},setupCPU(){runtimeGlyphs={'1x1':[{char:'T',assignedChar:'T',rows:['#']}]};},getState:()=>({generation,romEpoch,positionEpoch,frameSerial,busy,pendingRead,observations,positionSample,mapCandidatePending,gpuUnavailable,cpuHeld,screenApproved,layoutBinding,roi})};`,{context,identifier:pathToFileURL(panel).href,initializeImportMeta(meta){meta.url=pathToFileURL(panel).href;}});
  await module.link(spec=>{
   let exports=imported[spec];
   if(spec==='./font-akinator-cpu-client.mjs')exports={CPUTextClient:class extends imported[spec].CPUTextClient{constructor(){super({factory:()=>new FakeWorker('font-akinator-cpu-worker.mjs')});}}};
   if(spec==='./player-capture.mjs')exports={PlayerCaptureCoordinator:Coordinator};
   if(spec==='./map-name-match.mjs')exports={createTextMatcher:()=>match};
-  if(spec==='./map-name-roi.mjs')exports={detectMapNameROI:()=>({resolved:true,roi:{x:0,y:0,w:1,h:.1}})};
+  if(spec==='./map-name-roi.mjs')exports={detectMapNameROI:()=>nameDetection};
   if(spec==='./party-marker-calibration.mjs')exports={calibratedPartyMarkerCandidates:image=>{markerPixels.push(image.rgba[0]);return {frame:{width:256,height:192},candidates:[],calibration:{profiles:[{slot:1,rgb:[66,66,66]}],status:'test'}};}};
   return new vm.SyntheticModule(Object.keys(exports),function(){for(const [key,value]of Object.entries(exports))this.setExport(key,value);},{context});
  });
@@ -58,8 +58,8 @@ async function fixture({auto=false,track=true,registration=true}={}){
  const sample=()=>({sourceKind:'local-file',sourceId:'fixture-A',sourceEpoch:7,timelineSegment:2,videoTime:1,mediaTime:1,timestampBasis:'requestVideoFrameCallback.mediaTime',presentedFrames:60,absoluteFrameIndex:null,capturedAt:'2026-09-30T00:00:00.000Z'});
  const position=workers.find(w=>w.url.includes('position-worker')),layout=workers.find(w=>w.url.includes('ds-screen-worker'));
  const finishRegistration=()=>{const m=position.messages.findLast(m=>m.type==='frame');if(m)position.reply({type:'frame',epoch:m.epoch,frameSerial:m.frameSerial,ok:true,result:{kind:'video-map-registration',resolved:false,candidates:[],reason:'synthetic'}});};
- const finishLayout=()=>{const m=layout.messages.at(-1);layout.reply({id:m.id,result:{resolved:true,analysisSize:{width:256,height:192},candidates:[{x:0,y:0,w:256,h:192,score:1}]}});};
- return {api,$,video,events,captures,names,markerPixels,matches,workers,emit,requests,sample,position,layout,finishRegistration,finishLayout};
+ const finishLayout=(resolved=true)=>{const m=layout.messages.at(-1);layout.reply({id:m.id,result:{resolved,reason:resolved?'fixture':'map-not-visible',analysisSize:{width:256,height:192},candidates:[{x:0,y:0,w:256,h:192,score:1}]}});};
+ return {api,$,video,events,captures,names,markerPixels,matches,workers,emit,requests,sample,position,layout,finishRegistration,finishLayout,setNameDetection:r=>{nameDetection=r;}};
 }
 const cases=[];
 async function run(name,fn){try{await fn();cases.push({name,passed:true});}catch(e){cases.push({name,passed:false,error:e.message});}}
@@ -192,6 +192,44 @@ await run('CPU error UI retains only bounded worker source locations',async()=>{
  const f=await prepareCPU(),pending=f.$('cpu-text-once').onclick(),{w,message}=readyCPU(f);
  w.reply({type:'error',id:message.id,romEpoch:message.romEpoch,message:'Illegal invocation',diagnostic:{revision:'cpu-text-diag-1',phase:'worker-match',frames:['font-akinator.mjs:146:19','private-input.mjs:1:2'],secret:'PRIVATE_INPUT_SENTINEL'}});await pending;
  check('CPU error source appears in the visible error area',()=>assert.match(f.$('name-candidates').textContent,/cpu-text-diag-1\/worker-match font-akinator\.mjs:146:19/));check('unapproved fields and source names stay absent',()=>assert(!/PRIVATE_INPUT_SENTINEL|private-input/.test(f.$('name-candidates').textContent)));check('failed CPU frame cannot nominate maps',()=>assert.equal(f.requests().length,0));check('diagnostic failure releases Worker',()=>assert.equal(w.terminated,true));
+});
+
+async function completeLayoutFrame(f,s=f.sample()){
+ const before=f.layout.messages.length,matchCount=f.matches.length,pending=f.api.readFrame(11,s);
+ if(f.layout.messages.length>before)f.finishLayout();
+ for(let i=0;i<4;i++)await Promise.resolve();
+ if(f.matches.length>matchCount){f.finishRegistration();f.matches.at(-1).resolve(result);}await pending;
+}
+await run('automatic rectangle locks to source and dimensions across moving frames and seeks',async()=>{
+ const f=await fixture({auto:true});await completeLayoutFrame(f);const roi=structuredClone(f.api.getState().roi.screen);
+ const file=f.api.getFile();Object.assign(file,{url:'blob:fixture',sourceId:'fixture-A',generation:7,segment:2});
+ for(const videoTime of [2,3,50]){f.video.currentTime=videoTime;f.video.pixel=20+videoTime;f.video.seeking=true;f.video.emit('seeking');f.video.seeking=false;await completeLayoutFrame(f,file.snapshot());}
+ check('actual FileVideoInput seek increments observed epochs',()=>assert.deepEqual(f.requests().map(r=>r.stamp.sourceEpoch),[7,8,9,10]));check('only initial acquisition uses layout worker',()=>assert.equal(f.layout.messages.length,1));check('locked normalized rectangle remains unchanged',()=>assert.deepEqual(structuredClone(f.api.getState().roi.screen),roi));check('each captured frame still has its own timestamp',()=>assert.deepEqual(f.requests().map(r=>r.stamp.videoTime),[1,2,3,50]));check('moving pixels remain independently captured',()=>assert.deepEqual(f.requests().map(r=>r.frame.rgba[0]),[17,22,23,70]));check('reused geometry retains original acquisition timestamp',()=>assert(f.requests().every(r=>r.stamp.screenLayout.acquisition.videoTime===1)));check('acquisition metadata is immutable',()=>assert(Object.isFrozen(f.requests().at(-1).stamp.screenLayout.acquisition.sourceFrame)));check('status makes locking explicit',()=>assert.match(f.$('screen-status').textContent,/固定/));
+});
+await run('ROM and reference changes invalidate observations but preserve layout geometry',async()=>{
+ const f=await fixture({auto:true});await completeLayoutFrame(f);f.emit('dq9-map-image',null);await completeLayoutFrame(f);f.emit('dq9-rom-release');f.api.setup();await completeLayoutFrame(f);
+ check('reference and ROM changes do not redetect geometry',()=>assert.equal(f.layout.messages.length,1));check('new observations use changed epochs',()=>assert.deepEqual(f.requests().map(r=>[r.stamp.romEpoch,r.stamp.referenceEpoch]),[[0,0],[0,1],[1,1]]));
+});
+await run('source identity, source epoch and dimensions each require fresh acquisition',async()=>{
+ const f=await fixture({auto:true});await completeLayoutFrame(f);let s=f.sample();
+ for(const next of [{...s,sourceId:'fixture-B'},{...s,sourceId:'fixture-B',sourceEpoch:8},{...s,sourceKind:'camera',sourceId:'fixture-B',sourceEpoch:8}])await completeLayoutFrame(f,next);
+ check('file epoch is timeline-only; identity and camera change reacquire',()=>assert.equal(f.layout.messages.length,3));f.video.videoWidth=512;await completeLayoutFrame(f,{...s,sourceKind:'camera',sourceId:'fixture-B',sourceEpoch:8});check('changed decoded dimensions cannot reuse old geometry',()=>assert.equal(f.layout.messages.length,4));
+ f.video.readyState=0;f.video.emit('resize');f.video.readyState=2;await completeLayoutFrame(f,{...s,sourceKind:'camera',sourceId:'fixture-B',sourceEpoch:8});check('resize event explicitly clears binding',()=>assert.equal(f.layout.messages.length,5));await completeLayoutFrame(f,{...s,sourceKind:'camera',sourceId:'fixture-B',sourceEpoch:9});check('camera generation changes require acquisition',()=>assert.equal(f.layout.messages.length,6));
+});
+await run('explicit redetect and reset clear acquisition while manual range remains manual',async()=>{
+ const f=await fixture({auto:true});await completeLayoutFrame(f);f.$('screen-detect').onclick();await completeLayoutFrame(f);check('redetect reacquires once',()=>assert.equal(f.layout.messages.length,2));f.$('video-roi-reset').onclick();await completeLayoutFrame(f);check('range reset reacquires once',()=>assert.equal(f.layout.messages.length,3));
+ f.$('screen-mode').value='manual';f.$('screen-mode').onchange();const roi=structuredClone(f.api.getState().roi.screen);await completeLayoutFrame(f,{...f.sample(),sourceId:'manual-new-source'});check('manual path does not invoke automatic detector',()=>assert.equal(f.layout.messages.length,3));check('explicit manual normalized range retained',()=>assert.deepEqual(structuredClone(f.api.getState().roi.screen),roi));
+});
+await run('map disappears at fixed dimensions: retain layout and emit unknown without new marker or map work',async()=>{
+ const f=await fixture({auto:true});f.$('name-roi-mode').value='auto';await completeLayoutFrame(f);const old=f.requests()[0],captures=f.captures.length;
+ f.setNameDetection({resolved:false,reason:'name-frame-absent'});f.video.pixel=0;await completeLayoutFrame(f,{...f.sample(),videoTime:2});
+ check('black scene does not hunt a new rectangle',()=>assert.equal(f.layout.messages.length,1));check('black scene does not start marker/registration analysis',()=>assert.equal(f.captures.length,captures));check('black scene does not invoke glyph matching',()=>assert.equal(f.matches.length,1));check('unknown scene clears candidate result ownership',()=>assert.equal(f.api.getState().mapCandidatePending,null));check('UI marks map visibility unknown',()=>assert.match(f.$('position-status').textContent,/地図表示は未確定/));
+ const count=f.api.getState().observations.length;f.emit('dq9-map-candidates-result',{type:'map-candidates-error',requestId:old.requestId,stamp:old.stamp,message:'late former scene'});check('old scene reply cannot append after unknown frame',()=>assert.equal(f.api.getState().observations.length,count));check('unknown observation retained',()=>assert(f.api.getState().observations.some(o=>o.nameROIObservation?.kind==='video-name-roi-unknown')));
+ f.setNameDetection({resolved:true,roi:{x:0,y:0,w:1,h:.1}});f.video.pixel=45;await completeLayoutFrame(f,{...f.sample(),videoTime:3});check('map return reuses locked geometry',()=>assert.equal(f.layout.messages.length,1));check('map return resumes current-frame observations',()=>assert.equal(f.requests().at(-1).frame.rgba[0],45));check('map return preserves height/AT uncertainty',()=>assert(f.api.getState().observations.every(o=>o.minimumProvenATCalls===0)));
+});
+await run('failed initial detection retries on later frame only and stop clears successful lock',async()=>{
+ const f=await fixture({auto:true}),p=f.api.readFrame(1,f.sample());f.finishLayout(false);await p;check('initial failure does not claim a lock',()=>assert.equal(f.api.getState().screenApproved,false));check('initial failure does not start glyph work',()=>assert.equal(f.matches.length,0));await Promise.resolve();check('initial failure does not spin worker requests',()=>assert.equal(f.layout.messages.length,1));await completeLayoutFrame(f);check('later frame can acquire successfully',()=>assert.equal(f.layout.messages.length,2));
+ f.$('camera-stop').onclick();await completeLayoutFrame(f);check('stop requires next source acquisition',()=>assert.equal(f.layout.messages.length,3));
 });
 const summary={passed:cases.every(c=>c.passed),checks,cases,scope:'Node fake DOM/canvas/Worker control-flow test; real capture coordinator and input adapters; synthetic pixels and deferred OCR/layout; no browser/WebGPU/video-decoder accuracy claim'};
 console.log(JSON.stringify(summary,null,2));if(!summary.passed)process.exitCode=1;
