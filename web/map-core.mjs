@@ -30,7 +30,7 @@ export function decodeBmmp(entry) {
    case 0x70:for(let i=0;i+1<a.length;i+=2)mapBindings.push({mapId:a[i],resource:a[i+1],callOffset:c.offset});break;
   }
  }
- return {path:entry.path,originTile:origin,worldToMapScale:scale,background:base,layers,placements,mapBindings,groups,calls};
+ return {path:entry.path,originTile:origin,worldToMapScale:scale,background:base,layers,placements,mapBindings,groups,groupOrder:'source-order-prepended',calls};
 }
 export function obgInfo(data) {
  if(data.length<8)throw Error('OBG header truncated');const width=data[0]*8,height=data[1]*8,depth=data[2],tileCount=u32(data,4);

@@ -6,7 +6,7 @@ import {formatCpuTextDiagnostic} from './font-akinator-diagnostic.mjs';
 import {detectMapNameROI} from './map-name-roi.mjs';
 import {markerColorCandidates,playerSampleATObservation} from './player-position.mjs';
 import {PlayerCaptureCoordinator} from './player-capture.mjs';
-import {imageToMapCoordinateCandidate} from './player-coordinate.mjs';
+import {mapMarkerCoordinateCandidate} from './map-marker-coordinate.mjs';
 import {mapCandidatesFromAkinator} from './map-disambiguation.mjs';
 import {compatibleVideoObservation} from './video-observation.mjs';
 import {factorPartyMapCandidates,previewPartyMapCandidates} from './party-map-candidates.mjs';
@@ -52,7 +52,7 @@ const playerCoordinator=new PlayerCaptureCoordinator(sample=>{remember(playerSam
 function enrichPlayerCoordinates(sample){
  const ref=playerReference,conflict=sample.mapIdentity?.status==='candidate-conflict',valid=ref&&sample.reference?.epoch===positionEpoch&&Array.isArray(ref.originPixel)&&Number.isFinite(ref.worldToMapScale)&&ref.worldToMapScale>0;
  sample.coordinateMapping={status:conflict?'reference-name-conflict':!valid?'descriptor-transform-unavailable':!sample.registration?.resolved?'registration-unresolved':'provisional-descriptor-transform',mapId:ref?.mapId??null,descriptor:ref?.descriptor??null,originPixel:ref?.originPixel??null,scale:ref?.worldToMapScale??null,transformVerified:false};
- sample.coordinateCandidates=!conflict&&valid?(sample.candidates||[]).filter(c=>c.registrationAccepted).map(c=>({...imageToMapCoordinateCandidate({imageX:c.x,imageY:c.y,imageBounds:c.bounds,originPixel:ref.originPixel,scale:ref.worldToMapScale,mapId:c.mapId,markerIdentity:c.markerId}),registrationPeak:c.registrationPeak,profileId:c.profileId})):[];
+ sample.coordinateCandidates=!conflict&&valid?(sample.candidates||[]).filter(c=>c.registrationAccepted).map(c=>({...mapMarkerCoordinateCandidate({imageX:c.x,imageY:c.y,imageBounds:c.bounds,originPixel:ref.originPixel,scale:ref.worldToMapScale,mapId:c.mapId,markerIdentity:c.markerId},ref.markerCoordinateBinding),registrationPeak:c.registrationPeak,profileId:c.profileId})):[];
  return sample;
 }
 // Snapshot once per captured frame; asynchronous consumers must not rebuild its identity.
@@ -62,6 +62,8 @@ function playerStamp(sample){return freezeCaptureStamp({...sample,streamId:`${sa
 function playerGap(reason,sample={}){const base=lastPlayerStamp;if(!base)return;playerCoordinator.invalidate({...base,frameSerial:++frameSerial,capturedAt:new Date().toISOString(),videoTime:Number.isFinite(sample.videoTime)?sample.videoTime:base.videoTime,referenceEpoch:positionEpoch},reason);}
 // Range display only: never promote a rounded center word to recovered state.
 function formatCoordinateRanges(candidate){
+ if(candidate?.kind==='fixed-map-display-anchor-candidate')return {summary:'固定表示点 · 室内のX/Z・chunkは未確定',lines:['このmap IDの通常グループは表示用の固定点です。人物の物理X/Zや室内chunkには変換しません。','別の屋外map ID候補は、そのID固有の分岐として保持します。高さY・本人対応・実行時モードは未確定、AT加算なし。']};
+ if(candidate?.kind==='unknown-marker-coordinate-candidate')return {summary:'マーカー座標の意味が未確定',lines:['map IDと通常BMMPグループの対応が未確定のため、物理X/Z・chunkは出力しません。','表示点・物理位置・特別モードの候補を保持します。高さYは未観測、AT加算なし。']};
  const number=value=>Number.isFinite(value)?String(value):'?',summary=[],lines=['符号付き32bit固定小数点 /4096 の候補範囲 · マップ縦軸は world Z、高さ Y は未観測。範囲はヒューリスティック・未校正（被覆率不明）で、メモリ読出値ではありません。'];
  const outward=(value,isMax)=>Number.isFinite(value)?((isMax?Math.ceil(value*100):Math.floor(value*100))/100).toFixed(2):'?';
  for(const [key,axis]of [['x','X'],['z','Z']]){
@@ -145,7 +147,7 @@ window.addEventListener('dq9-map-candidates-result',e=>{
 });
 function renderCandidatePartyCoordinates(factors,host){
  const preview=previewPartyMapCandidates(factors,24),heading=document.createElement('p');heading.textContent=`同一フレームのパーティ点 × フォント候補マップ座標 · ${preview.shown}/${preview.total}組を表示（残りも分解した候補データで保持） · 未評価マップ ${factors.unknownMapHypotheses.length}件 / 本人・実人数・座標変換は未証明`;host.append(heading);
- for(const row of preview.rows){const item=document.createElement('details'),summary=document.createElement('summary'),display=formatCoordinateRanges(row.mapCoordinate);summary.textContent=`map ${row.mapIds.join('/')} · ${row.descriptor} · 点${row.markerIndex+1}/位置候補${row.peakIndex+1} · ${row.bestCandidateWithinFontSet?'候補群内の画像優勢':row.registrationCandidate?'画像位置候補':'画像位置未確定'} · ${display.summary}`;item.append(summary);const detail=document.createElement('div');detail.textContent=`${row.profileId} · ROM画像 (${row.image.x.toFixed(2)},${row.image.y.toFixed(2)})${row.image.insideImage?'':' · 参照画像の範囲外'} · 類似度${row.registrationScore.toFixed(3)}（確率ではありません）。同名ID・弱い位置候補・未探索マップは除外していません。`;item.append(detail);appendCoordinateRangeDetails(item,display);host.append(item);}
+ for(const row of preview.rows){const item=document.createElement('details'),summary=document.createElement('summary'),display=formatCoordinateRanges(row.mapCoordinate);summary.textContent=`map ${row.mapIds.join('/')} · ${row.descriptor} · 点${row.markerIndex+1}/位置候補${row.peakIndex+1} · ${row.bestCandidateWithinFontSet?'候補群内の画像優勢':row.registrationCandidate?'画像位置候補':'画像位置未確定'} · ${display.summary}`;item.append(summary);const detail=document.createElement('div');detail.textContent=`${row.profileId} · ROM画像 (${row.image.x.toFixed(2)},${row.image.y.toFixed(2)})${row.image.insideImage?'':' · 参照画像の範囲外'} · 類似度${row.registrationScore.toFixed(3)}（確率ではありません）。同名ID・弱い位置候補・未探索マップは除外していません。`;item.append(detail);if(row.mapCoordinateAlternatives?.length>1){for(const branch of row.mapCoordinateAlternatives){const heading=document.createElement('div');heading.textContent=`map ${branch.mapId}: ${formatCoordinateRanges(branch).summary}`;item.append(heading);appendCoordinateRangeDetails(item,formatCoordinateRanges(branch));}}else appendCoordinateRangeDetails(item,display);host.append(item);}
 }
 function mapIdsForText(text){const normalize=s=>String(s||'').normalize('NFKC').replace(/\s+/g,'');return text?[...new Set(records.filter(r=>normalize(r.name)===normalize(text)).map(r=>r.mapId))]:[];}
 function renderTextCandidates(result){

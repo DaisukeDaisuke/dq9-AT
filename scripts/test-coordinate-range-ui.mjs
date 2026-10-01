@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
 import {imageToMapCoordinateCandidate} from '../web/player-coordinate.mjs';
+import {markerCoordinateBinding,mapMarkerCoordinateCandidate} from '../web/map-marker-coordinate.mjs';
 import {factorPartyMapCandidates,previewPartyMapCandidates} from '../web/party-map-candidates.mjs';
 
 const source=await readFile(new URL('../web/video-panel.mjs',import.meta.url),'utf8');
@@ -100,10 +101,18 @@ check('factored preview retains map aliases, weak peaks, identities and capped a
  const row=host.children[1],expected=api.formatCoordinateRanges(previewPartyMapCandidates(factors,24).rows[0].mapCoordinate);
  assert.match(row.children[0].textContent,/map 10\/20/);assert.match(row.children[0].textContent,/画像位置未確定/);
  assert(row.children[0].textContent.endsWith(expected.summary));
- for(const line of expected.lines)assert(row.children.some(child=>child.textContent===line));
+ for(const branch of previewPartyMapCandidates(factors,24).rows[0].mapCoordinateAlternatives)for(const line of api.formatCoordinateRanges(branch).lines)assert(row.children.some(child=>child.textContent===line));
  assert.match(row.textContent,/同名ID・弱い位置候補・未探索マップは除外していません/);
  assert.doesNotMatch(host.textContent,/0x|tuple=|low16 X=|X≈|Z≈/);
  assert.equal(JSON.stringify(factors),before);
+});
+
+check('fixed anchors render no physical interval and mixed aliases retain outside ranges',()=>{
+ const d={path:'shared',groupOrder:'source-order-prepended',groups:[{kind:'map-id-list',mapIds:[100],callOffset:16},{kind:'coordinate-map-id-list',mapIds:[103],x:5,z:19,callOffset:24}]};
+ const fixed=mapMarkerCoordinateCandidate({mapId:103},markerCoordinateBinding(d,103)),display=api.formatCoordinateRanges(fixed);
+ assert.match(display.summary,/固定表示点/);assert.doesNotMatch(display.lines.join(' '),/signed raw32|unsigned local16/);
+ const mixed=structuredClone(factors);mixed.references[0].mapIds=[100,103];mixed.references[0].markerCoordinateBindings=[100,103].map(id=>markerCoordinateBinding(d,id));
+ const host=new Element();api.renderCandidatePartyCoordinates(mixed,host);assert.match(host.textContent,/map 100: X範囲/);assert.match(host.textContent,/map 103: 固定表示点/);assert.match(host.textContent,/X chunk/);
 });
 
 console.log(JSON.stringify({passed:true,checks,scope:'synthetic shared formatting and both coordinate render paths; no browser visual or real-video accuracy claim'}));

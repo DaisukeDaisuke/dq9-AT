@@ -49,3 +49,6 @@ node scripts/test-map-recognize-page.mjs
 node scripts/check-ds-screen-synthetic.mjs
 node scripts/test-map-coordinate-fallback.mjs
 node scripts/test-coordinate-range-ui.mjs
+
+# A fixed house display anchor cannot become a physical chunk estimate.
+node scripts/test-map-marker-coordinate.mjs
