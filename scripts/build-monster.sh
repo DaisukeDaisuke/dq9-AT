@@ -13,7 +13,7 @@ OBJECT="$(mktemp /tmp/dq9-monster-XXXXXX.o)"
 trap 'rm -f "$OBJECT"' EXIT
 "$CLANG" --target=wasm32-unknown-unknown -O3 -nostdlib -ffreestanding -fno-builtin -c wasm/monster_geometry.c -o "$OBJECT"
 EXPORTS=()
-for NAME in input vertices indices matrix stack commands vertex_count index_count error_opcode error_offset reset decode; do
+for NAME in input vertices indices edge_masks matrix stack commands vertex_count index_count error_opcode error_offset reset decode; do
   EXPORTS+=("--export=monster_$NAME")
 done
 MEMORY_EXPORT=()

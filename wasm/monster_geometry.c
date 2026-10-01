@@ -9,11 +9,13 @@
 static uint8_t input[MAX_INPUT];
 /* position(3), uv(2), color(3), normal(3); texels normalized y-down for WebGPU */
 static float vertices[MAX_VERTICES*11], current[16], stack[32*16];
+static uint8_t edge_masks[MAX_INDICES/3];
 static uint32_t indices[MAX_INDICES], nv, ni, err_op, err_offset;
 static uint32_t count_op[256];
 API uint8_t *monster_input(void){return input;}
 API float *monster_vertices(void){return vertices;}
 API uint32_t *monster_indices(void){return indices;}
+API uint8_t *monster_edge_masks(void){return edge_masks;}
 API float *monster_matrix(void){return current;}
 API float *monster_stack(void){return stack;}
 API uint32_t *monster_commands(void){return count_op;}
@@ -24,12 +26,13 @@ API uint32_t monster_error_offset(void){return err_offset;}
 API void monster_reset(void){nv=ni=err_op=err_offset=0;for(int i=0;i<256;i++)count_op[i]=0;}
 static uint32_t u32(const uint8_t*p){return (uint32_t)p[0]|(uint32_t)p[1]<<8|(uint32_t)p[2]<<16|(uint32_t)p[3]<<24;}
 static int32_t sx(uint32_t v,int n){return (int32_t)(v<<(32-n))>>(32-n);}
-static int tri(uint32_t a,uint32_t b,uint32_t c){if(ni+3>MAX_INDICES)return 3;indices[ni++]=a;indices[ni++]=b;indices[ni++]=c;return 0;}
+static int tri_edges(uint32_t a,uint32_t b,uint32_t c,uint8_t mask){if(ni+3>MAX_INDICES)return 3;edge_masks[ni/3]=mask;indices[ni++]=a;indices[ni++]=b;indices[ni++]=c;return 0;}
+static int tri(uint32_t a,uint32_t b,uint32_t c){return tri_edges(a,b,c,7);}
 static int finish(uint32_t start,int mode){uint32_t n=nv-start;int e;
  if(mode==0){if(n%3)return 4;for(uint32_t i=start;i+2<nv;i+=3)if((e=tri(i,i+1,i+2)))return e;}
- else if(mode==1){if(n%4)return 4;for(uint32_t i=start;i+3<nv;i+=4){if((e=tri(i,i+1,i+2)))return e;if((e=tri(i,i+2,i+3)))return e;}}
+ else if(mode==1){if(n%4)return 4;for(uint32_t i=start;i+3<nv;i+=4){if((e=tri_edges(i,i+1,i+2,5)))return e;if((e=tri_edges(i,i+2,i+3,3)))return e;}}
  else if(mode==2){if(n<3)return 4;for(uint32_t i=start;i+2<nv;i++)if((e=(i-start)%2?tri(i,i+2,i+1):tri(i,i+1,i+2)))return e;}
- else if(mode==3){if(n<4||n%2)return 4;for(uint32_t i=start;i+3<nv;i+=2){if((e=tri(i,i+1,i+3)))return e;if((e=tri(i,i+3,i+2)))return e;}}
+ else if(mode==3){if(n<4||n%2)return 4;for(uint32_t i=start;i+3<nv;i+=2){if((e=tri_edges(i,i+1,i+3,5)))return e;if((e=tri_edges(i,i+3,i+2,3)))return e;}}
  return 0;
 }
 /* Codes: 1 unsupported opcode, 2 truncated/bounds, 3 budget,

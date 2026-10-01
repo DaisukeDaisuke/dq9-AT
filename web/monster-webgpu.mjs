@@ -45,6 +45,7 @@ export class MonsterWebGPU {
  }
  releaseScene(){for(const r of this.sceneResources)r.destroy();this.sceneResources=[];this.model=null;this.bindings=[];}
  uploadScene(model,resources){
+  if(model.billboards?.length||model.materials.some(m=>m.wireframe||m.translucent))throw Error('Extended billboard/alpha/wireframe models require the CPU template renderer; GPU support is not yet validated');
   const d=this.device,upload=(data,usage)=>{const b=d.createBuffer({size:Math.max(4,data.byteLength),usage:usage|GPUBufferUsage.COPY_DST});resources.push(b);d.queue.writeBuffer(b,0,data);return b;};
   const vertex=upload(model.vertices,GPUBufferUsage.VERTEX),index=upload(model.indices,GPUBufferUsage.INDEX);
   const bindings=model.materials.map(mat=>{const texture=d.createTexture({size:[mat.width,mat.height],format:'rgba8unorm',usage:GPUTextureUsage.TEXTURE_BINDING|GPUTextureUsage.COPY_DST});resources.push(texture);d.queue.writeTexture({texture},mat.rgba,{bytesPerRow:mat.width*4,rowsPerImage:mat.height},[mat.width,mat.height]);

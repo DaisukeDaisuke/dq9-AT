@@ -570,9 +570,9 @@ class TEX0Header {
         this.compressedTextureInfoDataOffset = raw.readUint32(0x28);
         // 0x2C (4 bytes): Padding
         // 0x30 (4 bytes): Palette Data Size
-        this.paletteDataSize = raw.readUint32(0x30);
+        this.paletteDataSize = raw.readUint16(0x30);
         // 0x34 (4 bytes): Palette Info Offset
-        this.paletteInfoOffset = raw.readUint32(0x34);
+        this.paletteInfoOffset = raw.readUint16(0x34);
         // 0x38 (4 bytes): Palette Data Offset
         this.paletteDataOffset = raw.readUint32(0x38);
     }
@@ -890,7 +890,7 @@ class TEX0 {
                 const texRaw = this.raw.slice(texOffset, texOffset + texSize);
                 const paletteInfo = this.paletteInfo.entries[palIndex];
                 const paletteOffset = this.header.paletteDataOffset + paletteInfo.paletteOffset;
-                const palRaw = this.raw.slice(paletteOffset, paletteOffset + 0x400);
+                const palRaw = this.raw.slice(paletteOffset, paletteOffset + 0x200);
                 return TextureFormats.parsePalette256(texRaw, palRaw, textureInfo.width, textureInfo.height, textureInfo.firstColorTransparent);
             }
             case 5: {

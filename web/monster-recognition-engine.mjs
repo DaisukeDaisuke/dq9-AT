@@ -7,7 +7,7 @@ import {cosineSimilarity,DINO_SPEC,dinoSpec} from './monster-dinov2.mjs';
 import {validateRGBA,colorDescriptor,descriptorDistance,cropRGBA} from './monster-roi-descriptor.mjs';
 const need=(v,m)=>{if(!v)throw Error(m);};const clone=x=>structuredClone(x);const yieldTask=()=>new Promise(r=>setTimeout(r,0));
 // Hash of the reviewed renderer/decoder dependency manifest. Bump when those sources change.
-export const FEATURE_RENDER_REVISION='6100f780a3554b03d3160a0d1b169ced003c9c9bd3c05f4dd0300252025c42ee';
+export const FEATURE_RENDER_REVISION='b9a36fb7f8213675174556996d5292c2fb2c4ff480bb66776fdb4036f9d789b8';
 export const RECOGNITION_LIMITS=Object.freeze({models:4,variants:8,templates:256,tileSize:64,poseBytes:8*1024*1024,cacheBytes:8*1024*1024,wallTimeMs:30000,roiPixels:1024*1024});
 export function validateRecognitionRequest(request,catalog){
  need(request&&Array.isArray(request.modelIds)&&request.modelIds.length>=1&&request.modelIds.length<=4&&new Set(request.modelIds).size===request.modelIds.length,'候補モデルを1〜4種類選んでください');need(request.modelIds.every(id=>typeof id==='string'&&catalog.has(id)),'未登録のモデルです');need(['_f','regular','both'].includes(request.variant),'variantを明示してください');need(['quick','standard'].includes(request.preset),'探索設定が不正です');validateRGBA(request.crop);need(request.crop.width<=1024&&request.crop.height<=1024,'ROIの幅・高さは1024px以下にしてください');
@@ -45,7 +45,7 @@ export async function recognizeROI(request,{nitro,catalog,geometry,signal,onProg
     const bounds=unionBounds(poses);for(const model of poses)model.templateBounds=clone(bounds);
    }catch(error){if(error.name==='AbortError')throw error;unsupported.push({modelId,variant,reason:error.message});continue;}
    if(dino&&featureStore&&/^[0-9a-f]{64}$/.test(romSHA256??'')){
-    modelBankKey=JSON.stringify({schema:'dq9-rom-model-pose-vectors-v2',romSHA256,inference:dino.identity,inferenceRevision:dino.spec.modelRevision,modelId,variant,preset:request.preset,posePolicy:'bind-stand-run-appear-midpoint-exact-v1',renderer:'cpu-unlit-v1-unionbounds',geometry:FEATURE_RENDER_REVISION,views,tileSize:64});
+    modelBankKey=JSON.stringify({schema:'dq9-rom-model-pose-vectors-v2',romSHA256,inference:dino.identity,inferenceRevision:dino.spec.modelRevision,modelId,variant,preset:request.preset,posePolicy:'bind-stand-run-appear-midpoint-exact-v1',renderer:'cpu-unlit-v2-unionbounds',geometry:FEATURE_RENDER_REVISION,views,tileSize:64});
     try{const saved=await featureStore.read(modelBankKey,{signal});if(saved){need(saved.length<=16&&saved.every(e=>e.key.startsWith(dino.identity+':'+romSHA256+':')),'保存特徴量の推論識別が一致しません');for(const e of saved){if(dino.cache.has(e.key))dino.cache.delete(e.key);else if(dino.cache.size>=64)dino.cache.delete(dino.cache.keys().next().value);dino.cache.set(e.key,e.vector);}modelRestored=saved.length;persistentRestored+=saved.length;modelSaved=true;onProgress({phase:'cache',done:rendered,total:plan.maxTemplates,message:`${modelId} / ${variant}の保存済み姿勢特徴 ${saved.length}件を再利用`});}}
     catch(error){if(error.name==='AbortError')throw error;cacheWarnings.push(`${modelId}: 保存特徴量を読めないため再生成します: ${error.message}`);onProgress({phase:'cache',message:cacheWarnings.at(-1)});}
    }
