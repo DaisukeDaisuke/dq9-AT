@@ -70,7 +70,7 @@ export function createFirstSpawnReplay({project,rom,kernel,fieldKernel,atKernel,
  const worldTrajectory=crosses?{schema:'dq9-pre-spawn-trajectory-v2',phase:'pre-spawn-and-post-hero-effective',mapId:trajectory.mapId,steps:trajectory.steps}:trajectory;
  const steps=validateSpawnTrajectory(worldTrajectory,runtime.mapId,graph,continueNewborn);
  const mapTransitions=crosses?prepareMapTransitions(project,runtime.transitionContext,trajectory.transitionPhases,steps.at(-1).sourceFrame):null;
- const f06Continuation=destination?prepareF06Continuation(project,runtime.destinationContinuation,trajectory.destinationContinuation,mapTransitions,steps[0].sourceFrame):null;
+ const f06Continuation=destination?prepareF06Continuation(project,runtime.destinationContinuation,trajectory.destinationContinuation,mapTransitions,steps[0].sourceFrame,{rom}):null;
  check(dense(runtime.runtimeNodeFlags)&&runtime.runtimeNodeFlags.length===graph.nodes.length&&runtime.runtimeNodeFlags.every(n=>uint(n)),'全nodeのruntime flagsが必要です');
  const parties=copy(runtime.parties);check(dense(parties)&&parties.length===4&&parties.every((p,i)=>p&&p.slot===i&&p.registryKnown===true&&uint(p.pointer)),'party0..3のregistry状態が必要です');
  const hero=parties[runtime.selectedHeroSlot];check(hero.pointer>0&&uint(hero.headerFlags,65535)&&(hero.headerFlags&0x200)!==0&&hero.mapId===runtime.mapId&&hero.alternateMap===0xffffffff,'選択heroの同map・typed/effective位置条件が必要です');

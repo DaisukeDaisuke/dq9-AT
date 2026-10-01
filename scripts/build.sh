@@ -77,3 +77,6 @@ node scripts/test-rtdetr-runtime-check.mjs
 
 # Bounded frozen-frame enemy ROI proposal contracts.
 node scripts/test-monster-position-proposals.mjs
+
+# Connected original-state F06 motion through the first guarded selection draws.
+node scripts/test-f06-hero-motion.mjs

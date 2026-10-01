@@ -1,3 +1,4 @@
+import {proposeDenseComplement,validateDenseComplement} from './monster-dense-proposals.mjs';
 import {readMonsterAssets} from './monster-assets.mjs';
 import {readNSBCA,sampleMatrices} from './monster-animation.mjs';
 import {MonsterTemplateBank} from './monster-template-bank.mjs';
@@ -22,18 +23,41 @@ export function validateRecognitionRequest(request,catalog){
 }
 const poseBytes=model=>model.vertices.byteLength+model.indices.byteLength+model.materials.reduce((n,m)=>n+m.rgba.byteLength,0);
 function unionBounds(poses){return {min:[0,1,2].map(k=>Math.min(...poses.map(p=>p.bounds.min[k]))),max:[0,1,2].map(k=>Math.max(...poses.map(p=>p.bounds.max[k])))};}
-export async function recognizeROI(request,{nitro,catalog,geometry,signal,onProgress=()=>{},getDino,romSHA256,featureStore}){
- const plan=validateRecognitionRequest(request,catalog),start=performance.now(),renderer=new MonsterCPU(),bank=new MonsterTemplateBank(renderer,{maxCacheBytes:RECOGNITION_LIMITS.cacheBytes,maxEntries:32});let rendered=0;
+export const DENSE_POSE_MODELS=Object.freeze(['z019b','z021a','z064a','z000c']);
+/** Prepare the ordinary quick/_f pose bank without a query crop or ranking. */
+export async function prepareDinoPoseBank(request,deps){
+ need(request?.featureMethod==='dinov2'&&request.preset==='quick'&&request.variant==='_f','DINO補助はフィールドモデル・クイック設定のみ対応します');
+ need(Array.isArray(request.modelIds)&&request.modelIds.length===4&&DENSE_POSE_MODELS.every(id=>request.modelIds.includes(id)&&deps.catalog.has(id)),'DINO補助は初期の4モデルを選択してください');
+ need(Number.isSafeInteger(request.romEpoch)&&request.romEpoch>=0&&/^[a-f0-9]{64}$/.test(deps.romSHA256??''),'現在のROM識別が必要です');dinoSpec(request.inferenceBackend);
+ return runRecognition({...request,modelIds:[...DENSE_POSE_MODELS]},deps,true);
+}
+/** One explicit frozen-frame job. Bank preparation and classification share the same renderer/cache. */
+export async function supplementEnemyROIs(request,deps){
+ if(deps.signal?.aborted)throw new DOMException('中止','AbortError');
+ const current=structuredClone(request.current);validateDenseComplement(request.image,current);
+ need(request.romEpoch===current.captureStamp.romEpoch&&request.featureMethod===current.captureStamp.featureMethod&&request.inferenceBackend===current.captureStamp.inferenceBackend,'DINO補助のROM・実行方式が一致しません');
+ if(current.proposals.length===8)return{...current,denseAdded:[],denseSkipped:'cpu-budget-full'};
+ const image={width:request.image.width,height:request.image.height,rgba:request.image.rgba.slice()};
+ const started=performance.now(),prepared=await prepareDinoPoseBank(request,deps);
+ if(deps.signal?.aborted)throw new DOMException('中止','AbortError');
+ deps.onProgress?.({phase:'patch',message:'固定したゲーム画面のDINOパッチから補助候補を計算中'});
+ const backend=await deps.getDino({backend:request.inferenceBackend});
+ const result=await proposeDenseComplement(image,current,{backend,poseBank:prepared.bank,romSHA256:deps.romSHA256,signal:deps.signal,getCurrentCaptureStamp:()=>deps.signal?.aborted?null:current.captureStamp});
+ return{...result,densePreparation:prepared.timings,cacheWarnings:prepared.cacheWarnings,denseTotalMs:performance.now()-started};
+}
+export async function recognizeROI(request,deps){return runRecognition(request,deps,false);}
+async function runRecognition(request,{nitro,catalog,geometry,signal,onProgress=()=>{},getDino,romSHA256,featureStore},prepareOnly){
+ const plan=prepareOnly?{variants:['_f'],viewCount:4,maxTemplates:64,featureMethod:'dinov2',inferenceBackend:request.inferenceBackend}:validateRecognitionRequest(request,catalog),start=performance.now(),renderer=new MonsterCPU(),bank=new MonsterTemplateBank(renderer,{maxCacheBytes:RECOGNITION_LIMITS.cacheBytes,maxEntries:32});let rendered=0;
  const maxMs=plan.featureMethod==='dinov2'?DINO_SPEC.maxMs:RECOGNITION_LIMITS.wallTimeMs;
  const guard=()=>{if(signal?.aborted)throw new DOMException('識別を中止しました','AbortError');if(performance.now()-start>maxMs)throw Error(`${maxMs/1000}秒の処理予算に達しました。候補数を減らして再試行してください`);};
- const unsupported=[],rankMap=new Map(),views=Array.from({length:plan.viewCount},(_,i)=>({yaw:i*Math.PI*2/plan.viewCount,pitch:Math.PI/4})),stamp=clone(request.captureStamp);let query,dino,statsBefore,backendInitMs=0;const cacheWarnings=[],modelCacheStats=[];let persistentRestored=0,persistentSavedModels=0;
- const exclusion=getFieldExclusion(stamp,plan.sceneContext);
+ const unsupported=[],rankMap=new Map(),views=Array.from({length:plan.viewCount},(_,i)=>({yaw:i*Math.PI*2/plan.viewCount,pitch:Math.PI/4})),stamp=prepareOnly?null:clone(request.captureStamp),preparedVectors=[],preparedKeys=[];let query,dino,statsBefore,backendInitMs=0;const cacheWarnings=[],modelCacheStats=[];let persistentRestored=0,persistentSavedModels=0;
+ const exclusion=prepareOnly?null:getFieldExclusion(stamp,plan.sceneContext);
  try{
   guard();
-  if(exclusion.excluded)return{schema:'dq9-experimental-rom-roi-ranking-v1',captureStamp:stamp,featureMethod:plan.featureMethod,metric:plan.featureMethod==='dinov2'?'cosine':'squared-distance',rankings:[],skipped:'central-field-exclusion',exclusion,unknown:{suggested:true,calibrated:false,reason:'主人公の中央領域と重なるため未観測・判別不能として扱います。敵がいない証拠ではありません'},coverage:{requestedModels:request.modelIds.length,completedModels:0,unsupported:[],renderedTemplates:0,requestedTemplateUpperBound:plan.maxTemplates,scope:'中央領域に重なる手動ROIは未観測'},elapsedMs:performance.now()-start,safeForHardPruning:false,automaticDetection:false,birthCertified:false,ATDrawsCertified:0,currentVideoStateRecovered:false};
-  if(plan.featureMethod==='dinov2'){need(typeof getDino==='function','AIランタイムを準備してください');const initStart=performance.now();dino=await getDino({backend:plan.inferenceBackend});backendInitMs=performance.now()-initStart;guard();statsBefore={...dino.stats};
-   guard();onProgress({phase:'embed',done:0,total:plan.maxTemplates,message:'切り抜きのAI特徴を計算中'});query=await dino.encode(request.crop,{signal});guard();}else query=colorDescriptor(request.crop);
-  for(const modelId of request.modelIds)for(const variant of plan.variants){guard();onProgress({phase:'decode',done:rendered,total:plan.maxTemplates,message:`${modelId} / ${variant} をROMから生成中`});await yieldTask();let asset,poses;const modelKeys=new Set(),modelRenderedStart=rendered,issueStart=unsupported.length,missStart=dino?.stats.templateCacheMisses??0,hitStart=dino?.stats.templateCacheHits??0;let modelBankKey,modelRestored=0,modelSaved=false;
+  if(exclusion?.excluded)return{schema:'dq9-experimental-rom-roi-ranking-v1',captureStamp:stamp,featureMethod:plan.featureMethod,metric:plan.featureMethod==='dinov2'?'cosine':'squared-distance',rankings:[],skipped:'central-field-exclusion',exclusion,unknown:{suggested:true,calibrated:false,reason:'主人公の中央領域と重なるため未観測・判別不能として扱います。敵がいない証拠ではありません'},coverage:{requestedModels:request.modelIds.length,completedModels:0,unsupported:[],renderedTemplates:0,requestedTemplateUpperBound:plan.maxTemplates,scope:'中央領域に重なる手動ROIは未観測'},elapsedMs:performance.now()-start,safeForHardPruning:false,automaticDetection:false,birthCertified:false,ATDrawsCertified:0,currentVideoStateRecovered:false};
+  if(plan.featureMethod==='dinov2'){need(typeof getDino==='function','AIランタイムを準備してください');const initStart=performance.now();dino=await getDino({backend:plan.inferenceBackend});backendInitMs=performance.now()-initStart;if(prepareOnly)need(dino.spec.backend===plan.inferenceBackend,'姿勢特徴の推論方式が一致しません');guard();statsBefore={...dino.stats};
+   if(!prepareOnly){guard();onProgress({phase:'embed',done:0,total:plan.maxTemplates,message:'切り抜きのAI特徴を計算中'});query=await dino.encode(request.crop,{signal});guard();}}else query=colorDescriptor(request.crop);
+  for(const modelId of request.modelIds)for(const variant of plan.variants){guard();onProgress({phase:'decode',done:rendered,total:plan.maxTemplates,message:`${modelId} / ${variant} をROMから生成中`});await yieldTask();let asset,poses;const modelKeys=new Set(),modelRenderedStart=rendered,modelPreparedStart=preparedVectors.length,issueStart=unsupported.length,missStart=dino?.stats.templateCacheMisses??0,hitStart=dino?.stats.templateCacheHits??0;let modelBankKey,modelRestored=0,modelSaved=false;
    try{
     asset=readMonsterAssets(nitro,catalog,[{modelId,variant}]).models[0];poses=[geometry.decode(asset)];const baseBytes=poseBytes(poses[0]);let bytes=baseBytes;need(bytes<=RECOGNITION_LIMITS.poseBytes,'モデルの姿勢データ予算を超えました');
     for(const clip of ['stand.nsbca','run.nsbca','appear.nsbca']){
@@ -53,10 +77,10 @@ export async function recognizeROI(request,{nitro,catalog,geometry,signal,onProg
    for(const model of poses){guard();let lease;try{
     lease=await bank.generate([model],{sessionKey:`rom-${request.romEpoch}`,views,tileSize:64,signal,candidateScope:'explicit',onProgress:p=>{guard();onProgress({phase:'render',done:plan.featureMethod==='dinov2'?rendered:rendered+p.completedViews,total:plan.maxTemplates,message:`${modelId} ${model.poseSource?.clip??'bind'} / 姿勢候補を照合中`});}});
     const atlas=lease.entries[0].atlas;
-    for(const view of atlas.views){const thumbnail=cropRGBA(atlas,view.x,view.y,64,64),color=colorDescriptor(thumbnail,{template:true});if(color.empty)continue;guard();let similarity,distance;if(dino){const vector=await dino.encode(thumbnail,{template:true,cacheKey:romSHA256??`rom-${request.romEpoch}`,signal,onCacheKey:key=>modelKeys.add(key)});guard();similarity=cosineSimilarity(query,vector);distance=1-similarity;onProgress({phase:'embed',done:rendered+atlas.views.indexOf(view)+1,total:plan.maxTemplates,message:`${modelId} のAI特徴を比較中`});}else distance=descriptorDistance(query,color);const previous=rankMap.get(modelId);if(!previous||distance<previous.distance)rankMap.set(modelId,{modelId,speciesCandidates:clone(model.speciesCandidates),distance,...(dino?{similarity}:{}),bestPose:{clip:model.poseSource?.clip??'bind',frame:model.poseSource?.frame??null,variant,yaw:view.yaw,pitch:view.pitch},thumbnail});}
+    for(const view of atlas.views){const thumbnail=cropRGBA(atlas,view.x,view.y,64,64),color=colorDescriptor(thumbnail,{template:true});if(color.empty)continue;guard();let similarity,distance;if(dino){const vector=await dino.encode(thumbnail,{template:true,cacheKey:romSHA256??`rom-${request.romEpoch}`,signal,onCacheKey:key=>{modelKeys.add(key);if(prepareOnly)preparedKeys.push(key);}});guard();if(prepareOnly)preparedVectors.push(vector.slice());else{similarity=cosineSimilarity(query,vector);distance=1-similarity;}onProgress({phase:'embed',done:rendered+atlas.views.indexOf(view)+1,total:plan.maxTemplates,message:`${modelId} のAI特徴を比較中`});}else distance=descriptorDistance(query,color);const previous=rankMap.get(modelId);if(!prepareOnly&&(!previous||distance<previous.distance))rankMap.set(modelId,{modelId,speciesCandidates:clone(model.speciesCandidates),distance,...(dino?{similarity}:{}),bestPose:{clip:model.poseSource?.clip??'bind',frame:model.poseSource?.frame??null,variant,yaw:view.yaw,pitch:view.pitch},thumbnail});}
     rendered+=views.length;
    }catch(error){if(error.name==='AbortError'||dino)throw error;unsupported.push({modelId,variant,clip:model.poseSource?.clip??'bind',frame:model.poseSource?.frame??null,reason:error.message});}finally{lease?.release();}await yieldTask();}
-   const modelComplete=unsupported.length===issueStart&&rendered-modelRenderedStart===16&&poses.length===4&&rankMap.has(modelId);
+   const modelComplete=unsupported.length===issueStart&&rendered-modelRenderedStart===16&&poses.length===4&&(prepareOnly?preparedVectors.length-modelPreparedStart===16:rankMap.has(modelId));
    if(dino&&modelBankKey&&modelComplete&&(!modelRestored||dino.stats.templateCacheMisses>missStart)){
     try{const entries=[...modelKeys].map(key=>({key,vector:dino.cache.get(key)}));need(entries.length>0&&entries.length<=16&&entries.every(e=>e.vector),'完成したモデル姿勢バンクが揃っていません');guard();await featureStore.write(modelBankKey,entries,{signal});modelSaved=true;}
     catch(error){if(error.name==='AbortError')throw error;modelSaved=false;cacheWarnings.push(`${modelId}: 今回の特徴量を保存できませんでした: ${error.message}`);}
@@ -66,6 +90,7 @@ export async function recognizeROI(request,{nitro,catalog,geometry,signal,onProg
   }
   guard();const rankings=[...rankMap.values()].sort((a,b)=>a.distance-b.distance||a.modelId.localeCompare(b.modelId));
   guard();const timings=dino?{backendInitMs,queryMs:dino.stats.queryMs-statsBefore.queryMs,templateEmbeddingMs:dino.stats.templateEmbeddingMs-statsBefore.templateEmbeddingMs,templateCacheHits:dino.stats.templateCacheHits-statsBefore.templateCacheHits,templateCacheMisses:dino.stats.templateCacheMisses-statsBefore.templateCacheMisses,persistentRestored,persistentSaved:persistentSavedModels===request.modelIds.length,persistentSavedModels,models:modelCacheStats,totalMs:performance.now()-start}:null;
+  if(prepareOnly){need(!unsupported.length&&rendered===64&&preparedVectors.length===64&&preparedKeys.length===64,'64姿勢を準備できませんでした。補助候補は追加していません');return{bank:{identity:dino.identity,romSHA256,romEpoch:request.romEpoch,keys:preparedKeys,vectors:preparedVectors},timings,cacheWarnings};}
   return{schema:'dq9-experimental-rom-roi-ranking-v1',captureStamp:stamp,featureMethod:plan.featureMethod,metric:dino?'cosine':'squared-distance',...(dino?{inference:{...dino.spec,cacheEntries:dino.cache?.size??0},timings,cacheWarnings}:{}),exclusion,rankings,unknown:{suggested:true,reason:!dino&&query.empty?'切り抜き内の不透明画素を確認できません':'距離の採否境界は未検証です。候補外の種・背景・UIを除外できません',calibrated:false},coverage:{requestedModels:request.modelIds.length,completedModels:rankings.length,unsupported,renderedTemplates:rendered,requestedTemplateUpperBound:plan.maxTemplates,scope:'手動ROI・選択モデル・指定variant・45度の仮カメラ・少数のROM姿勢候補のみ'},elapsedMs:performance.now()-start,descriptor:dino?`DINOv2-small ${dino.spec.precision} ${dino.spec.provider}384-component CLS cosine over ROM poses; uncalibrated`:'ROM-only 24-component hue/saturation histogram; deterministic bilinear48px, uncalibrated scene-specific foreground heuristic',safeForHardPruning:false,automaticDetection:false,birthCertified:false,ATDrawsCertified:0,currentVideoStateRecovered:false,limitations:['候補順と距離は実験値で、確率ではありません','画面から敵を自動検出しません。背景・UIの誤候補が残ります','照明・色・実カメラ・実animation位相は未再現です','同じモデルの種ID候補をすべて保持し、候補外の可能性も残します','出現・出生・AT消費や現在ATをこの結果から確定しません']};
  }finally{bank.destroy();renderer.destroy();}
 }

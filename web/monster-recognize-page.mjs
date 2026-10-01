@@ -113,6 +113,7 @@ export class RecognitionWorkerClient {
     return reply.catalog;
   }
   recognize(message) { return this.request(message, [message.crop.rgba.buffer], 'result'); }
+  supplement(message) { return this.request(message, [message.image.rgba.buffer], 'result'); }
   terminate() {
     this.generation++; this.worker?.terminate(); this.worker = null; this.loadedRomEpoch = null;
     for (const pending of this.pending.values()) pending.reject(abortError());
@@ -129,7 +130,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
   const state = {
     romFile: null, romEpoch: 0, sourceEpoch: 0, sourceId: null, sourceURL: null, sourceKind: null, image: null,
     sourceReady: false, timelineSegment: 0, frameSerial: 0, capture: null, roi: null, catalog: [], selected: new Set(DEFAULT_MODELS),
-    proposalResult: null, selectedProposalId: null,
+    proposalResult: null, selectedProposalId: null, denseStatus: '', denseBusy: false,
     busy: false, loading: false, loadPromise: null, lastResult: null, sequence: 0, drag: null, drawMode: true, disposed: false, assetAbort: null, clearingCache: false,
   };
   const client = new RecognitionWorkerClient({ onProgress: message => {
@@ -180,6 +181,9 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     $('generate-roi-proposals').disabled = !!proposalProblem || state.busy || state.loading || state.clearingCache;
     if ($('enable-roi-proposals').checked && proposalProblem && !state.proposalResult) $('proposal-status').textContent = proposalProblem;
     $('clear-roi-proposals').disabled = !state.proposalResult;
+    const denseProblem = denseIssue();
+    $('supplement-roi-proposals').disabled = !!denseProblem || state.busy || state.loading || state.clearingCache;
+    $('dense-proposal-note').textContent = state.denseStatus || denseProblem || '任意の補助です。64姿勢を準備・再利用し、固定画像を1回だけ処理します。追加候補にも背景が含まれ、選んだ後の分類時間が別途かかります。';
   }
   function proposalIssue() {
     if (state.disposed) return 'ページを読み直してください。';
@@ -193,6 +197,65 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     } catch (failure) { return failure.message; }
     return '';
   }
+  function denseIssue() {
+    const issue = proposalIssue(); if (issue) return issue;
+    if (!proposalsMatchCapture()) return '先にCPUの領域候補を作ってください。';
+    if (state.proposalResult.proposals.length >= 8) return 'すでに8候補あるため、DINO補助は実行しません。';
+    if (state.proposalResult.denseRevision) return 'この固定画像は補助済みです。再実行する場合はCPU候補を作り直してください。';
+    if (!state.romFile) return 'DINO補助にはNDSの読込が必要です。';
+    if (featureMethod() !== 'dinov2' || $('preset').value !== 'quick' || $('variant').value !== '_f') return 'DINO補助は「DINOv2」・フィールドモデル（_f）・クイックで使えます。設定は自動変更しません。';
+    const ids = selectedIDs(); if (ids.length !== 4 || !DEFAULT_MODELS.every(id => ids.includes(id))) return 'DINO補助には初期の4モデル（z019b / z021a / z064a / z000c）を選択してください。';
+    const game = gameplayROI(); if (game.w * 3 !== game.h * 4 || game.w > 1024 || game.h > 1024 || game.w * game.h > 1024 ** 2) return 'DINO補助のゲーム範囲は正確な4:3で各辺1024px以下にしてください。';
+    return '';
+  }
+  async function supplementProposals() {
+    if (state.busy || state.loading || state.clearingCache) return;
+    const issue = denseIssue(); if (issue) { error(issue); return; }
+    const sourceSet = state.proposalResult;
+    invalidate(''); error();
+    const id = nextID(), epoch = state.romEpoch, captureStamp = cloneCaptureStamp(currentStamp()), backend = captureStamp.inferenceBackend;
+    const current = structuredClone({ ...sourceSet, captureStamp }); delete current.trackingFrame;
+    // The private frozen canvas owns these bytes; overlays and live video are never sampled.
+    let image;
+    gate.begin(id, epoch, captureStamp); state.busy = true; state.denseBusy = true; state.denseStatus = 'DINO補助を準備中です。下の中止ボタンで止められます。'; controls();
+    const preparation = new AbortController(); state.assetAbort = preparation; const started = performance.now();
+    const fresh = () => !preparation.signal.aborted && gate.accepts({ id, romEpoch: epoch }) && state.proposalResult === sourceSet && stampEquals(captureStamp, currentStamp());
+    try {
+      image = { width: frozen.width, height: frozen.height, rgba: frozenCtx.getImageData(0, 0, frozen.width, frozen.height).data };
+      await ensureLoaded(); if (!fresh()) return;
+      if (backend === 'webgpu') await probeWebGPU({ signal: preparation.signal }); if (!fresh()) return;
+      await ensureInferenceAssets({ backend, signal: preparation.signal, onProgress: progress => {
+        if (!fresh()) return;
+        const total = progress.total ?? progress.totalBytes, done = progress.done ?? progress.loaded ?? progress.loadedBytes;
+        if (Number.isFinite(total) && total > 0) { $('progress').max = total; $('progress').value = Math.min(total, Math.max(0, done || 0)); } else $('progress').removeAttribute('value');
+        status(progress.message || phaseName(progress.phase));
+      } });
+      if (!fresh()) return;
+      const message = await client.supplement({ type: 'supplement', id, romEpoch: epoch, captureStamp, current, image, modelIds: [...DEFAULT_MODELS], variant: '_f', preset: 'quick', featureMethod: 'dinov2', inferenceBackend: backend });
+      if (!fresh()) return;
+      if (!gate.accepts(message)) throw new Error('固定画像情報が一致しない補助候補を破棄しました。');
+      const result = message.result, candidates = result.proposals;
+      if (!Array.isArray(candidates) || candidates.length > 8 || candidates.length < sourceSet.proposals.length) throw new Error('補助候補の予算が不正です。');
+      for (const [i, candidate] of candidates.entries()) {
+        validateROI(candidate.roi, captureStamp.sourceFrame);
+        if (i < sourceSet.proposals.length && (candidate.proposalId !== sourceSet.proposals[i].proposalId || !sameRect(candidate.roi, sourceSet.proposals[i].roi))) throw new Error('CPU候補の順序または範囲が変わったため破棄しました。');
+      }
+      state.proposalResult = { ...result, captureStamp }; state.busy = false; state.denseBusy = false;
+      const p = result.densePreparation || {}, t = result.denseTimings || {}, added = candidates.length - sourceSet.proposals.length;
+      state.denseStatus = `DINO補助 ${added}枠追加・計${candidates.length}/8枠 · 全体${((performance.now()-started)/1000).toFixed(1)}秒 · 姿勢特徴 新規${p.templateCacheMisses ?? 0} / 再利用${p.templateCacheHits ?? 0}（保存から${p.persistentRestored ?? 0}） · 画面パッチ${((t.totalMs || 0)/1000).toFixed(2)}秒。背景候補も増えます。分類は選んだ切り抜きごとに別途実行します。${result.cacheWarnings?.length ? ` 保存キャッシュの注意: ${result.cacheWarnings.join(' ')}` : ''}`;
+      $('proposal-status').textContent = `${candidates.length}候補はすべて未確認です。候補を選び、元画像の切り抜きを既存の分類器で照合してください。`;
+      renderProposals(); paint(); controls(); $('progress').max = 1; $('progress').value = 1;
+      status('固定画像の補助候補を追加しました。敵・種類・出現やATは確定していません。');
+    } catch (failure) {
+      if (!fresh()) return;
+      state.busy = false; state.denseBusy = false; state.denseStatus = 'DINO補助を完了できませんでした。CPU候補は保持しています。';
+      client.terminate(); state.loadPromise = null; state.loading = false;
+      if (failure.name !== 'AbortError') error(failure.message);
+      controls();
+    } finally {
+      if (state.assetAbort === preparation) state.assetAbort = null;
+    }
+  }
   function proposalsMatchCapture() {
     if (!state.proposalResult || !state.capture) return false;
     try {
@@ -201,7 +264,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     } catch { return false; }
   }
   function clearProposals(message = '任意の実験です。手動の範囲指定もそのまま使えます。') {
-    state.proposalResult = null; state.selectedProposalId = null;
+    state.proposalResult = null; state.selectedProposalId = null; state.denseStatus = '';
     $('roi-proposal-list').replaceChildren(); $('proposal-status').textContent = message;
   }
   function renderProposals() {
@@ -267,7 +330,8 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     gate.invalidate();
     state.assetAbort?.abort(); state.assetAbort = null;
     if (terminate) { client.terminate(); state.loadPromise = null; state.loading = false; }
-    state.busy = false;
+    state.busy = false; state.denseBusy = false;
+    if (state.denseStatus && !state.proposalResult?.denseRevision) state.denseStatus = '';
     if (clear) clearResults();
     if (clearProposalSet) clearProposals();
     $('progress').max = 1; $('progress').value = 0;
@@ -617,7 +681,8 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
   });
   $('enable-roi-proposals').addEventListener('change', () => { invalidate('', { clearProposalSet: true }); error(); paint(); controls(); if ($('enable-roi-proposals').checked) $('proposal-status').textContent = proposalIssue() || '固定画像の領域候補を探せます。分類は候補を選んでから実行します。'; });
   $('generate-roi-proposals').addEventListener('click', generateProposals);
-  $('clear-roi-proposals').addEventListener('click', () => { clearProposals('候補の枠を消しました。選択済みの切り抜きは手動で調整できます。'); paint(); controls(); });
+  $('supplement-roi-proposals').addEventListener('click', supplementProposals);
+  $('clear-roi-proposals').addEventListener('click', () => { if (state.denseBusy) invalidate('', { clear: false }); clearProposals('候補の枠を消しました。選択済みの切り抜きは手動で調整できます。'); paint(); controls(); });
   $('top-k').addEventListener('change', renderResults);
   $('start').addEventListener('click', () => recognize());
   $('restart').addEventListener('click', async () => {
@@ -638,7 +703,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     $('source-file').value = ''; $('source-status').textContent = '画像・動画を選び直してください';
   });
   controls();
-  return { state, gate, client, freeze, recognize, invalidate, selectROM, selectSource, setROI, generateProposals, selectProposal };
+  return { state, gate, client, freeze, recognize, invalidate, selectROM, selectSource, setROI, generateProposals, selectProposal, supplementProposals };
 }
 
 if (typeof document !== 'undefined' && document.getElementById('rom-file')) mountRecognitionPage(document, window);

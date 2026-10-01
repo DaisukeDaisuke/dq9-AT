@@ -273,3 +273,38 @@ settled position is imported.
 Portable checks: `test-pickup-updater.mjs` and `test-f06-continuation.mjs`.
 The latter optionally accepts a local ROM, runtime-v2 packet and trajectory-v4
 packet. Native captures and private fixtures are not public assets.
+
+## Optional connected F06 motion and first selection prefix
+
+The existing v4 destination continuation accepts an optional `heroMotion` object in both `runtime.destinationContinuation` and `trajectory.destinationContinuation`. Omitting both preserves the earlier stop before geometry and its unchanged AT prefix. Supplying only one is rejected. This is one connected continuation from placement, through the fade/input lock and hero ground updates, to the first unresolved creator result. It does not add disconnected display phases.
+
+The runtime object has schema `dq9-f06-hero-motion-v1`, the same `initialSourceFrame` as the recurring updater, and provenance `{kind: "original-runtime-primitives", sourceFrame: <that frame>}`. Its primitive fields are:
+
+- `hero`: header, turnRate, targetSpeed, acceleration, e0, c1, c2, delayWord, gravity, verticalVelocity, verticalLimit, verticalCounter, width, height, groundFlags, specialMotionByte
+- `initialLock`: signed controller lock counter at the original frame
+- `cameraYaw`: original camera yaw, currently restricted to0; this may require a separate DTCM checkpoint rather than a main-RAM mirror
+- `mapSaveStateByte`: original map+0x285d, currently0
+- `dayClock`: raw float words phaseBits, periodBits, rateBits, thresholdBits[390,210,180], environmentPhaseBits; integer enabled, category, environmentOverride, environmentCategory
+- `conditions`: every named condition exported by `F06_MOTION_CONDITIONS` must explicitly be true
+
+No later XYZ, heading, node, table result, selected species, AT seed, pickup cursor, resource pointer or actor may be supplied inside this packet. Unknown extra fields are rejected. The selected party identity and natural inventory remain those carried by the existing replay.
+
+The matching trajectory object contains:
+
+- `prefixLockOperations`: a complete ordered stream before the first F06 scheduler tick. A source controller-end operation has kind, sourceFrame and scaledDelta0..50. A reached ordinary fade has kind `ordinary-fade`, sourceFrame, source duration15 and success=true. The source float constant determines the250ms write; no future counter is an input
+- `controllerPhases`: one source clock phase0..3 per existing scheduler tick
+- `heldDirections`: one explicit `Down` input per tick for the currently supported route
+
+The declarations cover ordinary successful scene loading and successful encounter-table loading; effective scene mode0..3; no additional scene, hero, node-flag, clock or environment writers; no save-state or special-motion activation; no touch override; camera yaw persistence; ordinary hero environment and selected-member gates; no additional collision actors; fixed clock scale/constants; and the complete controller/fade stream. These are conditions, not facts inferred from a map ID or a video. Camera yaw0 observed at checkpoints is insufficient to prove continuity between them.
+
+### Source ownership and limits
+
+The ROM supplies the ordinary D04→F06 entry XYZ/heading, graph, BMBL/BMDJ scene and COL2 resource, direction-list emptiness, and encounter tables. The loader supplies zero initial runtime node flags, identity object transforms and zero extra bounds. The motion projection uses the existing numeric and terrain kernels. It supports one substep, accepted static ground, no horizontal correction, unchanged ground height, and no nonzero sub-five-unit rollback branch. Unsupported ground/correction branches stop rather than reset or fabricate state.
+
+Original clock words plus the bounded number of reached calls establish category2 without copying a future time value. The ordinary environment reset threshold386 is checked against a conservative bound. Other time/environment setters remain excluded by an explicit condition. Call/frame timing is still an input; this is not an autonomous emulator.
+
+The declared example route carries29 hero passes before the next query. It derives conditional pre-query XYZ[-16220,9420,-137818], heading0 and node26. Preferred-node and candidate-point kernels then select node24 without a direction draw and derive candidate[-30665,12288,-91287]. This point is not a created actor's grounded position. The carried inventory and loader-initialized node flags permit the table gate. The unchanged132-call prefix is extended by two derived draws to134 calls/seed0xa46fab4f, table20/species88, stopping at the unknown creator result. Neither table20 nor species88 is an input or a hard-coded selection in production.
+
+The UI labels this marker `conditional hero`, names its assumptions, and leaves observed/live coordinates unknown. Fresh F06 model/AI allocation bindings, template components/materials, creation acceptance and the later same-pass hero update remain unresolved. Field resource placeholders are not interpreted as absence of newly loaded resources.
+
+Portable guard tests run in `scripts/test-f06-hero-motion.mjs`. An optional local-ROM invocation also accepts private original-state runtime and reached-control trajectory JSON paths; neither ROM nor native capture data is distributed. Existing opt-out behavior and the first124 replay events are regression-tested unchanged.

@@ -41,6 +41,18 @@ export async function createDinoFeatureBackend({backend='wasm',signal,onProgress
  const encodeStart=performance.now();const input=new ort.Tensor('float32',dinoInput(image,{template}),[1,3,224,224]);let output;
  try{output=await session.run({pixel_values:input});abort(innerSignal);const t=output.last_hidden_state;need(t&&t.dims.length===3&&t.dims[0]===1&&t.dims[1]===257&&t.dims[2]===384,'AI出力の形が不正です');const v=new Float32Array(384);let norm=0;for(let i=0;i<384;i++){need(Number.isFinite(t.data[i]),'AI出力が有限値ではありません');v[i]=t.data[i];norm+=v[i]*v[i];}need(norm>0,'AI特徴量が空です');norm=Math.sqrt(norm);for(let i=0;i<384;i++)v[i]/=norm;if(template){stats.templateEmbeddingMs+=performance.now()-encodeStart;stats.templateCacheMisses++;}else stats.queryMs+=performance.now()-encodeStart;if(key){if(cache.size>=64)cache.delete(cache.keys().next().value);cache.set(key,v);}return v;
  }finally{input.dispose?.();if(output)for(const t of Object.values(output))t.dispose?.();}},
+ // Private additive diagnostic path. Ordinary encode(), its CLS output and cache remain unchanged.
+ async encodePatchGrid(image,{signal:innerSignal}={}){
+  abort(innerSignal);need(!disposed,'AI特徴比較は終了しています');const started=performance.now();
+  const data=dinoInput(image),preprocessMs=performance.now()-started,input=new ort.Tensor('float32',data,[1,3,224,224]);let output;
+  try{const runStart=performance.now();output=await session.run({pixel_values:input});const encoderMs=performance.now()-runStart;abort(innerSignal);need(!disposed,'AI特徴比較は終了しています');
+   const t=output.last_hidden_state;need(t&&t.dims.length===3&&t.dims[0]===1&&t.dims[1]===257&&t.dims[2]===384&&t.data.length===257*384,'AI patch出力の形が不正です');
+   const normalizeStart=performance.now(),normalized=new Float32Array(257*384);
+   for(let token=0;token<257;token++){let norm=0;for(let k=0;k<384;k++){const i=token*384+k;need(Number.isFinite(t.data[i]),'AI patch出力が有限値ではありません');normalized[i]=t.data[i];norm+=normalized[i]*normalized[i];}need(norm>0,'AI patch特徴量が空です');norm=Math.sqrt(norm);for(let k=0;k<384;k++)normalized[token*384+k]/=norm;}
+   const scale=224/Math.max(image.width,image.height),resizedWidth=Math.max(1,roundEven(image.width*scale)),resizedHeight=Math.max(1,roundEven(image.height*scale));
+   return{revision:'dino-patch-grid-v1-private',identity,spec:{...spec},cls:normalized.slice(0,384),patches:normalized.slice(384),grid:{rows:16,columns:16,patchSize:14},geometry:{sourceWidth:image.width,sourceHeight:image.height,inputSize:224,resizedWidth,resizedHeight,padX:Math.floor((224-resizedWidth)/2),padY:Math.floor((224-resizedHeight)/2)},timings:{preprocessMs,encoderMs,normalizationMs:performance.now()-normalizeStart,totalMs:performance.now()-started}};
+  }finally{input.dispose?.();if(output)for(const t of Object.values(output))t.dispose?.();}
+ },
  async dispose(){if(disposed)return;disposed=true;cache.clear();try{await session.release();}finally{runtime.dispose?.();}}
  };
  }catch(e){try{await session?.release();}finally{if(runtime.ort?.env?.wasm)runtime.ort.env.wasm.wasmBinary=undefined;runtime.wasmBinary=null;runtime.dispose?.();}throw e;}

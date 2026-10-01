@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import {setupFirstSpawnPanel} from '../web/first-spawn-panel.mjs';
 let checks=0;const eq=(a,b)=>{assert.deepEqual(a,b);checks++;};
 const ids=['spawn-replay-newborn','spawn-replay-status','spawn-replay-start','spawn-replay-step','spawn-replay-ten','spawn-replay-run','spawn-replay-cancel','spawn-replay-reset','spawn-replay-runtime','spawn-replay-trajectory','spawn-replay-declared','spawn-replay-inputs','spawn-replay-log','seed'];
@@ -35,4 +36,20 @@ await load('runtime',{});await load('trajectory',{});start();const visible=creat
 const paints=[];const ctx=new Proxy({}, {get:(t,k)=>t[k]??((...a)=>paints.push([k,...a])),set:(t,k,v)=>(t[k]=v,true)});controller.draw(ctx,{x:0,z:0,scale:1});eq(paints.some(p=>p[0]==='fillRect'||p[0]==='arc'),false);
 visible.requestedPlacement={mapId:7401,xyz:[0,3072,-16384],settledHeightKnown:false};controller.draw(ctx,{x:0,z:0,scale:1});eq(paints.some(p=>p[0]==='strokeRect'),true);const view=controller.view();view.requestedPlacement.xyz[0]=999;eq(visible.requestedPlacement.xyz[0],0);controller.controlsChanged();eq(controller.view(),null);eq($('spawn-replay-step').disabled,true);
 await load('runtime',{});await load('trajectory',{});start();Object.assign(created.at(-1).s,{timer:null,status:'transition-ended',reason:'destination world unknown'});controller.refresh();assert.match($('spawn-replay-status').textContent,/timer 未確定/);checks++;
+// A source-carried hypothesis is neither measured hero input nor a live observation.
+// Unresolved creator selection must not render as a new species88 actor.
+const showConditional=()=>{const s=created.at(-1).s;Object.assign(s,{currentMapId:20006,mapTransitions:{},transitionIndex:18,pendingTransition:{phase:'pickup-projected'},currentCoordinate:{mapId:20006,kind:'conditional-source-carried',xyz:[4096,4359,8192],sourceFrame:2596,assumptions:['synthetic-pose-condition','synthetic-node-condition']},requestedPlacement:{mapId:20006,xyz:[0,3072,-16384],settledHeightKnown:false},closedActors:[{}],actors:new Map(),birth:{species:83,slot:112,xyz:[1,2,3]},heroTrace:[],events:[{index:0,sourceFrame:2596,conditionalPose:true,heroXYZ:[4096,4359,8192],selectedNodeId:24,candidateXYZ:[5000,4359,9000],tableId:20,monsterId:88,creationResolved:false,consumed:2,seed:123,reason:'creator context unresolved'}],status:'unresolved',stopped:true,reason:'creator context unresolved'});controller.refresh();return s;};
+start();const conditional=showConditional(),status=$('spawn-replay-status').textContent,log=$('spawn-replay-log').textContent;
+for(const pattern of [/条件付きhero pose \[4096, 4359, 8192\]（source-carried）/,/観測\/ライブ現在座標 未確定/,/実測hero入力・現在映像の観測値ではありません/,/poseのsourceFrame 2596/,/仮定: synthetic-pose-condition \/ synthetic-node-condition/,/条件付き計算のsourceFrame 2596/,/条件付きspecies選択 88 \/ node 24 \/ table 20/,/候補XYZ \[5000, 4359, 9000\]/,/creator未解決・生成結果は未確定/,/ROM配置要求 \[0,3072,-16384\]（接地後Yとは別）/]){assert.match(status,pattern);checks++;}
+assert.doesNotMatch(status,/入力のsourceFrame 2596|現在座標 4096|初回生成 species 88/);checks++;assert.match(log,/conditional hero\[4096, 4359, 8192\].*条件付き選択 species 88（生成未解決）/);checks++;
+paints.length=0;eq(controller.draw(ctx,{x:10,z:20,scale:2}),true);eq(paints.filter(p=>p[0]==='fillRect'),[['fillRect',8,20,8,8]]);eq(paints.some(p=>p[0]==='fillText'&&p[1]==='conditional hero'),true);eq(paints.some(p=>p[0]==='fillText'&&p[1]==='hero input'),false);eq(paints.some(p=>p[0]==='arc'),false);eq(paints.some(p=>p[0]==='fillText'&&p[1]==='ROM配置要求 / 現在Y未確定'),true);
+const conditionalView=controller.view();eq(conditionalView.currentCoordinate.kind,'conditional-source-carried');conditionalView.currentCoordinate.xyz[0]=999;conditionalView.currentCoordinate.assumptions.push('changed');eq(conditional.currentCoordinate.xyz[0],4096);eq(conditional.currentCoordinate.assumptions.length,2);
+// A conditional marker cannot be carried onto a different map or reclassified as input.
+conditional.currentMapId=7401;paints.length=0;controller.draw(ctx,{x:0,z:0,scale:1});eq(paints.some(p=>p[0]==='fillRect'),false);conditional.currentMapId=20006;
+conditional.currentCoordinate={mapId:20006,kind:'measured-effective-hero-input',xyz:[4096,0,8192]};paints.length=0;controller.draw(ctx,{x:0,z:0,scale:1});eq(paints.some(p=>p[0]==='fillText'&&p[1]==='hero input'),true);eq(paints.some(p=>p[0]==='fillText'&&p[1]==='conditional hero'),false);
+// Existing reset/config/seed/import/release paths clear conditional display state, too.
+for(const invalidate of [()=>controller.controlsChanged(),()=>$('seed').listeners.input(),()=>$('spawn-replay-reset').onclick(),()=>controller.dismiss(),()=>load('trajectory',{}),()=>controller.release()]){
+ showConditional();await invalidate();eq(controller.view(),null);eq($('spawn-replay-log').textContent,'');eq($('spawn-replay-declared').checked,false);assert.doesNotMatch($('spawn-replay-status').textContent,/条件付きhero pose|条件付きspecies選択/);checks++;paints.length=0;eq(controller.draw(ctx,{x:0,z:0,scale:1}),false);eq(paints,[]);await load('runtime',{});await load('trajectory',{});start();
+}
+const html=fs.readFileSync(new URL('../web/monster-explorer.html',import.meta.url),'utf8');for(const pattern of [/「conditional hero」/,/観測\/ライブ現在座標は未確定/,/species選択は新しいactorの生成を意味しません/,/ROM配置要求のYも接地後の現在Yではありません/]){assert.match(html,pattern);checks++;}
 console.log(JSON.stringify({passed:true,checks,scope:'Node-only small DOM controller; no browser/rendering claim',draws},null,2));
