@@ -1,0 +1,10 @@
+<!doctype html><html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' blob:; style-src 'self'; connect-src 'self' https://cdn.jsdelivr.net https://raw.githubusercontent.com; img-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"><title>Standalone detector · GPU test</title><link rel="stylesheet" href="tiny-yolo-benchmark.css"><body><main>
+<h1>単独検出器 / Standalone detector</h1><p>画像→位置＋種候補。DINO不使用。全対象の学習開始前に、実際のWebGPU学習・保存を短時間検証します / Tests a real pretrained detector and autograd before any full run</p>
+<p>重み・実行ライブラリは承認された外部配布元から検証してローカル保存。ROM・映像・画像・学習重みの外部送信はありません / Verified external downloads only; no private-data uploads</p>
+<label>測定入力 / input <select id="size"><option>160</option><option selected>320</option><option>416</option></select></label>
+<label>バッチ / batch <select id="batch"><option selected>1</option><option>2</option><option>4</option></select></label>
+<label>測定回数 / timed steps <input id="steps" type="number" min="2" max="12" value="3"></label>
+<div><button id="run">WebGPU学習ベンチマーク / benchmark</button><button id="stop" disabled>停止 / stop</button><button id="save" disabled>測定JSON保存 / save report</button></div>
+<p id="status" role="status">未実行 / not run</p><pre id="report"></pre>
+<p>測定には合成テスト画素だけを使用。学習データや精度評価ではありません。推定は学習計算部分のみで、データ生成・検証・保存を足した4時間判定は別途必要です / Synthetic timing input only. Training throughput is not accuracy or a complete four-hour estimate</p>
+</main><script type="module" src="tiny-yolo-benchmark.mjs"></script></body></html>

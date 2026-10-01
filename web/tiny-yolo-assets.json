@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "tfjsVersion": "4.22.0",
+  "modelRevision": "0ddad18731379ea214e0cfa0238b83b29dfbdb16",
+  "upstreamModelSourceApproved": true,
+  "cacheName": "dq9-standalone-tiny-yolo-coco-0ddad187-tfjs4.22-v1",
+  "assets": [
+    {
+      "id": "tfjs",
+      "url": "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js",
+      "bytes": 1469843,
+      "sha256": "300dfae273d20b4046f46a06d735688f03675a807561e9bcb5f664eb2f3d2831",
+      "kind": "runtime"
+    },
+    {
+      "id": "webgpu",
+      "url": "https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgpu@4.22.0/dist/tf-backend-webgpu.min.js",
+      "bytes": 325535,
+      "sha256": "c02ae6ef5e7fff6dc9cec8b14b45e36e8894614f3ef006973e98f7568b590f3f",
+      "kind": "runtime"
+    },
+    {
+      "id": "coco_model-weights_manifest.json",
+      "url": "https://raw.githubusercontent.com/justadudewhohacks/tfjs-tiny-yolov2/0ddad18731379ea214e0cfa0238b83b29dfbdb16/models/coco_model-weights_manifest.json",
+      "bytes": 5119,
+      "sha256": "1f3c07660e32946c33c55a43e86cafffb44939c30f7e6a8fb7409b5b667a5ea7",
+      "kind": "model"
+    },
+    {
+      "id": "coco_model-shard1",
+      "url": "https://raw.githubusercontent.com/justadudewhohacks/tfjs-tiny-yolov2/0ddad18731379ea214e0cfa0238b83b29dfbdb16/models/coco_model-shard1",
+      "bytes": 4194304,
+      "sha256": "9143e94851c00f8f3d6b131a51bd5d991d0639c024d31159581235d34c2768dd",
+      "kind": "model"
+    },
+    {
+      "id": "coco_model-shard2",
+      "url": "https://raw.githubusercontent.com/justadudewhohacks/tfjs-tiny-yolov2/0ddad18731379ea214e0cfa0238b83b29dfbdb16/models/coco_model-shard2",
+      "bytes": 4194304,
+      "sha256": "38c5fdddaaa4f9ca0d5bdeeda51bd30e6193dde4ec0e944c091d3d83231b9a17",
+      "kind": "model"
+    },
+    {
+      "id": "coco_model-shard3",
+      "url": "https://raw.githubusercontent.com/justadudewhohacks/tfjs-tiny-yolov2/0ddad18731379ea214e0cfa0238b83b29dfbdb16/models/coco_model-shard3",
+      "bytes": 2845993,
+      "sha256": "0f0c709417844c4223b263b468fb3c29d48c35c81ddea73e77f512a2f5c4aa8f",
+      "kind": "model"
+    }
+  ]
+}
