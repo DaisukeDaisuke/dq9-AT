@@ -1,4 +1,5 @@
 // Bounded ordinary shrine transitions, using ROM resources and explicit reached phases.
+import {decodePickupRows,projectPickupMaterialization} from './pickup-materialization.mjs';
 import {parseCalls,decodeMapRecords} from './vendor/call-stream.mjs';
 import {readBoundedNarcMembers,decodeMapExitMember} from './map-exits.mjs';
 // Isolated source projection. Does not simulate allocation, graphics, I/O timing,
@@ -51,41 +52,77 @@ const copy=x=>structuredClone(x),xyz=a=>dense(a)&&a.length===3&&a.every(v=>Numbe
 const check=(p,m)=>{if(!p)throw Error(m);};
 const exact=(x,keys)=>x&&typeof x==='object'&&!Array.isArray(x)&&Object.keys(x).length===keys.length&&keys.every(k=>Object.hasOwn(x,k));
 function checkedCalls(b){check(b instanceof Uint8Array&&b.length>=16&&b.length<=2*1024*1024,'bounded scenario bytes required');const v=new DataView(b.buffer,b.byteOffset,b.byteLength),count=v.getUint32(0,true),pool=v.getUint32(4,true),poolSize=v.getUint32(8,true);check(count<=10000&&pool>=16&&pool+poolSize<=b.length,'scenario header bounds');let p=16;for(let i=0;i<count;i++){check(p+3<=pool,'truncated scenario');const n=b[p+2],h=(3+Math.ceil(n/4)+3)&~3;check(p+h+4*n<=pool,'scenario argument bounds');p+=h+4*n;}return parseCalls(b);}
-function mine(project,context){
+// A negative membership proof for this ordinary F06 load. Conditions on other
+// maps cannot add an F06 placement. This does not evaluate their quest flags.
+export function deriveEmptyF06NpcList(members) {
+ check(dense(members)&&members.length===2,'Complete F scenario archive required');
+ const place=members.find(m=>m.name==='Fplace.bin'),npc=members.find(m=>m.name==='Fnpc.bin');
+ check(place&&npc&&dense(place.calls)&&dense(npc.calls),'F scenario members missing');
+ for(const c of place.calls){
+  const a=sourceArgs(c);let mapIndex=null;
+  if(c.opcode===3){check([2,6,7].includes(a.length),'Unsupported F place3 form');mapIndex=0;}
+  else if(c.opcode===5){check([9,13,14].includes(a.length),'Unsupported F place5 form');mapIndex=7;}
+  else if(c.opcode===14){check([5,9,10].includes(a.length),'Unsupported F quest placement form');mapIndex=3;}
+  else if(c.opcode===17){check([9,10,11,12].includes(a.length),'Unsupported F flag placement form');const conditions=Math.floor((a.length-(a.length%2?7:8))/2);mapIndex=conditions*2+1;}
+  else if(c.opcode===6)check(a.length===6&&c.args[0].type===1,'Unsupported F route modifier');
+  else if(c.opcode===11)check(a.length===2&&c.args[0].type===1,'Unsupported F flags modifier');
+  else if(c.opcode===18)check([2,3].includes(a.length)&&c.args[0].type===1,'Unsupported F visibility modifier');
+  else throw Error('Unknown F placement opcode '+c.opcode);
+  if(mapIndex!==null)check(c.args[mapIndex].type===1&&uint(a[mapIndex],65535)&&a[mapIndex]!==20006,'F06 NPC placement is outside the empty-list branch');
+ }
+ for(const c of npc.calls){const a=sourceArgs(c);check(c.opcode===3&&a.length===5&&c.args[0].type===1&&uint(a[0],65535),'Unsupported F NPC definition');}
+ return [];
+}
+function mine(project,context,extended){
  const nitro=project.nitro,bytes=path=>new Uint8Array(nitro.readFile(path)),list=bytes('data/map/maplist9.bin'),records=decodeMapRecords(list,checkedCalls(list));
  const archive=readBoundedNarcMembers(bytes('data/scenario/D04.npc')).archive;
  const members=archive.files.map((data,i)=>({name:archive.fnt.getFilenameOf(i),calls:checkedCalls(data)}));
  check(members.length===2&&members.some(m=>m.name==='D04place.bin')&&members.some(m=>m.name==='D04npc.bin'),'complete ordinary D04 scenario archive required');
  const treasure=readBoundedNarcMembers(bytes('data/scenario/treasure.nsarc')).archive,names=treasure.files.map((_,i)=>treasure.fnt.getFilenameOf(i).toLowerCase().replace(/\.[^.]+$/,''));
- const exits=new Map(),loads=new Map();
- for(const [from,to] of [[7402,7401],[7401,7400]]){
+ const exits=new Map(),loads=new Map(),edges=[[7402,7401],[7401,7400],...(extended?[[7400,20006]]:[])];
+ for(const [from,to] of edges){
   const source=records.filter(r=>r.mapId===from),dest=records.filter(r=>r.mapId===to);check(source.length===1&&dest.length===1,'ambiguous map binding');
   const path=`data/map/${source[0].fieldCode}.ambl`,n=readBoundedNarcMembers(bytes(path)),rows=[];
   for(let i=0;i<n.archive.files.length;i++){const member=n.archive.fnt.getFilenameOf(i);if(!member.endsWith('.bmbl'))continue;rows.push(...decodeMapExitMember(n.archive.files[i],{archivePath:path,member,memberIndex:i,memberArchiveOffset:n.offsets[i]},records).exits);}
   const selected=rows.filter(e=>e.target.firstMapId===to);check(selected.length===1&&selected[0].kind.value===0&&selected[0].trigger.rotationRaw16===0,'ordinary unrotated unique exit required');exits.set(from,selected[0]);
   check(!names.includes(dest[0].fieldCode.toLowerCase()),'destination treasure branch outside supported absence');
-  const derived=deriveDescriptors({binding:{mapId:to},primitive:{...context.primitive,generatedNpcMapRange:[50101,50523]},resources:{place:members.find(m=>m.name==='D04place.bin'),npc:members.find(m=>m.name==='D04npc.bin')}});loads.set(to,{mapId:to,descriptorIds:derived.definitions.map(d=>d.id)});
+  if(to===20006){
+   check(dest[0].fieldCode==='F06','Only the measured F06 pickup destination is supported');
+   const f=readBoundedNarcMembers(bytes('data/scenario/F.npc')).archive;
+   const fm=f.files.map((data,i)=>({name:f.fnt.getFilenameOf(i),calls:checkedCalls(data)}));
+   const descriptorIds=deriveEmptyF06NpcList(fm);
+   const pickups=readBoundedNarcMembers(bytes('data/scenario/flditem.pac')).archive;
+   const matches=pickups.files.map((data,i)=>({name:pickups.fnt.getFilenameOf(i),data})).filter(m=>m.name==='F06flditem.bin');
+   check(matches.length===1,'Unique F06 pickup resource required');
+   const pickupRecords=decodePickupRows(checkedCalls(matches[0].data)),ids=[...new Set(pickupRecords.map(r=>String(r.groupId)))];
+   check(exact(context.pickup.stateWords,ids)&&Object.values(context.pickup.stateWords).every(n=>uint(n)),'Complete source-selected pickup words required');
+   loads.set(to,{mapId:to,descriptorIds,pickupRecords});
+  }else{
+   const derived=deriveDescriptors({binding:{mapId:to},primitive:{...context.primitive,generatedNpcMapRange:[50101,50523]},resources:{place:members.find(m=>m.name==='D04place.bin'),npc:members.find(m=>m.name==='D04npc.bin')}});loads.set(to,{mapId:to,descriptorIds:derived.definitions.map(d=>d.id)});
+  }
  }
- return {exits,loads};
+ return {exits,loads,edges};
 }
 export function validateMapTransitionInputs(context,phases,lastWorldFrame){
  check(uint(lastWorldFrame),'移動前のworld phase時刻が必要です');
- check(exact(context,['primitive','conditions'])&&exact(context.primitive,['story','networkWord','quest185','eventFlags']),'明示した移動先story/quest条件が必要です');
- const names=['ordinarySingleParty','stablePlacementConditions','successfulDestinationLoads','successfulNpcAllocations','noAdditionalFieldSpecies','noInterveningOtherAT','noSeedSetter'];
+ const extended=phases?.length===18;
+ check(exact(context,['primitive','conditions',...(extended?['pickup']:[])])&&exact(context.primitive,['story','networkWord','quest185','eventFlags']),'明示した移動先story/quest条件が必要です');
+ const names=['ordinarySingleParty','stablePlacementConditions','successfulDestinationLoads','successfulNpcAllocations','noAdditionalFieldSpecies','noInterveningOtherAT','noSeedSetter',...(extended?['stablePickupWords','pickupDescriptorBound','successfulPickupAllocations']:[])];
  check(exact(context.conditions,names)&&names.every(k=>context.conditions[k]===true),'移動中の外部AT・ロード・party条件が不明です');
- check(dense(phases)&&phases.length===12,'2回の到達済み6phaseが必要です');
+ check(dense(phases)&&[12,18].includes(phases.length),'2回または3回の到達済み6phaseが必要です');
+ if(extended){const p=context.pickup;check(exact(p,['stateWords','phaseRange'])&&p.stateWords&&typeof p.stateWords==='object'&&!Array.isArray(p.stateWords),'初期pickup状態の明示が必要です');check(exact(p.phaseRange,['lower','upper'])&&uint(p.phaseRange.lower,0x7fffffff)&&uint(p.phaseRange.upper,0x7fffffff)&&p.phaseRange.lower<p.phaseRange.upper,'pickup phase範囲が不明です');}
  const order=['exit-request','field-cleanup','map-changed','destination-placement','pool-initialization','destination-load'];let previous=lastWorldFrame;
- for(let i=0;i<phases.length;i++){const e=phases[i],kind=order[i%6],keys=['phase','sourceFrame',...(kind==='exit-request'?['heroXYZ']:[]),...(kind==='pool-initialization'?['allocationPointer']:[])];check(exact(e,keys)&&e.phase===kind&&uint(e.sourceFrame)&&e.sourceFrame>=previous,'移動phaseの順序・sourceFrameが不明です');previous=e.sourceFrame;if(kind==='exit-request')check(xyz(e.heroXYZ),'移動要求時の明示hero XYZが必要です');if(kind==='pool-initialization')check(uint(e.allocationPointer)&&e.allocationPointer>=0x02000000&&e.allocationPointer+0x1320<=0x02400000&&(e.allocationPointer&3)===0,'成功pool allocation bindingが必要です');}
+ for(let i=0;i<phases.length;i++){const e=phases[i],kind=i===17?'pickup-materialization':order[i%6],keys=['phase','sourceFrame',...(kind==='exit-request'?['heroXYZ']:[]),...(kind==='pool-initialization'?['allocationPointer']:[])];check(exact(e,keys)&&e.phase===kind&&uint(e.sourceFrame)&&e.sourceFrame>=previous,'移動phaseの順序・sourceFrameが不明です');previous=e.sourceFrame;if(kind==='exit-request')check(xyz(e.heroXYZ),'移動要求時の明示hero XYZが必要です');if(kind==='pool-initialization')check(uint(e.allocationPointer)&&e.allocationPointer>=0x02000000&&e.allocationPointer+0x1320<=0x02400000&&(e.allocationPointer&3)===0,'成功pool allocation bindingが必要です');}
  return {phases:copy(phases),context:copy(context)};
 }
 export function prepareMapTransitions(project,context,phases,lastWorldFrame){
- const input=validateMapTransitionInputs(context,phases,lastWorldFrame);return {...mine(project,input.context),...input};
+ const input=validateMapTransitionInputs(context,phases,lastWorldFrame);return {...mine(project,input.context,input.phases.length===18),...input};
 }
 export function advanceMapTransition(session){
  if(session.stopped)return false;
  const plan=session.mapTransitions,i=session.transitionIndex??0,e=plan.phases[i];
- if(!e){session.status='transition-ended';session.reason='2回目の移動先loaderまで。以降のNPC・world更新は未解決です';session.stopped=true;return false;}
- const edge=Math.floor(i/6),sourceMapId=edge===0?7402:7401,targetMapId=edge===0?7401:7400,exit=plan.exits.get(sourceMapId),row={index:session.events.length,sourceFrame:e.sourceFrame,phase:e.phase,mapId:session.currentMapId??7402,heroXYZ:null,seed:session.seed,timer:session.timer,consumed:0,invocationResolved:true,status:'running',reason:''};
+ if(!e){session.status='transition-ended';session.reason=plan.phases.length===18?'F06のpickup初期化まで。移動先field・NPC・以降のworld更新は未解決です':'2回目の移動先loaderまで。以降のNPC・world更新は未解決です';session.stopped=true;return false;}
+ const edge=Math.floor(i/6),[sourceMapId,targetMapId]=[[7402,7401],[7401,7400],[7400,20006]][edge],exit=plan.exits.get(sourceMapId),row={index:session.events.length,sourceFrame:e.sourceFrame,phase:e.phase,mapId:session.currentMapId??7402,heroXYZ:null,seed:session.seed,timer:session.timer,consumed:0,invocationResolved:true,status:'running',reason:''};
  try{
   if(e.phase==='exit-request'){
    check((session.currentMapId??7402)===sourceMapId,'source map mismatch');if(edge===0)check(JSON.stringify(session.hero.xyz)===JSON.stringify(e.heroXYZ),'last post-hero pose and first request differ');
@@ -105,6 +142,17 @@ export function advanceMapTransition(session){
    Object.assign(f,{mapId:targetMapId,flags:(f.flags&3)|4,creationCounter:0,active:0});session.field=f;
    for(let n=0;n<12;n++){const slot=session.context.inventory.slots.find(s=>s.slot===112+n);Object.assign(slot,{registryKnown:true,pointer:e.allocationPointer+n*0x198,headerFlags:35,monsterIdRaw:65535,actorFlags:5,tableId:0,nativeSerial:0,nativeSlot:slot.slot});delete slot.e0Byte;delete slot.xyz;delete slot.generationId;delete slot.nodeIndex;delete slot.mapId;}
    session.pendingTransition.phase='pool-initialized';row.reason='到達済み成功allocationから12個のreset/free slotを再登録。残留byteは未知';
+  }else if(e.phase==='pickup-materialization'){
+   check(targetMapId===20006&&session.pendingTransition?.phase==='pool-initialized','pickup loop before destination pool');
+   // New F06 templates/resources already load in this interval. Their live
+   // state is not reconstructed by this AT-only leaf, so do not retain zeros.
+   Object.assign(session.field,{flags:null,active:null,resources:null,tables:null,resourcesResolved:false});session.timer=null;
+   session.destinationWorld={mapId:targetMapId,resolved:false,reason:'Destination field, templates, terrain and update schedule are not reconstructed'};
+   const load=plan.loads.get(targetMapId),p=plan.context.pickup;
+   check(load?.descriptorIds?.length===0&&load.pickupRecords,'F06 source NPC/pickup binding unavailable');
+   const result=projectPickupMaterialization({records:load.pickupRecords,runtimeWords:p.stateWords,phaseRange:p.phaseRange,conditions:{recordLoopReached:true,completeSourceOrderedRows:true,runtimeWordsStableUntilRead:plan.context.conditions.stablePickupWords,sourceRowsBoundToLoadedList:plan.context.conditions.successfulDestinationLoads,phaseRangeBoundToLoadedDescriptor:plan.context.conditions.pickupDescriptorBound,noInterveningATConsumers:plan.context.conditions.noInterveningOtherAT,noSeedSetter:plan.context.conditions.noSeedSetter,allRequiredAllocationsSucceed:plan.context.conditions.successfulPickupAllocations}},session.seed,session.atKernel);
+   session.seed=result.seed;session.consumed+=result.consumed;row.consumed+=result.consumed;row.pickupResults=result.events;row.destinationWorldResolved=false;
+   check(result.resolved&&!result.returnedEarly,result.reason);session.pendingTransition.phase='pickup-projected';row.reason=`ROMのpickup recordと初期状態から${result.consumed}回を導出。移動先field・現在座標・接地Yは未確定`;
   }else{
    check(session.pendingTransition?.phase==='pool-initialized','destination initializer before pool binding');const load=plan.loads.get(targetMapId);row.constructorResults=[];
    for(const id of load.descriptorIds){const a=session.atKernel.generate(session.seed,0n,1);session.seed=a[0];session.consumed++;row.consumed++;const threshold=session.atKernel.e.world_movement_init(a[1]);const b=session.atKernel.generate(session.seed,0n,1);session.seed=b[0];session.consumed++;row.consumed++;const phase=session.atKernel.e.world_actor_phase(b[1]);row.constructorResults.push({descriptorId:id,threshold,phase});}

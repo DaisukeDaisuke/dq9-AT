@@ -22,7 +22,7 @@
 <div class="layout">
 <section class="configuration">
 <h2>1. 初期条件</h2>
-<p id="map-info">7402のグラフをNDSから読み込みます。到達済みphase付きの限定7402→7401→7400移動も再生できます。</p>
+<p id="map-info">7402のグラフをNDSから読み込みます。到達済みphase付きの限定7402→7401→7400移動と、追加条件付きでF06のpickup初期化まで再生できます。</p>
 <form id="config" autocomplete="off">
 <fieldset id="inputs" disabled>
 <div class="grid2">
@@ -79,7 +79,7 @@
 </section>
 <section class="experiment">
 <details id="first-spawn-section"><summary>条件付き自然生成：軌跡から派生actorの移動まで</summary>
-<p>map7402・初期12枠が登録済み未使用・単一eligible party・外部ATなしの条件に限定します。座標はpre-spawn時点の有効XYZと実向きです。映像マーカーからphase・向き・操作キーを自動推定しません。到達済み移動phaseを含む軌跡では7401→7400のloaderまでseedを継続し、配置前の座標を未確定と表示します。</p>
+<p>map7402・初期12枠が登録済み未使用・単一eligible party・外部ATなしの条件に限定します。座標はpre-spawn時点の有効XYZと実向きです。映像マーカーからphase・向き・操作キーを自動推定しません。到達済み移動phaseを含む軌跡では7401→7400のloaderまでseedを継続します。初期pickup状態と3回目の到達phaseがある場合はF06のpickup初期化まで継続し、移動先world・timer・現在座標は未確定のまま停止します。</p>
 <p id="spawn-replay-inputs">初期runtimeと軌跡が未入力です。</p>
 <label>初期runtime JSON（8MiB以下）<input id="spawn-replay-runtime" type="file" accept=".json,application/json" disabled></label>
 <label>pre-spawn軌跡 JSON（1MiB以下）<input id="spawn-replay-trajectory" type="file" accept=".json,application/json" disabled></label>

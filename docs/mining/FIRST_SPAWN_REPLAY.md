@@ -158,3 +158,54 @@ Field cleanup closes the old registered actor generation and clears field timer/
 The view changes the ROM background per map. It does not reinterpret old coordinates under the new map ID. A pending transition shows current coordinates as unknown; the ROM entry point is separately marked as a requested placement, with settled height unresolved. The replay stops after the second destination loader because later NPC/world updates are outside this slice.
 
 Tests cover missing conditions, malformed/reordered phases, invalid allocation bindings, failure after cleanup, and failure after the first constructor draw. An unresolved phase retains its known consumed seed prefix and cannot revive the old actor pool. Private paired observer-on/off evidence covers the unchanged save route; raw ROM, save, RAM, screenshots and controlled runtime/trajectory packets are not bundled with this source release.
+
+
+## Optional third exit and source-derived pickup initialization
+
+The same trajectory-v3 format can include a third six-phase edge from 7400 to
+20006 (F06). Its final phase is `pickup-materialization`, rather than
+`destination-load`. The first twelve phases keep their existing behavior.
+There is no assumed frame delay, map cost, or seed reset.
+
+The optional transition context adds `pickup.stateWords`, keyed by the group
+IDs selected from the local ROM, and `pickup.phaseRange` with `lower` and
+`upper`. These are origin-state primitives. The extra conditions
+`stablePickupWords`, `pickupDescriptorBound`, and `successfulPickupAllocations`
+must be explicitly established. The original ordinary-party, resource-load,
+no-external-AT and no-seed-setter conditions still apply. The reached final
+phase specifically establishes arrival at the materializer's record loop.
+Neither a later seed nor an observed draw count is accepted in the trajectory.
+
+The local ROM supplies the third exit, F06 pickup records and their source
+order. F06 has no treasure member. The shared F scenario's complete placement
+stream contains no possible placement for map 20006; conditions on other maps
+cannot add an F06 actor. This is a narrow negative membership proof, not an
+implementation of arbitrary quest or event-flag expressions.
+
+The pickup materializer skips inactive records, derives each active record's
+slot count and enabled bitmap from its state word, and draws once per enabled
+slot after successful allocation. A failed allocation returns before that
+slot's draw. Unknown state preserves only the already consumed prefix. The
+existing AT WASM and exclusive-upper-bound pickup phase function are reused.
+The original phase words and live resource binding remain distinct from a
+source-derived call count.
+
+The retained controlled extension reaches 124 phases and 132 conditional AT
+calls, with one carried initial candidate. The last eleven draws come from
+three ROM records and their enabled slots; eleven is a measured regression
+result, not a hardcoded transition rule. Different input state words or
+allocation outcomes can change this count.
+
+F06 loads new field templates before this endpoint. Their dynamic bindings,
+field timer, actor state and terrain are not reconstructed by this slice.
+The replay explicitly marks destination field flags, active state, resources,
+tables and timer unknown and stops after pickup initialization. The view keeps
+current coordinates unknown, and labels the ROM destination only as requested
+placement. It does not claim a settled position or a usable destination-world
+simulator. This change does not implement later pickup updates, pot/barrel
+loot, or video-based AT identification.
+
+Portable tests include source-row validation, sparse masks, the group-98
+forced-eight rule, missing and failed allocations, prefix preservation after a
+phase-write failure, and unknown destination state. Native RAM, source inputs,
+ROM-derived record tables, saves and screenshots remain private.
