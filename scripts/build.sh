@@ -44,3 +44,8 @@ node scripts/test-monster-recognize-page.mjs
 node scripts/test-font-akinator-cpu.mjs
 node scripts/test-font-akinator-cpu-client.mjs
 node scripts/test-map-recognize-page.mjs
+
+# Approximate map-coordinate candidates: solo layout, bounded fallback and ranges.
+node scripts/check-ds-screen-synthetic.mjs
+node scripts/test-map-coordinate-fallback.mjs
+node scripts/test-coordinate-range-ui.mjs

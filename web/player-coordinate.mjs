@@ -17,6 +17,21 @@ export function splitFixedCoordinate(rawSigned32) {
     local: localRaw16 / 4096, map: rawSigned32 / 4096, denominator: 4096};
 }
 
+/** Inclusive signed-word interval. Keep each wrapped low16 range with its own
+ * signed chunk; a display cap never removes the full range of possibilities.
+ * Packing is exact arithmetic, not certification of an image-derived bound.
+ */
+export function splitFixedInterval(rawMin,rawMax,{maxChunks=16}={}) {
+  if(!Number.isInteger(rawMin)||!Number.isInteger(rawMax)||rawMin<MIN_RAW||rawMax>MAX_RAW||rawMin>rawMax)throw Error('Expected an ordered signed 32-bit interval');
+  if(!Number.isInteger(maxChunks)||maxChunks<1||maxChunks>32)throw Error('Expected a chunk display cap from 1 through 32');
+  const chunkSignedMin=Math.floor(rawMin/65536),chunkSignedMax=Math.floor(rawMax/65536),chunkCount=chunkSignedMax-chunkSignedMin+1,chunks=[];
+  for(let chunk=chunkSignedMin;chunk<=chunkSignedMax&&chunks.length<maxChunks;chunk++){
+    const min=Math.max(0,rawMin-chunk*65536),max=Math.min(65535,rawMax-chunk*65536);
+    chunks.push({chunkSigned16:chunk,chunkUnsigned16:(chunk+65536)%65536,localRaw16:{min,max},local:{min:min/4096,max:max/4096}});
+  }
+  return {rawMin,rawMax,worldMin:rawMin/4096,worldMax:rawMax/4096,chunkSignedMin,chunkSignedMax,chunkCount,chunks,complete:chunks.length===chunkCount,omittedChunks:chunkCount-chunks.length,packingMathematicallyVerified:true,calibratedCoverage:false};
+}
+
 /** Matches the Lua shortest signed chunk difference; half-range is ambiguous. */
 export function chunkDifference(fromUnsigned16, toUnsigned16) {
   if (![fromUnsigned16, toUnsigned16].every(n => Number.isInteger(n) && n >= 0 && n <= 65535)) throw Error('Expected unsigned 16-bit chunks');
@@ -36,6 +51,7 @@ function interval(min, max) {
   return {min, max, rawMin, rawMax, inSigned32Range: inRange,
     chunkSignedMin: Math.floor(rawMin / 65536), chunkSignedMax: Math.floor(rawMax / 65536),
     crossesChunkBoundary: Math.floor(rawMin / 65536) !== Math.floor(rawMax / 65536),
+    chunkIntervals: inRange ? splitFixedInterval(rawMin,rawMax) : null,
     calibratedCoverage: false};
 }
 
