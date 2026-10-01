@@ -69,3 +69,6 @@ node scripts/test-pickup-transition.mjs
 
 # Static creator values from the local ROM; allocation bindings remain guarded.
 node scripts/test-monster-creation-resources.mjs
+
+# Fixed RT-DETR browser runtime input/output guards.
+node scripts/test-rtdetr-runtime-check.mjs
