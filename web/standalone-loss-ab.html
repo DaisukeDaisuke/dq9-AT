@@ -1,0 +1,10 @@
+<!doctype html><html lang="ja"><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' blob: 'wasm-unsafe-eval'; style-src 'self'; connect-src 'self' https://cdn.jsdelivr.net https://raw.githubusercontent.com; media-src blob:; img-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"><title>DQ9 retained detector loss A/B</title><link rel="stylesheet" href="standalone-trainer.css"><body><main>
+<h1>3種限定・保存済み単独検出器の短い損失A/B</h1>
+<p>同じ元重み・同じ保存画像順・同じ新規Adamから各512ステップ。元の5エポック結果を上書きしません。対象はメタルスライム・はにわナイト・ミイラ男です。256出力を維持し、分類・位置・物体らしさ・バックボーンを学習します。Aは旧損失、Bは画像数で正規化したlogit-BCEです。合成検証の対象36陽性＋64陰性、学習済み216枚の当てはまりと任意の同一実動画フレームを比較します</p>
+<p>これだけで実動画の精度改善や他253クラスの品質を保証しません。学習は保存画像から対象108陽性＋108陰性を選びます。陰性は確認済み背景の反復・加工であり108独立場面ではありません。固定スコア0.25、NMS0.45、照合IoU0.5。空の出力だけになっても改善とは判定しません。各候補約140MB、追加2個を別記録として保存します</p>
+<button id="scan">保存済みデータを表示</button><label>完了データ<select id="dataset"></select></label><label>各枝のステップ数<input id="steps" type="number" min="1" max="512" value="512"></label>
+<fieldset><legend>同じローカル実動画で比較（任意）</legend><input id="video" type="file" accept=".webm,.mkv,.mp4,.png,.jpg,.jpeg"><label>秒、カンマ区切り<input id="times" value="92.246,119.996,399.996,799.246"></label><button id="preview">比較フレームを表示</button><div id="frames"></div><p>元の1920×1080からゲーム画面[960,0,960,720]を切り出します。ここに表示した画素を両方へ渡し、正解や陰性として学習には使いません。動画・画像はアップロードしません</p></fieldset>
+<label><input id="confirm" type="checkbox">この新しい限定実験を開始し、2個の候補を追加保存する</label><button id="start" disabled>A/Bを開始</button><button id="stop" disabled>現在の枝を破棄して停止</button>
+<p>停止時は元のチェックポイントと既に完了した枝を保持します。未完了の枝は保存されません。開始後の目安は5〜10分で、実際の進捗を表示します。容量確認は他タブをロックしないため、他の学習操作を同時に実行しないでください。開始後は非表示でも続行し、10分の実験上限と21:30 JSTの2分前で停止します</p>
+<button id="report-download" disabled>結果JSONのダウンロード要求</button><button id="control-download" disabled>A候補のダウンロード要求</button><button id="candidate-download" disabled>B候補のダウンロード要求</button><p id="status" role="status">未実行</p><p id="elapsed"></p><pre id="report"></pre>
+</main><script type="module" src="standalone-loss-ab-page.mjs"></script></body></html>
