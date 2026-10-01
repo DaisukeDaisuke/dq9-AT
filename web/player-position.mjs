@@ -47,7 +47,7 @@ export function markerColorCandidates(frame, profile) {
  * The exact matcher resize dimensions, rather than the requested scale alone,
  * define the inverse pixel-edge transform. No peak pruning or world transform.
  */
-export function playerPositionSample({stamp, frame, registrationFrame, registration, markers, mapNameObservation = null}) {
+export function playerPositionSample({stamp, frame, registrationFrame, registration, markers, mapNameObservation = null, partyCoordinates = null}) {
   if (!stamp?.streamId || !Number.isSafeInteger(stamp.frameSerial) || !finite(stamp.videoTime) || typeof stamp.capturedAt !== 'string') throw Error('A capture stream, frame serial, video time, and capture timestamp are required');
   if (!Number.isInteger(frame?.width) || !Number.isInteger(frame?.height) || frame.width <= 0 || frame.height <= 0) throw Error('Frame dimensions are required');
   if (!Number.isInteger(registrationFrame?.width) || !Number.isInteger(registrationFrame?.height) || registrationFrame.width <= 0 || registrationFrame.height <= 0) throw Error('Explicit registration-frame dimensions are required');
@@ -56,7 +56,7 @@ export function playerPositionSample({stamp, frame, registrationFrame, registrat
   const markerCandidates = markers?.candidates ?? [], peaks = registration?.candidates ?? [];
   const mapIds = [...new Set((mapNameObservation?.candidates ?? []).flatMap(c => c.mapIds ?? []))];
   const mapIdentity = mapNameObservation ? {
-    status: mapIds.length ? (mapIds.includes(registration?.mapId) ? 'candidate-compatible' : 'candidate-conflict') : 'unresolved',
+    status: mapIds.length ? (registration?.mapId == null ? 'reference-unbound' : mapIds.includes(registration.mapId) ? 'candidate-compatible' : 'candidate-conflict') : 'unresolved',
     candidateMapIds: mapIds, observedAt: mapNameObservation.capturedAt ?? null,
     videoTime: mapNameObservation.videoTime ?? null, frameSerial: mapNameObservation.frameSerial ?? null,
     // OCR scores/margins are not calibrated probabilities; timestamp is separate.
@@ -85,8 +85,10 @@ export function playerPositionSample({stamp, frame, registrationFrame, registrat
   }
   return {kind: 'player-position-candidates', stamp: clone(stamp), frame: {width: frame.width, height: frame.height}, registrationFrame: clone(registrationFrame),
     reference: {mapId: registration?.mapId ?? null, descriptor: registration?.descriptor ?? null, epoch: stamp.referenceEpoch ?? null},
-    status: !markerCandidates.length ? 'occluded-or-not-detected' : !peaks.length || !registration?.resolved ? 'registration-unresolved' : markerCandidates.length > 1 ? 'marker-ambiguous' : mapIdentity.status === 'candidate-conflict' ? 'map-identity-conflict' : 'candidate',
+    status: !markerCandidates.length ? 'occluded-or-not-detected' : partyCoordinates?.combinationCount > 0 ? 'party-map-candidates' : !peaks.length || !registration?.resolved ? 'registration-unresolved' : markerCandidates.length > 1 ? 'marker-ambiguous' : mapIdentity.status === 'candidate-conflict' ? 'map-identity-conflict' : 'candidate',
     markerCandidates: clone(markerCandidates), registration: clone(registration ?? null), mapIdentity, candidates,
+    // Automatic results stay factored; no alias, registration peak or party role is selected.
+    partyCoordinates: clone(partyCoordinates),
     worldPositionKnown: false, playerIdentityProven: false, temporalAlignmentVerified: false,
     minimumProvenATCalls: 0, confidenceCalibrated: false};
 }
@@ -102,9 +104,12 @@ export class PlayerTrajectory {
       const a = previous.stamp, b = current.stamp;
       if (a.streamId !== b.streamId) reasons.push('capture-stream-changed');
       else if (b.frameSerial <= a.frameSerial || b.videoTime < a.videoTime) reasons.push('capture-discontinuity');
-      if (a.referenceEpoch !== b.referenceEpoch || previous.reference?.mapId !== current.reference?.mapId) reasons.push('reference-map-changed');
+      const bothAutomatic = !!(previous.partyCoordinates?.combinationCount && current.partyCoordinates?.combinationCount);
+      if (a.referenceEpoch !== b.referenceEpoch || (!bothAutomatic && previous.reference?.mapId !== current.reference?.mapId)) reasons.push('reference-map-changed');
       if (previous.status === 'gap' || current.status === 'gap') reasons.push('video-gap');
-      if (!previous.candidates?.length || !current.candidates?.length) reasons.push('unobserved-position');
+      if ((!previous.candidates?.length && !previous.partyCoordinates?.combinationCount) || (!current.candidates?.length && !current.partyCoordinates?.combinationCount)) reasons.push('unobserved-position');
+      const references=s=>(s.partyCoordinates?.references??[]).map(r=>({descriptor:r.descriptor,mapIds:r.mapIds}));
+      if (JSON.stringify(references(previous)) !== JSON.stringify(references(current))) reasons.push('automatic-map-candidates-changed');
     }
     if (reasons.length) this.segment++;
     current.segment = this.segment;

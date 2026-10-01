@@ -20,7 +20,7 @@ const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve
 const result={route:'glyph-akinator',sequence:'TEST MAP',candidates:[],characters:[],evaluated:1,textResolved:true,reason:'test'};
 let checks=0;
 function check(name,fn){try{fn();checks++;}catch(e){throw Error(name+': '+e.message);}}
-async function fixture({auto=false,track=true,registration=true}={}){
+async function fixture({auto=false,track=true,registration=true,markerCandidates=[]}={}){
  const elements=new Map(),windows=new Map(),events=[],workers=[],captures=[],names=[],markerPixels=[],matches=[];let nameDetection={resolved:true,roi:{x:0,y:0,w:1,h:.1}};
  class Element{
   constructor(tag='div'){this.tagName=tag.toUpperCase();this.children=[];this.listeners={};this.value='';this.checked=false;this.width=256;this.height=192;this.pixel=0;this.currentTime=1;this.videoWidth=256;this.videoHeight=192;this.readyState=2;this.paused=true;this.seeking=false;this.duration=100;}
@@ -40,14 +40,14 @@ async function fixture({auto=false,track=true,registration=true}={}){
  const window={addEventListener(n,fn){if(!windows.has(n))windows.set(n,[]);windows.get(n).push(fn);},dispatchEvent(e){events.push(e);for(const fn of windows.get(e.type)||[])fn(e);}};
  const sandbox={document,window,Worker:FakeWorker,Option:class extends Element{constructor(text,value){super('option');this.textContent=text;this.value=value;}},ImageData:class{constructor(data,width,height){Object.assign(this,{data,width,height});}},CustomEvent:class{constructor(type,init){this.type=type;this.detail=init.detail;}},localStorage:{getItem(){return null;},setItem(){}},navigator:{mediaDevices:{enumerateDevices:async()=>[]}},URL,Blob,Date,performance,structuredClone,Uint8ClampedArray,console,setTimeout,clearTimeout,AbortController,DOMException,queueMicrotask,testMatcher:match};
  const context=vm.createContext(sandbox);
- const module=new vm.SourceTextModule(source+`\nexport const captureTest={readFrame,invalidateSource,setup(){matcher=testMatcher;records=[{mapId:7402,name:'TEST MAP'}];positionReady=true;positionHasReference=true;},getFile:()=>fileInput,getCamera:()=>camera,resetGPU(){gpuUnavailable=false;},setupCPU(){runtimeGlyphs={'1x1':[{char:'T',assignedChar:'T',rows:['#']}]};},getState:()=>({generation,romEpoch,positionEpoch,frameSerial,busy,pendingRead,observations,positionSample,mapCandidatePending,gpuUnavailable,cpuHeld,screenApproved,layoutBinding,retainedMap,roi})};`,{context,identifier:pathToFileURL(panel).href,initializeImportMeta(meta){meta.url=pathToFileURL(panel).href;}});
+ const module=new vm.SourceTextModule(source+`\nexport const captureTest={readFrame,invalidateSource,setup(){matcher=testMatcher;records=[{mapId:7402,name:'TEST MAP'}];positionReady=true;positionHasReference=true;},getFile:()=>fileInput,getCamera:()=>camera,resetGPU(){gpuUnavailable=false;},setupCPU(){runtimeGlyphs={'1x1':[{char:'T',assignedChar:'T',rows:['#']}]};},getTrajectory:()=>playerCoordinator.trajectory.export(),getState:()=>({generation,romEpoch,positionEpoch,frameSerial,busy,pendingRead,observations,positionSample,mapCandidatePending,gpuUnavailable,cpuHeld,screenApproved,layoutBinding,retainedMap,roi})};`,{context,identifier:pathToFileURL(panel).href,initializeImportMeta(meta){meta.url=pathToFileURL(panel).href;}});
  await module.link(spec=>{
   let exports=imported[spec];
   if(spec==='./font-akinator-cpu-client.mjs')exports={CPUTextClient:class extends imported[spec].CPUTextClient{constructor(){super({factory:()=>new FakeWorker('font-akinator-cpu-worker.mjs')});}}};
   if(spec==='./player-capture.mjs')exports={PlayerCaptureCoordinator:Coordinator};
   if(spec==='./map-name-match.mjs')exports={createTextMatcher:()=>match};
   if(spec==='./map-name-roi.mjs')exports={detectMapNameROI:()=>nameDetection};
-  if(spec==='./party-marker-calibration.mjs')exports={calibratedPartyMarkerCandidates:image=>{markerPixels.push(image.rgba[0]);return {frame:{width:256,height:192},candidates:[],calibration:{profiles:[{slot:1,rgb:[66,66,66]}],status:'test'}};}};
+  if(spec==='./party-marker-calibration.mjs')exports={calibratedPartyMarkerCandidates:image=>{markerPixels.push(image.rgba[0]);return {frame:{width:256,height:192},candidates:structuredClone(markerCandidates),calibration:{profiles:[{slot:1,rgb:[66,66,66]}],status:'test'}};}};
   return new vm.SyntheticModule(Object.keys(exports),function(){for(const [key,value]of Object.entries(exports))this.setExport(key,value);},{context});
  });
  await module.evaluate();
@@ -326,5 +326,107 @@ await run('CPU acquisition survives real FileVideoInput play callbacks with an e
  f.video.currentTime=400.6;f.video.frameCallback(2,{mediaTime:400.596,presentedFrames:168});request=f.requests().at(-1);check('later playback remains retained-image tracking',()=>assert.equal(request.mode,'track-current'));replyMap(f,request,trackedResult(request,prior));for(let i=0;i<4;i++)await Promise.resolve();f.$('file-pause').onclick();check('pause preserves retained image',()=>assert.equal(f.api.getState().retainedMap.descriptor,prior.bestDescriptor));check('continuous path adds no font call',()=>assert.equal(f.matches.length,1));
  file.capture({mediaTime:399,presentedFrames:169});check('true same-basis regression still drops retained image',()=>assert.equal(f.api.getState().retainedMap,null));check('true regression increments source epoch',()=>assert.equal(file.generation,sourceEpoch+1));check('true regression remains an explicit observation gap',()=>assert(f.api.getState().observations.some(o=>o.reason==='backward-time')));
 });
+
+const partyMarkers=[{id:'synthetic-marker',profileId:'current-HUD-slots-2/4',profileIds:['current-HUD-slot-2','current-HUD-slot-4'],slotColorCandidates:[2,4],slotAssociationProven:false,x:128,y:96,bounds:{x:126,y:94,w:4,h:4},uncertaintyPixels:{x:2,y:2}}];
+function coordinateResult(request){
+ const r=acquired(request),g=r.rankings[0];g.markerCoordinateBindings=[{kind:'physical-xz-under-ordinary-group',mapId:7402},{kind:'fixed-display-anchor',mapId:7403,displayAnchor:{rawX:4096,rawZ:8192,x:1,z:2}}];return r;
+}
+async function beginCoordinateAcquisition(f){const pending=f.api.readFrame(1,f.sample());f.matches.at(-1).resolve(result);await pending;return f.requests().at(-1);}
+await run('automatic factors join the original trajectory sample without selecting map or party role',async()=>{
+ const f=await fixture({registration:false,markerCandidates:partyMarkers}),request=await beginCoordinateAcquisition(f);
+ check('coordinate sample waits for its automatic result',()=>assert.equal(f.api.getTrajectory().samples.length,0));const prior=coordinateResult(request);replyMap(f,request,prior);
+ const first=f.api.getTrajectory().samples[0],materialize=imported['./party-map-candidates.mjs'].materializePartyMapCandidate,row=materialize(first.partyCoordinates,0,0),physical=row.mapCoordinateAlternatives[0],fixed=row.mapCoordinateAlternatives[1];
+ check('exact capture stamp joins the factors',()=>assert.deepEqual(structuredClone(first.partyCoordinates.stamp),structuredClone(first.stamp)));
+ check('physical alias has existing XZ and packed fields',()=>assert.deepEqual([physical.x,physical.z,physical.splitX.chunkSigned16,physical.splitZ.chunkSigned16],[64,48,4,3]));
+ check('trajectory format remains backward-compatible version one',()=>assert.deepEqual([f.api.getTrajectory().format,f.api.getTrajectory().version],['dq9-player-trajectory',1]));
+ check('height remains unobserved',()=>assert.deepEqual([physical.y,physical.heightYKnown,fixed.heightYKnown],[undefined,false,false]));
+ check('exported factors contain no pixel or ROM buffers',()=>{const walk=value=>{assert(!ArrayBuffer.isView(value)&&!(value instanceof ArrayBuffer));if(value&&typeof value==='object')for(const [key,child]of Object.entries(value)){assert(!['rgba','imageData','romBytes','romBuffer'].includes(key));walk(child);}};walk(first.partyCoordinates);});
+ check('export remains factored rather than expanding marker-map-peak products',()=>assert.deepEqual([first.partyCoordinates.markerCandidates.length,first.partyCoordinates.references.length,first.partyCoordinates.combinationCount,first.partyCoordinates.mapIdentityCombinationCount,first.partyCoordinates.rows,first.partyCoordinates.mapCoordinateAlternatives],[1,1,1,2,undefined,undefined]));
+ check('fixed alias cannot become physical position',()=>assert.deepEqual([fixed.kind,fixed.bounds,fixed.actorCoordinateKnown],['fixed-map-display-anchor-candidate',null,false]));
+ check('map alternatives are not collapsed',()=>assert.deepEqual([row.mapCoordinate,row.mapIds],[null,[7402,7403]]));
+ check('follower color alternatives remain unassigned',()=>assert.deepEqual(structuredClone(first.partyCoordinates.markerCandidates[0].slotColorCandidates),[2,4]));
+ check('slot association remains unproven',()=>assert.equal(first.partyCoordinates.markerCandidates[0].slotAssociationProven,false));
+ check('unknown maps remain in the exported factors',()=>assert(first.partyCoordinates.unknownMapHypotheses.some(x=>x.mapId===7404)));
+ check('automatic status is distinct from missing manual registration',()=>assert.equal(first.status,'party-map-candidates'));
+ check('absent manual reference is not a map identity conflict',()=>assert.equal(first.mapIdentity.status,'reference-unbound'));
+ check('automatic-only UI does not invent a null-reference conflict',()=>assert.doesNotMatch(f.$('player-status').textContent,/参照マップ不一致|参照ID null/));
+ check('no single manual map or party coordinate is fabricated',()=>assert.deepEqual([first.reference.mapId,first.candidates.length,first.coordinateCandidates.length],[null,0,0]));
+ check('automatic UI uses the existing conditional range renderer',()=>assert.match(f.$('player-coordinates').textContent,/map 7402: X範囲.*map 7403: 固定表示点/));
+ check('zero AT and unproven identity flags remain',()=>assert.deepEqual([first.worldPositionKnown,first.playerIdentityProven,first.minimumProvenATCalls,first.partyCoordinates.automaticATConsumption],[false,false,0,false]));
+ const frozenExport=JSON.stringify(first);prior.partyCoordinates.references[0].mapIds.push(999);first.partyCoordinates.references[0].mapIds.push(888);
+ check('post-result mutation cannot change stored sample',()=>assert.equal(JSON.stringify(f.api.getTrajectory().samples[0]),frozenExport));
+ const pending=f.api.readFrame(2,{...f.sample(),videoTime:2,mediaTime:2}),next=f.requests().at(-1);const tracking=trackedResult(next,coordinateResult(request));
+ check('tracking waits on same sample before completion',()=>assert.equal(f.api.getTrajectory().samples.length,1));replyMap(f,next,tracking);await pending;
+ const samples=f.api.getTrajectory().samples,last=samples.at(-1);
+ check('one sample per captured frame including tracking',()=>assert.deepEqual(samples.map(s=>s.stamp.videoTime),[1,2]));
+ check('tracking factors retain current stamp',()=>assert.deepEqual([last.stamp.frameSerial,last.partyCoordinates.stamp.frameSerial,last.partyCoordinates.stamp.videoTime],[next.stamp.frameSerial,next.stamp.frameSerial,2]));
+ check('unchanged candidate references do not invent a gap',()=>assert.equal(last.continuity.linkedToPrevious,true));
+ check('tracking does not claim measured intervening motion',()=>assert.deepEqual([last.continuity.interpolated,last.continuity.motionBetweenSamplesKnown],[false,false]));
+ check('tracking still skips font and manual-reference work',()=>assert.deepEqual([f.matches.length,f.position.messages.filter(m=>m.type==='frame').length],[1,0]));
+});
+await run('automatic factors cannot be blocked or replaced by a late manual-reference match',async()=>{
+ const f=await fixture({markerCandidates:partyMarkers}),request=await beginCoordinateAcquisition(f);replyMap(f,request,coordinateResult(request));
+ check('automatic observation finishes while manual reply is pending',()=>assert.equal(f.api.getTrajectory().samples.length,1));const before=JSON.stringify(f.api.getTrajectory());f.finishRegistration();
+ check('manual reply cannot duplicate or replace completed automatic sample',()=>assert.equal(JSON.stringify(f.api.getTrajectory()),before));
+});
+await run('retained mismatch joins same-frame reacquisition instead of completing early',async()=>{
+ const f=await fixture({registration:false,markerCandidates:partyMarkers}),request=await beginCoordinateAcquisition(f),prior=coordinateResult(request);replyMap(f,request,prior);
+ const pending=f.api.readFrame(2,{...f.sample(),videoTime:2}),tracking=f.requests().at(-1);replyMap(f,tracking,trackedResult(tracking,prior,false));for(let i=0;i<4;i++)await Promise.resolve();
+ check('mismatch cannot append an empty early sample',()=>assert.equal(f.api.getTrajectory().samples.length,1));f.matches.at(-1).resolve(result);await pending;const reacquisition=f.requests().at(-1);
+ check('reacquisition preserves same captured frame',()=>assert.equal(reacquisition.stamp.frameSerial,tracking.stamp.frameSerial));replyMap(f,reacquisition,coordinateResult(reacquisition));
+ check('exactly one new factor sample follows reacquisition',()=>assert.deepEqual(f.api.getTrajectory().samples.map(s=>[s.stamp.videoTime,!!s.partyCoordinates]),[[1,true],[2,true]]));
+});
+for(const failure of ['error','timeout'])await run(`failed automatic acquisition ${failure} completes without stale factors`,async()=>{
+ const f=await fixture({registration:false,markerCandidates:partyMarkers}),request=await beginCoordinateAcquisition(f);
+ if(failure==='error')f.emit('dq9-map-candidates-result',{type:'map-candidates-error',requestId:request.requestId,stamp:request.stamp,message:'synthetic-failed-map'});else await new Promise(resolve=>setTimeout(resolve,2050));
+ const samples=f.api.getTrajectory().samples;
+ check('failed acquisition releases waiting coordinate sample',()=>assert.equal(samples.length,1));
+ check('failure has no physical candidate or automatic factors',()=>assert.deepEqual([samples[0].partyCoordinates,samples[0].coordinateCandidates.length,samples[0].status],[null,0,'registration-unresolved']));
+ check('late success after failure cannot replace the sample',()=>{const before=JSON.stringify(f.api.getTrajectory());replyMap(f,request,coordinateResult(request));assert.equal(JSON.stringify(f.api.getTrajectory()),before);});
+});
+await run('retained failure with no new font nominee drops old coordinate factors',async()=>{
+ const f=await fixture({registration:false,markerCandidates:partyMarkers}),request=await beginCoordinateAcquisition(f),prior=coordinateResult(request);replyMap(f,request,prior);
+ const pending=f.api.readFrame(2,{...f.sample(),videoTime:2}),tracking=f.requests().at(-1);replyMap(f,tracking,trackedResult(tracking,prior,false));for(let i=0;i<4;i++)await Promise.resolve();f.matches.at(-1).resolve({...result,sequence:'NO MATCH'});await pending;
+ const last=f.api.getTrajectory().samples.at(-1);check('failed new map keeps no previous factors',()=>assert.deepEqual([last.stamp.videoTime,last.partyCoordinates,last.coordinateCandidates.length],[2,null,0]));check('missing new position breaks continuity',()=>assert(last.continuity.reasons.includes('unobserved-position')));
+});
+await run('source invalidation rejects automatic coordinates for the previous capture',async()=>{
+ const f=await fixture({registration:false,markerCandidates:partyMarkers}),request=await beginCoordinateAcquisition(f);f.api.invalidateSource('source-replaced');const before=JSON.stringify(f.api.getTrajectory());replyMap(f,request,coordinateResult(request));
+ check('invalidated token cannot publish factors',()=>assert.equal(JSON.stringify(f.api.getTrajectory()),before));check('only an explicit gap remains',()=>assert(f.api.getTrajectory().samples.every(s=>s.status==='gap')));
+});
+await run('full-stamp mismatch cannot complete automatic coordinate ownership',async()=>{
+ const f=await fixture({registration:false,markerCandidates:partyMarkers}),request=await beginCoordinateAcquisition(f),bad=coordinateResult(request);bad.stamp.markerCalibration.profiles[0].rgb[0]=0;replyMap(f,request,bad);
+ check('altered nested provenance keeps sample pending',()=>assert.equal(f.api.getTrajectory().samples.length,0));replyMap(f,request,coordinateResult(request));check('matching capture can still complete',()=>assert.equal(f.api.getTrajectory().samples.length,1));
+});
+await run('an older completed acquisition is exported without replacing newer-frame UI',async()=>{
+ const f=await fixture({markerCandidates:partyMarkers}),request=await beginCoordinateAcquisition(f);await f.api.readFrame(2,{...f.sample(),videoTime:2});const status=f.$('player-status').textContent;replyMap(f,request,coordinateResult(request));
+ check('older capture retains its automatic factors in export',()=>assert.deepEqual(f.api.getTrajectory().samples.map(s=>[s.stamp.videoTime,!!s.partyCoordinates]),[[1,true]]));check('historical completion cannot overwrite newer-frame player UI',()=>assert.equal(f.$('player-status').textContent,status));
+});
+await run('failed acquisition also settles a cancelled manual-reference request',async()=>{
+ const f=await fixture({markerCandidates:partyMarkers}),request=await beginCoordinateAcquisition(f);await f.api.readFrame(2,{...f.sample(),videoTime:2});f.emit('dq9-map-candidates-result',{type:'map-candidates-error',requestId:request.requestId,stamp:request.stamp,message:'synthetic-failed-map'});
+ check('cancelled manual request cannot leave failed sample hanging',()=>assert.deepEqual(f.api.getTrajectory().samples.map(s=>[s.stamp.videoTime,s.partyCoordinates,s.candidates.length]),[[1,null,0]]));
+});
+for(const first of ['automatic','manual'])await run(`automatic continuity does not depend on ${first} finishing first`,async()=>{
+ const f=await fixture({markerCandidates:partyMarkers}),request=await beginCoordinateAcquisition(f),prior=coordinateResult(request),m=f.position.messages.findLast(m=>m.type==='frame'),registration={mapId:7402,descriptor:'manual-map',resolved:true,imageWidth:256,imageHeight:192,candidates:[{scale:.5,dx:0,dy:0,score:.9}],best:{scale:.5,dx:0,dy:0,score:.9},margin:.4},manual=()=>f.position.reply({type:'position',epoch:m.epoch,frameSerial:m.frameSerial,ok:true,result:registration});
+ if(first==='manual')manual();replyMap(f,request,prior);if(first==='automatic')manual();
+ const pending=f.api.readFrame(2,{...f.sample(),videoTime:2}),tracking=f.requests().at(-1);replyMap(f,tracking,trackedResult(tracking,prior));await pending;
+ const samples=f.api.getTrajectory().samples;check('same automatic map alternatives stay linked across reply order',()=>assert.equal(samples[1].continuity.linkedToPrevious,true));check('missing optional manual reply is not a map transition',()=>assert(!samples[1].continuity.reasons.includes('reference-map-changed')));check('manual result presence does not fabricate automatic map identity',()=>assert.deepEqual([samples[0].reference.mapId,samples[1].reference.mapId],first==='manual'?[7402,null]:[null,null]));
+});
+for(const first of ['automatic','manual'])await run(`empty automatic factors preserve manual fallback when ${first} completes first`,async()=>{
+ const f=await fixture({markerCandidates:partyMarkers}),request=await beginCoordinateAcquisition(f),r={...coordinateResult(request),rankings:[],descriptorCandidate:false,bestMapIds:[],reason:'references-unavailable'};
+ const m=f.position.messages.findLast(m=>m.type==='frame'),registration={mapId:7402,descriptor:'manual-map',resolved:true,imageWidth:256,imageHeight:192,candidates:[{scale:.5,dx:0,dy:0,score:.9}],best:{scale:.5,dx:0,dy:0,score:.9},margin:.4},manual=()=>f.position.reply({type:'position',epoch:m.epoch,frameSerial:m.frameSerial,ok:true,result:registration});
+ if(first==='automatic')replyMap(f,request,r);else manual();
+ check('first response waits for other coordinate source',()=>assert.equal(f.api.getTrajectory().samples.length,0));if(first==='automatic')manual();else replyMap(f,request,r);
+ const sample=f.api.getTrajectory().samples[0];check('manual candidates survive both arrival orders',()=>assert.deepEqual([sample.candidates.length,sample.candidates[0].x,sample.candidates[0].y,sample.reference.mapId],[1,128,96,7402]));check('empty automatic factors and unknowns are still preserved',()=>assert.deepEqual([sample.partyCoordinates.combinationCount,sample.partyCoordinates.unknownMapHypotheses.length],[0,1]));check('manual map identity remains compatible',()=>assert.equal(sample.mapIdentity.status,'candidate-compatible'));
+});
+await run('manual-only capture coordinator remains compatible and factors are copied only once',async()=>{
+ const samples=[],coordinator=new imported['./player-capture.mjs'].PlayerCaptureCoordinator(s=>samples.push(s)),stamp={streamId:'manual',frameSerial:1,videoTime:1,capturedAt:'2026-10-01T00:00:00Z'},args={stamp,frame:{width:256,height:192},registrationFrame:{width:128,height:96},markers:{frame:{width:256,height:192},candidates:partyMarkers}};
+ const token=coordinator.capture(args);coordinator.name(token,{frameSerial:1,videoTime:1,candidates:[{mapIds:[7402]}]});check('manual capture still waits for registration',()=>assert.equal(samples.length,0));
+ const registration={mapId:7402,descriptor:'manual-map',resolved:true,imageWidth:256,imageHeight:192,candidates:[{scale:.5,dx:0,dy:0,score:.9}]};coordinator.registration(token,registration);
+ check('manual registration keeps original inverse transform',()=>assert.deepEqual([samples[0].candidates[0].x,samples[0].candidates[0].y,samples[0].status,samples[0].partyCoordinates],[128,96,'candidate',null]));
+ const next=coordinator.capture({...args,stamp:{...stamp,frameSerial:2,videoTime:2},registrationExpected:false,partyCoordinatesExpected:true}),factors={kind:'factorized-party-map-coordinate-candidates',stamp:{...stamp,frameSerial:2,videoTime:2},combinationCount:1,references:[{descriptor:'one',mapIds:[1,2]}]};
+ check('coordinator itself rejects changed captured metadata',()=>assert.throws(()=>coordinator.partyCoordinates(next,{...factors,stamp:{...factors.stamp,videoTime:3}}),/complete capture stamp/));coordinator.partyCoordinates(next,factors);factors.references[0].mapIds.push(3);check('duplicate coordinate completion is ignored',()=>assert.equal(coordinator.partyCoordinates(next,null),false));coordinator.name(next,null);
+ check('factor input is snapshotted before final name joins',()=>assert.deepEqual(samples.at(-1).partyCoordinates.references[0].mapIds,[1,2]));check('export is a separate immutable-value snapshot',()=>{const exported=coordinator.trajectory.export();exported.samples.at(-1).partyCoordinates.references[0].mapIds.push(4);assert.deepEqual(coordinator.trajectory.export().samples.at(-1).partyCoordinates.references[0].mapIds,[1,2]);});
+});
+
 const summary={passed:cases.every(c=>c.passed),checks,cases,scope:'Node fake DOM/canvas/Worker control-flow test; real capture coordinator and input adapters; synthetic pixels and deferred OCR/layout; no browser/WebGPU/video-decoder accuracy claim'};
 console.log(JSON.stringify(summary,null,2));if(!summary.passed)process.exitCode=1;

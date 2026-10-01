@@ -48,7 +48,7 @@ let positionEpoch=0,positionPending=false,positionSample=null,positionHasReferen
 let sameFrameMarkers=null,activeFrameSerial=0,lastPlayerStamp=null,playerPick=false,playerProfiles=defaultPartyProfiles(),playerReference=null;
 function defaultPartyProfiles(){return [{id:'nominal-first-gray-hypothesis',rgb:[66,66,66]}];}
 const playerMap=$('player-map-preview'),playerMapCtx=playerMap.getContext('2d'),playerReferenceCanvas=document.createElement('canvas');
-const playerCoordinator=new PlayerCaptureCoordinator(sample=>{remember(playerSampleATObservation(sample));renderPlayer(sample);},enrichPlayerCoordinates);
+const playerCoordinator=new PlayerCaptureCoordinator(sample=>{remember(playerSampleATObservation(sample));if(sample.status==='gap'||sample.stamp.frameSerial===activeFrameSerial)renderPlayer(sample);},enrichPlayerCoordinates);
 function enrichPlayerCoordinates(sample){
  const ref=playerReference,conflict=sample.mapIdentity?.status==='candidate-conflict',valid=ref&&sample.reference?.epoch===positionEpoch&&Array.isArray(ref.originPixel)&&Number.isFinite(ref.worldToMapScale)&&ref.worldToMapScale>0;
  sample.coordinateMapping={status:conflict?'reference-name-conflict':!valid?'descriptor-transform-unavailable':!sample.registration?.resolved?'registration-unresolved':'provisional-descriptor-transform',mapId:ref?.mapId??null,descriptor:ref?.descriptor??null,originPixel:ref?.originPixel??null,scale:ref?.worldToMapScale??null,transformVerified:false};
@@ -83,6 +83,7 @@ function renderPlayer(sample){
  $('player-status').textContent=sample.status==='gap'?`点の観測に空白 · ${sample.reason} · 補間しません`:`t=${sample.stamp.videoTime.toFixed(3)}秒 · パーティ点候補 ${markers.length}個（実人数は未確定） · 上画面 ${screen||'未検出'} · ROM画像 ${image||'照合未確定'} · ${conflict?'参照マップ不一致: 名前候補ID '+sample.mapIdentity.candidateMapIds.join(',')+' / 参照ID '+sample.reference?.mapId:sample.mapIdentity?.status==='candidate-compatible'?'名前候補と参照は整合（未証明）':'マップ名未確定'} · ${sample.status} · ${sample.stamp.markerCalibration?'HUD色 '+sample.stamp.markerCalibration.profiles.map(p=>`${p.slot}:${p.rgb.join('/')}`).join(' / ')+' ('+sample.stamp.markerCalibration.status+')':'登録RGB比較'} · 本人・実座標・移動間隔は未証明 / AT加算なし`;
  if(sample.stamp.frameSerial===activeFrameSerial){upperCtx.save();upperCtx.strokeStyle='#ff3e94';upperCtx.lineWidth=1;for(const m of markers){upperCtx.strokeRect(m.bounds.x-2,m.bounds.y-2,m.bounds.w+4,m.bounds.h+4);}upperCtx.restore();}
  const coordinates=$('player-coordinates');coordinates.replaceChildren();
+ if(sample.partyCoordinates)renderCandidatePartyCoordinates(sample.partyCoordinates,coordinates);
  const mapping=sample.coordinateMapping,heading=document.createElement('div');heading.textContent=mapping?`手動参照の比較用近似変換 ${mapping.descriptor||'?'} / map ${mapping.mapId??'?'} · 原点 ${mapping.originPixel?.join(',')||'?'} · 倍率 ${mapping.scale??'?'} · ${mapping.status}（マップごとの検証は未完）`:'座標観測の空白';coordinates.append(heading);
  for(const [i,c]of(sample.coordinateCandidates||[]).entries()){const row=document.createElement('details'),title=document.createElement('summary'),display=formatCoordinateRanges(c);title.textContent=`点候補${i+1} ${display.summary}`;row.append(title);const detail=document.createElement('div');detail.textContent=`${c.profileId} · 本人・変換は未証明`;row.append(detail);appendCoordinateRangeDetails(row,display);coordinates.append(row);}
  playerMapCtx.clearRect(0,0,256,256);if(!playerReference)return;const scale=Math.min(256/playerReference.width,256/playerReference.height),ox=(256-playerReference.width*scale)/2,oy=(256-playerReference.height*scale)/2;playerMapCtx.imageSmoothingEnabled=false;playerMapCtx.drawImage(playerReferenceCanvas,ox,oy,playerReference.width*scale,playerReference.height*scale);
@@ -103,7 +104,7 @@ function positionFrame(sample,{manualRegistration=true}={}){
  const markers=track&&$('player-marker-mode').value==='hud'?calibratedPartyMarkerCandidates({width:256,height:192,rgba:native.data}):{frame:{width:256,height:192},resolvedIdentity:false,confidenceCalibrated:false,candidates:track?playerProfiles.flatMap(profile=>markerColorCandidates({width:256,height:192,rgba:native.data},{...profile,tolerance,minimumPixels:3,maximumPixels:30,maximumExtent:8,excluded:[{x:0,y:0,w:256,h:20},{x:0,y:172,w:256,h:20}]}).candidates.map(c=>({...c,id:profile.id+':'+c.id}))):[]};
  sameFrameMarkers={frameSerial:sample.frameSerial,markers};
  const stamp=playerStamp(sample);lastPlayerStamp=stamp;
- const playerToken=track?playerCoordinator.capture({stamp,frame:{width:256,height:192},registrationFrame:{width:128,height:96},markers,registrationExpected:enabled}):null;
+ const playerToken=track?playerCoordinator.capture({stamp,frame:{width:256,height:192},registrationFrame:{width:128,height:96},markers,registrationExpected:enabled,partyCoordinatesExpected:true}):null;
  if(!enabled)return {playerToken,stamp};
  smallCtx.imageSmoothingEnabled=true;smallCtx.drawImage(frame,0,0,128,96);const data=smallCtx.getImageData(0,0,128,96),scales=$('position-scales').value.split(/[ ,]+/).map(Number).filter(x=>x>0&&x<=4).slice(0,6);
  const excluded=[{x:0,y:0,w:128,h:10},{x:0,y:86,w:128,h:10},...markers.candidates.map(m=>({x:m.bounds.x/2-2,y:m.bounds.y/2-2,w:m.bounds.w/2+4,h:m.bounds.h/2+4}))];
@@ -122,7 +123,7 @@ async function readFrame(timestamp,sample={},textMode='gpu',cpuJob=null){if(cpuH
  if(retainedMap){
   suspendCurrentMap('保持画像を現在フレームで照合中（右の結果は前回の完了フレーム）',null,{keepMapResult:true});
   ({playerToken,stamp}=positionFrame(sample,{manualRegistration:false}));
-  const tracked=await requestRetainedMapMatch(sample,stamp);
+  const tracked=await requestRetainedMapMatch(sample,stamp,playerToken);
   if(!captureIsCurrent(sample)||current!==matcher)return;
   if(tracked?.tracking?.matched){$('name-candidates').textContent=`文字は t=${tracked.tracking.acquisitionStamp.videoTime.toFixed(3)}秒の取得結果を保持 · 現在フレームでは画像だけ照合`;status(`現在画像だけ照合 · t=${stamp.videoTime.toFixed(3)}秒 · 文字再探索なし / 同名・未評価候補は未確定`);return;}
   retainedMap=null;suspendCurrentMap('画像の不一致または位置未確定 · 現在フレームの文字から再取得',stamp);
@@ -133,14 +134,15 @@ async function readFrame(timestamp,sample={},textMode='gpu',cpuJob=null){if(cpuH
  let result;try{const image=nameCtx.getImageData(0,0,w,h);result=textMode==='cpu-once'?await cpuText.match(image,{glyphsBySize:runtimeGlyphs,romEpoch:sample.romEpoch,stamp,options:textOptions}):await current.match(image,textOptions);}catch(error){if(!captureIsCurrent(sample)||current!==matcher)return;if(textMode!=='cpu-once'&&(!globalThis.navigator?.gpu||/WebGPU|GPUDevice|adapter|device lost/i.test(error?.message||''))){gpuUnavailable=true;$('cpu-text-status').textContent='WebGPUが使えません。CPUで固定1フレームを照合できます（低速）。設定した時間上限を使用し、未探索候補は残します。';}const failure=(error?.message||String(error))+(textMode==='cpu-once'?' '+formatCpuTextDiagnostic(error):'');clearCandidateRequest();$('name-candidates').textContent='文字照合を利用できません · '+failure;$('map-disambiguation').textContent='文字候補がないため候補マップ画像の照合を保留';status('映像入力中 · 文字照合を利用できません: '+failure+' · パーティ点の画素観測は継続');return;}if(!captureIsCurrent(sample)||current!==matcher)return;
  const observation={kind:'video-map-name-candidates',...sample,stamp,frameTimestamp:timestamp,...result,roi:structuredClone(roi),screenDetection:$('screen-mode').value==='auto'?layoutResult:null,screenMode:$('screen-mode').value,nameROIMode:$('name-roi-mode').value,positionResolved:false,areaResolved:false,minimumProvenATCalls:0};
  if(playerToken){const mapCandidates=result.route==='glyph-akinator'?(result.sequence?[{name:result.sequence,mapIds:mapIdsForText(result.sequence),reconstructionDifference:result.reconstructionDifference,textResolved:result.textResolved}]:[]):result.candidates;playerCoordinator.name(playerToken,{...observation,candidates:mapCandidates});}
- requestCandidateMapMatch(result,sample,stamp);
+ requestCandidateMapMatch(result,sample,stamp,playerToken);
  renderTextCandidates(result);
  const signature=JSON.stringify([result.route,result.sequence,result.reason,result.characters?.map(p=>p.alternatives.map(c=>[c.char,c.fontId,c.scale,c.dx,c.dy])),result.candidates.map(c=>c.name)]);if(signature!==lastSignature){lastSignature=signature;remember(observation);}status(`${textMode==='cpu-once'?'CPU固定1フレーム（低速・未校正）':'映像入力中'} · ${result.evaluated??0}候補評価 · ${result.reason||'照合完了'} · AT下限へ自動加算なし`);
- }finally{if(playerToken)playerCoordinator.name(playerToken,null);busy=false;if(current&&current!==matcher)current.destroy();cpuControls();if(pendingRead&&mapCandidatePending?.mode!=='acquire'){pendingRead=false;if(!cpuHeld&&fileInput.url&&!video.seeking&&video.readyState>=2)queueMicrotask(()=>readFrame(performance.now(),fileInput.snapshot()).catch(e=>status(e.message)));}}}
+ }finally{if(playerToken&&captureIsCurrent(stamp)){playerCoordinator.name(playerToken,null);if(mapCandidatePending?.playerToken!==playerToken)playerCoordinator.partyCoordinates(playerToken,null);}busy=false;if(current&&current!==matcher)current.destroy();cpuControls();if(pendingRead&&mapCandidatePending?.mode!=='acquire'){pendingRead=false;if(!cpuHeld&&fileInput.url&&!video.seeking&&video.readyState>=2)queueMicrotask(()=>readFrame(performance.now(),fileInput.snapshot()).catch(e=>status(e.message)));}}}
 let mapCandidateRequest=0,mapCandidatePending=null,retainedMap=null;
 function resumePendingMapFrame(){if(!busy&&pendingRead){pendingRead=false;if(!cpuHeld&&fileInput.url&&!video.seeking&&video.readyState>=2)queueMicrotask(()=>readFrame(performance.now(),fileInput.snapshot()).catch(e=>status(e.message)));}}
 function clearCandidateRequest(){const p=mapCandidatePending;mapCandidatePending=null;if(p?.timer)clearTimeout(p.timer);p?.resolve?.(null);}
 function suspendCurrentMap(reason,stamp,{keepMapResult=false}={}){
+ if(positionSample?.playerToken)playerCoordinator.registration(positionSample.playerToken,{resolved:false,candidates:[],reason});
  lastPosition=null;positionPending=false;positionSample=null;
  $('position-status').textContent='現在フレームのマップ位置は未確定 · '+reason;
  $('player-coordinates').replaceChildren();$('player-coordinates').textContent='現在座標は保留 · '+reason;
@@ -148,33 +150,35 @@ function suspendCurrentMap(reason,stamp,{keepMapResult=false}={}){
  if(!keepMapResult)$('map-disambiguation').textContent='現在フレームの座標は保留 · '+reason;
  if(stamp)remember({kind:'video-gap',...stamp,reason,minimumProvenATCalls:0});
 }
-function requestRetainedMapMatch(sample,stamp){
+function requestRetainedMapMatch(sample,stamp,playerToken){
  clearCandidateRequest();const retained=retainedMap,requestId=++mapCandidateRequest;
  smallCtx.imageSmoothingEnabled=true;smallCtx.drawImage(frame,0,0,128,96);const pixels=smallCtx.getImageData(0,0,128,96);
  const markers=structuredClone(sameFrameMarkers?.frameSerial===sample.frameSerial?sameFrameMarkers.markers:{frame:{width:256,height:192},candidates:[]});
  const scales=$('position-scales').value.split(/[ ,]+/).map(Number).filter(s=>s>0&&s<=4).slice(0,6);
  return new Promise(resolve=>{
-  const pending={requestId,stamp,markers,mode:'track-current',resolve,timer:null};mapCandidatePending=pending;
+  const pending={requestId,stamp,markers,playerToken,mode:'track-current',resolve,timer:null};mapCandidatePending=pending;
   pending.timer=setTimeout(()=>{if(mapCandidatePending===pending){clearCandidateRequest();retainedMap=null;suspendCurrentMap('現在画像の照合が時間切れ',stamp);}},2000);
   window.dispatchEvent(new CustomEvent('dq9-map-candidates-request',{detail:{requestId,stamp,mode:'track-current',descriptor:retained.descriptor,acquisitionStamp:retained.acquisitionStamp,frame:{width:128,height:96,rgba:pixels.data},scales:scales.length?scales:[.5],excluded:[{x:0,y:0,w:128,h:10},{x:0,y:86,w:128,h:10},...markers.candidates.map(m=>({x:m.bounds.x/2-2,y:m.bounds.y/2-2,w:m.bounds.w/2+4,h:m.bounds.h/2+4}))]}}));
  });
 }
-function requestCandidateMapMatch(result,sample,stamp){
+function requestCandidateMapMatch(result,sample,stamp,playerToken){
  clearCandidateRequest();const candidates=mapCandidatesFromAkinator(result,records),requestId=++mapCandidateRequest;
  if(!candidates.mapIds.length){clearCandidateRequest();$('map-disambiguation').textContent='フォントアキネイター候補に対応するマップ名なし · 全マップ検索はしません';return;}
  smallCtx.imageSmoothingEnabled=true;smallCtx.drawImage(frame,0,0,128,96);const pixels=smallCtx.getImageData(0,0,128,96);
- mapCandidatePending={requestId,stamp,mode:'acquire',timer:null,markers:structuredClone(sameFrameMarkers?.frameSerial===sample.frameSerial?sameFrameMarkers.markers:{frame:{width:256,height:192},candidates:[]})};$('map-disambiguation').textContent=`文字候補 ${candidates.names.join(' / ')} → map ${candidates.mapIds.join(', ')} の画像だけ照合中`;
- const pending=mapCandidatePending;pending.timer=setTimeout(()=>{if(mapCandidatePending===pending){clearCandidateRequest();retainedMap=null;suspendCurrentMap('候補画像の照合が時間切れ',stamp);resumePendingMapFrame();}},2000);
+ mapCandidatePending={requestId,stamp,playerToken,mode:'acquire',timer:null,markers:structuredClone(sameFrameMarkers?.frameSerial===sample.frameSerial?sameFrameMarkers.markers:{frame:{width:256,height:192},candidates:[]})};$('map-disambiguation').textContent=`文字候補 ${candidates.names.join(' / ')} → map ${candidates.mapIds.join(', ')} の画像だけ照合中`;
+ const pending=mapCandidatePending;pending.timer=setTimeout(()=>{if(mapCandidatePending===pending){clearCandidateRequest();retainedMap=null;playerCoordinator.partyCoordinates(pending.playerToken,null);suspendCurrentMap('候補画像の照合が時間切れ',stamp);resumePendingMapFrame();}},2000);
  const scales=$('position-scales').value.split(/[ ,]+/).map(Number).filter(s=>s>0&&s<=4).slice(0,6);
  window.dispatchEvent(new CustomEvent('dq9-map-candidates-request',{detail:{requestId,stamp,candidates,frame:{width:128,height:96,rgba:pixels.data},scales:scales.length?scales:[.5],excluded:[{x:0,y:0,w:128,h:10},{x:0,y:86,w:128,h:10},...(sameFrameMarkers?.frameSerial===sample.frameSerial?sameFrameMarkers.markers.candidates:[]).map(m=>({x:m.bounds.x/2-2,y:m.bounds.y/2-2,w:m.bounds.w/2+4,h:m.bounds.h/2+4}))]}}));
 }
 window.addEventListener('dq9-map-candidates-result',e=>{
  const m=e.detail??{},p=mapCandidatePending,stamp=m.result?.stamp||m.stamp;if(!p||m.requestId!==p.requestId||!captureIsCurrent(stamp)||stamp?.frameSerial!==p.stamp.frameSerial||JSON.stringify(stamp)!==JSON.stringify(p.stamp))return;
  mapCandidatePending=null;if(p.timer)clearTimeout(p.timer);
- if(m.type==='map-candidates-error'){retainedMap=null;p.resolve?.(null);suspendCurrentMap('候補マップ画像照合は未確定 · '+m.message,stamp);resumePendingMapFrame();return;}
+ if(m.type==='map-candidates-error'){retainedMap=null;if(p.mode==='acquire')playerCoordinator.partyCoordinates(p.playerToken,null);p.resolve?.(null);suspendCurrentMap('候補マップ画像照合は未確定 · '+m.message,stamp);resumePendingMapFrame();return;}
  const r=m.result;
  if(p.mode==='track-current'&&!r.tracking?.matched){retainedMap=null;p.resolve?.(r);suspendCurrentMap('保持画像の不一致または位置未確定',stamp);return;}
  if(p.mode!=='track-current')retainedMap=r.descriptorCandidate&&r.rankings?.[0]?.registration?.resolved?{descriptor:r.bestDescriptor,acquisitionStamp:structuredClone(stamp)}:null;
+ let partyError=null;
+ try{r.partyCoordinates=factorPartyMapCandidates({disambiguation:r,markers:p.markers,stamp:p.stamp});playerCoordinator.partyCoordinates(p.playerToken,r.partyCoordinates);}catch(error){partyError=error;playerCoordinator.partyCoordinates(p.playerToken,null);}
  p.resolve?.(r);
  if(stamp.frameSerial!==activeFrameSerial){remember({...r,...stamp,kind:'video-map-disambiguation',minimumProvenATCalls:0});resumePendingMapFrame();return;}
  // Build off-DOM: never collapse the completed result while the next frame is pending.
@@ -182,7 +186,7 @@ window.addEventListener('dq9-map-candidates-result',e=>{
  const header=document.createElement('p');header.textContent=`完了フレームの結果 · ${r.tracking?'保持画像だけ照合（文字取得 t='+r.tracking.acquisitionStamp.videoTime.toFixed(3)+'秒）':'文字→画像照合'} t=${stamp.videoTime.toFixed(3)}秒 · ${r.tracking?.matched?'保持画像は整合（他画像未比較）':r.descriptorCandidate?'画像一致候補':'画像未確定'} ${r.bestDescriptor||''} · map ID候補 ${r.bestMapIds.join(', ')||'なし'} · ${r.reason}（スコアは確率ではありません）`;host.append(header);
  for(const g of r.rankings){const d=document.createElement('details'),title=document.createElement('summary');title.textContent=`${g.descriptor} · map ${g.mapIds.join(', ')} · 類似度 ${g.bestScore?.toFixed(3)??'?'} · ${g.registration.resolved?'画像位置候補':'位置未確定'}`;d.append(title);const provenance=document.createElement('div');provenance.textContent='文字候補根拠（取得フレーム）: '+r.candidateSource.provenance.filter(p=>p.mapIds.some(id=>g.mapIds.includes(id))).map(p=>`${p.source}: ${p.text}`).join(' / ');d.append(provenance);for(const id of g.mapIds){const b=document.createElement('button');b.textContent=`map ${id} を参照表示（自動確定ではありません）`;b.onclick=()=>window.dispatchEvent(new CustomEvent('dq9-view-map-request',{detail:{mapId:id,descriptor:g.descriptor,source:'human-selection-from-font-then-image-candidates'}}));d.append(b);}host.append(d);}
  if(r.unknown.length){const u=document.createElement('p');u.textContent='除外せず未確定で保持: '+r.unknown.map(x=>`${x.mapId??'未探索の文字・マップ候補'}${x.descriptor?' '+x.descriptor:''} (${x.reason})`).join(' / ');host.append(u);}
- try{r.partyCoordinates=factorPartyMapCandidates({disambiguation:r,markers:p.markers,stamp:p.stamp});renderCandidatePartyCoordinates(r.partyCoordinates,host);}catch(error){const note=document.createElement('p');note.textContent='点と候補マップの同期は未確定 · '+error.message;host.append(note);}
+ if(r.partyCoordinates)renderCandidatePartyCoordinates(r.partyCoordinates,host);if(partyError){const note=document.createElement('p');note.textContent='点と候補マップの同期は未確定 · '+partyError.message;host.append(note);}
  $('map-disambiguation').replaceChildren(...host.children);
  remember({...r,...stamp,kind:'video-map-disambiguation',minimumProvenATCalls:0});resumePendingMapFrame();
 });

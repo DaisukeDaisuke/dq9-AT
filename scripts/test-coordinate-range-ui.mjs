@@ -107,6 +107,12 @@ check('factored preview retains map aliases, weak peaks, identities and capped a
  assert.equal(JSON.stringify(factors),before);
 });
 
+check('automatic factors supplement rather than erase manual-reference ranges',()=>{
+ api.renderPlayer({...sample,partyCoordinates:factors});const text=elements.get('player-coordinates').textContent;
+ assert.match(text,/同一フレームのパーティ点/);assert.match(text,/点候補1 X範囲 約\[-0\.01, 0\.01\]/);
+ for(const line of display.lines)assert(text.includes(line));
+});
+
 check('fixed anchors render no physical interval and mixed aliases retain outside ranges',()=>{
  const d={path:'shared',groupOrder:'source-order-prepended',groups:[{kind:'map-id-list',mapIds:[100],callOffset:16},{kind:'coordinate-map-id-list',mapIds:[103],x:5,z:19,callOffset:24}]};
  const fixed=mapMarkerCoordinateCandidate({mapId:103},markerCoordinateBinding(d,103)),display=api.formatCoordinateRanges(fixed);
