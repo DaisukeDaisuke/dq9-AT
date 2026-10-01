@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { DEFAULT_MODELS, LIMITS, RequestGate, RecognitionWorkerClient, cloneCaptureStamp, mountRecognitionPage, pointerROI, stampEquals, validateROI } from '../web/monster-recognize-page.mjs';
+import { CENTER_MASK, DEFAULT_MODELS, LIMITS, RequestGate, RecognitionWorkerClient, cloneCaptureStamp, gameplayROIForLayout, mountRecognitionPage, pointerROI, stampEquals, validateROI } from '../web/monster-recognize-page.mjs';
 
 let passed = 0;
 const check = (name, fn) => { fn(); passed++; console.log(`ok ${passed} - ${name}`); };
@@ -81,7 +81,8 @@ class Element {
 const html = await readFile(new URL('../web/monster-recognize.html', import.meta.url), 'utf8');
 const elements = new Map([...html.matchAll(/<([a-z][\w-]*)\b[^>]*\bid="([^"]+)"[^>]*>/g)].map(match => [match[2], new Element(match[1])]));
 const doc = { getElementById: id => { assert(elements.has(id), `missing HTML element ${id}`); return elements.get(id); }, createElement: tag => new Element(tag) };
-const win = new Element('window'); const ui = mountRecognitionPage(doc, win); const el = id => elements.get(id);
+let prepareInference = async () => ({}); const preparationCalls = [];
+const win = new Element('window'); const ui = mountRecognitionPage(doc, win, { ensureInferenceAssets: options => { preparationCalls.push(options); return prepareInference(options); } }); const el = id => elements.get(id);
 el('variant').value = '_f'; el('preset').value = 'quick'; el('top-k').value = '4';
 const uiWorkers = []; ui.client.factory = () => { const worker = new MockWorker(); uiWorkers.push(worker); return worker; };
 const catalog = [...DEFAULT_MODELS, 'z999x'].map(modelId => ({ modelId, speciesCandidates: [{ monsterId: 1, nameJa: `名前-${modelId}` }] }));
@@ -121,4 +122,94 @@ check('variant changes invalidate prior result', () => assert.equal(el('rankings
 scoring = ui.recognize(); await settle(); await win.trigger('pagehide'); await scoring; await win.trigger('pageshow', { persisted: true });
 check('back-forward restore clears stale busy/loading and allows next work', () => { assert(!ui.state.disposed); assert(!ui.state.busy); assert(!ui.state.loading); assert.equal(ui.state.capture, null); assert(el('cancel').disabled); assert(ui.state.romFile === file); });
 check('all required frozen capture keys are retained', () => { for (const key of Object.keys(stamp)) assert(key in previousRequest.captureStamp); });
+
+check('OBS preset uses the explicit right-hand 4:3 DS panel', () => assert.deepEqual(gameplayROIForLayout('obs-right-upper', { width: 1920, height: 1080 }), { x: 960, y: 0, w: 960, h: 720 }));
+check('stacked preset selects the lower DS screen', () => assert.deepEqual(gameplayROIForLayout('stacked-lower', { width: 256, height: 384 }), { x: 0, y: 192, w: 256, h: 192 }));
+check('layout rejects an out-of-bounds OBS panel', () => assert.throws(() => gameplayROIForLayout('obs-right-upper', { width: 1920, height: 500 }), /はみ出/));
+check('manual gameplay region may exceed the enemy ROI size cap', () => assert.deepEqual(gameplayROIForLayout('manual', { width: 1920, height: 1080 }, { x: 0, y: 0, w: 1920, h: 1080 }), { x: 0, y: 0, w: 1920, h: 1080 }));
+const sceneStamp = { ...stamp, featureMethod: 'dinov2', sceneContext: { kind: 'field', gameplayROI: { x: 0, y: 0, w: 640, h: 480 }, excludeCenter: true, maskNormalized: { ...CENTER_MASK } } };
+check('scene and mask are deep cloned per scoring request', () => { const copy = cloneCaptureStamp(sceneStamp); copy.sceneContext.gameplayROI.x++; copy.sceneContext.maskNormalized.x++; assert.equal(sceneStamp.sceneContext.gameplayROI.x, 0); assert.equal(sceneStamp.sceneContext.maskNormalized.x, .42); });
+for (const key of ['featureMethod', 'kind', 'gameplayROI', 'excludeCenter', 'maskNormalized']) check(`result gate rejects stale ${key}`, () => {
+  const guard = new RequestGate(); guard.begin('scene', 5, sceneStamp); const other = cloneCaptureStamp(sceneStamp);
+  if (key === 'featureMethod') other.featureMethod = 'histogram';
+  else if (key === 'kind') other.sceneContext.kind = 'unspecified';
+  else if (key === 'excludeCenter') other.sceneContext.excludeCenter = false;
+  else other.sceneContext[key].x++;
+  assert(!guard.accepts({ type: 'result', id: 'scene', romEpoch: 5, result: { captureStamp: other } }));
+});
+async function beginScoring() {
+  const completion = ui.recognize(); await settle(); const worker = uiWorkers.at(-1); const request = worker.messages.at(-1)?.message;
+  if (request?.type === 'load') { worker.emit({ type: 'loaded', id: request.id, romEpoch: request.romEpoch, catalog }); await settle(); }
+  return { completion, worker };
+}
+function emitResult(worker, request, overrides = {}) {
+  worker.emit({ type: 'result', id: request.id, romEpoch: request.romEpoch, result: { captureStamp: request.captureStamp, featureMethod: request.featureMethod, metric: request.featureMethod === 'dinov2' ? 'cosine' : 'distance', rankings: [{ modelId: 'z000c', speciesCandidates: [{ nameJa: 'テスト候補' }], similarity: .75, distance: .25 }], unknown: { suggested: true, calibrated: false }, coverage: { requestedModels: 4, completedModels: 1, renderedTemplates: 16, unsupported: [] }, limitations: [], elapsedMs: 10, ...overrides } });
+}
+Object.assign(video, { videoWidth: 1920, videoHeight: 1080, currentTime: 1.25, frameValue: 37 });
+Object.assign(ui.state, { sourceReady: true, sourceKind: 'video', sourceId: 'dino-video', sourceEpoch: 3 });
+el('scene-kind').value = 'unspecified'; el('gameplay-layout').value = 'obs-right-upper'; el('exclude-center').checked = true;
+ui.freeze(); ui.setROI({ x: 1000, y: 50, w: 40, h: 50 });
+let dinoJob = await beginScoring(); let dinoRequest = dinoJob.worker.messages.at(-1).message;
+check('image dimensions never assert field context or activate center masking', () => { assert.equal(dinoRequest.featureMethod, 'histogram'); assert.equal(dinoRequest.sceneContext.kind, 'unspecified'); assert.equal(dinoRequest.sceneContext.gameplayROI, null); assert.equal(dinoRequest.sceneContext.excludeCenter, false); assert.equal(preparationCalls.length, 0); });
+emitResult(dinoJob.worker, dinoRequest); await dinoJob.completion;
+el('feature-method').value = 'dinov2'; el('preset').value = 'standard'; await el('feature-method').trigger('change');
+check('DINO standard preset is visibly blocked without silently changing it', () => { assert(el('start').disabled); assert(!el('configuration-error').hidden); assert.equal(el('preset').value, 'standard'); });
+el('preset').value = 'quick'; el('variant').value = 'both'; await el('variant').trigger('change');
+check('DINO both variants is visibly blocked without silently changing it', () => { assert(el('start').disabled); assert.equal(el('variant').value, 'both'); });
+el('variant').value = '_f'; await el('variant').trigger('change');
+check('DINO valid quick single variant enables scoring', () => { assert(!el('start').disabled); assert(!el('dino-constraints').hidden); });
+el('scene-kind').value = 'field'; await el('scene-kind').trigger('change'); ui.setROI({ x: 1400, y: 300, w: 30, h: 30 });
+dinoJob = await beginScoring(); dinoRequest = dinoJob.worker.messages.at(-1).message;
+check('explicit central field overlap skips asset preparation and retains original pixels', () => { assert.equal(preparationCalls.length, 0); assert.equal(dinoRequest.type, 'recognize'); assert.equal(dinoRequest.featureMethod, 'dinov2'); assert.deepEqual(dinoRequest.sceneContext.gameplayROI, { x: 960, y: 0, w: 960, h: 720 }); assert(dinoRequest.sceneContext.excludeCenter); assert.equal(dinoRequest.crop.rgba[0], 37); assert.match(el('mask-status').textContent, /重なる/); });
+emitResult(dinoJob.worker, dinoRequest, { rankings: [], skipped: 'central-field-exclusion', coverage: { requestedModels: 4, completedModels: 0, renderedTemplates: 0, unsupported: [] } }); await dinoJob.completion;
+check('masked result remains unknown and unobserved without negative evidence', () => { assert.equal(el('rankings').children.length, 0); assert.match(el('unknown-status').textContent, /未観測・判別不能/); assert.match(el('unknown-status').textContent, /根拠にはなりません/); });
+ui.setROI({ x: 1000, y: 50, w: 40, h: 50 });
+let resolveAssets; prepareInference = () => new Promise(resolve => { resolveAssets = resolve; });
+dinoJob = await beginScoring(); const beforeAssets = dinoJob.worker.messages.length; const prep = preparationCalls.at(-1);
+check('DINO waits for verified asset preparation before scoring', () => { assert(ui.state.busy); assert.equal(preparationCalls.length, 1); assert(!prep.signal.aborted); assert.equal(dinoJob.worker.messages.length, beforeAssets); assert.match(el('status').textContent, /34.75/); });
+prep.onProgress({ phase: 'download', loadedBytes: 10, totalBytes: 20, message: 'download current' });
+check('current asset progress updates the progress indicator', () => { assert.equal(el('progress').value, 10); assert.equal(el('progress').max, 20); assert.equal(el('status').textContent, 'download current'); });
+resolveAssets({}); await settle(); dinoRequest = dinoJob.worker.messages.at(-1).message;
+check('DINO request keeps feature and nested scene in capture stamp', () => { assert.equal(dinoJob.worker.messages.length, beforeAssets + 1); assert.equal(dinoRequest.captureStamp.featureMethod, 'dinov2'); assert.deepEqual(dinoRequest.captureStamp.sceneContext, dinoRequest.sceneContext); assert.notStrictEqual(dinoRequest.captureStamp.sceneContext, dinoRequest.sceneContext); assert.equal(dinoRequest.crop.rgba[0], 37); });
+emitResult(dinoJob.worker, dinoRequest); await dinoJob.completion;
+check('DINO ranking reports cosine similarity rather than histogram distance', () => { const card = el('rankings').children[0]; assert(card.children.some(child => /cosine類似度 0.7500/.test(child.textContent))); assert(card.children.some(child => /大きいほど近い/.test(child.textContent))); assert.match(el('unknown-status').textContent, /候補外・判別不能/); });
+
+let rejectAssets; prepareInference = () => new Promise((resolve, reject) => { rejectAssets = reject; });
+dinoJob = await beginScoring(); const canceledPrep = preparationCalls.at(-1); await el('cancel').click(); const statusAfterCancel = el('status').textContent;
+canceledPrep.onProgress({ message: 'late download progress' }); rejectAssets(new Error('late download failure')); await dinoJob.completion;
+check('cancel aborts asset preparation and ignores late progress/error', () => { assert(canceledPrep.signal.aborted); assert(dinoJob.worker.terminated); assert.equal(el('status').textContent, statusAfterCancel); assert(!ui.state.busy); assert(!el('start').disabled); });
+prepareInference = async () => { throw new Error('cache unavailable'); }; dinoJob = await beginScoring(); await dinoJob.completion;
+check('asset error leaves DINO selected and offers explicit histogram choice', () => { assert.equal(el('feature-method').value, 'dinov2'); assert.match(el('status').textContent, /色ヒストグラム/); assert.match(el('error').textContent, /cache unavailable/); assert(!el('start').disabled); });
+el('feature-method').value = 'histogram'; await el('feature-method').trigger('change'); const countBeforeHistogram = preparationCalls.length;
+dinoJob = await beginScoring(); dinoRequest = dinoJob.worker.messages.at(-1).message;
+check('explicit histogram selection remains usable without inference assets', () => { assert.equal(dinoRequest.featureMethod, 'histogram'); assert.equal(preparationCalls.length, countBeforeHistogram); }); emitResult(dinoJob.worker, dinoRequest); await dinoJob.completion;
+
+el('feature-method').value = 'dinov2'; await el('feature-method').trigger('change'); prepareInference = () => new Promise((resolve, reject) => { rejectAssets = reject; });
+dinoJob = await beginScoring(); const oldFramePrep = preparationCalls.at(-1); video.currentTime = 4; ui.freeze(); const afterFreezeStatus = el('status').textContent; rejectAssets(new Error('old-frame fetch failure')); await dinoJob.completion;
+check('new frozen frame aborts preparation and cannot inherit its error', () => { assert(oldFramePrep.signal.aborted); assert.equal(el('status').textContent, afterFreezeStatus); assert.equal(ui.state.capture.videoTime, 4); assert.equal(el('error').textContent, ''); });
+ui.setROI({ x: 1000, y: 50, w: 40, h: 50 }); dinoJob = await beginScoring(); const oldROMPrep = preparationCalls.at(-1);
+el('rom-file').files = [{ ...file, name: 'replacement.nds' }]; const replacement = ui.selectROM(); await settle(); const newROMWorker = uiWorkers.at(-1); const newLoad = newROMWorker.messages.at(-1).message; newROMWorker.emit({ type: 'loaded', id: newLoad.id, romEpoch: newLoad.romEpoch, catalog }); await replacement;
+const newROMStatus = el('status').textContent; rejectAssets(new Error('old-ROM cache failure')); await dinoJob.completion;
+check('new ROM aborts preparation and rejects old download errors', () => { assert(oldROMPrep.signal.aborted); assert.equal(el('status').textContent, newROMStatus); assert.equal(el('error').textContent, ''); assert.equal(ui.state.capture, null); });
+ui.freeze(); ui.setROI({ x: 1000, y: 50, w: 40, h: 50 });
+for (const [id, value] of [['scene-kind', 'unspecified'], ['gameplay-layout', 'whole'], ['exclude-center', false]]) {
+  prepareInference = () => new Promise(resolve => { resolveAssets = resolve; }); dinoJob = await beginScoring(); const old = preparationCalls.at(-1);
+  if (id === 'exclude-center') el(id).checked = value; else el(id).value = value; await el(id).trigger('change');
+  resolveAssets({}); await dinoJob.completion;
+  check(`${id} change aborts the active inference preparation`, () => { assert(old.signal.aborted); assert(!ui.state.busy); assert.equal(el('rankings').children.length, 0); });
+}
+prepareInference = () => new Promise(resolve => { resolveAssets = resolve; }); dinoJob = await beginScoring(); const oldROIPrep = preparationCalls.at(-1);
+ui.setROI({ x: 1001, y: 50, w: 40, h: 50 }); resolveAssets({}); await dinoJob.completion;
+check('enemy ROI edit aborts preparation before any descriptor request', () => { assert(oldROIPrep.signal.aborted); assert(dinoJob.worker.terminated); assert.equal(el('rankings').children.length, 0); });
+dinoJob = await beginScoring(); const oldMethodPrep = preparationCalls.at(-1); el('feature-method').value = 'histogram'; await el('feature-method').trigger('change'); resolveAssets({}); await dinoJob.completion;
+check('feature method edit cancels old DINO preparation', () => { assert(oldMethodPrep.signal.aborted); assert.equal(el('feature-method').value, 'histogram'); assert(!ui.state.busy); });
+el('feature-method').value = 'dinov2'; await el('feature-method').trigger('change'); dinoJob = await beginScoring(); const oldSourcePrep = preparationCalls.at(-1);
+el('source-file').files = []; ui.selectSource(); resolveAssets({}); await dinoJob.completion;
+check('source file replacement aborts preparation and drops stale capture', () => { assert(oldSourcePrep.signal.aborted); assert.equal(ui.state.capture, null); assert(!ui.state.busy); });
+Object.assign(ui.state, { sourceReady: true, sourceKind: 'video', sourceId: 'dino-new-source', sourceEpoch: ui.state.sourceEpoch + 1 }); ui.freeze(); ui.setROI({ x: 1001, y: 50, w: 40, h: 50 });
+el('scene-kind').value = 'field'; el('gameplay-layout').value = 'manual'; await el('gameplay-layout').trigger('change');
+for (const [key, value] of Object.entries({ x: 0, y: 0, w: 1921, h: 1080 })) el(`gameplay-${key}`).value = String(value);
+await el('gameplay-w').trigger('input');
+check('out-of-bounds manual game area blocks scoring with a visible explanation', () => { assert(el('start').disabled); assert.match(el('configuration-error').textContent, /はみ出/); });
+await win.trigger('pagehide');
 console.log(`\n${passed} UI and lifecycle checks passed (Node DOM harness; no browser launched).`);

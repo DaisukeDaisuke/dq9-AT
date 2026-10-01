@@ -15,3 +15,6 @@ const controller=new AbortController();controller.abort();await assert.rejects(b
 const mid=new AbortController();await assert.rejects(bank.generate([model],{...options,sessionKey:'new',views:[{yaw:0,pitch:0},{yaw:1,pitch:0}],signal:mid.signal,onProgress:p=>{if(p.completedViews===1)mid.abort();}}),e=>e.name==='AbortError');checks++;bank.destroy();renderer.destroy();
 const worker=new Worker(new URL('./monster-recognition-node-worker.mjs',import.meta.url));const reply=new Promise((resolve,reject)=>{worker.once('message',resolve);worker.once('error',reject);});worker.postMessage({type:'load',id:'invalid-rom',romEpoch:1,rom:new ArrayBuffer(512)});const error=await reply;eq(error.type,'error');eq(error.id,'invalid-rom');await worker.terminate();
 console.log(JSON.stringify({passed:true,checks,actualNodeWorkerErrorsVerified:true,syntheticOnly:true,recognitionAccuracyValidated:false},null,2));
+// CI entrypoint also exercises the source-only optional inference and cache contracts.
+await import('./test-monster-dinov2.mjs');
+await import('./test-monster-inference-assets.mjs');

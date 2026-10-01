@@ -13,7 +13,7 @@
     <a href="./index.html">ツール一覧へ</a>
   </header>
   <main>
-    <div class="notice"><strong>選んだモデルの範囲だけで比較します。</strong> 距離スコアは確率ではありません。1位でも確定ではなく、候補外・判別不能の可能性があります。姿勢・背景・隠れ方によって順位が変わります。</div>
+    <div class="notice"><strong>選んだモデルの範囲だけで比較します。</strong> 距離・類似度スコアは確率ではありません。1位でも確定ではなく、候補外・判別不能の可能性があります。姿勢・背景・隠れ方によって順位が変わります。</div>
     <div class="layout">
       <section class="source-panel" aria-labelledby="source-heading">
         <h2 id="source-heading"><span class="step">1</span> ローカルファイルを開く</h2>
@@ -34,6 +34,15 @@
           <legend>敵の範囲（元画像のピクセル座標・最大1024 × 1024 px）</legend>
           <div class="roi-inputs"><label>X<input id="roi-x" type="number" min="0" step="1" value="0"></label><label>Y<input id="roi-y" type="number" min="0" step="1" value="0"></label><label>幅<input id="roi-w" type="number" min="1" max="1024" step="1" value="128"></label><label>高さ<input id="roi-h" type="number" min="1" max="1024" step="1" value="128"></label><button id="apply-roi" type="button">範囲を適用</button></div>
         </fieldset>
+        <section class="scene-settings" aria-labelledby="scene-heading">
+          <h3 id="scene-heading">場面とゲーム画面の範囲（明示指定）</h3>
+          <div class="settings-grid"><label class="control-label">場面<select id="scene-kind"><option value="unspecified">未指定（場面を推定しない）</option><option value="field">フィールドであると指定する</option></select></label><label class="control-label">ゲーム画面の配置<select id="gameplay-layout"><option value="whole">画像全体がゲーム画面</option><option value="obs-right-upper">OBS左右配置の右上DS画面（4:3）</option><option value="stacked-lower">DS縦配置の下画面（下半分）</option><option value="manual">ゲーム範囲を数値で指定</option></select></label></div>
+          <fieldset id="gameplay-fields" hidden disabled><legend>ゲーム範囲（元画像内のXYWH・敵の範囲とは別）</legend><div class="roi-inputs gameplay-inputs"><label>X<input id="gameplay-x" type="number" min="0" step="1" value="0"></label><label>Y<input id="gameplay-y" type="number" min="0" step="1" value="0"></label><label>幅<input id="gameplay-w" type="number" min="1" step="1" value="256"></label><label>高さ<input id="gameplay-h" type="number" min="1" step="1" value="192"></label></div></fieldset>
+          <p id="gameplay-bounds" class="muted">画像を固定するとゲーム範囲を表示します。</p>
+          <label class="check-label"><input id="exclude-center" type="checkbox">フィールド中央を未観測領域として除外する</label>
+          <p id="mask-status" class="muted">中央除外は、フィールドを明示指定しチェックした場合だけ有効です。</p>
+          <p class="muted">配置は映像サイズから自動推定しません。色付き枠を確認してください。中央除外に重なる敵範囲は未観測として扱い、敵がいないという判定には使いません。</p>
+        </section>
         <details id="capture-details"><summary>固定した画像の情報</summary><dl id="capture-metadata"><dt>状態</dt><dd>未取得</dd></dl></details>
       </section>
       <aside class="configuration" aria-labelledby="settings-heading">
@@ -43,10 +52,14 @@
         <label for="model-filter" class="sr-only">候補を名前・モデルIDで絞り込む</label><input id="model-filter" type="search" placeholder="名前・モデルIDで絞り込む" disabled>
         <div id="model-list" class="model-list" role="group" aria-labelledby="models-label"><p class="muted">NDSを読み込むと候補が表示されます。</p></div>
         <p id="selection-summary" class="muted">初期候補: z019b / z021a / z064a / z000c</p>
+        <label class="control-label">画像の比較方法<select id="feature-method"><option value="histogram">色ヒストグラム（従来の実験）</option><option value="dinov2">DINOv2画像特徴（AI・追加実験）</option></select></label>
+        <p id="feature-note" class="muted">色の分布を比較します。追加のAIモデルはダウンロードしません。</p>
+        <div id="dino-constraints" class="notice" hidden>DINOv2は1〜4モデル・単一のモデル種類・クイックのみ（比較画像は最大64枚）。初回に公開AIモデルと実行コード約34.75 MiBを、固定版のHugging Face・jsDelivrから準備しブラウザーにキャッシュします。入力画像・ROM・生成画像は端末内だけで処理します。失敗時は自動で別の比較方法に切り替えません。</div>
         <label class="control-label">モデルの種類<select id="variant"><option value="_f">_f（フィールド用という役割仮説）</option><option value="regular">通常モデル（接尾辞なし）</option><option value="both">両方を比較</option></select></label>
         <p class="muted">_f の役割は未確定です。映像と異なる形・動きが含まれる場合があります。</p>
         <div class="settings-grid"><label class="control-label">姿勢の探索<select id="preset"><option value="quick">クイック（少ない姿勢）</option><option value="standard">標準（より多くの姿勢）</option></select></label><label class="control-label">表示する順位<select id="top-k"><option value="4">上位4件</option><option value="3">上位3件</option><option value="1">上位1件</option></select></label></div>
-        <p class="muted">比較には時間がかかる場合があります。クイックで確認してから標準で再照合できます。</p>
+        <p class="muted">比較には時間がかかる場合があります。標準探索は色ヒストグラムで利用できます。</p>
+        <p id="configuration-error" class="error" role="status" hidden></p>
         <div class="actions"><button id="start" type="button" class="primary" disabled>この切り抜きを照合</button><button id="cancel" type="button" disabled>中止</button><button id="restart" type="button" disabled>最初から再照合</button></div>
         <progress id="progress" max="1" value="0" aria-label="照合の進捗"></progress>
         <p id="status" role="status" aria-live="polite">NDSと動画または画像を選択してください。</p>

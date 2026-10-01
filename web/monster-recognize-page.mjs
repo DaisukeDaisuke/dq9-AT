@@ -1,17 +1,34 @@
 /* Local-only experimental UI. The scoring worker owns ROM parsing and rendering. */
+import { getFieldExclusion } from './monster-field-mask.mjs';
 export const LIMITS = Object.freeze({ romBytes: 512 * 1024 * 1024, sourceSide: 4096, roiSide: 1024, models: 4 });
 export const DEFAULT_MODELS = Object.freeze(['z019b', 'z021a', 'z064a', 'z000c']);
-const STAMP_KEYS = ['sourceId', 'sourceEpoch', 'timelineSegment', 'frameSerial', 'romEpoch', 'sourceFrame', 'videoTime', 'timestampBasis', 'capturedAt', 'enemyROI'];
+export const CENTER_MASK = Object.freeze({ x: .42, y: .36, w: .16, h: .24 });
+const STAMP_KEYS = ['sourceId', 'sourceEpoch', 'timelineSegment', 'frameSerial', 'romEpoch', 'sourceFrame', 'videoTime', 'timestampBasis', 'capturedAt', 'enemyROI', 'featureMethod', 'sceneContext'];
 const abortError = () => Object.assign(new Error('処理を中止しました。'), { name: 'AbortError' });
+const defaultEnsureInferenceAssets = async options => (await import('./monster-inference-assets.mjs')).ensureInferenceAssets(options);
+const cloneValue = value => value === null || typeof value !== 'object' ? value : Object.fromEntries(Object.entries(value).map(([key, item]) => [key, cloneValue(item)]));
+const sameRect = (left, right) => left === right || !!left && !!right && ['x', 'y', 'w', 'h'].every(key => left[key] === right[key]);
+
+export function gameplayROIForLayout(layout, frame, manual) {
+  if (!frame) return null;
+  let rect;
+  if (layout === 'obs-right-upper') { const x = Math.floor(frame.width / 2); const w = frame.width - x; rect = { x, y: 0, w, h: Math.round(w * 3 / 4) }; }
+  else if (layout === 'stacked-lower') { const y = Math.floor(frame.height / 2); rect = { x: 0, y, w: frame.width, h: frame.height - y }; }
+  else if (layout === 'manual') rect = manual;
+  else rect = { x: 0, y: 0, w: frame.width, h: frame.height };
+  if (!rect || !['x', 'y', 'w', 'h'].every(key => Number.isInteger(rect[key])) || rect.x < 0 || rect.y < 0 || rect.w < 1 || rect.h < 1 || rect.x + rect.w > frame.width || rect.y + rect.h > frame.height) throw new Error('ゲーム画面の範囲が元画像からはみ出しています。配置または数値を修正してください。');
+  return { ...rect };
+}
 
 export function cloneCaptureStamp(stamp) {
-  return Object.fromEntries(STAMP_KEYS.map(key => [key, typeof stamp[key] === 'object' && stamp[key] !== null ? { ...stamp[key] } : stamp[key]]));
+  return Object.fromEntries(STAMP_KEYS.map(key => [key, cloneValue(stamp[key])]));
 }
 export function stampEquals(left, right) {
   if (!left || !right) return false;
   return STAMP_KEYS.every(key => {
     if (key === 'sourceFrame') return left[key]?.width === right[key]?.width && left[key]?.height === right[key]?.height;
     if (key === 'enemyROI') return ['x', 'y', 'w', 'h'].every(axis => left[key]?.[axis] === right[key]?.[axis]);
+    if (key === 'sceneContext') return left[key] === right[key] || !!left[key] && !!right[key] && left[key].kind === right[key].kind && left[key].excludeCenter === right[key].excludeCenter && sameRect(left[key].gameplayROI, right[key].gameplayROI) && sameRect(left[key].maskNormalized, right[key].maskNormalized);
     return left[key] === right[key];
   });
 }
@@ -100,7 +117,7 @@ export class RecognitionWorkerClient {
   }
 }
 
-export function mountRecognitionPage(document, window) {
+export function mountRecognitionPage(document, window, { ensureInferenceAssets = defaultEnsureInferenceAssets } = {}) {
   const $ = id => document.getElementById(id);
   const video = $('source-video'); const view = $('frozen-view'); const viewCtx = view.getContext('2d');
   const frozen = document.createElement('canvas'); const frozenCtx = frozen.getContext('2d', { willReadFrequently: true });
@@ -109,7 +126,7 @@ export function mountRecognitionPage(document, window) {
   const state = {
     romFile: null, romEpoch: 0, sourceEpoch: 0, sourceId: null, sourceURL: null, sourceKind: null, image: null,
     sourceReady: false, timelineSegment: 0, frameSerial: 0, capture: null, roi: null, catalog: [], selected: new Set(DEFAULT_MODELS),
-    busy: false, loading: false, loadPromise: null, lastResult: null, sequence: 0, drag: null, drawMode: true, disposed: false,
+    busy: false, loading: false, loadPromise: null, lastResult: null, sequence: 0, drag: null, drawMode: true, disposed: false, assetAbort: null,
   };
   const client = new RecognitionWorkerClient({ onProgress: message => {
     if (!gate.accepts(message)) return;
@@ -119,11 +136,23 @@ export function mountRecognitionPage(document, window) {
     status(`${message.message || phaseName(message.phase)}${message.total ? ` · ${message.done || 0} / ${message.total}` : ''}`);
   } });
   const nextID = () => `request-${++state.sequence}`;
-  function phaseName(phase) { return ({ render: 'モデル画像を生成中', score: '切り抜きと比較中', load: 'NDSを読込中' })[phase] || '照合中'; }
+  function phaseName(phase) { return ({ render: 'モデル画像を生成中', score: '切り抜きと比較中', load: 'NDSを読込中', download: '公開AIモデルを準備中', init: 'DINOv2を初期化中', embed: 'DINOv2画像特徴を計算中' })[phase] || '照合中'; }
   function status(text) { $('status').textContent = text; }
   function error(text = '') { $('error').textContent = text; $('error').hidden = !text; }
   function selectedIDs() { return [...state.selected].filter(id => state.catalog.some(model => model.modelId === id)); }
-  function ready() { const count = selectedIDs().length; return !!state.romFile && !!state.capture && !!state.roi && count > 0 && count <= LIMITS.models; }
+  function featureMethod() { return $('feature-method').value === 'dinov2' ? 'dinov2' : 'histogram'; }
+  function gameplayROI() { return gameplayROIForLayout($('gameplay-layout').value, state.capture?.sourceFrame, Object.fromEntries(['x', 'y', 'w', 'h'].map(key => [key, Number($(`gameplay-${key}`).value)]))); }
+  function sceneContext() {
+    const kind = $('scene-kind').value === 'field' ? 'field' : 'unspecified';
+    return { kind, gameplayROI: kind === 'field' ? gameplayROI() : null, excludeCenter: kind === 'field' && !!$('exclude-center').checked, maskNormalized: { ...CENTER_MASK } };
+  }
+  function currentStamp() { return { ...state.capture, enemyROI: state.roi ? { ...state.roi } : null, featureMethod: featureMethod(), sceneContext: sceneContext() }; }
+  function configurationIssue() {
+    if (featureMethod() === 'dinov2' && ($('variant').value === 'both' || $('preset').value !== 'quick')) return 'DINOv2は単一のモデル種類とクイック探索のみ対応します。設定を選び直してください。';
+    try { if (state.capture && $('scene-kind').value === 'field') gameplayROI(); } catch (failure) { return failure.message; }
+    return '';
+  }
+  function ready() { const count = selectedIDs().length; return !!state.romFile && !!state.capture && !!state.roi && count > 0 && count <= LIMITS.models && !configurationIssue(); }
   function controls() {
     $('freeze').disabled = !state.sourceReady;
     $('play-pause').disabled = !state.sourceReady || state.sourceKind !== 'video';
@@ -136,6 +165,11 @@ export function mountRecognitionPage(document, window) {
     $('restart').textContent = canReloadROM ? 'NDSを再読込' : '最初から再照合';
     $('cancel').disabled = !state.busy && !state.loading;
     $('model-filter').disabled = !state.catalog.length;
+    const dino = featureMethod() === 'dinov2'; $('dino-constraints').hidden = !dino;
+    $('feature-note').textContent = dino ? 'DINOv2のcosine類似度を比較します。大きいほど近く、確率ではありません。' : '色の分布を比較します。追加のAIモデルはダウンロードしません。';
+    const issue = configurationIssue(); $('configuration-error').textContent = issue; $('configuration-error').hidden = !issue;
+    $('gameplay-fields').hidden = $('gameplay-layout').value !== 'manual'; $('gameplay-fields').disabled = !state.capture;
+    updateSceneView();
   }
   function clearResults() {
     state.lastResult = null; $('rankings').replaceChildren(); $('coverage-section').hidden = true; $('result-empty').hidden = false;
@@ -145,6 +179,7 @@ export function mountRecognitionPage(document, window) {
   }
   function invalidate(reason, { terminate = state.busy, clear = true } = {}) {
     gate.invalidate();
+    state.assetAbort?.abort(); state.assetAbort = null;
     if (terminate) { client.terminate(); state.loadPromise = null; state.loading = false; }
     state.busy = false;
     if (clear) clearResults();
@@ -164,7 +199,7 @@ export function mountRecognitionPage(document, window) {
   function metadata() {
     const list = $('capture-metadata'); list.replaceChildren();
     if (!state.capture) return;
-    const stamp = { ...state.capture, enemyROI: state.roi ? { ...state.roi } : null };
+    let stamp; try { stamp = currentStamp(); } catch { stamp = { ...state.capture, enemyROI: state.roi, featureMethod: featureMethod(), sceneContext: null }; }
     for (const key of STAMP_KEYS) { list.append(makeElement('dt', key), makeElement('dd', typeof stamp[key] === 'object' ? JSON.stringify(stamp[key]) : String(stamp[key]))); }
   }
   function paint() {
@@ -183,6 +218,24 @@ export function mountRecognitionPage(document, window) {
       cropCtx.drawImage(frozen, r.x, r.y, r.w, r.h, 0, 0, r.w, r.h);
       cropView.hidden = false; $('crop-placeholder').hidden = true; $('crop-size').textContent = `${r.w} × ${r.h} px · x ${r.x}, y ${r.y}`;
     }
+    // All scene annotations are drawn on the visible canvas only. Frozen pixels stay untouched.
+    try {
+      const scene = sceneContext(); const game = gameplayROI(); const scale = Math.max(1, view.width / Math.max(1, view.getBoundingClientRect().width));
+      const exclusion = getFieldExclusion(currentStamp(), scene);
+      viewCtx.save(); viewCtx.lineWidth = 2 * scale; viewCtx.strokeStyle = '#91b9ee'; viewCtx.strokeRect(game.x, game.y, game.w, game.h);
+      if (exclusion.enabled && exclusion.mask) { const mask = exclusion.mask; viewCtx.fillStyle = 'rgba(244, 181, 85, .34)'; viewCtx.fillRect(mask.x, mask.y, mask.w, mask.h); viewCtx.strokeStyle = '#ffc878'; viewCtx.strokeRect(mask.x, mask.y, mask.w, mask.h); }
+      viewCtx.restore();
+    } catch { /* Invalid manual geometry is explained next to its fields. */ }
+  }
+  function updateSceneView() {
+    const field = $('scene-kind').value === 'field';
+    $('mask-status').classList.toggle('active', field && !!$('exclude-center').checked);
+    if (!state.capture) { $('gameplay-bounds').textContent = '画像を固定するとゲーム範囲を表示します。'; $('mask-status').textContent = '中央除外は、フィールドを明示指定しチェックした場合だけ有効です。'; return; }
+    try {
+      const game = gameplayROI(); $('gameplay-bounds').textContent = `青枠のゲーム範囲: x ${game.x}, y ${game.y}, ${game.w} × ${game.h} px`;
+      const exclusion = getFieldExclusion(currentStamp(), sceneContext());
+      $('mask-status').textContent = exclusion.enabled ? `橙色の中央領域は未観測です。${exclusion.excluded ? '現在の敵範囲はここに重なるため、照合せず判別不能として扱います。' : '重なる敵範囲は照合しません。'}` : '中央除外は無効です。フィールドの明示指定とチェックの両方が必要です。';
+    } catch (failure) { $('gameplay-bounds').textContent = failure.message; $('mask-status').textContent = 'ゲーム画面の範囲を修正してから中央領域を確認してください。'; }
   }
   function setROI(rect, { invalidateResult = true } = {}) {
     if (!state.capture) return;
@@ -366,30 +419,46 @@ export function mountRecognitionPage(document, window) {
     if (state.busy && !restart) return;
     invalidate('', { terminate: restart || state.busy }); error();
     const id = nextID(); const epoch = state.romEpoch;
-    const captureStamp = cloneCaptureStamp({ ...state.capture, enemyROI: { ...state.roi } });
+    const captureStamp = cloneCaptureStamp(currentStamp());
+    const method = captureStamp.featureMethod; const scene = cloneValue(captureStamp.sceneContext);
     const modelIds = selectedIDs(); const variant = $('variant').value; const preset = $('preset').value;
     const r = captureStamp.enemyROI; const crop = { width: r.w, height: r.h, rgba: frozenCtx.getImageData(r.x, r.y, r.w, r.h).data };
     gate.begin(id, epoch, captureStamp); state.busy = true; controls(); $('progress').removeAttribute('value');
     status(client.loadedRomEpoch === epoch ? '選択したモデルを照合中です。' : 'NDSを再読込しています。中止後の再開時は最初から準備します。');
+    let preparation = null;
     try {
       await ensureLoaded();
       if (!gate.accepts({ id, romEpoch: epoch })) return;
-      const message = await client.recognize({ type: 'recognize', id, romEpoch: epoch, captureStamp, crop, modelIds, variant, preset });
+      if (method === 'dinov2' && !getFieldExclusion(captureStamp, scene).excluded) {
+        preparation = new AbortController(); state.assetAbort = preparation;
+        status('DINOv2の公開モデルと実行コードを準備しています（初回約34.75 MiB）。');
+        await ensureInferenceAssets({ signal: preparation.signal, onProgress: progress => {
+          if (preparation.signal.aborted || !gate.accepts({ id, romEpoch: epoch })) return;
+          const total = progress.total ?? progress.totalBytes; const done = progress.done ?? progress.loaded ?? progress.loadedBytes;
+          if (Number.isFinite(total) && total > 0) { $('progress').max = total; $('progress').value = Math.min(total, Math.max(0, done || 0)); } else $('progress').removeAttribute('value');
+          status(progress.message || phaseName(progress.phase || 'download'));
+        } });
+        if (preparation.signal.aborted || !gate.accepts({ id, romEpoch: epoch })) return;
+      }
+      const message = await client.recognize({ type: 'recognize', id, romEpoch: epoch, captureStamp, crop, modelIds, variant, preset, featureMethod: method, sceneContext: scene });
       if (!gate.accepts(message)) {
         if (gate.accepts({ id, romEpoch: epoch })) { state.busy = false; error('取得フレーム情報が一致しない結果を破棄しました。再照合してください。'); status('結果は表示していません。'); controls(); }
         return;
       }
       state.busy = false; state.lastResult = message.result; renderResults(); $('progress').max = 1; $('progress').value = 1;
-      status('照合が終わりました。表示順位は選択したモデル内の比較結果です。候補外・判別不能の可能性があります。'); controls();
+      status(message.result.skipped === 'central-field-exclusion' ? '中央除外領域に重なるため未観測として扱いました。敵がいないという判定ではありません。' : '照合が終わりました。表示順位は選択したモデル内の比較結果です。候補外・判別不能の可能性があります。'); controls();
     } catch (failure) {
       if (!gate.accepts({ id, romEpoch: epoch })) return;
       state.busy = false; $('progress').max = 1; $('progress').value = 0; controls();
-      if (failure.name !== 'AbortError') { error(failure.message); status('照合を完了できませんでした。候補や探索設定を調整して再試行できます。'); }
+      if (failure.name !== 'AbortError') { error(failure.message); status(method === 'dinov2' ? 'DINOv2の準備または照合に失敗しました。再試行するか、比較方法で「色ヒストグラム」を明示的に選択できます。方法は自動変更していません。' : '照合を完了できませんでした。候補や探索設定を調整して再試行できます。'); }
+    } finally {
+      if (state.assetAbort === preparation) state.assetAbort = null;
     }
   }
   function renderResults() {
     const result = state.lastResult; if (!result) return;
-    $('result-empty').hidden = !!result.rankings?.length; $('result-empty').textContent = '比較できる候補がありませんでした。下の比較範囲と制約を確認してください。';
+    const skipped = result.skipped === 'central-field-exclusion'; const dino = result.featureMethod === 'dinov2' || result.captureStamp.featureMethod === 'dinov2';
+    $('result-empty').hidden = !!result.rankings?.length; $('result-empty').textContent = skipped ? '中央除外領域に重なるため、この範囲の特徴を計算していません。未観測として扱います。' : '比較できる候補がありませんでした。下の比較範囲と制約を確認してください。';
     $('rankings').replaceChildren();
     for (const [index, rank] of (result.rankings || []).slice(0, Number($('top-k').value)).entries()) {
       const card = makeElement('li', undefined, 'rank-card'); const heading = makeElement('header');
@@ -401,19 +470,20 @@ export function mountRecognitionPage(document, window) {
         const context = canvas.getContext('2d'); const pixels = context.createImageData(thumbnail.width, thumbnail.height); pixels.data.set(thumbnail.rgba); context.putImageData(pixels, 0, 0); card.append(canvas);
       }
       card.append(makeElement('p', labels(rank), 'species'));
-      card.append(makeElement('p', `距離 ${Number.isFinite(rank.distance) ? rank.distance.toFixed(4) : '取得できません'}`, 'score'));
-      card.append(makeElement('p', '小さいほど近い · 確率ではありません', 'muted'));
+      const cosine = result.metric === 'cosine' || dino;
+      card.append(makeElement('p', cosine ? `cosine類似度 ${Number.isFinite(rank.similarity) ? rank.similarity.toFixed(4) : '取得できません'}` : `距離 ${Number.isFinite(rank.distance) ? rank.distance.toFixed(4) : '取得できません'}`, 'score'));
+      card.append(makeElement('p', `${cosine ? '大きいほど近い' : '小さいほど近い'} · 確率ではありません`, 'muted'));
       if ((rank.speciesCandidates || []).length > 1) card.append(makeElement('p', '同じモデルに複数の種類が対応しています。モデル順位だけでは種類を区別できません。'));
       const pose = rank.bestPose;
       if (pose) card.append(makeElement('p', `姿勢: ${pose.variant || '通常'} / ${pose.clip || 'bind'} / frame ${pose.frame ?? '—'} / yaw ${pose.yaw ?? '—'} / pitch ${pose.pitch ?? '—'}`, 'pose'));
       $('rankings').append(card);
     }
     const unknown = result.unknown || {};
-    $('unknown-status').textContent = `候補外・判別不能を含む未確定の結果です。${unknown.reason ? ` ${unknown.reason}` : ''} 受理判定のしきい値は未検証です。1位でも確定ではありません。`;
+    $('unknown-status').textContent = skipped ? `中央除外による未観測・判別不能です。${unknown.reason ? ` ${unknown.reason}` : ''} 敵がいないことや候補が違うことの根拠にはなりません。候補外の可能性も残ります。` : `候補外・判別不能を含む未確定の結果です。${unknown.reason ? ` ${unknown.reason}` : ''} 受理判定のしきい値は未検証です。1位でも確定ではありません。`;
     const coverage = result.coverage || {}; const valueText = value => Array.isArray(value) ? `${value.length} (${value.map(item => typeof item === 'object' ? item.modelId || '' : item).join(', ')})` : value ?? '不明';
-    $('coverage').textContent = `要求モデル: ${valueText(coverage.requestedModels)} · 比較できたモデル: ${valueText(coverage.completedModels)} · 生成した比較画像: ${coverage.renderedTemplates ?? '不明'}${coverage.scope ? ` · 範囲: ${typeof coverage.scope === 'string' ? coverage.scope : JSON.stringify(coverage.scope)}` : ''}`;
+    $('coverage').textContent = `比較方法: ${dino ? 'DINOv2画像特徴（cosine類似度）' : '色ヒストグラム（距離）'} · 要求モデル: ${valueText(coverage.requestedModels)} · 比較できたモデル: ${valueText(coverage.completedModels)} · 生成した比較画像: ${coverage.renderedTemplates ?? '不明'}${coverage.scope ? ` · 範囲: ${typeof coverage.scope === 'string' ? coverage.scope : JSON.stringify(coverage.scope)}` : ''}`;
     $('unsupported').replaceChildren(...(coverage.unsupported || []).map(item => makeElement('li', `${item.modelId}: ${item.reason}`)));
-    $('limitations').replaceChildren(...['CPUによる実験的な照合です。敵の範囲は手動で指定しています。', '順位は選択したモデルと生成できた姿勢の範囲だけで比較しています。候補外の敵は判別できません。', ...(result.limitations || [])].map(text => makeElement('li', text)));
+    $('limitations').replaceChildren(...['端末内で行う実験的な照合です。敵の範囲は手動で指定しています。', '順位は選択したモデルと生成できた姿勢の範囲だけで比較しています。候補外の敵は判別できません。', ...(result.limitations || [])].map(text => makeElement('li', text)));
     const stamp = result.captureStamp;
     $('result-capture').textContent = `固定画像 #${stamp.frameSerial} · ${stamp.videoTime === null ? '画像入力' : `動画 ${stamp.videoTime.toFixed(3)} 秒（概算）`} · 範囲 x ${stamp.enemyROI.x}, y ${stamp.enemyROI.y}, ${stamp.enemyROI.w} × ${stamp.enemyROI.h} px · ${stamp.capturedAt}`;
     $('result-timing').textContent = Number.isFinite(result.elapsedMs) ? `${(result.elapsedMs / 1000).toFixed(1)} 秒` : '';
@@ -429,7 +499,9 @@ export function mountRecognitionPage(document, window) {
   for (const key of ['x', 'y', 'w', 'h']) $(`roi-${key}`).addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); $('apply-roi').click(); } });
   view.addEventListener('pointerdown', pointerDown); view.addEventListener('pointermove', pointerMove); view.addEventListener('pointerup', pointerEnd); view.addEventListener('pointercancel', pointerEnd);
   $('model-filter').addEventListener('input', renderCatalog);
-  for (const id of ['variant', 'preset']) $(id).addEventListener('change', () => invalidate('探索設定を変更しました。同じ切り抜きで再照合できます。'));
+  function configurationChanged() { invalidate('比較方法・場面・探索設定を変更しました。表示した範囲と設定を確認して再照合してください。'); error(); paint(); metadata(); }
+  for (const id of ['variant', 'preset', 'feature-method', 'scene-kind', 'gameplay-layout', 'exclude-center']) $(id).addEventListener('change', configurationChanged);
+  for (const key of ['x', 'y', 'w', 'h']) $(`gameplay-${key}`).addEventListener('input', configurationChanged);
   $('top-k').addEventListener('change', renderResults);
   $('start').addEventListener('click', () => recognize());
   $('restart').addEventListener('click', async () => {
@@ -442,7 +514,7 @@ export function mountRecognitionPage(document, window) {
   });
   $('cancel').addEventListener('click', () => { invalidate('処理を中止しました。再照合すると、NDSを読み直して最初から実行します。', { terminate: true }); $('rom-status').textContent = state.romFile ? `${state.romFile.name} · 再照合時に再読込` : '未選択'; });
   window.addEventListener('resize', paint);
-  window.addEventListener('pagehide', () => { state.disposed = true; gate.invalidate(); client.terminate(); releaseSource(); });
+  window.addEventListener('pagehide', () => { state.disposed = true; gate.invalidate(); state.assetAbort?.abort(); state.assetAbort = null; client.terminate(); releaseSource(); });
   window.addEventListener('pageshow', event => {
     if (!event.persisted) return;
     state.disposed = false; state.loadPromise = null; state.loading = false;
