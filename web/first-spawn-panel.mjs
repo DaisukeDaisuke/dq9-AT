@@ -19,9 +19,10 @@ export function setupFirstSpawnPanel({document,getInputs,redraw,eventTarget=glob
   $('spawn-replay-inputs').textContent=`初期runtime: ${runtime?'読込済み':'未入力'} / pre-spawn軌跡: ${trajectory?'読込済み':'未入力'}。pool・creator・地形runtime条件はROM/seedから自動確定しません。`;
   if(session){
    const last=session.events.at(-1),birth=session.birth;
-   message(`${session.status}: ${session.events.length} 段階 / 条件付きAT prefix ${session.consumed} / prefix seed ${hex(session.seed)} / timer ${session.timer}\n${session.status==='unresolved'?'未解決段階の途中までの既知prefixです。呼出完了・実機の現在seedではありません。\n':''}${birth?`生成 species ${birth.species}, slot ${birth.slot}, XYZ ${birth.xyz.join(', ')}\n`:''}${session.actor?`最後の計算actor（段階${(session.actorPhase?.index??-1)+1}/${session.actorPhase?.phase??'unknown'}）: state ${session.actor.state}, body ${session.actor.updateCounter}回, XYZ ${session.actor.xyz.join(', ')}\n`:''}${session.reason||'pre-spawn入力を順に適用中'}${last?.sourceFrame!==null&&last?.sourceFrame!==undefined?`\n入力のsourceFrame ${last.sourceFrame}（呼出回数ではありません）`:''}`);
+   message(`${session.status}: ${session.events.length} 段階 / 条件付きAT prefix ${session.consumed} / prefix seed ${hex(session.seed)} / timer ${session.timer}\n${session.status==='unresolved'?'未解決段階の途中までの既知prefixです。呼出完了・実機の現在seedではありません。\n':''}${birth?`初回生成 species ${birth.species}, slot ${birth.slot}, XYZ ${birth.xyz.join(', ')}\n`:''}${session.actor?`最後の計算actor（段階${(session.actorPhase?.index??-1)+1}/${session.actorPhase?.phase??'unknown'}）: state ${session.actor.state}, body ${session.actor.updateCounter}回, XYZ ${session.actor.xyz.join(', ')}\n`:''}${session.reason||'pre-spawn入力を順に適用中'}${last?.sourceFrame!==null&&last?.sourceFrame!==undefined?`\n入力のsourceFrame ${last.sourceFrame}（呼出回数ではありません）`:''}`);
+   if(session.mapTransitions)$('spawn-replay-status').textContent+=`\n再生map ${session.currentMapId} / ${session.pendingTransition?.phase??'ordinary-field'} / 現在座標 ${session.currentCoordinate?.xyz?.join(', ')??'移動中または配置後未確定'} / 旧mapで登録終了 ${session.closedActors?.length??0}体${session.requestedPlacement?`\nROM配置要求 [${session.requestedPlacement.xyz}]（接地後Yとは別）`:''}`;
    if(session.actors?.size>1)$('spawn-replay-status').textContent+='\n派生actor '+session.actors.size+'体\n'+[...session.actors.values()].map(e=>`slot${e.identity.slot} / species${e.actor.species} / serial${e.actor.serial} / state${e.actor.state} / XYZ[${e.actor.xyz}] / 段階${e.phase.index+1}/${e.phase.phase}`).join('\n');
-   $('spawn-replay-log').textContent=session.events.slice(-200).map(e=>`${e.index}: hero[${e.heroXYZ}] → node ${e.selectedNodeId??'?'} / species ${e.monsterId??'?'} / AT+${e.consumed} / ${hex(e.seed)} / ${e.reason}`).join('\n');
+   $('spawn-replay-log').textContent=session.events.slice(-200).map(e=>`${e.index}: hero[${e.heroXYZ?.join(', ')??'未確定'}] → node ${e.selectedNodeId??'?'} / species ${e.monsterId??'?'} / AT+${e.consumed} / ${hex(e.seed)} / ${e.reason}`).join('\n');
   }else $('spawn-replay-log').textContent='';
  }
  async function read(kind,file){
@@ -69,15 +70,17 @@ export function setupFirstSpawnPanel({document,getInputs,redraw,eventTarget=glob
  const controller={
   release(){epoch++;reads.runtime++;reads.trajectory++;runtime=trajectory=null;$('spawn-replay-newborn').checked=false;invalidate();message('初期runtimeと軌跡が未入力です。投入ROM内だけで実行します。');},
   refresh:update,
+  view(){return session?{mapId:session.currentMapId??7402,pending:session.pendingTransition?.phase??null,currentCoordinate:structuredClone(session.currentCoordinate),requestedPlacement:structuredClone(session.requestedPlacement)}:null;},
   controlsChanged(){invalidate();message('初期設定変更。自然生成の以前の計算は無効です。条件を確認して再初期化してください。');},
   dismiss(){invalidate();message('1 actor実験に切り替えました。自然生成を再実行するには初期化してください。');},
   draw(ctx,transform){
    if(!session)return false;const point=p=>[transform.x+p[0]/4096*transform.scale,transform.z+p[2]/4096*transform.scale];
    ctx.strokeStyle='#ef9fbd';ctx.lineWidth=2;ctx.beginPath();session.heroTrace.forEach((p,i)=>{const q=point(p);i?ctx.lineTo(...q):ctx.moveTo(...q);});ctx.stroke();
-   const last=session.heroTrace.at(-1);if(last){const[x,z]=point(last);ctx.fillStyle='#ef9fbd';ctx.fillRect(x-4,z-4,8,8);ctx.fillText('hero input',x+7,z);}
-   if(session.birth&&!session.actors?.size){const[x,z]=point(session.birth.xyz);ctx.fillStyle='#58efd1';ctx.beginPath();ctx.arc(x,z,6,0,Math.PI*2);ctx.fill();ctx.fillText(`species ${session.birth.species}`,x+8,z);}
+   const inTransition=!!session.mapTransitions&&(session.transitionIndex??0)>0;const last=inTransition?session.currentCoordinate?.xyz:session.heroTrace.at(-1);if(last){const[x,z]=point(last);ctx.fillStyle='#ef9fbd';ctx.fillRect(x-4,z-4,8,8);ctx.fillText('hero input',x+7,z);}
+   if(session.birth&&!session.actors?.size&&!session.closedActors?.length){const[x,z]=point(session.birth.xyz);ctx.fillStyle='#58efd1';ctx.beginPath();ctx.arc(x,z,6,0,Math.PI*2);ctx.fill();ctx.fillText(`species ${session.birth.species}`,x+8,z);}
    if(session.actors?.size){let index=0;for(const e of session.actors.values()){const color=['#58efd1','#ffd679','#b1a0ff','#ffb1c8'][index++%4];ctx.strokeStyle=color;ctx.beginPath();e.trace.forEach((p,i)=>{const q=point(p);i?ctx.lineTo(...q):ctx.moveTo(...q);});ctx.stroke();const[x,z]=point(e.actor.xyz);ctx.fillStyle=color;ctx.beginPath();ctx.arc(x,z,5,0,Math.PI*2);ctx.fill();ctx.fillText(`${e.identity.slot}: species${e.actor.species}`,x+7,z+12);}}
    else if(session.actorTrace?.length){ctx.strokeStyle='#58efd1';ctx.beginPath();session.actorTrace.forEach((p,i)=>{const q=point(p);i?ctx.lineTo(...q):ctx.moveTo(...q);});ctx.stroke();}
+   if(session.requestedPlacement?.mapId===session.currentMapId){const[x,z]=point(session.requestedPlacement.xyz);ctx.strokeStyle='#ffc873';ctx.strokeRect(x-5,z-5,10,10);ctx.fillStyle='#ffc873';ctx.fillText('ROM配置要求 / 現在Y未確定',x+8,z-8);}
    return true;
   }
  };

@@ -68,7 +68,7 @@ function nitroFromRom(input) {
   validateFnt(rom.subarray(fnt, fnt + fntSize), fatSize / 8, true);
   return NitroFS.fromRom(rom.buffer.slice(rom.byteOffset, rom.byteOffset + rom.byteLength));
 }
-function narcMembers(data) {
+export function readBoundedNarcMembers(data) {
   range(0, 16, data.length, 'NARC header');
   const v = new DataView(data.buffer, data.byteOffset, data.byteLength), magic = p => String.fromCharCode(...data.subarray(p, p + 4));
   if (data.length > MAX_RESOURCE || magic(0) !== 'NARC' || v.getUint16(4, true) !== 0xfffe || v.getUint16(6, true) !== 0x100 || u32(data, 8) !== data.length || v.getUint16(12, true) !== 16 || v.getUint16(14, true) !== 3) throw Error('NARC header invalid');
@@ -194,6 +194,9 @@ export function decodeMapExitCalls(input, source, mapRecords) {
   return {exits, capacityDeclarations};
 }
 
+/** Decode one bounded raw or LZ10 BMBl member using the same guards as the full miner. */
+export function decodeMapExitMember(input,source,mapRecords){return decodeMapExitCalls(decodedMember(bytes(input)).data,source,mapRecords);}
+
 function semantics() {
   return {
     sources: {mapList: MAP_EXIT_LIST, archiveLoader: '02013ed4', decompression: '0201415c', interpreter: ['0201e040', '0201df5c'], handlerTable: '020ef2c4', opcode105: '0201ca54', opcode114: '0201cc0c', commonTarget: '0201c8ec', targetLookup: '0209b6c0', append: '0201e300', runtimeScan: 'overlay_d_17:0219d57c'},
@@ -232,7 +235,7 @@ export function mineMapExits(input) {
   const archives = [], exits = []; let decodedBytes = 0;
   for (const name of files) {
     if (!/^[A-Za-z0-9_]+\.ambl$/i.test(name)) throw Error('Archive name outside allowlist');
-    const archivePath = `data/map/${name}`, raw = bytes(nitro.readFile(archivePath)), {archive, offsets} = narcMembers(raw), members = [];
+    const archivePath = `data/map/${name}`, raw = bytes(nitro.readFile(archivePath)), {archive, offsets} = readBoundedNarcMembers(raw), members = [];
     for (let memberIndex = 0; memberIndex < archive.files.length; memberIndex++) {
       const member = archive.fnt.getFilenameOf(memberIndex); if (!/\.bmbl$/i.test(member)) continue;
       const {data, compression} = decodedMember(archive.files[memberIndex]); decodedBytes += data.length;

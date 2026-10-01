@@ -144,3 +144,17 @@ remaining runtime facts. Pool/serial state, active object bindings/transforms,
 phase clocks and consumer reachability are dynamic. Model/AI/template resource
 content may be mined from ROM, but its loader/selection mapping is not closed
 by this change. Unknown values are not replaced with success or zero draws.
+
+## Reached shrine map transitions
+
+The same replay now accepts a bounded trajectory-v3 suffix for the ordinary7402→7401→7400 path. It uses the existing ROM, runtime, trajectory and seed controls. The initial106 controlled world phases derive one monster and119 calls; the two reached destination loaders add0 and2 calls. One carried candidate therefore reaches121 calls since the supplied950 state. This is conditional replay, not current-video seed identification or a universal map-transition fee.
+
+The suffix records six reached phases per edge: exit request, field cleanup, manager map change, destination placement, pool initialization and destination load. Source frames label those measured phases; elapsed frames never generate an assumed draw count. The request carries measured effective hero XYZ. Destination XYZ comes from the ROM exit record. Successful pool allocation is explicitly bound to the same known contiguous initial12-object pool; arbitrary pointer changes and aliases suspend. The runtime declares the ordinary single-party branch, stable story/quest/flag conditions, completed loads, successful NPC allocations, no additional field species and no intervening external AT or seed setter.
+
+D04M01 has no accepted NPC descriptors and no treasure member under this context. D04 has one kind1 descriptor, whose controller and actor-phase initializers each draw once. The descriptor membership comes from the ROM placement/NPC resources and the declared primitive conditions. Constructor outputs and later native seeds are not trajectory inputs.
+
+Field cleanup closes the old registered actor generation and clears field timer/resources while retaining the global seed and serial counter. The destination pool is reset and registered with only its proved free/inactive fields; residual bytes such as e0 remain unknown. The destination loader's own RNG calls are carried from the earlier world result.
+
+The view changes the ROM background per map. It does not reinterpret old coordinates under the new map ID. A pending transition shows current coordinates as unknown; the ROM entry point is separately marked as a requested placement, with settled height unresolved. The replay stops after the second destination loader because later NPC/world updates are outside this slice.
+
+Tests cover missing conditions, malformed/reordered phases, invalid allocation bindings, failure after cleanup, and failure after the first constructor draw. An unresolved phase retains its known consumed seed prefix and cannot revive the old actor pool. Private paired observer-on/off evidence covers the unchanged save route; raw ROM, save, RAM, screenshots and controlled runtime/trajectory packets are not bundled with this source release.

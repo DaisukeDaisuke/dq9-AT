@@ -6,6 +6,7 @@ import {MonsterMovementKernel} from './monster-movement.mjs';
 import {projectMonsterOuterReset} from './monster-lifecycle.mjs';
 import {ATKernel, parseSeed} from './at-core.mjs';
 import {FieldATKernel} from './field-at.mjs';
+import {markerCoordinateBinding} from './map-marker-coordinate.mjs';
 import {setupFirstSpawnPanel} from './first-spawn-panel.mjs';
 
 export const EXPLORER_SCHEMA = 'dq9-monster-explorer-initial-config-v1';
@@ -156,7 +157,7 @@ export function explorerMapTransform(image, width, height) {
 if (typeof document !== 'undefined' && document.getElementById('config')) setupExplorer();
 function setupExplorer() {
  const $ = id => document.getElementById(id), canvas = $('map'), ctx = canvas.getContext('2d');
- let project = null, graph = null, record = null, image = null, background = null, rom = null, trig = null, model = null, fieldKernel = null, atKernel = null, session = null, config = null, resources = new Map(), resourceNames = [], epoch = 0, importSequence = 0, dirty = false, busy = false;
+ let project = null, graph = null, record = null, image = null, background = null, rom = null, trig = null, model = null, fieldKernel = null, atKernel = null, session = null, config = null, resources = new Map(), replayMaps = new Map(), imageRenderer = null, resourceNames = [], epoch = 0, importSequence = 0, dirty = false, busy = false;
  const firstSpawn = setupFirstSpawnPanel({document,getInputs:()=>({project,rom,kernel:model,fieldKernel,atKernel}),redraw:()=>draw()});
  const integerIds = {'angle':'angle','speed-mode':'speedMode','turn-rate':'turnRate','width':'width','height':'height','state-timer':'stateTimer','active-elapsed':'activeElapsed','update-counter':'updateCounter','world-kind':'worldKind','script-mode':'scriptMode','detection':'detectionMode'};
  const status = (text, error = false) => { $('status').textContent = text; $('status').classList.toggle('error', error); };
@@ -234,7 +235,7 @@ function setupExplorer() {
  function clear() {
   epoch++; importSequence++; project = graph = record = image = background = rom = trig = model = fieldKernel = atKernel = session = config = null;
   resources = new Map(); resourceNames = []; dirty = false; busy = false;
-  firstSpawn.release();
+  firstSpawn.release();replayMaps.clear();imageRenderer=null;
   $('inputs').disabled = true; $('release').disabled = true; $('rom').value = ''; $('start-node').replaceChildren(); $('target-node').replaceChildren(); $('resource').replaceChildren(); $('parties').replaceChildren(); $('anchors').replaceChildren(); $('objects').replaceChildren();
   $('map-info').textContent = '7402のグラフをNDSから読み込みます。'; $('ground-note').textContent = '初期Y設定はユーザー初期化です。native birthではありません。';
   update(); draw();
@@ -257,12 +258,12 @@ function setupExplorer() {
    if (matches.length !== 1) throw Error('7402 map bindingを一意に解決できません');
    const selected = matches[0], loadedGraph = loadedProject.fieldGraphs.graphs.find(g => g.key === selected.fieldGraph?.key);
    if (!loadedGraph?.nodes?.length) throw Error('7402 ROM静的グラフがありません');
-   rom = input; trig = loadedTrig; project = loadedProject; record = selected; graph = loadedGraph;
+   rom = input; trig = loadedTrig; project = loadedProject;imageRenderer=new MapRenderer(mapModule.instance); record = selected; graph = loadedGraph;
    model = new MonsterMovementKernel(motionModule.instance,trig); atKernel = new ATKernel(mapModule.instance); fieldKernel = new FieldATKernel(atKernel);
    let terrainWarning = '';
    try { const archive = Narc.load(new Uint8Array(project.nitro.readFile(`data/map/${record.fieldCode}.amdj`))); resourceNames = Array.from({length:archive.files.length},(_,i) => archive.fnt.getFilenameOf(i)).filter(n => typeof n === 'string' && /^[-A-Za-z0-9_]+\.col2$/.test(n)); } catch (e) { terrainWarning = ` COL2一覧未取得: ${e.message}`; }
    let mapWarning = '';
-   try { if (record.candidates?.length) { image = new MapRenderer(mapModule.instance).compose(project,record.candidates[0].path); background = document.createElement('canvas'); background.width = image.width; background.height = image.height; background.getContext('2d').putImageData(new ImageData(image.rgba,image.width,image.height),0,0); } } catch (e) { mapWarning = ` 背景未取得（グラフ表示）: ${e.message}`; }
+   try { if (record.candidates?.length) { image = imageRenderer.compose(project,record.candidates[0].path); background = document.createElement('canvas'); background.width = image.width; background.height = image.height; background.getContext('2d').putImageData(new ImageData(image.rgba,image.width,image.height),0,0); } } catch (e) { mapWarning = ` 背景未取得（グラフ表示）: ${e.message}`; }
    $('start-node').replaceChildren(...graph.nodes.map((n,i) => new Option(`index ${i} / ID ${n.id}`,i)));
    $('resource').replaceChildren(...resourceNames.map(n => new Option(n,n)));
    $('inputs').disabled = false;
@@ -312,14 +313,20 @@ function setupExplorer() {
  function draw() {
   ctx.fillStyle='#0b1117'; ctx.fillRect(0,0,canvas.width,canvas.height);
   if (!graph?.nodes?.length) { ctx.fillStyle='#bac9db';ctx.font='16px system-ui';ctx.fillText('NDSから7402のグラフを読み込んでください',24,40);return; }
-  let transform = $('overlay').checked ? explorerMapTransform(image,canvas.width,canvas.height) : null;
-  if (transform && background) {ctx.imageSmoothingEnabled=false;ctx.drawImage(background,transform.ox,transform.oz,image.width*transform.fit,image.height*transform.fit);}
-  else { const positions=graph.nodes.map(n=>n.position); const minX=Math.min(...positions.map(p=>p[0])),maxX=Math.max(...positions.map(p=>p[0])),minZ=Math.min(...positions.map(p=>p[2])),maxZ=Math.max(...positions.map(p=>p[2]));const scale=Math.min((canvas.width-80)/Math.max(1,maxX-minX),(canvas.height-80)/Math.max(1,maxZ-minZ));transform={scale,x:40-minX*scale,z:40-minZ*scale}; }
+  const view=firstSpawn.view(),mapId=view?.mapId??7402;let scene={image,background,graph};
+  if(mapId!==7402){
+   if(!replayMaps.has(mapId)){let next={image:null,background:null,graph:{nodes:[],edges:[]}};try{const records=project.records.filter(r=>r.mapId===mapId);if(records.length!==1)throw Error('map binding');const r=records[0];next.graph=project.fieldGraphs.graphs.find(g=>g.key===r.fieldGraph?.key)??next.graph;if(r.candidates?.length===1){const im=imageRenderer.compose(project,r.candidates[0].path);if(markerCoordinateBinding(im.descriptor,mapId).kind==='physical-xz-under-ordinary-group'){const bg=document.createElement('canvas');bg.width=im.width;bg.height=im.height;bg.getContext('2d').putImageData(new ImageData(im.rgba,im.width,im.height),0,0);next.image=im;next.background=bg;}}}catch{}replayMaps.set(mapId,next);}
+   scene=replayMaps.get(mapId);
+  }
+  const shownImage=scene.image,shownBackground=scene.background,shownGraph=scene.graph;
+  let transform = $('overlay').checked ? explorerMapTransform(shownImage,canvas.width,canvas.height) : null;
+  if (transform && shownBackground) {ctx.imageSmoothingEnabled=false;ctx.drawImage(shownBackground,transform.ox,transform.oz,shownImage.width*transform.fit,shownImage.height*transform.fit);}
+  else { const positions=shownGraph.nodes.length?shownGraph.nodes.map(n=>n.position):[[-16,0,-16],[16,0,16]]; const minX=Math.min(...positions.map(p=>p[0])),maxX=Math.max(...positions.map(p=>p[0])),minZ=Math.min(...positions.map(p=>p[2])),maxZ=Math.max(...positions.map(p=>p[2]));const scale=Math.min((canvas.width-80)/Math.max(1,maxX-minX),(canvas.height-80)/Math.max(1,maxZ-minZ));transform={scale,x:40-minX*scale,z:40-minZ*scale}; }
   const point = p => [transform.x+p[0]*transform.scale,transform.z+p[2]*transform.scale];
-  $('canvas-note').textContent = $('overlay').checked && image && background && explorerMapTransform(image,canvas.width,canvas.height) ? 'ROM背景 + 計算結果。7402の限定範囲で位置対応を検証、全域保証なし。線は解決済み位置の接続で、途中の衝突を保証しません。' : 'XZグラフ（背景なし）。敵の経路情報で、プレイヤーの歩行領域ではありません。';
+  $('canvas-note').textContent = mapId!==7402 ? `再生map ${mapId} / ${view?.pending??'到達phase'}。ROM配置要求と現在の物理位置を区別し、未確定な位置は描きません。` : $('overlay').checked && image && background && explorerMapTransform(image,canvas.width,canvas.height) ? 'ROM背景 + 計算結果。7402の限定範囲で位置対応を検証、全域保証なし。線は解決済み位置の接続で、途中の衝突を保証しません。' : 'XZグラフ（背景なし）。敵の経路情報で、プレイヤーの歩行領域ではありません。';
   ctx.lineWidth=1;ctx.strokeStyle='#77818e';
-  for (const [a,b] of graph.edges) { if (!graph.nodes[a] || !graph.nodes[b])continue; ctx.beginPath();ctx.moveTo(...point(graph.nodes[a].position));ctx.lineTo(...point(graph.nodes[b].position));ctx.stroke(); }
-  for (const [i,n] of graph.nodes.entries()) {const [x,z]=point(n.position);ctx.fillStyle=i===session?.actor.currentNodeIndex?'#ffd679':'#b7c9d9';ctx.beginPath();ctx.arc(x,z,3,0,Math.PI*2);ctx.fill();ctx.font='10px system-ui';ctx.fillText(`${i}`,x+5,z-4);}
+  for (const [a,b] of shownGraph.edges) { if (!shownGraph.nodes[a] || !shownGraph.nodes[b])continue; ctx.beginPath();ctx.moveTo(...point(shownGraph.nodes[a].position));ctx.lineTo(...point(shownGraph.nodes[b].position));ctx.stroke(); }
+  for (const [i,n] of shownGraph.nodes.entries()) {const [x,z]=point(n.position);ctx.fillStyle=i===session?.actor.currentNodeIndex?'#ffd679':'#b7c9d9';ctx.beginPath();ctx.arc(x,z,3,0,Math.PI*2);ctx.fill();ctx.font='10px system-ui';ctx.fillText(`${i}`,x+5,z-4);}
   if(firstSpawn.draw(ctx,transform))return;
   if (!session)return;
   ctx.strokeStyle='#58efd1';ctx.lineWidth=2;ctx.beginPath();session.trace.forEach((p,i)=>{const xy=point(p.map(v=>v/WORLD));i?ctx.lineTo(...xy):ctx.moveTo(...xy);});ctx.stroke();

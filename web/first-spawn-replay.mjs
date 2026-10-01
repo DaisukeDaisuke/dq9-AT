@@ -1,5 +1,6 @@
 // Browser composition of existing guarded source models. Optional continuation
 // carries only internally created actors under explicit phase/runtime inputs.
+import {prepareMapTransitions,advanceMapTransition} from './map-transition.mjs';
 import {decodeEncounterStream} from './encounter-distribution.mjs';
 import {mineCreatorResources,bindCreatorResources} from './monster-creation-resources.mjs';
 import {FieldScheduler} from './field-scheduler.mjs';
@@ -56,15 +57,18 @@ export function validateSpawnTrajectory(input,mapId,graph,continueNewborn=false)
  * primitive input, declared stable within this conditional replay. */
 export function createFirstSpawnReplay({project,rom,kernel,fieldKernel,atKernel,runtime,trajectory,seed,continueNewborn=false}){
  check(uint(seed),'開始seedはu32が必要です');
- const composed=runtime?.schema==='dq9-first-spawn-runtime-v2';
- check(exact(runtime,['schema','mapId','fieldIndex','initialTimer','selectedHeroSlot','conditions','parties','runtimeNodeFlags','creatorContext',...(composed?['continuation']:[])])&&(composed||runtime.schema===FIRST_SPAWN_RUNTIME_SCHEMA)&&runtime.mapId===7402,'7402の初期runtime primitive packetが必要です');
+ const composed=runtime?.schema==='dq9-first-spawn-runtime-v2',crosses=trajectory?.schema==='dq9-pre-spawn-trajectory-v3';
+ check(!crosses||(continueNewborn&&exact(trajectory,['schema','phase','mapId','steps','transitionPhases'])&&trajectory.phase==='pre-spawn-and-post-hero-with-reached-transitions'),'移動再生には継続と到達済みphase軌跡が必要です');
+ check(exact(runtime,['schema','mapId','fieldIndex','initialTimer','selectedHeroSlot','conditions','parties','runtimeNodeFlags','creatorContext',...(composed?['continuation']:[]),...(crosses?['transitionContext']:[])])&&(composed||runtime.schema===FIRST_SPAWN_RUNTIME_SCHEMA)&&runtime.mapId===7402,'7402の初期runtime primitive packetが必要です');
  check(typeof continueNewborn==='boolean'&&(!continueNewborn||(composed&&runtime.continuation?.phaseOrder==='spawn-hero-body-lifetime-walking'&&runtime.continuation.environmentStable===true&&runtime.continuation.environment)),'生成後はphase順・環境runtimeの明示が必要です');
  const conditions=runtime.conditions;
  check(exact(conditions,['active','storyAllowed','soleEligibleMember','noExternalAT','stableContext'])&&Object.values(conditions).every(x=>x===true),'active/story・単一eligible member・外部ATなし・固定runtime条件の明示が必要です');
  check(uint(runtime.fieldIndex,3)&&uint(runtime.initialTimer)&&uint(runtime.selectedHeroSlot,3),'field・timer・選択partyが不明です');
  const matches=project.records.filter(r=>r.mapId===runtime.mapId);check(matches.length===1,'ROM map bindingが一意ではありません');
  const record=matches[0],graph=project.fieldGraphs.graphs.find(g=>g.key===record.fieldGraph?.key);check(graph?.nodes?.length>0&&graph.nodes.length<=255,'ROM静的graphが必要です');
- const steps=validateSpawnTrajectory(trajectory,runtime.mapId,graph,continueNewborn);
+ const worldTrajectory=crosses?{schema:'dq9-pre-spawn-trajectory-v2',phase:'pre-spawn-and-post-hero-effective',mapId:trajectory.mapId,steps:trajectory.steps}:trajectory;
+ const steps=validateSpawnTrajectory(worldTrajectory,runtime.mapId,graph,continueNewborn);
+ const mapTransitions=crosses?prepareMapTransitions(project,runtime.transitionContext,trajectory.transitionPhases,steps.at(-1).sourceFrame):null;
  check(dense(runtime.runtimeNodeFlags)&&runtime.runtimeNodeFlags.length===graph.nodes.length&&runtime.runtimeNodeFlags.every(n=>uint(n)),'全nodeのruntime flagsが必要です');
  const parties=copy(runtime.parties);check(dense(parties)&&parties.length===4&&parties.every((p,i)=>p&&p.slot===i&&p.registryKnown===true&&uint(p.pointer)),'party0..3のregistry状態が必要です');
  const hero=parties[runtime.selectedHeroSlot];check(hero.pointer>0&&uint(hero.headerFlags,65535)&&(hero.headerFlags&0x200)!==0&&hero.mapId===runtime.mapId&&hero.alternateMap===0xffffffff,'選択heroの同map・typed/effective位置条件が必要です');
@@ -73,6 +77,7 @@ export function createFirstSpawnReplay({project,rom,kernel,fieldKernel,atKernel,
  // Graph/resources come only from this locally loaded ROM, not packet arrays.
  check(!Object.hasOwn(context,'graph')&&context.graphBindingVerified===true,'graphは投入ROMから取得します');
  check(dense(context.fields)&&context.fields.length===4&&context.fields.every((f,i)=>f&&f.index===i&&uint(f.mapId,65535)&&uint(f.flags,65535)),'4fieldの順序・map・flagsが必要です');
+ if(crosses)check(runtime.fieldIndex===0&&context.fields.every((f,i)=>i===0?(f.flags&3)===0:(f.mapId===0&&(f.flags&4)===0&&(f.flags&3)===i)),'移動はfield0と他3field空きの初期条件のみ対応します');
  const field=context.fields[runtime.fieldIndex];check(field.mapId===runtime.mapId&&context.fields.findIndex(f=>f.mapId===runtime.mapId)===runtime.fieldIndex,'最初に一致するfieldが必要です');
  // The ordinary source loader owns static model/AI values. Runtime allocation
  // counts/addresses/topology still have to match the selected ROM species.
@@ -82,6 +87,11 @@ export function createFirstSpawnReplay({project,rom,kernel,fieldKernel,atKernel,
  for(let slot=112+group*12;slot<124+group*12;slot++){
   const d=describeInventorySlot(inventory.slots[slot-112]);
   check(d.allocated===true&&d.allocatorFree===true&&d.active===false,'自然生成groupは既知の登録済み・未使用12objectが必要です（null slotは空きobjectではありません）');
+ }
+ if(crosses){
+  const base=inventory.slots[0].pointer,size=0x1320,overlaps=(a,n)=>base<a+n&&a<base+size;
+  check(uint(base)&&base>=0x02200000&&base+size<=0x02400000&&inventory.slots.slice(0,12).every((s,i)=>s.pointer===base+i*0x198)&&mapTransitions.phases.filter(e=>e.phase==='pool-initialization').every(e=>e.allocationPointer===base),'到達済み移動は同じ既知12object poolの再割当のみ対応します');
+  check(!context.fields.some(f=>overlaps(f.pointer,0x314))&&!parties.some(p=>p.pointer&&overlaps(p.pointer,0x250))&&!overlaps(context.controllerPointer,0x4220)&&!overlaps(0x020f33d8,0x3b0)&&!overlaps(0x020eee90,4)&&!overlaps(0x020fed44,4)&&!overlaps(0x021d7a94,2),'pool resetと保持runtimeのaliasは未対応です');
  }
  if(continueNewborn){const pointers=[];for(const slot of inventory.slots){const d=describeInventorySlot(slot);check(d.allocated!==null&&(d.allocated===false||(d.allocatorFree===true&&d.active===false)),'継続の初期状態には他の自然actor不在が必要です');if(d.allocated)pointers.push(d.pointer);}check(new Set(pointers).size===pointers.length,'registry別slotの同一object aliasは継続区間で未対応です');}
  const decoded=decodeEncounterStream(new Uint8Array(project.nitro.readFile('data/prm/encfld.bin'))),groups=decoded.groups.filter(g=>g.mapId===runtime.mapId);
@@ -106,14 +116,16 @@ export function createFirstSpawnReplay({project,rom,kernel,fieldKernel,atKernel,
  }
  context.graph=graph;
  if(continueNewborn){const env=runtime.continuation.environment;check(env.managerMapId===runtime.mapId&&env.selectedHero?.pointer===hero.pointer&&env.selectedHero?.mapId===runtime.mapId&&!Object.hasOwn(env,'identity')&&!Object.hasOwn(env,'typedMonsterLookup')&&!Object.hasOwn(env,'terrain'),'walking環境と選択hero/ROM terrainを混同できません');}
- return new FirstSpawnReplay({kernel,fieldKernel,atKernel,trig:preferredNodeTrigFromRom(rom),context,parties,hero,graph,steps,rows,distributions,field,group,seed,timer:runtime.initialTimer,runtimeNodeFlags:copy(runtime.runtimeNodeFlags),continueNewborn,environment:continueNewborn?copy(runtime.continuation.environment):null});
+ return new FirstSpawnReplay({kernel,fieldKernel,atKernel,trig:preferredNodeTrigFromRom(rom),context,parties,hero,graph,steps,rows,distributions,field,group,seed,timer:runtime.initialTimer,runtimeNodeFlags:copy(runtime.runtimeNodeFlags),continueNewborn,mapTransitions,environment:continueNewborn?copy(runtime.continuation.environment):null});
 }
 
 export class FirstSpawnReplay{
- constructor(input){Object.assign(this,input);this.scheduler=new FieldScheduler(input.fieldKernel);this.context=copy(input.context);this.parties=copy(input.parties);this.hero=this.parties[input.hero.slot];this.field=this.context.fields[input.field.index];this.seed=input.seed;this.timer=input.timer;this.consumed=0;this.events=[];this.heroTrace=[];this.actors=new Map();this.actorTrace=[];this.actor=null;this.birth=null;this.births=[];this.generationCount=0;this.stopped=false;this.status='ready';this.reason='';}
+ constructor(input){Object.assign(this,input);this.scheduler=new FieldScheduler(input.fieldKernel);this.context=copy(input.context);this.parties=copy(input.parties);this.hero=this.parties[input.hero.slot];this.field=this.context.fields[input.field.index];this.seed=input.seed;this.timer=input.timer;this.consumed=0;this.events=[];this.heroTrace=[];this.actors=new Map();this.actorTrace=[];this.actor=null;this.birth=null;this.births=[];this.generationCount=0;this.stopped=false;this.status='ready';this.reason='';this.currentMapId=input.field.mapId;this.currentCoordinate=null;this.closedActors=[];this.transitionIndex=0;}
  advance(){
   if(this.stopped)return false;
+  if(this.mapTransitions&&this.events.length>=this.steps.length)return advanceMapTransition(this);
   const next=this.advanceSpawn();
+  const completedSample=this.steps[this.events.at(-1)?.index];if(completedSample)this.currentCoordinate={mapId:this.field.mapId,xyz:[...(completedSample.postHero?.xyz??completedSample.hero.xyz)],kind:'measured-effective-hero-input'};
   if(!this.continueNewborn||(!next&&this.status!=='created')||!this.creation)return next;
   const row=this.events.at(-1),sample=this.steps[row.index];this.stopped=false;row.bodies=[];row.environments=[];row.phaseOrder=['spawn'];
   const stop=(reason,status='unresolved')=>{this.refreshPrimary();this.status=status;this.reason=reason;this.stopped=true;Object.assign(row,{status,reason,seed:this.seed,invocationResolved:false});return false;};
