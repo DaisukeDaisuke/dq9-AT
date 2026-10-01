@@ -39,3 +39,8 @@ node --experimental-vm-modules scripts/check-video-panel-capture.mjs
 node scripts/test-monster-animation.mjs
 node scripts/test-monster-recognition.mjs
 node scripts/test-monster-recognize-page.mjs
+
+# Explicit one-frame CPU glyph fallback; no GPU globals or private fixture inputs.
+node scripts/test-font-akinator-cpu.mjs
+node scripts/test-font-akinator-cpu-client.mjs
+node scripts/test-map-recognize-page.mjs

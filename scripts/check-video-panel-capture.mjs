@@ -30,18 +30,19 @@ async function fixture({auto=false,track=true,registration=true}={}){
   append(...items){this.children.push(...items);}replaceChildren(...items){this.children=[...items];}add(x){this.append(x);}
   pause(){this.paused=true;this.emit('pause');}load(){}removeAttribute(n){delete this[n];}requestVideoFrameCallback(){return 1;}cancelVideoFrameCallback(){}
  }
- class FakeWorker{constructor(url){this.url=String(url);this.messages=[];workers.push(this);}postMessage(m){this.messages.push(structuredClone(m));}terminate(){}reply(m){this.onmessage?.({data:m});}}
+ class FakeWorker{constructor(url){this.url=String(url);this.messages=[];workers.push(this);}postMessage(m){this.messages.push(structuredClone(m));}terminate(){this.terminated=true;}reply(m){this.onmessage?.({data:m});}}
  class Coordinator extends imported['./player-capture.mjs'].PlayerCaptureCoordinator{
   capture(args){captures.push(args);return super.capture(args);}name(token,observation){if(observation)names.push(observation);return super.name(token,observation);}
  }
- const match={route:'glyph-akinator',match(image){const pending=deferred();matches.push({image, ...pending});return pending.promise;},cancel(){},destroy(){}};
+ const match={route:'glyph-akinator',match(image,options){const pending=deferred();matches.push({image,options, ...pending});return pending.promise;},cancel(){},destroy(){}};
  const document={createElement:tag=>new Element(tag),getElementById:id=>elements.get(id),querySelector:()=>new Element(),fonts:{add(){},delete(){}}};
  const window={addEventListener(n,fn){if(!windows.has(n))windows.set(n,[]);windows.get(n).push(fn);},dispatchEvent(e){events.push(e);for(const fn of windows.get(e.type)||[])fn(e);}};
- const sandbox={document,window,Worker:FakeWorker,Option:class extends Element{constructor(text,value){super('option');this.textContent=text;this.value=value;}},ImageData:class{constructor(data,width,height){Object.assign(this,{data,width,height});}},CustomEvent:class{constructor(type,init){this.type=type;this.detail=init.detail;}},localStorage:{getItem(){return null;},setItem(){}},navigator:{mediaDevices:{enumerateDevices:async()=>[]}},URL,Blob,Date,performance,structuredClone,Uint8ClampedArray,console,setTimeout,queueMicrotask,testMatcher:match};
+ const sandbox={document,window,Worker:FakeWorker,Option:class extends Element{constructor(text,value){super('option');this.textContent=text;this.value=value;}},ImageData:class{constructor(data,width,height){Object.assign(this,{data,width,height});}},CustomEvent:class{constructor(type,init){this.type=type;this.detail=init.detail;}},localStorage:{getItem(){return null;},setItem(){}},navigator:{mediaDevices:{enumerateDevices:async()=>[]}},URL,Blob,Date,performance,structuredClone,Uint8ClampedArray,console,setTimeout,clearTimeout,AbortController,DOMException,queueMicrotask,testMatcher:match};
  const context=vm.createContext(sandbox);
- const module=new vm.SourceTextModule(source+`\nexport const captureTest={readFrame,invalidateSource,setup(){matcher=testMatcher;records=[{mapId:7402,name:'TEST MAP'}];positionReady=true;positionHasReference=true;},getFile:()=>fileInput,getCamera:()=>camera,getState:()=>({generation,romEpoch,positionEpoch,frameSerial,busy,pendingRead,observations,positionSample,mapCandidatePending})};`,{context,identifier:pathToFileURL(panel).href,initializeImportMeta(meta){meta.url=pathToFileURL(panel).href;}});
+ const module=new vm.SourceTextModule(source+`\nexport const captureTest={readFrame,invalidateSource,setup(){matcher=testMatcher;records=[{mapId:7402,name:'TEST MAP'}];positionReady=true;positionHasReference=true;},getFile:()=>fileInput,getCamera:()=>camera,resetGPU(){gpuUnavailable=false;},setupCPU(){runtimeGlyphs={'1x1':[{char:'T',assignedChar:'T',rows:['#']}]};},getState:()=>({generation,romEpoch,positionEpoch,frameSerial,busy,pendingRead,observations,positionSample,mapCandidatePending,gpuUnavailable,cpuHeld})};`,{context,identifier:pathToFileURL(panel).href,initializeImportMeta(meta){meta.url=pathToFileURL(panel).href;}});
  await module.link(spec=>{
   let exports=imported[spec];
+  if(spec==='./font-akinator-cpu-client.mjs')exports={CPUTextClient:class extends imported[spec].CPUTextClient{constructor(){super({factory:()=>new FakeWorker('font-akinator-cpu-worker.mjs')});}}};
   if(spec==='./player-capture.mjs')exports={PlayerCaptureCoordinator:Coordinator};
   if(spec==='./map-name-match.mjs')exports={createTextMatcher:()=>match};
   if(spec==='./map-name-roi.mjs')exports={detectMapNameROI:()=>({resolved:true,roi:{x:0,y:0,w:1,h:.1}})};
@@ -51,14 +52,14 @@ async function fixture({auto=false,track=true,registration=true}={}){
  await module.evaluate();
  const api=module.namespace.captureTest;api.setup();
  const $=id=>elements.get(id),video=$('camera-video');video.pixel=17;
- $('screen-mode').value=auto?'auto':'manual';$('name-roi-mode').value='manual';$('player-marker-mode').value='hud';$('player-enabled').checked=track;$('position-enabled').checked=registration;$('position-scales').value='.5';$('text-scales').value='1';$('text-char-count').value='16';$('text-budget').value='1500';$('player-tolerance').value='12';
+ $('screen-mode').value=auto?'auto':'manual';$('name-roi-mode').value='manual';$('player-marker-mode').value='hud';$('player-enabled').checked=track;$('position-enabled').checked=registration;$('position-scales').value='.5';$('text-match-route').value='glyph-akinator';$('text-scales').value='1';$('text-char-count').value='16';$('text-budget').value='1500';$('player-tolerance').value='12';
  const emit=(type,detail)=>window.dispatchEvent({type,detail});
  const requests=()=>events.filter(e=>e.type==='dq9-map-candidates-request').map(e=>e.detail);
  const sample=()=>({sourceKind:'local-file',sourceId:'fixture-A',sourceEpoch:7,timelineSegment:2,videoTime:1,mediaTime:1,timestampBasis:'requestVideoFrameCallback.mediaTime',presentedFrames:60,absoluteFrameIndex:null,capturedAt:'2026-09-30T00:00:00.000Z'});
  const position=workers.find(w=>w.url.includes('position-worker')),layout=workers.find(w=>w.url.includes('ds-screen-worker'));
  const finishRegistration=()=>{const m=position.messages.findLast(m=>m.type==='frame');if(m)position.reply({type:'frame',epoch:m.epoch,frameSerial:m.frameSerial,ok:true,result:{kind:'video-map-registration',resolved:false,candidates:[],reason:'synthetic'}});};
  const finishLayout=()=>{const m=layout.messages.at(-1);layout.reply({id:m.id,result:{resolved:true,analysisSize:{width:256,height:192},candidates:[{x:0,y:0,w:256,h:192,score:1}]}});};
- return {api,$,video,events,captures,names,markerPixels,matches,emit,requests,sample,position,layout,finishRegistration,finishLayout};
+ return {api,$,video,events,captures,names,markerPixels,matches,workers,emit,requests,sample,position,layout,finishRegistration,finishLayout};
 }
 const cases=[];
 async function run(name,fn){try{await fn();cases.push({name,passed:true});}catch(e){cases.push({name,passed:false,error:e.message});}}
@@ -137,6 +138,55 @@ await run('successful map response and player log preserve identical capture val
  f.emit('dq9-map-candidates-result',{requestId:request.requestId,result:{kind:'video-map-disambiguation',stamp:structuredClone(request.stamp),candidateSource:request.candidates,rankings:[],unknown:[],bestMapIds:[],reason:'synthetic',descriptorCandidate:false}});
  const logs=f.api.getState().observations,player=logs.find(o=>o.playerPosition),map=logs.find(o=>o.mapDisambiguation),text=logs.find(o=>o.kind==='video-map-name-candidates');
  check('player and map logs use same stamp values',()=>assert.deepEqual(structuredClone(player.playerPosition.stamp),structuredClone(map.mapDisambiguation.stamp)));check('text and player logs use same stamp values',()=>assert.deepEqual(structuredClone(text.stamp),structuredClone(player.playerPosition.stamp)));check('party factors preserve stamp',()=>assert.deepEqual(structuredClone(map.mapDisambiguation.partyCoordinates.stamp),structuredClone(request.stamp)));check('registration log preserves stamp',()=>assert.deepEqual(structuredClone(logs.find(o=>o.reason==='synthetic').stamp),structuredClone(request.stamp)));check('all logs remain zero AT evidence',()=>assert(logs.every(o=>o.minimumProvenATCalls===0)));
+});
+
+async function prepareCPU(){
+ const f=await fixture(),file=f.api.getFile();Object.assign(file,{url:'blob:fixture',sourceId:'fixture-A',generation:7,segment:2});f.api.setupCPU();
+ const unsupported=f.api.readFrame(1,f.sample());f.finishRegistration();f.matches[0].reject(Error('WebGPUが利用できません。'));await unsupported;
+ check('real unsupported path enables explicit CPU action',()=>assert.equal(f.$('cpu-text-once').disabled,false));
+ return f;
+}
+function readyCPU(f){const w=f.workers.findLast(w=>w.url.includes('font-akinator-cpu-worker')),init=w.messages[0];w.reply({type:'ready',id:init.id,romEpoch:init.romEpoch});return {w,message:w.messages.at(-1)};}
+await run('CPU fallback is an explicit single frozen frame and keeps shared provenance',async()=>{
+ const f=await prepareCPU();const before=f.workers.length;await f.api.readFrame(2,f.sample());check('continuous loop never starts CPU work',()=>assert.equal(f.workers.length,before));
+ const pending=f.$('cpu-text-once').onclick(),{w,message}=readyCPU(f);f.video.pixel=99;f.video.currentTime=20;await f.api.readFrame(3,f.sample());
+ check('CPU holds automatic reads',()=>assert.equal(f.api.getState().pendingRead,false));check('CPU source pixels remain frozen',()=>assert.equal(message.image.data[0],17));check('CPU honors current 1500ms budget',()=>assert(message.options.maxMilliseconds<=1500));
+ f.finishRegistration();w.reply({type:'result',id:message.id,romEpoch:message.romEpoch,stamp:structuredClone(message.stamp),result});await pending;
+ const request=f.requests()[0];check('CPU maps receive the same immutable captured stamp',()=>assert.strictEqual(request.stamp,f.captures.at(-1).stamp));check('CPU worker echo matches capture',()=>assert.deepEqual(message.stamp,structuredClone(request.stamp)));check('CPU map pixels frozen',()=>assert.equal(request.frame.rgba[0],17));check('CPU capture time remains original',()=>assert.equal(request.stamp.videoTime,1));check('CPU map nominees retain unsearched text',()=>assert.equal(request.candidates.unsearchedTextPossible,true));check('finished CPU Worker released',()=>assert.equal(w.terminated,true));check('CPU result stays held',()=>assert.equal(f.api.getState().cpuHeld,true));
+ f.$('cpu-text-release').onclick();check('explicit release resumes capture',()=>assert.equal(f.api.getState().cpuHeld,false));
+});
+for(const change of ['seek','rom-release','reference','cancel'])await run(`CPU ${change} terminates and discards stale frozen result`,async()=>{
+ const f=await prepareCPU(),pending=f.$('cpu-text-once').onclick(),{w,message}=readyCPU(f);
+ if(change==='seek'){f.video.seeking=true;f.video.emit('seeking');}
+ if(change==='rom-release')f.emit('dq9-rom-release');if(change==='reference')f.emit('dq9-map-image',null);if(change==='cancel')f.$('text-cancel').onclick();
+ await pending;w.reply({type:'result',id:message.id,romEpoch:message.romEpoch,stamp:message.stamp,result});
+ check('CPU Worker terminated on discontinuity',()=>assert.equal(w.terminated,true));check('stale CPU does not nominate maps',()=>assert.equal(f.requests().length,0));check('CPU busy lock released',()=>assert.equal(f.api.getState().busy,false));check('CPU freeze released',()=>assert.equal(f.api.getState().cpuHeld,false));
+});
+await run('CPU mismatched nested stamp is rejected before map nomination',async()=>{
+ const f=await prepareCPU(),pending=f.$('cpu-text-once').onclick(),{w,message}=readyCPU(f);const altered=structuredClone(message.stamp);altered.roi.x+=.01;
+ w.reply({type:'result',id:message.id,romEpoch:message.romEpoch,stamp:altered,result});await pending;
+ check('wrong CPU stamp creates no map request',()=>assert.equal(f.requests().length,0));check('wrong stamp error shown',()=>assert.match(f.$('name-candidates').textContent,/識別情報/));check('wrong stamp releases worker',()=>assert.equal(w.terminated,true));
+});
+
+await run('CPU one-frame time setting never increases the continuous GPU budget',async()=>{
+ const f=await prepareCPU();f.$('cpu-text-budget').value='10000';f.$('cpu-text-budget').onchange();
+ const pending=f.$('cpu-text-once').onclick(),{w,message}=readyCPU(f);check('CPU uses explicitly selected long limit',()=>assert(message.options.maxMilliseconds>9000&&message.options.maxMilliseconds<=10000));
+ f.$('text-cancel').onclick();await pending;f.api.resetGPU();const gpu=f.api.readFrame(7,f.sample());check('continuous GPU remains at1500ms',()=>assert.equal(f.matches.at(-1).options.maxMilliseconds,1500));f.finishRegistration();f.matches.at(-1).resolve(result);await gpu;
+});
+
+await run('CPU cancellation during layout detaches immediately and drops the late reply',async()=>{
+ const f=await prepareCPU();f.$('screen-mode').value='auto';const pending=f.$('cpu-text-once').onclick();check('CPU waits on layout before creating its scorer Worker',()=>assert(!f.workers.some(w=>w.url.includes('font-akinator-cpu-worker'))));
+ f.$('text-cancel').onclick();await pending;check('layout cancellation immediately releases busy',()=>assert.equal(f.api.getState().busy,false));check('layout cancellation releases held capture',()=>assert.equal(f.api.getState().cpuHeld,false));f.finishLayout();await Promise.resolve();check('late layout has no map result',()=>assert.equal(f.requests().length,0));
+ const next=f.api.readFrame(8,f.sample());f.finishLayout();await next;check('new layout can complete after canceled old request',()=>assert.equal(f.api.getState().busy,false));
+});
+await run('a new CPU capture rejects the prior pending map result',async()=>{
+ const f=await prepareCPU();const first=f.$('cpu-text-once').onclick();let {w,message}=readyCPU(f);f.finishRegistration();w.reply({type:'result',id:message.id,romEpoch:message.romEpoch,stamp:message.stamp,result});await first;const old=f.requests()[0];
+ const second=f.$('cpu-text-once').onclick();const before=f.api.getState().observations.length;f.emit('dq9-map-candidates-result',{type:'map-candidates-error',requestId:old.requestId,stamp:old.stamp,message:'old map error'});check('old map result cannot enter the new capture',()=>assert.equal(f.api.getState().observations.length,before));check('old map error cannot repaint new CPU UI',()=>assert(!f.$('map-disambiguation').textContent.includes('old map error')));f.$('text-cancel').onclick();await second;
+});
+
+await run('whole CPU deadline also bounds automatic-layout waiting',async()=>{
+ const f=await prepareCPU();f.$('screen-mode').value='auto';f.$('cpu-text-budget').value='5';await f.$('cpu-text-once').onclick();
+ check('layout timeout releases busy without a reply',()=>assert.equal(f.api.getState().busy,false));check('layout timeout creates no scoring Worker',()=>assert(!f.workers.some(w=>w.url.includes('font-akinator-cpu-worker'))));check('layout timeout keeps unsearched status',()=>assert.match(f.$('cpu-text-status').textContent,/未探索/));check('layout timeout cannot nominate maps',()=>assert.equal(f.requests().length,0));f.finishLayout();
 });
 const summary={passed:cases.every(c=>c.passed),checks,cases,scope:'Node fake DOM/canvas/Worker control-flow test; real capture coordinator and input adapters; synthetic pixels and deferred OCR/layout; no browser/WebGPU/video-decoder accuracy claim'};
 console.log(JSON.stringify(summary,null,2));if(!summary.passed)process.exitCode=1;
