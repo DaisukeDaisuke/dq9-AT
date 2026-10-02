@@ -498,3 +498,13 @@ AT追跡画面の「記録した観測から候補を絞る」から、同じタ
 - 最終抽選から比較参照点までの消費範囲と根拠・仮定を別途要求。不明や空欄は 0 にせず未解決のまま残す。保存済み候補ごとの状態を検証し、指定 draw 先の table→weighted の条件付き結果、一致/不一致、未探索・未保存・途中停止範囲を表示する。50,000 評価・1.5 秒の上限と中止を設け、元セッション・下限台帳・WASM kernel は変更しない。
 - 最終統合版で既存 aggregate 49 コマンドが exit 0、識別画面/実 Node Worker 接続の 224 assertions が通過。実ブラウザの画面・戻る導線・ROM 読込は配信後に別途確認する。
 - 保存済み native 記録を用いた別の数値照合では paused-state 起点の候補 7 と明示した 2 draw 消費から、記録内の table draw 10 / weighted draw 11・monster 108 が一致した。これは boot 起点の実セッション接続や実画面での出現確認ではない。現在 AT、出現時刻、歩く方向、生成成功は依然未確定。
+
+## 21:58 JST追記: 候補比較の公開UIとheadless座標スクリプト
+
+`ecce19c25b0219871f66573ba501b82524cb1840` の[CI／deploy](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/37007560589)は12:36:09 UTCにsuccess。12:38–12:44 UTC、公開ブラウザーでローカルROMの静的コンテキストと合成保存sessionを使い、主画面→識別→「候補を追跡画面で比較」→元画面へのBack/BFcache復帰を確認した。ROM・active session・対象・探索窓を保持し、明示した合成index1〜10000／gap1〜3で発見1,394件のうち保存100件を渡した。
+
+reference gap不明は0評価・未解決、有限範囲の空欄はエラー。明示した合成gap0〜0・window40では100 state検証、3,900評価、39 offsetを処理し、保存済み候補内の結果差と未保存・範囲外候補を表示した。time変更で旧結果消去・再計算、ROM解放で結果消去・比較無効を確認。元sessionの可視7イベントと証明／条件下限100／100は不変だった。これは実ROMの静的情報を用いた合成sessionのUI検査であり、実動画の現在ATや出現時刻の同定ではない。
+
+結果JSONのdownload／import経路は今回未試験。別session拒否・計算中cancelはNode回帰のみで、全hidden snapshotのbyte比較も今回のブラウザー検査には含めない。追加の公開source修正はない。
+
+private headless toolには、ユーザー提供Luaの座標配置を参照する小さな読取adapterと既存Node APIの入力例、test、使用説明の4ファイルを追加し、remote全文一致を確認した。元ROM／Stateでの座標読取、Right30フレームの移動、入力解放、読取有無でのARM9レジスタ一致の2 testが通過した。配列所属を敵の可視・生存と断定せず、raw location IDをmapファイル番号へ自動変換しない。A*・衝突回避はこの追加には含まれず、native runtimeと公開ATは変更していない。
