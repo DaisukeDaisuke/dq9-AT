@@ -16,7 +16,7 @@ const need=(p,m)=>{if(!p)throw Error(m);},copy=structuredClone,zero=[0,0,0];
 export const F06_MOTION_CONDITIONS=['ordinarySuccessfulSceneLoad','successfulEncounterTableLoad','sceneModeWithin0to3','noSceneObjectWriters','noMapSaveStateSetter','noOtherHeroKinematicWriters','noSpecialMotionActivation','noTouchOverride','cameraYawRemainsInitial','ordinaryHeroEnvironmentGates','noAdditionalCollisionActors','noNodeFlagWriters','noOtherClockOrEnvironmentSetters','fixedClockScaleAndConstants','completeControllerAndFadeStream','ordinaryOfflineSelectedHero'];
 export const F06_KEYBOARD_GATES=['ordinaryKeyboardControl','inputEnabledWhenUnlocked','ordinaryControlMode','directionLockAbsent','noTargetAngleOverride','noTouchOverride'];
 export function validateF06KeyboardInput(input){
- need(exact(input,['heldDirection','gates'])&&['Down','Right','None'].includes(input.heldDirection),'Only explicit Down/Right/release keyboard inputs are supported');
+ need(exact(input,['heldDirection','gates'])&&['Down','Right','Up','Left','None'].includes(input.heldDirection),'Only explicit cardinal/release keyboard inputs are supported');
  need(exact(input.gates,F06_KEYBOARD_GATES)&&F06_KEYBOARD_GATES.every(k=>input.gates[k]===true),'Complete ordinary keyboard gates required');return copy(input);
 }
 const heroKeys=['header','turnRate','targetSpeed','acceleration','e0','c1','c2','delayWord','gravity','verticalVelocity','verticalLimit','verticalCounter','width','height','groundFlags','specialMotionByte'];
@@ -109,7 +109,7 @@ export function prepareF06HeroMotion({project,rom,packet,stream,transitions,tick
  return {keyboardInputs:validated.keyboard?stream.heldDirections.map((heldDirection,i)=>validateF06KeyboardInput({heldDirection,gates:stream.keyboardGates[i]})):null,keyboardAngles:validated.keyboard?sourceF06KeyboardAngles(rom):null,state,node:nearest(graph,state.xyz,false),lock:lock.counter,lockProjection:lock,day,phases:[...stream.controllerPhases],directions:[...stream.heldDirections],hero:copy(h),graph,terrain,scene,rows,distributions,nodeFlags:graph.nodes.map(()=>0),assumptions:[...F06_MOTION_CONDITIONS],provenance:copy(packet.provenance),worldResolved:false};
 }
 export function advanceF06HeroMotion(plan,kernel,clock,keyboardInput=null){
- let keyboard=null;try{if(keyboardInput!==null){keyboard=validateF06KeyboardInput(keyboardInput);need(plan.keyboardAngles?.Down===0&&plan.keyboardAngles?.Right===6434,'ROM-bound keyboard angles required');}}catch(error){return {resolved:false,reason:error.message};}
+ let keyboard=null;try{if(keyboardInput!==null){keyboard=validateF06KeyboardInput(keyboardInput);need(plan.keyboardAngles?.Down===0&&plan.keyboardAngles?.Right===6434&&plan.keyboardAngles?.Up===12868&&plan.keyboardAngles?.Left===19302,'ROM-bound keyboard angles required');}}catch(error){return {resolved:false,reason:error.message};}
  const before=copy(plan.state),r=kernel.kinematicPrefix(before,clock,{reached:true});if(!r.resolved)return {resolved:false,reason:r.reason};
  const displacement=fieldNativeDistance(before.xyz,r.kinematic.xyz);if(displacement===null||displacement>819)return {resolved:false,reason:'Hero multi-substep/correction branch unresolved'};
  const delta=r.kinematic.xyz.map((v,i)=>Math.abs(v-before.xyz[i]));if(delta.some(d=>d!==0)&&delta.every(d=>d<5))return {resolved:false,reason:'Hero small-motion rollback branch unresolved'};

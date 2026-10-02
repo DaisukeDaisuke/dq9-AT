@@ -45,11 +45,16 @@ function sourceArm9(input){
 }
 export function sourceF06KeyboardAngles(rom){
  const a=sourceArm9(rom),table=a.u32(0x02037f50);
- // Ordinary JP ARM9 keyboard readers: LDRH / TST Down0x80 and Right0x10.
- need(a.u32(0x02012148)===0xe1d000b0&&a.u32(0x0201214c)===0xe3100080&&a.u32(0x02012120)===0xe1d000b0&&a.u32(0x02012124)===0xe3100010,'Unsupported keyboard reader source');
- const Down=a.u32(table+4)|0,Right=a.u32(table+12)|0;
- need(Down===0&&Right===6434,'Unsupported ordinary Down/Right direction table');
- return {Down,Right};
+ // JP ordinary cardinal readers, their branch-to-direction-byte mapping, and
+ // the ROM table are bound together. No headings are taken from native futures.
+ const rows=[['Up',0x02012134,0x40,0x02037c70,0xebff692f,8],['Down',0x02012148,0x80,0x02037c8c,0xebff692d,9],['Left',0x0201210c,0x20,0x02037ca8,0xebff6917,10],['Right',0x02012120,0x10,0x02037cc4,0xebff6915,11]];
+ for(const [,reader,mask,call,bl,code] of rows){
+  need([0xe1d000b0,0xe3100000|mask,0x13a00001,0x03a00000,0xe12fff1e].every((word,i)=>a.u32(reader+i*4)===(word>>>0)),'Unsupported keyboard reader source');
+  need(a.u32(call)===bl&&a.u32(call+4)===0xe3500000&&a.u32(call+8)===(0x13a00000|code)&&a.u32(call+12)===0x15c40244,'Unsupported cardinal direction-byte source');
+ }
+ const Up=a.u32(table)|0,Down=a.u32(table+4)|0,Left=a.u32(table+8)|0,Right=a.u32(table+12)|0;
+ need(Up===12868&&Down===0&&Left===19302&&Right===6434,'Unsupported ordinary cardinal direction table');
+ return {Down,Right,Up,Left};
 }
 export function sourceCreatorMode(rom){const a=sourceArm9(rom),selector=a.u8(a.u32(0x0203394c)+5*13),flags=a.u32(a.u32(0x02033808)+selector*4),name=a.text(a.u32(a.u32(0x0203381c)+selector*4));need(selector>0&&selector<12&&flags===1&&name==='appear'&&a.u32(0x02035e08)===0xfffffe01,'Unsupported creator mode5/config selector');return{mode:5,c0:0,selector,name,flags,componentTag:{knownMask:0x1ff,value:1},runtimeAnimationObject:'null-or-owned-unresolved'};}
 export function decodeCreatorConfig(bytes){

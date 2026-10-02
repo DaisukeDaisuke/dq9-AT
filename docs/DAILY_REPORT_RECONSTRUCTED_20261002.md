@@ -182,3 +182,12 @@ private再現helperに一度、後時点のpool pointerを入力へコピーす�
 8組のobserver有無ペアで、各64 frameのCPU／画素／状態と5点のfull RAMが一致。独立レビューで595 portable assertions、101 release checks、factory/native比較と入力の分離を確認。root統合buildも成功し、レビュー済み10ファイルと生成WASMのhash一致を確認。公開後のブラウザ確認は別途行う。
 
 別の生成後調査では、nativeは次の生成抽選で136 callsまで到達することを確認したが、再現側の出生後bodyは未接続のまま。先行調査で取り違えたdescriptor-arrayと内部animation objectの参照を訂正し、追加条件なしでstatus bit2のclearを導出した。ここから全body対応済みとはしない。再現用ソースと訂正記録は非公開の既存ツール保存先にバックアップ済み。
+
+
+## 11:35 JST追記: 上・左の移動と生成ノードの変化
+
+既存のDown/Right/Noneに、ROMの入力reader・分岐命令・方向tableを検証してUp12868／Left19302を追加した。単なる許可リスト拡張ではなく、同じfresh1990起点の上転回・左転回・停止・再開をnativeと実factoryで比較。各30pre／29postのXYZ／角度／node／speed、timer、2回のAT entry/returnが一致し、上ではnode25、左ではnode24が選ばれた。map20006を維持し、遷移は発生していない。
+
+下直進・右転回の既存projectionはwhole-object同一。独立レビューで入力分離、全40箇所の生RAM／画素／CPU等のペア、source binding、108 keyboard／120 originなどの回帰を確認。root統合buildも通過。斜め・touch・カメラ変更、生成結果以降のbodyは引き続き対象外。
+
+一つ前の08e19525は[CI/deploy](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/36955480109)後に本番画面でも下／右の2経路を確認。reset・再初期化・不正入力からの復帰も通過した。今回の上／左の本番確認は別途行う。[対応範囲](F06_KEYBOARD_ORIGIN.md)。
