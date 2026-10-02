@@ -163,3 +163,9 @@ private再現helperに一度、後時点のpool pointerを入力へコピーす�
 [見逃しの調査](MUMMY_WINDOW_20261002.md)で、待たせた背景枠が処理可能な上位1・2を追い越すケースを再現した。CPU候補1・2を厳密に優先する2ファイルの最小変更を実施。600ms fixtureの敵crop要求は0→2、既存75～85秒の比較に悪化なし。統合build、49 observer、224 lifecycle、独立レビュー通過。
 
 実DINO照合では125.75/126.25秒cropはミイラ男が1位、125.00秒cropははにわナイトが1位だった。選択不備と分類混同を分離し、類似度を確率として扱わない。任意DINO補助経路は今回の変更対象外。公開後の動作確認は別途行う。
+
+## 10:42 JST追記: 上位枠選択の本番確認完了
+
+`8f18bbe84890715e69f6580e898a96da69d0db7f` の[CI/deploy](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/36951813772)と公開moduleのbyte一致を確認。実CPU/WASMの自動観測で125秒周辺のミイラ男cropを1番から識別へ渡し、複数cropでミイラ男1位となった。一時停止8秒保持・resume・EOFも通過。使用clipは121～129秒の再圧縮版で、固定PNGfixtureやユーザーGPU環境とは区別する。
+
+別cropでははにわナイトが僅差で1位になるため、種認識の完全解決とはしない。[詳細](MUMMY_WINDOW_20261002.md)に時刻・類似度・検証範囲を記録した。
