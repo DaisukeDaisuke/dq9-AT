@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>未採用V5候補 · 敵の画像照合 · DQ9 実験室</title>
+  <link rel="stylesheet" href="../../monster-recognize.css">
+  <script type="module" src="./monster-recognize-page.mjs"></script>
+</head>
+<body>
+  <header class="page-header">
+    <div><p class="eyebrow">DQ9 · ローカル画像照合</p><h1>敵の見た目から、候補を探す <span class="badge">実験版</span></h1></div>
+    <a href="../../index.html">ツール一覧へ</a>
+  </header>
+  <p role="status">未採用V5候補の検証用ページ。敵の見逃し・誤認が残ります。AT消費の証明には使えません。</p>
+  <main>
+    <div class="notice"><strong>選んだモデルの範囲だけで比較します。</strong> 距離・類似度スコアは確率ではありません。1位でも確定ではなく、候補外・判別不能の可能性があります。姿勢・背景・隠れ方によって順位が変わります。</div>
+    <div class="layout">
+      <section class="source-panel" aria-labelledby="source-heading">
+        <h2 id="source-heading"><span class="step">1</span> ローカルファイルを開く</h2>
+        <div class="file-grid">
+          <label class="file-field">NDSファイル <span class="muted">最大512 MiB</span><input id="rom-file" type="file" accept=".nds"><span id="rom-status" class="file-status">未選択</span></label>
+          <label class="file-field">動画 または 画像<input id="source-file" type="file" accept="video/*,image/png,image/jpeg,image/webp,image/bmp,image/gif,image/avif"><span id="source-status" class="file-status">未選択 · 画像は4096 × 4096 pxまで</span></label>
+        </div>
+        <p class="muted">ファイルはこのブラウザー内で処理します。読み込んだ画像・ROMから生成するデータは保存・アップロードしません。</p>
+        <div id="video-area" hidden>
+          <video id="source-video" controls playsinline preload="metadata" aria-label="入力動画"></video>
+          <div class="video-toolbar"><button id="play-pause" type="button" disabled>再生</button><label class="seek-label" for="video-seek">再生位置 <output id="video-time">0:00 / 0:00</output></label><input id="video-seek" type="range" min="0" max="0" step="0.01" value="0" disabled aria-label="動画の再生位置"></div>
+        </div>
+        <div class="section-title"><h2><span class="step">2</span> 静止画で敵の範囲を選ぶ</h2><button id="freeze" class="accent" type="button" disabled>フリーズして範囲を選ぶ</button></div>
+        <p id="capture-help" class="muted">動画の見やすい位置でフリーズするか、画像を開いてください。</p>
+        <div id="frozen-wrap" class="frozen-wrap empty"><canvas id="frozen-view" width="640" height="360" aria-label="固定した入力画像。敵の範囲は下の数値欄でも指定できます"></canvas><p id="frozen-placeholder">ここに固定した画像が表示されます</p></div>
+        <div class="roi-toolbar"><button id="redraw-roi" type="button" disabled>範囲を描き直す</button><p id="roi-hint" class="muted">画像上でドラッグして敵全体を囲みます。枠内をドラッグすると移動、右下の点でサイズ変更できます。</p></div>
+        <fieldset id="roi-fields" disabled>
+          <legend>敵の範囲（元画像のピクセル座標・最大1024 × 1024 px）</legend>
+          <div class="roi-inputs"><label>X<input id="roi-x" type="number" min="0" step="1" value="0"></label><label>Y<input id="roi-y" type="number" min="0" step="1" value="0"></label><label>幅<input id="roi-w" type="number" min="1" max="1024" step="1" value="128"></label><label>高さ<input id="roi-h" type="number" min="1" max="1024" step="1" value="128"></label><button id="apply-roi" type="button">範囲を適用</button></div>
+        </fieldset>
+        <section class="scene-settings" aria-labelledby="scene-heading">
+          <h3 id="scene-heading">場面とゲーム画面の範囲（明示指定）</h3>
+          <div class="settings-grid"><label class="control-label">場面<select id="scene-kind"><option value="unspecified">未指定（場面を推定しない）</option><option value="field">フィールドであると指定する</option></select></label><label class="control-label">ゲーム画面の配置<select id="gameplay-layout"><option value="whole">画像全体がゲーム画面</option><option value="obs-right-upper">OBS左右配置の右上DS画面（4:3）</option><option value="stacked-lower">DS縦配置の下画面（下半分）</option><option value="manual">ゲーム範囲を数値で指定</option></select></label></div>
+          <fieldset id="gameplay-fields" hidden disabled><legend>ゲーム範囲（元画像内のXYWH・敵の範囲とは別）</legend><div class="roi-inputs gameplay-inputs"><label>X<input id="gameplay-x" type="number" min="0" step="1" value="0"></label><label>Y<input id="gameplay-y" type="number" min="0" step="1" value="0"></label><label>幅<input id="gameplay-w" type="number" min="1" step="1" value="256"></label><label>高さ<input id="gameplay-h" type="number" min="1" step="1" value="192"></label></div></fieldset>
+          <p id="gameplay-bounds" class="muted">画像を固定するとゲーム範囲を表示します。</p>
+          <label class="check-label"><input id="exclude-center" type="checkbox">フィールド中央を未観測領域として除外する</label>
+          <p id="mask-status" class="muted">中央除外は、フィールドを明示指定しチェックした場合だけ有効です。</p>
+          <p class="muted">配置は映像サイズから自動推定しません。色付き枠を確認してください。中央除外に重なる敵範囲は未観測として扱い、敵がいないという判定には使いません。</p>
+        </section>
+        <section class="proposal-controls" aria-labelledby="proposal-heading">
+          <h3 id="proposal-heading">敵の領域候補（ふういんのほこら・実験）</h3>
+          <label class="check-label"><input id="enable-roi-proposals" type="checkbox">自動の敵領域候補を使う</label>
+          <label class="control-label">位置候補の方式<select id="position-method"><option value="rom-local-v1">ROM前景patch＋既存CLS判定（未採用V5）</option><option value="shrine-blue-v1">shrine-blue-v1（従来の色領域）</option></select></label>
+          <p class="muted">ROM前景対応は初期4モデルの身体の特徴を画面内で探し、複数の身体部分の対応を確認して最大8枠を出します。中央の敵も調べるため、中央除外は使いません。種類の確定とは別の位置候補です。青い床での身体範囲の抽出を併用しており、別背景・小さい体・画面端では見逃しが残ります。</p>
+          <p class="muted">固定画像・動画とも、大きすぎる色領域を暖色の差で1回だけ分け、既存の候補を保った空き枠に追加します。青い床と暖色の体を仮定した実験です。灰色のメタル系や他のマップへの効果は未確認で、背景候補と分類コストも増えます。</p>
+          <div class="proposal-actions"><button id="generate-roi-proposals" type="button" disabled>この固定画像の領域候補を探す</button><button id="supplement-roi-proposals" type="button" disabled>DINOで候補を補う（任意）</button><button id="clear-roi-proposals" type="button" disabled>候補の枠を消す</button></div>
+          <p id="proposal-status" class="muted" role="status" aria-live="polite">任意の実験です。手動の範囲指定もそのまま使えます。</p>
+          <p id="dense-proposal-note" class="muted" role="status" aria-live="polite">補助は任意です。CPU候補を先に作り、DINOv2・フィールドモデル・クイック・初期の4モデルで使えます。初回は64姿勢の準備に時間がかかります。背景候補と、その後の分類コストも増えます。</p>
+          <div id="roi-proposal-list" class="roi-proposal-list" role="group" aria-label="未確認の領域候補"></div>
+          <p class="muted">候補を1つ選び、右の「この切り抜きを照合」で既存の分類器に渡します。WebGPUの選択と姿勢キャッシュはそのまま使います。この固定画像の操作では、自動の連続照合は行いません。</p>
+        </section>
+        <section class="proposal-controls" aria-labelledby="video-observation-heading">
+          <h3 id="video-observation-heading">動画の自動観測（観測・デバッグ用の実験）</h3>
+          <p class="muted">ROM前景対応は同時1件の位置検出を行います。処理中は次の入力を最新の1枚で置き換えます。先頭2枠（元の番号1・2）と、その枠を検出した元フレームを一緒に表示し、内部では最大8候補を保持します。種類の連続照合は従来方式で使用できます。「実際に照合した切り抜き」の順位は、その過去の時刻の記録です。表示の撮影時刻と遅れを確認してください。</p>
+          <p class="muted">暖色分割の追加前の短い開発用動画窓では、照合した30枠の事後目視は明瞭な敵体を含む5枠・背景/UI 23枠・曖昧2枠でした。同じ録画の反復を含み、精度保証ではありません。信頼できる敵の自動受理やAT連携の完成版ではありません。</p>
+          <label class="check-label"><input id="video-observation-dense" type="checkbox">DINO補助も使う（3秒以上空け、照合の間に最大1回。背景候補・処理時間も増えます）</label>
+          <p id="work7-video-preset-note" class="muted">Work7ボタンでROM前景対応・フィールド・右上4:3・中央除外なし・DINOv2・_f・クイック・初期4モデルをまとめて設定します。種類を決める前に位置を検出します。</p>
+          <p><button id="apply-work7-video-preset" type="button" aria-describedby="work7-video-preset-note">Work7の自動敵枠・OBS右上を設定</button></p>
+          <p id="shrine-video-preset-note" class="muted">従来方式はふういんのほこらを、OBS左右配置の右上DS画面で録画した動画用です。従来ボタンは色領域・中央除外を使います。AIの実行方式は変えません。DINO補助は任意です。</p>
+          <p><button id="apply-shrine-video-preset" type="button" aria-describedby="shrine-video-preset-note">従来のふういんのほこら・OBS右上の設定を適用</button></p>
+          <div class="proposal-actions"><button id="start-video-observation" type="button" aria-describedby="video-observation-requirements" disabled>観測を開始して再生</button><button id="pause-video-observation" type="button" disabled>枠と時刻を保持して一時停止</button><button id="stop-video-observation" type="button" disabled>自動観測を停止</button></div>
+          <p class="muted">「枠と時刻を保持して一時停止」は、最後に観測した画像・先頭2枠・時刻をセットで1枚固定し、動画と照合を止めます。動画の一時停止操作でも保持します。再開・シーク・入力や設定の変更で固定を解除します。</p>
+          <p id="video-observation-requirements" class="muted"></p>
+          <p id="video-observation-status" role="status" aria-live="polite">停止中。開始を押すまで自動の観測・照合は行いません。</p>
+          <canvas id="video-observation-view" hidden aria-label="最新に観測した位置候補。すべて未確認"></canvas>
+          <p id="video-position-age" class="muted">現在の位置候補は未観測です。</p>
+          <button id="download-position-log" type="button">位置検証ログを保存</button><p class="muted">時刻・枠・処理時間だけを保存します。画像・ROM・特徴ベクトルは含みません。</p>
+          <ol id="video-observations" class="video-observations" aria-label="時刻付きの過去の切り抜き順位、最新4件"></ol>
+          <p class="muted">同じ画面上の候補の再照合は5秒以上空けます。これらは負荷の制限で、検出の採否基準ではありません。シーク・入力や設定の変更・タブの非表示で停止します。自動の種類確定やAT候補の削除には使いません。</p>
+        </section>
+        <details id="capture-details"><summary>固定した画像の情報</summary><dl id="capture-metadata"><dt>状態</dt><dd>未取得</dd></dl></details>
+      </section>
+      <aside class="configuration" aria-labelledby="settings-heading">
+        <h2 id="settings-heading"><span class="step">3</span> 比較する候補を選ぶ</h2>
+        <div class="crop-section"><div><h3>照合に使う切り抜き</h3><p id="crop-size" class="muted">範囲を選択してください</p></div><div class="crop-wrap"><canvas id="crop-preview" width="128" height="128" aria-label="敵の範囲の切り抜きプレビュー" hidden></canvas><span id="crop-placeholder" class="muted">未選択</span></div></div>
+        <div class="section-title"><h3 id="models-label">モデル候補（最大4種類）</h3><span id="model-count" class="badge">0 / 4</span></div>
+        <label for="model-filter" class="sr-only">候補を名前・モデルIDで絞り込む</label><input id="model-filter" type="search" placeholder="名前・モデルIDで絞り込む" disabled>
+        <div id="model-list" class="model-list" role="group" aria-labelledby="models-label"><p class="muted">NDSを読み込むと候補が表示されます。</p></div>
+        <p id="selection-summary" class="muted">初期候補: z019b / z021a / z064a / z000c</p>
+        <label class="control-label">画像の比較方法<select id="feature-method"><option value="histogram">色ヒストグラム（従来の実験）</option><option value="dinov2">DINOv2画像特徴（AI・追加実験）</option></select></label>
+        <p id="feature-note" class="muted">色の分布を比較します。追加のAIモデルはダウンロードしません。</p>
+        <label id="inference-backend-control" class="control-label" hidden>AIの実行方式<select id="inference-backend"><option value="wasm">CPU / WASM・int8（従来）</option><option value="webgpu">WebGPU・FP16（追加実験）</option></select></label>
+        <p id="backend-note" class="muted"></p>
+        <button id="clear-feature-cache" type="button">保存した姿勢特徴を消去</button>
+        <p id="feature-cache-note" class="muted">要求したモデルの姿勢特徴ベクトルだけを端末のバージョン付きCacheStorageに保存します（最大256バンク・32 MiB）。ROM・動画・生成画像は保存しません。全モンスターの一括生成は行いません。</p>
+        <div id="dino-constraints" class="notice" hidden>DINOv2は1〜4モデル・単一のモデル種類・クイックのみ（比較画像は最大64枚）。初回は選択した方式の公開AIモデルと実行コードを、固定版のHugging Face・jsDelivrから準備しブラウザーにキャッシュします。CPU/WASMは約34.75 MiB、WebGPU/FP16は約66.80 MiBです。入力画像・ROM・生成画像は端末内だけで処理します。GPU未対応・失敗時はCPU/WASMを明示的に選択できます。精度・実行方式を自動で切り替えません。GPUの実機速度は未確認で、初回生成の待ち時間がなくなる保証はありません。</div>
+        <label class="control-label">モデルの種類<select id="variant"><option value="_f">_f（フィールド用という役割仮説）</option><option value="regular">通常モデル（接尾辞なし）</option><option value="both">両方を比較</option></select></label>
+        <p class="muted">_f の役割は未確定です。映像と異なる形・動きが含まれる場合があります。</p>
+        <div class="settings-grid"><label class="control-label">姿勢の探索<select id="preset"><option value="quick">クイック（少ない姿勢）</option><option value="standard">標準（より多くの姿勢）</option></select></label><label class="control-label">表示する順位<select id="top-k"><option value="4">上位4件</option><option value="3">上位3件</option><option value="1">上位1件</option></select></label></div>
+        <p class="muted">比較には時間がかかる場合があります。標準探索は色ヒストグラムで利用できます。</p>
+        <p id="configuration-error" class="error" role="status" hidden></p>
+        <p id="recognition-requirements" class="muted">先にNDSファイルを選択してください。</p>
+        <div class="actions"><button id="start" type="button" aria-describedby="recognition-requirements" class="primary" disabled>この切り抜きを照合</button><button id="cancel" type="button" disabled>中止</button><button id="restart" type="button" disabled>最初から再照合</button></div>
+        <progress id="progress" max="1" value="0" aria-label="照合の進捗"></progress>
+        <p id="status" role="status" aria-live="polite">NDSと動画または画像を選択してください。</p>
+        <p id="error" class="error" role="alert" hidden></p>
+        <details id="error-details" hidden><summary>元のエラー詳細（工程・名前・スタック）</summary><pre id="error-stack" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre></details>
+      </aside>
+    </div>
+    <section id="results" aria-labelledby="results-heading">
+      <div class="section-title"><h2 id="results-heading">照合結果</h2><span id="result-timing" class="muted"></span></div>
+      <div id="unknown-status" class="notice">候補外・判別不能の可能性を常に残します。照合後も、順位だけで種類を確定しないでください。</div>
+      <p id="result-empty" class="muted">固定した画像の敵を囲み、候補を選んで照合してください。</p>
+      <ol id="rankings" class="rankings"></ol>
+      <section id="coverage-section" hidden><h3>比較できた範囲</h3><p id="coverage"></p><ul id="unsupported"></ul><h3>この結果の制約</h3><ul id="limitations"></ul><p id="result-capture" class="muted"></p></section>
+    </section>
+    <noscript><p class="notice">この実験ページを使うにはJavaScriptが必要です。</p></noscript>
+  </main>
+</body>
+</html>

@@ -1,0 +1,164 @@
+{
+  "adopted": false,
+  "sourceScope": "isolated opt-in page; shared production modules unchanged",
+  "files": {
+    "monster-recognize-page.mjs": {
+      "bytes": 98663,
+      "sha256": "991695ef994ae806264b26adade0dfc1c9da2c93634c23d20b8a2744f3be21b9"
+    },
+    "monster-recognize.html": {
+      "bytes": 18813,
+      "sha256": "2a45e788f25f878c3134208d6de3137e6d4c963447c44b7faeeade7631e64e7c"
+    },
+    "monster-position-proposals.mjs": {
+      "bytes": 24514,
+      "sha256": "0b580ebeafd851a746c3d9ccd955ad0ac328472609bd76c34d4c0b0b8b77e23b"
+    },
+    "monster-recognition-worker.mjs": {
+      "bytes": 5408,
+      "sha256": "69dfeee5515da6724d2f41736f30949d14a4a13aa63746211464e4544e0691e9"
+    },
+    "monster-recognition-engine.mjs": {
+      "bytes": 20149,
+      "sha256": "188e4eea3768196d76b6ca84441eafa0c1b282fef338fdfaabdd01d527a1bfbf"
+    },
+    "monster-video-observer.mjs": {
+      "bytes": 14789,
+      "sha256": "a7940b158985ba575b7498af5c6897f0c94db04dad2566a5172773ecad7acc27"
+    },
+    "monster-local-proposals.mjs": {
+      "bytes": 15996,
+      "sha256": "68fbaf9f3265f5a3275a77506bf400e39db1f88888291feaa3d4ae1f1500dd2c"
+    }
+  },
+  "resolvedDependencies": [
+    {
+      "file": "monster-recognize-page.mjs",
+      "dependency": "./monster-video-observer.mjs"
+    },
+    {
+      "file": "monster-recognize-page.mjs",
+      "dependency": "../../monster-field-mask.mjs"
+    },
+    {
+      "file": "monster-recognize-page.mjs",
+      "dependency": "./monster-position-proposals.mjs"
+    },
+    {
+      "file": "monster-recognize-page.mjs",
+      "dependency": "../../monster-dinov2.mjs"
+    },
+    {
+      "file": "monster-recognize-page.mjs",
+      "dependency": "../../monster-feature-cache.mjs"
+    },
+    {
+      "file": "monster-recognize-page.mjs",
+      "dependency": "../../monster-inference-assets.mjs"
+    },
+    {
+      "file": "monster-recognize-page.mjs",
+      "dependency": "./monster-recognition-worker.mjs"
+    },
+    {
+      "file": "monster-position-proposals.mjs",
+      "dependency": "../../monster-field-mask.mjs"
+    },
+    {
+      "file": "monster-position-proposals.mjs",
+      "dependency": "../../monster-roi-descriptor.mjs"
+    },
+    {
+      "file": "monster-recognition-worker.mjs",
+      "dependency": "../../vendor/nitro-fs.mjs"
+    },
+    {
+      "file": "monster-recognition-worker.mjs",
+      "dependency": "../../monster-assets.mjs"
+    },
+    {
+      "file": "monster-recognition-worker.mjs",
+      "dependency": "../../monster-geometry.mjs"
+    },
+    {
+      "file": "monster-recognition-worker.mjs",
+      "dependency": "../../monster-dinov2.mjs"
+    },
+    {
+      "file": "monster-recognition-worker.mjs",
+      "dependency": "../../monster-feature-cache.mjs"
+    },
+    {
+      "file": "monster-recognition-worker.mjs",
+      "dependency": "./monster-recognition-engine.mjs"
+    },
+    {
+      "file": "monster-recognition-worker.mjs",
+      "dependency": "./monster-local-proposals.mjs"
+    },
+    {
+      "file": "monster-recognition-worker.mjs",
+      "dependency": "../../data/monsters.csv"
+    },
+    {
+      "file": "monster-recognition-worker.mjs",
+      "dependency": "../../wasm/monster_geometry.wasm"
+    },
+    {
+      "file": "monster-recognition-engine.mjs",
+      "dependency": "../../monster-dense-proposals.mjs"
+    },
+    {
+      "file": "monster-recognition-engine.mjs",
+      "dependency": "../../monster-assets.mjs"
+    },
+    {
+      "file": "monster-recognition-engine.mjs",
+      "dependency": "../../monster-animation.mjs"
+    },
+    {
+      "file": "monster-recognition-engine.mjs",
+      "dependency": "../../monster-template-bank.mjs"
+    },
+    {
+      "file": "monster-recognition-engine.mjs",
+      "dependency": "../../monster-cpu-template.mjs"
+    },
+    {
+      "file": "monster-recognition-engine.mjs",
+      "dependency": "../../monster-field-mask.mjs"
+    },
+    {
+      "file": "monster-recognition-engine.mjs",
+      "dependency": "../../monster-dinov2.mjs"
+    },
+    {
+      "file": "monster-recognition-engine.mjs",
+      "dependency": "../../monster-roi-descriptor.mjs"
+    },
+    {
+      "file": "monster-recognition-engine.mjs",
+      "dependency": "./monster-local-proposals.mjs"
+    },
+    {
+      "file": "monster-video-observer.mjs",
+      "dependency": "./monster-position-proposals.mjs"
+    },
+    {
+      "file": "monster-video-observer.mjs",
+      "dependency": "../../monster-roi-descriptor.mjs"
+    },
+    {
+      "file": "monster-local-proposals.mjs",
+      "dependency": "../../monster-roi-descriptor.mjs"
+    },
+    {
+      "file": "monster-local-proposals.mjs",
+      "dependency": "../../monster-field-mask.mjs"
+    },
+    {
+      "file": "monster-local-proposals.mjs",
+      "dependency": "./monster-position-proposals.mjs"
+    }
+  ]
+}
