@@ -483,3 +483,11 @@ AT追跡画面の「記録した観測から候補を絞る」から、同じタ
 変更はadapter、既存form／page／AT panel／HTMLと既存page回帰の6ファイルに限定。最新日報を保持した統合stageで既存aggregate49 Node commandsがexit0。low31 page83 assertions、known-origin page171 assertionsを含み、引渡し、file読込、選択、重複拒否、条件不足、遅延読込、clear／retry、取消・再開、元session不変を確認した。探索engine／Worker、AT core、WASM、build定義、Work7／8の内部実装は変更していない。
 
 合成の保存形式sessionに明示した合成index1〜100000の仮説では、観測2件の20,964候補が3件で14,148候補になった。一方、未知gapのままなら未解決・走査0・候補数不明を維持する。この数値はnative sessionや実動画での同定成功ではない。公開後の実ブラウザー操作は未確認で、配信後に別途行う。ゲーム入力、native生成データ、画像・動画、生成binaryはcommitしない。
+
+## 21:01 JST追記: 観測引渡しの公開ブラウザー確認
+
+`9c09606fdb058bac793b23e478f449ef754ea4ea` の[CI／deploy](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/37002671563)は11:45:36 UTCにsuccess。11:48–11:55 UTC、新規cloudブラウザーの本番UIで、架空の3観測を記録→新ボタンでidentifierへ移動→観測選択→探索入力の引渡しを確認した。保存した合成session JSONも読み込み、seed・元ID・table候補・map／source・自然生成確認の記録を保持した。index上下限は空欄、gapは不明のまま引き継ぎ、観測後のprefix100を過去のindex制約に転用しなかった。
+
+明示した合成index1〜100000／gap1〜3では、2観測20,964候補、3観測14,148候補を実ブラウザーで計算した。未知gapなら走査0・候補数不明・未解決を維持。不正JSONのエラー表示、clear、再読込後の同じ14,148候補、Backで元panelへ戻った際の3件の可視JSONログと下限表示の不変も確認した。ROM・動画・native観測を用いた試験ではなく、現在ATの復元や移動ナビ完成を示す結果ではない。
+
+「追跡を保存」のクリック後は確認ツールのdownload待ちが10秒timeoutしたため、保存完了と全snapshotファイルの前後byte比較は未検証のまま。今回の確認によるsource変更はない。動画の復旧先は別途、検証済みLibrary IDとhashを持つprivate復旧索引・追加台帳へ保存し、動画本体や通信記録をGitへ追加していない。
