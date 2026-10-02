@@ -139,7 +139,7 @@ export async function verifyPositionAppearance(image,result,bank,backend,{signal
     if(evidence.score>=.45&&evidence.margin>=.05)accepted.push({...p,appearanceVerification:evidence});
     else rejected.push({...p,appearanceVerification:evidence,reason:'appearance-inconclusive'});
   }
-  return {...result,positionCandidates:candidates,proposals:accepted,classifierRejected:rejected,coverage:{...result.coverage,appearanceChecked:candidates.length,appearanceRetained:accepted.length,appearanceRejected:rejected.length,absenceCertified:false}};
+  return {...result,positionCandidates:candidates,proposals:accepted,classifierRejected:rejected,coverage:{...result.coverage,appearanceChecked:candidates.length,appearanceRetained:accepted.length,retainedCandidates:accepted.length,appearanceRejected:rejected.length,absenceCertified:false}};
 }
 export async function proposeLocalEnemyROIs(image,captureStamp,{backend,bank,signal,onProgress}={}) {
   const start=performance.now(),scene=normalizeSceneContext(captureStamp.sceneContext,captureStamp.sourceFrame);need(scene.kind==='field','フィールドを指定してください');need(Math.abs(scene.gameplayROI.w/scene.gameplayROI.h-4/3)<.04,'4:3ゲーム画面を指定してください');

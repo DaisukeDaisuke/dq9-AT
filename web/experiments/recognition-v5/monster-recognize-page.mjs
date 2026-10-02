@@ -17,6 +17,7 @@ const sameRect = (left, right) => left === right || !!left && !!right && ['x', '
 // CPU proposal counts describe this capture, not enemies, descriptors or DINO additions.
 export function proposalCoverageText(result) {
   const c = result?.coverage;
+  if(c && [c.appearanceChecked,c.appearanceRetained,c.appearanceRejected,c.budgetDropped].every(n=>Number.isSafeInteger(n)&&n>=0) && c.appearanceChecked===c.appearanceRetained+c.appearanceRejected) return `ROM前景候補 ${c.appearanceChecked}件を画像全体で照合 → 保持 ${c.appearanceRetained}件・不確か ${c.appearanceRejected}件（枠上限で${c.budgetDropped}候補未確認）。`;
   if (!c || ![c.candidateComponents, c.retainedCandidates, c.budgetDropped].every(n => Number.isSafeInteger(n) && n >= 0) || c.retainedCandidates + c.budgetDropped !== c.candidateComponents) return 'CPU候補の段階別件数は未計測です。';
   const reasons = new Set((c.exclusions || []).map(r => r.reason));
   const masks = [reasons.has('central-field-exclusion') ? '中央' : '', reasons.has('command-hud-exclusion') ? 'HUD' : ''].filter(Boolean);
@@ -407,7 +408,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     }
     ctx.restore();
     canvas.setAttribute('data-capture-time',String(result.captureStamp.videoTime));canvas.setAttribute('data-capture-serial',String(result.captureStamp.frameSerial));canvas.setAttribute('data-displayed-boxes',JSON.stringify(result.proposals.slice(0,VIDEO_PREVIEW_BOX_LIMIT).map(p=>p.roi)));
-    state.positionLog.push({phase:'position',captureStamp:cloneCaptureStamp(result.captureStamp),revision:result.revision,proposals:result.proposals.map(({component,...p})=>p),rawCandidates:result.rawCandidates?.map(({component,...p})=>p),coverage:result.coverage,timings:result.timings,uiMs:performance.now()-renderStarted,frameAgeMs:observer.now()-(observer.latest?.wallAt??observer.held?.wallAt??observer.now()),displayed:result.proposals.slice(0,VIDEO_PREVIEW_BOX_LIMIT).map(p=>p.roi)});if(state.positionLog.length>200)state.positionLog.shift();
+    state.positionLog.push({phase:'position',captureStamp:cloneCaptureStamp(result.captureStamp),revision:result.revision,proposals:result.proposals.map(({component,...p})=>p),rawCandidates:result.rawCandidates?.map(({component,...p})=>p),classifierRejected:result.classifierRejected?.map(({component,...p})=>p),coverage:result.coverage,timings:result.timings,uiMs:performance.now()-renderStarted,frameAgeMs:observer.now()-(observer.latest?.wallAt??observer.held?.wallAt??observer.now()),displayed:result.proposals.slice(0,VIDEO_PREVIEW_BOX_LIMIT).map(p=>p.roi)});if(state.positionLog.length>200)state.positionLog.shift();
     updateObservationAges();
   }
   function addVideoObservation(record) {
@@ -461,7 +462,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     return '';
   }
   function denseIssue() {
-    if(localPositions())return 'ROM前景対応では、前景patchによる位置検出を直接行います。従来のCLS補助は使いません。';
+    if(localPositions())return 'ROM前景patchで位置を探し、既存CLS判定で枠全体を再確認します。種類・不在・AT消費は確定しません。';
     const issue = proposalIssue(); if (issue) return issue;
     if (!proposalsMatchCapture()) return '先にCPUの領域候補を作ってください。';
     if (state.proposalResult.proposals.length >= 8) return 'すでに8候補あるため、DINO補助は実行しません。';
@@ -579,13 +580,13 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
       const { trackingFrame, ...summary } = result;
       state.proposalResult = { ...summary, proposals: valid, captureStamp };
       const renderStarted=performance.now();renderProposals(); paint(); controls();
-      state.positionLog.push({phase:'frozen-position',captureStamp,revision:result.revision,proposals:valid.map(({component,...p})=>p),rawCandidates:result.rawCandidates?.map(({component,...p})=>p),rejected:result.rejected,coverage:result.coverage,timings:result.timings,uiMs:performance.now()-renderStarted,requestToUIMs:performance.now()-requestStarted,displayed:valid.map(p=>p.roi)});
+      state.positionLog.push({phase:'frozen-position',captureStamp,revision:result.revision,proposals:valid.map(({component,...p})=>p),rawCandidates:result.rawCandidates?.map(({component,...p})=>p),classifierRejected:result.classifierRejected?.map(({component,...p})=>p),rejected:result.rejected,coverage:result.coverage,timings:result.timings,uiMs:performance.now()-renderStarted,requestToUIMs:performance.now()-requestStarted,displayed:valid.map(p=>p.roi)});
       const milliseconds = Number.isFinite(result.elapsedMs) ? `${result.elapsedMs.toFixed(1)} ms` : '時間不明';
       const unprocessed = valid.filter(p => !p.classificationEligible).length;
       const omittedNote = `${unprocessed ? ` ${unprocessed}件はサイズ上限のため未処理です。手動で範囲を調整してください。` : ''}${invalidBounds ? ` 範囲不正${invalidBounds}件は表示しません。` : ''}`;
       const methodLabel=localPositions()?'ROM前景の位置検出':'CPU領域探索';
-      $('proposal-status').textContent = valid.length ? `${valid.length}候補 · ${methodLabel} ${milliseconds}（分類時間は別）。${proposalCoverageText(state.proposalResult)} 候補を1つ選んでから照合してください。枠は未確認です。${omittedNote}` : `領域候補は0件でした（${methodLabel} ${milliseconds}）。敵がいない証拠ではありません。手動で範囲を指定できます。 ${proposalCoverageText(state.proposalResult)}`;
-      status('固定した画像だけの領域候補を表示しました。分類はまだ行っていません。');
+      $('proposal-status').textContent = valid.length ? `${valid.length}候補 · ${methodLabel} ${milliseconds}（${localPositions()?'画像全体の照合を含む':'分類時間は別'}）。${proposalCoverageText(state.proposalResult)} 候補を1つ選んでから照合してください。枠は未確認です。${omittedNote}` : `領域候補は0件でした（${methodLabel} ${milliseconds}）。敵がいない証拠ではありません。手動で範囲を指定できます。 ${proposalCoverageText(state.proposalResult)}`;
+      status(localPositions()?'固定画像の敵枠を画像全体でも確認しました。種類は確定していません。':'固定した画像だけの領域候補を表示しました。分類はまだ行っていません。');
     } catch (failure) {
       if(revision!==gate.revision||failure.name==='AbortError')return;
       clearProposals('領域候補を作れませんでした。手動の範囲指定は使えます。'); error(failure); paint(); controls();

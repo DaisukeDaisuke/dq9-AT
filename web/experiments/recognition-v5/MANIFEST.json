@@ -3,8 +3,8 @@
   "sourceScope": "isolated opt-in page; shared production modules unchanged",
   "files": {
     "monster-recognize-page.mjs": {
-      "bytes": 98663,
-      "sha256": "991695ef994ae806264b26adade0dfc1c9da2c93634c23d20b8a2744f3be21b9"
+      "bytes": 99405,
+      "sha256": "f57025e36f02206a3dd986cb77967cdfc256363173668c99a50c33b7350ae07e"
     },
     "monster-recognize.html": {
       "bytes": 18813,
@@ -27,8 +27,8 @@
       "sha256": "a7940b158985ba575b7498af5c6897f0c94db04dad2566a5172773ecad7acc27"
     },
     "monster-local-proposals.mjs": {
-      "bytes": 15996,
-      "sha256": "68fbaf9f3265f5a3275a77506bf400e39db1f88888291feaa3d4ae1f1500dd2c"
+      "bytes": 16031,
+      "sha256": "71fa3ebd166d07f2ca361d84768e11988a5e3032f6401959f501847827ef0380"
     }
   },
   "resolvedDependencies": [
