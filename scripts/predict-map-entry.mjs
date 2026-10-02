@@ -1,0 +1,27 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import {createHash} from 'node:crypto';
+import {gzipSync,gunzipSync} from 'node:zlib';
+import assert from 'node:assert/strict';
+import {ATKernel,ATSession} from '../web/at-core.mjs';
+import {readMapEntrySource,mapEntryPrimitives} from '../web/map-entry-at.mjs';
+const options={},args=process.argv.slice(2);
+for(let i=0;i<args.length;i+=2){assert(args[i]?.startsWith('--')&&args[i+1]);options[args[i].slice(2)]=path.resolve(args[i+1]);}
+for(const k of ['rom','origin-ram','origin-meta','schedule','out'])assert(options[k],`Missing --${k}`);
+const sha=b=>createHash('sha256').update(b).digest('hex');
+const files=await Promise.all(['rom','origin-ram','origin-meta','schedule'].map(k=>fs.readFile(options[k]))),rom=files[0],ram=options['origin-ram'].endsWith('.gz')?gunzipSync(files[1]):files[1],meta=JSON.parse(files[2]),schedule=JSON.parse(files[3]);
+assert.equal(sha(ram),meta.ramSha256);assert.equal(meta.frame,1910);assert.equal(schedule.originFrame,meta.frame);assert.equal(schedule.fromMapId,108);assert.equal(schedule.toMapId,100);
+const epoch=sha(Buffer.from([sha(rom),meta.saveSha256,sha(ram),meta.frame,sha(files[3])].join(':'))),source=await readMapEntrySource(rom,{mapId:100}),origin=mapEntryPrimitives(ram,source,{frame:meta.frame,ramSha256:sha(ram),epoch});
+assert.equal(origin.mapId,108);assert.equal(origin.seed,1536043482);
+const {instance}=await WebAssembly.instantiate(await fs.readFile(new URL('../web/wasm/map_render.wasm',import.meta.url)),{}),kernel=new ATKernel(instance),session=new ATSession(origin.seed,kernel,{origin:'known-local-checkpoint',epoch});
+session.setMap({mapId:108});const packet={id:epoch+':entry:1',source,origin,schedule};session.setMap({mapId:100},packet);
+const projection=session.entryProjections[0].projection,saved=session.snapshot(),restored=ATSession.restore(JSON.parse(JSON.stringify(saved)),kernel,{}).snapshot();assert.deepEqual(restored,saved);
+const projectionBytes=Buffer.from(JSON.stringify(projection,null,2)+'\n'),packetBytes=Buffer.from(JSON.stringify(packet,null,2)+'\n');
+await fs.mkdir(options.out,{recursive:false});
+for(const [name,value] of Object.entries({'projection.json':projection,'packet.json':packet,'session.json':saved}))await fs.writeFile(path.join(options.out,name+'.gz'),gzipSync(Buffer.from(JSON.stringify(value,null,2)+'\n')));
+const codePaths=['../web/map-entry-at.mjs','../web/map-entry-source-binding.mjs','../web/at-core.mjs','./predict-map-entry.mjs'],codeHashes=[];
+for(const p of codePaths)codeHashes.push({file:p,sha256:sha(await fs.readFile(new URL(p,import.meta.url)))});
+const freeze={schema:'work8-entry-freeze-v1',createdAt:new Date().toISOString(),epoch,projectionSha256:sha(projectionBytes),packetSha256:sha(packetBytes),codeHashes,inputHashes:['rom','origin-ram','origin-meta','schedule'].map((k,i)=>({role:k,file:path.basename(options[k]),fileSha256:sha(files[i])})),originRamSha256:sha(ram),node:process.version,permissionModelEnabled:Boolean(process.permission),futureTraceRead:false,scope:'Pre-entry ROM/resource/state conditional projection. No post-entry seed/RAM/trace is an input. Loader/heap conditions remain unresolved; no boot proof.'};
+await fs.writeFile(path.join(options.out,'freeze.json'),JSON.stringify(freeze,null,2)+'\n');
+console.log(JSON.stringify({resolved:projection.resolved,conditionalConsumed:projection.conditionalConsumed,seedBefore:projection.seedBefore,seedAfter:projection.seedAfter,projectionSha256:freeze.projectionSha256,sessionRestoreMatches:true,lowerBound:saved.lowerBound,conditionalBound:saved.conditionalBound}));
+if(!projection.resolved)process.exitCode=2;

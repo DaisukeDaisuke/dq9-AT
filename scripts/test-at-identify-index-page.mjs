@@ -75,6 +75,8 @@ check(sessionObservationsToForm(saved,['human:D']).rows[0].tables==='30, 65535')
 for(const ids of [['human:A','human:A'],['missing'],[]]){assert.throws(()=>sessionObservationsToForm(saved,ids));assertions++;}
 const duplicate=structuredClone(saved);duplicate.events.push(duplicate.events.find(e=>e.id==='human:A'));assert.throws(()=>readSessionObservations(duplicate));assertions++;
 assert.throws(()=>readSessionObservations({...saved,origin:'paused-state-not-boot'}));assertions++;
+const localCheckpoint=new ATSession('0x12345678',kernel,{origin:'known-local-checkpoint',epoch:'synthetic-local-origin'});assert.throws(()=>readSessionObservations(localCheckpoint.snapshot()),/起動時/);assertions++;
+assert.throws(()=>storeSessionIdentification(localCheckpoint.snapshot(),{setItem:()=>{throw Error('must not write local-origin handoff');}}),/起動時/);assertions++;
 const memory=new Map(),storage={setItem:(k,v)=>memory.set(k,v),getItem:k=>memory.get(k)??null};storeSessionIdentification(saved,storage);check(JSON.parse(storage.getItem(SESSION_IDENTIFICATION_KEY)).initialSeed===saved.initialSeed);
 const sessionUI=mountIdentificationPage({document:doc,fetchImpl,startSearch,startIndexSearch,storage,locationSearch:'?session=handoff'});await sessionUI.ready;
 check(sessionUI.getSessionChoices().length===4);check(!$('session-use').disabled);check($('session-status').textContent.includes('100'));

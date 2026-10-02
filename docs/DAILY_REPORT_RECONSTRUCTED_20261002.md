@@ -508,3 +508,13 @@ reference gap不明は0評価・未解決、有限範囲の空欄はエラー。
 結果JSONのdownload／import経路は今回未試験。別session拒否・計算中cancelはNode回帰のみで、全hidden snapshotのbyte比較も今回のブラウザー検査には含めない。追加の公開source修正はない。
 
 private headless toolには、ユーザー提供Luaの座標配置を参照する小さな読取adapterと既存Node APIの入力例、test、使用説明の4ファイルを追加し、remote全文一致を確認した。元ROM／Stateでの座標読取、Right30フレームの移動、入力解放、読取有無でのARM9レジスタ一致の2 testが通過した。配列所属を敵の可視・生存と断定せず、raw location IDをmapファイル番号へ自動変換しない。A*・衝突回避はこの追加には含まれず、native runtimeと公開ATは変更していない。
+
+## 22:44 JST追記: Work8の条件付きmap入場・NPC継続を統合
+
+道具屋から城下町への限定ケースについて、既知の局所checkpointからsource由来の入場27 drawと通常NPC継続6 drawをつなぐ単位を統合した。保存済みpacket/sessionを既存「追跡を復元」とproduction Workerで再評価する入口であり、自動の入場検出や全map対応ではない。conditional33、起動からの証明下限0を保持し、局所起点表示とboot前提の識別画面への引渡し制限を追加した。
+
+提出版の失敗setMapがmap/eventを先に変えてしまう不具合を修正し、不正・重複・重なり等の拒否時に元台帳を保つ。17 source fileだけを最新公開版へ統合し、同一だったWork5依存3file、候補比較Worker、WASM source/binaryは変更しない。最終aggregateは既存49＋Work8の1 command＝50がexit0、新Work8回帰12件を含む。
+
+保存済み実測証拠の再比較では入場27 pairsの303 checksは差0。NPC6 pairsの30,100 checksは終端controller flagの差1を保持し、厳密比較は予定どおりexit1で全状態一致とはしない。順序付き消費の一致と未知の状態境界を区別し、JSON restore／再送／改竄・重なり拒否、Work5の保存projection4／0／4を確認した。今回の統合検証は保存証拠の再計算で、新native captureではない。
+
+loader・heap・geometry等の条件、controller外部flag setter、kind2等、青宝箱のphysical identity／開封、未知suffix、boot全履歴は未解決。公開後の実ブラウザーrestore表示・ダウンロードはこの時点では未確認。ROM／SAV／State／RAM／動画／抽出資産／private evidenceは公開sourceに含めない。

@@ -1,0 +1,4 @@
+// Extract a private, static-only C01 subset. No current or future RAM/trace.
+import fs from 'node:fs/promises';import assert from 'node:assert/strict';import {gzipSync} from 'node:zlib';import {mineActorRom} from '../web/actor-rom-mining.mjs';
+const [romPath,outPath]=process.argv.slice(2);assert(outPath,'Usage: extract-entry-continuation-resources.mjs ORIGINAL_ROM OUTPUT_JSON_GZ');
+const mined=await mineActorRom(await fs.readFile(romPath));const subset={schema:'work8-C01-static-resources-v1',rom:mined.rom,staticOnly:true,staticPlacements:mined.staticPlacements.filter(p=>p.mapId===100),predictionResources:mined.predictionResources};await fs.writeFile(outPath,gzipSync(Buffer.from(JSON.stringify(subset)+'\n')));console.log(JSON.stringify({mapId:100,staticOnly:true,placements:subset.staticPlacements.length,romSha256:mined.rom.sha256}));

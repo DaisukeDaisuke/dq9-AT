@@ -38,6 +38,7 @@ node scripts/test-at-binary64-regressions.mjs
 
 # Cross-map session predicates retain unknown outcomes without proof increments.
 node scripts/test-at-session.mjs
+node --test scripts/test-map-entry-at.mjs
 
 # Conditional NPC membership stays separate from runtime AT proof.
 node scripts/test-npc-membership.mjs
