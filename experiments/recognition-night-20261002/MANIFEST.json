@@ -1,7 +1,7 @@
 {
-  "score-h5.py": {
-    "bytes": 1690,
-    "sha256": "7173b3687d5df31028f57ef4681a2c5f37b32baa2ad112c56bfb4ac034ffaad0"
+  "H5_METRICS_SUMMARY.json": {
+    "bytes": 6438,
+    "sha256": "f772d67096c038de6dae1e737595442f8c31523a8384503d09c80ac431477aff"
   },
   "README.md": {
     "bytes": 3283,
@@ -11,8 +11,40 @@
     "bytes": 37759,
     "sha256": "145efd5030567656f8341b42b0f15437c81f07ef2cc6325c165e7f1ef1fb37a1"
   },
-  "H5_METRICS_SUMMARY.json": {
-    "bytes": 6438,
-    "sha256": "f772d67096c038de6dae1e737595442f8c31523a8384503d09c80ac431477aff"
+  "score-h5.py": {
+    "bytes": 1690,
+    "sha256": "7173b3687d5df31028f57ef4681a2c5f37b32baa2ad112c56bfb4ac034ffaad0"
+  },
+  "compare-cls-gates.mjs": {
+    "bytes": 2574,
+    "sha256": "053177e5d1728536a297f0621933f1a8cf18731e399d4fdb808651d120edd35e"
+  },
+  "compare-h5-cls.mjs": {
+    "bytes": 2439,
+    "sha256": "25c91002386148a8a701ceff8d34c704c273c468d3a49cab27921fe507ff5e06"
+  },
+  "diagnose-h5-cls.mjs": {
+    "bytes": 1870,
+    "sha256": "0626f425816e2ddb4041d60f718cd8363ae9db4c239ea58ae858de236d08066d"
+  },
+  "diagnose-v3-cls.mjs": {
+    "bytes": 2067,
+    "sha256": "b05bbf44b5270933f42fe40191dcdedec1f09908ec6e3609deab08802ed89f23"
+  },
+  "metrics-fair-cls.mjs": {
+    "bytes": 5856,
+    "sha256": "4a974f55c9c716341990485d87a95cce18acb634cea26d3874753d990f8802dc"
+  },
+  "FAIRCLS_SUMMARY.json": {
+    "bytes": 19448,
+    "sha256": "14c3b3c5d8419050102d80bccaf54c7561cad33db5cf44019a5b60666d101e09"
+  },
+  "V4_DIAGNOSTIC_REJECTED.json": {
+    "bytes": 976,
+    "sha256": "fd3b549ccca20122ebb443ddcfa2e1bc6e18af45fd90bb7db0e52c0cfd2c6462"
+  },
+  "FOLLOWUP_1455.md": {
+    "bytes": 2209,
+    "sha256": "d92f486751051be845fb210122328af7ff53b394e9c238812a27d1e9eb79c342"
   }
 }

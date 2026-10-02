@@ -1,0 +1,10 @@
+// Existing classifier gate diagnostic; all splits have been observed already.
+import fs from 'node:fs/promises';import sharp from 'sharp';import {createHash} from 'node:crypto';import {pythonBackend} from './python-backend.mjs';import {cropRGBA} from '../sources/dq9-AT-main/web/monster-roi-descriptor.mjs';import {cosineSimilarity} from '../sources/dq9-AT-main/web/monster-dinov2.mjs';
+const bank=JSON.parse(await fs.readFile('../private-inputs/work1/vision-comparison/references/BANK.json')),backend=await pythonBackend();
+try{for(const name of ['FRAME_RESULTS','H2_FRAME_RESULTS','H3_FRAME_RESULTS','H4_FRAME_RESULTS','TEMPORAL_FRAME_RESULTS']){const source=JSON.parse(await fs.readFile('results/V3_'+name+'.json')),records=[];
+ for(const rec of source.records){const {data,info}=await sharp(rec.image_path).ensureAlpha().raw().toBuffer({resolveWithObject:true});if(createHash('sha256').update(data).digest('hex')!==rec.rgba_sha256)throw Error('Image identity');const image={width:info.width,height:info.height,rgba:new Uint8ClampedArray(data)},accepted=[],rejected=[];
+ for(const p of rec.revised.proposals){const b=p.roi,vector=await backend.encode(cropRGBA(image,b.x,b.y,b.w,b.h)),rankings=[];for(const modelId of ['z019b','z021a','z064a','z000c'])rankings.push({modelId,score:Math.max(...bank.images.filter(x=>x.modelId===modelId).map(x=>cosineSimilarity(vector,new Float32Array(x.vector))))});rankings.sort((a,b)=>b.score-a.score);const score=rankings[0].score,margin=score-rankings[1].score,q={...p,CLSdiagnostic:{score,margin,rankings}};(score>=.45&&margin>=.05?accepted:rejected).push(q);}
+ records.push({...rec,revised:{...rec.revised,rawCandidates:accepted,proposals:accepted,CLS_rejected:rejected},diagnostic_only:true});
+ }
+ await fs.writeFile('results/V3CLS_'+name+'.json',JSON.stringify({gate:'Existing Work1 B0 D1 score.45 margin.05, no tuning here',known_regression:true,records},null,2));console.log(JSON.stringify({name,frames:records.length,retained:records.reduce((a,r)=>a+r.revised.proposals.length,0)}));
+}}finally{await backend.dispose();}

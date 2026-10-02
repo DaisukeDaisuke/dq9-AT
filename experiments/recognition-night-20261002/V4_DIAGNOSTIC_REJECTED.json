@@ -1,0 +1,26 @@
+{
+  "time": "2026-10-02T14:38:43Z",
+  "status": "diagnostic rejected, not adopted",
+  "finding": "The missed 10x10 automatic component exists. Removing its coarse seed gate did not recover detection: fine mean0.395029<fixed0.4, support9/12, vertical3, horizontal2. This is measured gating evidence, not a reason to tune the threshold against a known case.",
+  "H5_now_known_regression": true,
+  "top2_iou05": {
+    "V2": {
+      "tp": 1,
+      "fp": 1,
+      "gt": 2
+    },
+    "V3": {
+      "tp": 1,
+      "fp": 2,
+      "gt": 2
+    },
+    "V4": {
+      "tp": 1,
+      "fp": 4,
+      "gt": 2
+    }
+  },
+  "V3_extra_false_positive": "h5-03 central player at native123,77,17,34; inspected actual source pixels.",
+  "source_sha256": "cb0d16c60bcb98f9805d40841efa0e70cbe06946e9bece07b69cf6ec76bcac8d",
+  "next": "Do not lower thresholds by this case. Preserve failed variants and revisit body discrimination using existing worker research; proceed with bounded AT gap review."
+}
