@@ -5,6 +5,7 @@ import { proposeEnemyROIs } from './monster-position-proposals.mjs';
 export const LIMITS = Object.freeze({ romBytes: 512 * 1024 * 1024, sourceSide: 4096, roiSide: 1024, models: 4 });
 export const DEFAULT_MODELS = Object.freeze(['z019b', 'z021a', 'z064a', 'z000c']);
 export const CENTER_MASK = Object.freeze({ x: .42, y: .36, w: .16, h: .24 });
+const VIDEO_PREVIEW_BOX_LIMIT = 2;
 const STAMP_KEYS = ['sourceId', 'sourceEpoch', 'timelineSegment', 'frameSerial', 'romEpoch', 'sourceFrame', 'videoTime', 'timestampBasis', 'capturedAt', 'enemyROI', 'featureMethod', 'inferenceBackend', 'sceneContext'];
 const abortError = () => Object.assign(new Error('処理を中止しました。'), { name: 'AbortError' });
 const defaultProbeWebGPU = options => import('./monster-dinov2.mjs').then(m => m.probeDinoWebGPU(options));
@@ -373,7 +374,11 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     if (canvas.width !== image.width) canvas.width = image.width; if (canvas.height !== image.height) canvas.height = image.height;
     const pixels = ctx.createImageData(image.width, image.height); pixels.data.set(image.rgba); ctx.putImageData(pixels, 0, 0); canvas.hidden = false;
     const scale = Math.max(1, image.width / 640); ctx.save(); ctx.strokeStyle = '#ffc878'; ctx.fillStyle = '#ffc878'; ctx.lineWidth = 2 * scale; ctx.font = `${14 * scale}px system-ui`;
-    for (const [i, p] of result.proposals.entries()) { const r = p.roi; ctx.strokeRect(r.x,r.y,r.w,r.h); ctx.fillText(String(i+1),r.x+2*scale,Math.max(16*scale,r.y-3*scale)); }
+    // Display only the leading proposal numbers; keep all candidates and their order intact.
+    for (const [i, p] of result.proposals.entries()) {
+      if (i >= VIDEO_PREVIEW_BOX_LIMIT) break;
+      const r = p.roi; ctx.strokeRect(r.x,r.y,r.w,r.h); ctx.fillText(String(i+1),r.x+2*scale,Math.max(16*scale,r.y-3*scale));
+    }
     ctx.restore();
     updateObservationAges();
   }
@@ -381,13 +386,14 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     const source = document.createElement('canvas'); source.width = record.preview.width; source.height = record.preview.height;
     const sourceCtx = source.getContext('2d'), pixels = sourceCtx.createImageData(source.width, source.height); pixels.data.set(record.preview.rgba); sourceCtx.putImageData(pixels, 0, 0);
     const thumbnail = document.createElement('canvas'), scale = Math.min(1, 96 / Math.max(source.width, source.height)); thumbnail.width = Math.max(1,Math.round(source.width*scale)); thumbnail.height = Math.max(1,Math.round(source.height*scale));
-    thumbnail.getContext('2d').drawImage(source,0,0,source.width,source.height,0,0,thumbnail.width,thumbnail.height); thumbnail.setAttribute('aria-label','この観測時刻の元画像切り抜き'); source.width = source.height = 0;
+    thumbnail.getContext('2d').drawImage(source,0,0,source.width,source.height,0,0,thumbnail.width,thumbnail.height); thumbnail.setAttribute('aria-label','実際に照合した、この観測時刻の元画像切り抜き'); source.width = source.height = 0;
     const { preview, ...metadata } = record; const stored = { ...metadata, result: { ...record.result, rankings: (record.result.rankings || []).map(({ thumbnail, ...rank }) => rank) }, thumbnail };
     state.observationRecords.unshift(stored); state.observationRecords.length = Math.min(4,state.observationRecords.length);
     const list = $('video-observations'); list.replaceChildren();
     for (const item of state.observationRecords) {
       const card = makeElement('li',undefined,'video-observation-card'), r = item.roi;
-      card.append(makeElement('strong',`動画 ${item.captureStamp.videoTime.toFixed(3)}秒 · ${item.candidateSource === 'dino-patch' ? 'DINO補助枠' : 'CPU枠'}`),item.thumbnail);
+      const ordinal = Number.isInteger(item.proposalOrdinal) && item.proposalOrdinal > 0 ? ` · この時刻の枠 ${item.proposalOrdinal}` : '';
+      card.append(makeElement('strong',`実際に照合した切り抜き · 動画 ${item.captureStamp.videoTime.toFixed(3)}秒${ordinal} · ${item.candidateSource === 'dino-patch' ? 'DINO補助枠' : 'CPU枠'}`),item.thumbnail);
       card.append(makeElement('p',`この時刻の範囲: x ${r.x}, y ${r.y}, ${r.w} × ${r.h}px`));
       for (const [index, rank] of (item.result.rankings || []).entries()) card.append(makeElement('p',`${index+1}. ${rank.modelId} · ${labels(rank)} · ${Number.isFinite(rank.similarity)?rank.similarity.toFixed(4):'類似度不明'}`));
       card.append(makeElement('p','候補外・判別不能。背景にも順位が出ます。敵・種類・出現・ATは確定しません。','muted'));
@@ -400,11 +406,11 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     if (observer.held) {
       const held = observer.held, stamp = held.result.captureStamp;
       $('video-observation-view').hidden = false;
-      $('video-position-age').textContent = `固定した観測 · 動画 ${stamp.videoTime.toFixed(3)}秒 · 観測 #${stamp.frameSerial} · ${held.result.proposals.length}/8枠 · ${stamp.timestampBasis === 'requestVideoFrameCallback.mediaTime' ? '表示フレームの時刻' : '再生時刻の概算'}。この画像・枠・時刻は同一フレームの記録です。停止した再生位置とは異なる場合があります。現在の位置・敵の種類は未確認です。`;
+      $('video-position-age').textContent = `固定した観測 · 動画 ${stamp.videoTime.toFixed(3)}秒 · 観測 #${stamp.frameSerial} · 表示 ${Math.min(VIDEO_PREVIEW_BOX_LIMIT,held.result.proposals.length)}枠 / 内部候補 ${held.result.proposals.length}枠（上限8） · ${stamp.timestampBasis === 'requestVideoFrameCallback.mediaTime' ? '表示フレームの時刻' : '再生時刻の概算'}。この画像・枠・時刻は同一フレームの記録です。停止した再生位置とは異なる場合があります。現在の位置・敵の種類は未確認です。`;
     } else if (observer.running && observer.latest) {
       const latest = observer.latest, age = Math.max(0,(now-latest.wallAt)/1000), stale = age > 1;
       $('video-observation-view').hidden = stale;
-      $('video-position-age').textContent = `位置候補 ${latest.result.proposals.length}/8枠 · 動画 ${latest.result.captureStamp.videoTime.toFixed(3)}秒 · 撮影から${age.toFixed(1)}秒（実時間） · ${stale ? '古い位置のため枠を非表示・現在は未観測' : 'すべて未確認'}。不在や消滅の証拠ではありません。`;
+      $('video-position-age').textContent = `位置候補 · 表示 ${stale ? 0 : Math.min(VIDEO_PREVIEW_BOX_LIMIT,latest.result.proposals.length)}枠 / 内部候補 ${latest.result.proposals.length}枠（上限8） · 動画 ${latest.result.captureStamp.videoTime.toFixed(3)}秒 · 撮影から${age.toFixed(1)}秒（実時間） · ${stale ? '古い位置のため枠を非表示・現在は未観測' : 'すべて未確認'}。不在や消滅の証拠ではありません。`;
     }
     for (const item of state.observationRecords) if (item.ageElement) item.ageElement.textContent = `撮影から${Math.max(0,(now-item.positionObservedAt)/1000).toFixed(1)}秒（実時間） · 処理${Math.max(0,(item.completedAt-item.dispatchedAt)/1000).toFixed(2)}秒 · ${observer.running ? '過去の切り抜き記録' : '停止時点の記録'}。新しい枠への種類の引継ぎはしません。`;
   }

@@ -19,7 +19,7 @@ export class LatestVideoObserver{
   this.stop('restart');need(config?.captureStamp?.featureMethod==='dinov2','Video observations require DINO');
   need(config.captureStamp.sceneContext?.kind==='field'&&config.captureStamp.sceneContext.excludeCenter,'Explicit field and center exclusion required');
   const f=config.captureStamp.sourceFrame;need(f&&f.width*f.height<=VIDEO_OBSERVER_LIMITS.maxSourcePixels,'Automatic video source exceeds the 2M-pixel limit');
-  this.config=clone(config);this.sourceIdentity=sourceKey(config.captureStamp);this.running=true;this.prepared=false;this.latest=null;this.tracker.reset();this.attempts=new Map();this.cursor=0;
+  this.config=clone(config);this.sourceIdentity=sourceKey(config.captureStamp);this.running=true;this.prepared=false;this.latest=null;this.tracker.reset();this.attempts=new Map();this.waiting=new Map();this.cpuSelections=0;this.cursor=0;
   this.lastCPUAt=-Infinity;this.lastPTS=-Infinity;this.nextClassAt=this.now();this.lastDenseAt=-Infinity;this.completed=0;this.lastDenseAfterClass=-1;this.forceCPU=false;
   this.stats={sampledFrames:0,classificationsStarted:0,classificationsCompleted:0,supplementsStarted:0,discardedDenseFrames:0,maxActiveJobs:0,maxLatestSnapshots:0};
   this.onState({running:true,phase:'preparing',stats:{...this.stats}});this._pump();
@@ -34,7 +34,7 @@ export class LatestVideoObserver{
   this.stop(reason,null,held);return this.held;
  }
  stop(reason='stopped',error=null,held=null){
-  const wasRunning=this.running,hadHeld=!!this.held,job=this.active;this.generation++;this.running=false;this.active=null;this.latest=null;this.held=held;this.prepared=false;this.tracker.reset();this.attempts?.clear();
+  const wasRunning=this.running,hadHeld=!!this.held,job=this.active;this.generation++;this.running=false;this.active=null;this.latest=null;this.held=held;this.prepared=false;this.tracker.reset();this.attempts?.clear();this.waiting?.clear();
   if(job){job.controller.abort();this.cancelActive();}
   if(wasRunning||hadHeld)this.onState({running:false,held:!!this.held,phase:reason,stats:{...this.stats},...(error?{error}:{})});
  }
@@ -58,11 +58,26 @@ export class LatestVideoObserver{
  _current(job){return this.running&&this.active===job&&job.generation===this.generation&&!job.controller.signal.aborted;}
  _eligible(snapshot){
   const now=this.now(),ps=snapshot.result.proposals,eligible=[];
-  for(let i=0;i<ps.length;i++){const p=ps[i],last=this.attempts.get(p.id)??-Infinity;if(safeCandidate(p)&&now-last>=VIDEO_OBSERVER_LIMITS.trackRefreshMs)eligible.push({p,i,last,turn:(i-this.cursor+ps.length)%ps.length});}
-  eligible.sort((a,b)=>a.last-b.last||a.turn-b.turn);return eligible[0]??null;
+  // Waiting belongs to visible slots, not guessed enemy identities. It survives
+  // camera-ID churn, but never keeps pixels or a crop from an older frame.
+  for(const i of this.waiting.keys())if(i>=ps.length)this.waiting.delete(i);
+  for(let i=0;i<ps.length;i++){
+   const p=ps[i],last=this.attempts.get(p.id)??-Infinity;
+   if(!safeCandidate(p)||now-last<VIDEO_OBSERVER_LIMITS.trackRefreshMs){this.waiting.delete(i);continue;}
+   if(!this.waiting.has(i))this.waiting.set(i,this.cpuSelections);
+   eligible.push({p,i,last,waitingSince:this.waiting.get(i),turn:(i-this.cursor+ps.length)%ps.length});
+  }
+  const priority=p=>Number.isFinite(p.priority)?p.priority:0;
+  // First visits follow visible regions 1 then 2. After one eight-candidate
+  // budget of CPU selections, the oldest waiting slot gets a turn before heads.
+  const overdue=c=>this.cpuSelections-c.waitingSince>=VIDEO_OBSERVER_LIMITS.maxProposals;
+  eligible.sort((a,b)=>Number(overdue(b))-Number(overdue(a))
+   ||(overdue(a)?a.waitingSince-b.waitingSince:0)
+   ||a.last-b.last||(a.last===-Infinity&&b.last===-Infinity?Math.min(a.i,2)-Math.min(b.i,2)||priority(b.p)-priority(a.p):0)||a.turn-b.turn);
+  return eligible[0]??null;
  }
  _attempt(candidate,snapshot){
-  const p=candidate.p;this.attempts.delete(p.id);this.attempts.set(p.id,this.now());while(this.attempts.size>VIDEO_OBSERVER_LIMITS.maxAttemptRecords)this.attempts.delete(this.attempts.keys().next().value);
+  const p=candidate.p;this.waiting.delete(candidate.i);this.cpuSelections++;this.attempts.delete(p.id);this.attempts.set(p.id,this.now());while(this.attempts.size>VIDEO_OBSERVER_LIMITS.maxAttemptRecords)this.attempts.delete(this.attempts.keys().next().value);
   this.cursor=(candidate.i+1)%Math.max(1,snapshot.result.proposals.length);
  }
  _authentic(message,job,stamp){return this._current(job)&&message?.id===job.id&&message.romEpoch===stamp.romEpoch&&key(message.result?.captureStamp)===key(stamp);}
@@ -100,7 +115,7 @@ export class LatestVideoObserver{
    const message=await this.classify(request,{signal:job.controller.signal});
    if(!this._current(job))return;need(this._authentic(message,job,request.captureStamp),'Classifier reply belongs to another observation');
    this.completed++;this.stats.classificationsCompleted++;if(!candidate.dense)this.forceCPU=false;
-   this.onObservation({captureStamp:clone(request.captureStamp),roi:clone(request.captureStamp.enemyROI),preview,result:message.result,positionObservedAt:snapshot.wallAt,dispatchedAt,completedAt:this.now(),candidateSource:candidate.dense?'dino-patch':'cpu-component',tentativeTrackId:candidate.dense?null:candidate.p.id,unknown:true,currentPositionCertified:false,enemyIdentityCertified:false,birthCertified:false,ATDrawsCertified:0});
+   this.onObservation({captureStamp:clone(request.captureStamp),roi:clone(request.captureStamp.enemyROI),preview,result:message.result,positionObservedAt:snapshot.wallAt,dispatchedAt,completedAt:this.now(),proposalOrdinal:candidate.i+1,candidateSource:candidate.dense?'dino-patch':'cpu-component',tentativeTrackId:candidate.dense?null:candidate.p.id,unknown:true,currentPositionCertified:false,enemyIdentityCertified:false,birthCertified:false,ATDrawsCertified:0});
    this.onState({running:true,phase:'observing',stats:{...this.stats}});
   }catch(e){if(this._current(job))this.stop(`error: ${e.message}`,{name:e.name||'Error',message:e.message||String(e),stack:e.stack,stage:e.stage||job.stage||job.kind});}
   finally{if(this._current(job)){this.active=null;this._pump();}}

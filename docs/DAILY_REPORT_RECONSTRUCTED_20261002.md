@@ -131,3 +131,12 @@ CPU ROI候補と任意DINO patch補完、opt-inの動画observerは実装済み�
 allocation/ownership条件が不明なら従来の134 calls/timer1019で止まり、optional packetなしも従来と同一。生成物は条件付きで、live inventoryや同pass後続hero/bodyには接続していない。Yaw0は元snapshotに無かったDTCMを別の一致起点replayで補った入力で、継続中の不変性は明示仮定のまま。
 
 private再現helperに一度、後時点のpool pointerを入力へコピーする不備があった。元heapから導出するよう修正し、後時点値は比較専用にしたうえでnative255チェックを再実行した。公開10ファイルのhashはレビュー中に変わっていない。デプロイ後のブラウザ確認は別途行う。
+
+## 10:09 JST追記: 識別へ渡す枠の修正とAT探索要件
+
+- 同じ78.75秒の映像で、敵を含む表示1番が未処理なのに背景の2番を識別へ渡す問題を再現。最初の処理を表示1・2の順に優先し、残りは有界の待ち順で処理する。切り抜き座標計算・分類器・頻度上限は変更しない
+- プレビューは上位2枠のみ表示し、内部候補は保持する。実際の識別cropには取得時の元番号・時刻・ROIを表示し、現在の枠との誤対応を避ける。一時停止の画素・枠・時刻保持を維持する
+- 実動画からの8種類の推論時間fixtureで236件の切り抜き画素を検証。47 observer、224 page/lifecycle、統合buildと独立レビューを通過。100ms等のfixtureは実WebGPU測定ではない。背景の分類、白い個体の抽出漏れ、直近4件の履歴からの押し出しは残る
+- [AT特定・総当たり要件](AT_IDENTIFICATION_SEARCH_REQUIREMENTS.md)を追加。未知seedのlow31全域、既知originからのindex範囲、bit31の2状態、イベント後から映像現在までの未知消費、hard除外とsoft順位を定義。既存探索の回帰を再実行した。全域性能測定と映像由来の現在AT特定は未完了
+- 既存creator release `3a49749acb3d77ddcdcc71cea657a51aeb2f61cf` の[CI/deploy](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/36947907324)成功を確認。cloud Chromeでlow31/既知originの合成例、reset、候補保存上限の表示、first-spawn入力不足時の無効化を確認。private creator fixtureのブラウザ実行とは別
+- 今回の枠修正は公開後の実ブラウザ確認をこれから行う

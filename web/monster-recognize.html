@@ -56,13 +56,13 @@
         </section>
         <section class="proposal-controls" aria-labelledby="video-observation-heading">
           <h3 id="video-observation-heading">動画の自動観測（観測・デバッグ用の実験）</h3>
-          <p class="muted">位置候補は最大4回/秒。照合は同時1件、最大2件/秒で最新フレームから1枠ずつ選びます。処理待ちの動画列は作りません。画面の枠は未確認、下の順位はその撮影時刻の切り抜きだけの記録です。</p>
+          <p class="muted">位置候補は最大4回/秒。照合は同時1件、最大2件/秒で最新フレームから1枠ずつ選びます。処理待ちの動画列は作りません。動画プレビューには候補順の先頭2枠（元の番号1・2）だけを表示し、内部では最大8候補を保持します。画面の枠は未確認です。下の「実際に照合した切り抜き」と順位は、その撮影時刻だけの記録です。</p>
           <p class="muted">暖色分割の追加前の短い開発用動画窓では、照合した30枠の事後目視は明瞭な敵体を含む5枠・背景/UI 23枠・曖昧2枠でした。同じ録画の反復を含み、精度保証ではありません。信頼できる敵の自動受理やAT連携の完成版ではありません。</p>
           <label class="check-label"><input id="video-observation-dense" type="checkbox">DINO補助も使う（3秒以上空け、照合の間に最大1回。背景候補・処理時間も増えます）</label>
           <p id="shrine-video-preset-note" class="muted">ふういんのほこらを、OBS左右配置の右上DS画面で録画した動画用です。下のボタンで領域候補・フィールド・右上4:3・中央除外・DINOv2・_f・クイック・初期4モデルをまとめて設定します。AIの実行方式は変えません。DINO補助は任意です。別の場面・配置にはこの設定を使わないでください。</p>
           <p><button id="apply-shrine-video-preset" type="button" aria-describedby="shrine-video-preset-note">ふういんのほこら・OBS右上の設定を適用</button></p>
           <div class="proposal-actions"><button id="start-video-observation" type="button" aria-describedby="video-observation-requirements" disabled>観測を開始して再生</button><button id="pause-video-observation" type="button" disabled>枠と時刻を保持して一時停止</button><button id="stop-video-observation" type="button" disabled>自動観測を停止</button></div>
-          <p class="muted">「枠と時刻を保持して一時停止」は、最後に観測した画像・枠・時刻をセットで1枚固定し、動画と照合を止めます。動画の一時停止操作でも保持します。再開・シーク・入力や設定の変更で固定を解除します。</p>
+          <p class="muted">「枠と時刻を保持して一時停止」は、最後に観測した画像・先頭2枠・時刻をセットで1枚固定し、動画と照合を止めます。動画の一時停止操作でも保持します。再開・シーク・入力や設定の変更で固定を解除します。</p>
           <p id="video-observation-requirements" class="muted"></p>
           <p id="video-observation-status" role="status" aria-live="polite">停止中。開始を押すまで自動の観測・照合は行いません。</p>
           <canvas id="video-observation-view" hidden aria-label="最新に観測した位置候補。すべて未確認"></canvas>
