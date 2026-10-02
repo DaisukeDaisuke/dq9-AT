@@ -191,3 +191,14 @@ private再現helperに一度、後時点のpool pointerを入力へコピーす�
 下直進・右転回の既存projectionはwhole-object同一。独立レビューで入力分離、全40箇所の生RAM／画素／CPU等のペア、source binding、108 keyboard／120 originなどの回帰を確認。root統合buildも通過。斜め・touch・カメラ変更、生成結果以降のbodyは引き続き対象外。
 
 一つ前の08e19525は[CI/deploy](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/36955480109)後に本番画面でも下／右の2経路を確認。reset・再初期化・不正入力からの復帰も通過した。今回の上／左の本番確認は別途行う。[対応範囲](F06_KEYBOARD_ORIGIN.md)。
+
+
+## 11:55 JST追記: 上下左右の本番確認と生成後の調査
+
+`1ae134b5fec598fbd45b51f1e119f2f780b8f03e` の[CI/deploy](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/36956415149)成功後、本番cloud Chromeで上／左の新規経路、下／右の回帰、reset／再初期化、斜め入力の拒否と正しい入力への復帰を確認した。上はnode25、左はnode24で、両者とも30 stages・AT2・seed0xa46fab4f・timer1019・table20/species88、生成結果の手前で停止する。
+
+生成後の調査では、初回アニメーションが内部objectのnull／ownedを決め打ちせず、共通して分かる状態だけを導出できることを確認。後続bodyのtimer33／counter1は、その境界まで初期状態が維持されることを条件にした局所結果であり、製品のbody継続はまだ許可しない。
+
+重要な時点差として、creatorのcompletedFrames2052とbodyの2053は同じcontroller呼出しに含まれる。フレーム番号が変わっただけで、新しいscheduler更新や余分なdeltaを加算しない。途中のpending-record処理が敵のdelay値を書き換え得るため、元の4つのmap値がその処理まで保たれるか、コピー・復元・packet経路を調査中。offlineだから無効と決め打ちしない。
+
+公開ソース・日報は現在のmainへ、再測定用ヘッドレスhelperと復元手順は既存の非公開ツール保存先へ通常pushし、remote反映を確認している。ROM／SAV／RAM／画像／動画／抽出資産は含めない。
