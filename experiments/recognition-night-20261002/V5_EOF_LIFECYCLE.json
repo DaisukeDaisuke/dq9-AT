@@ -1,0 +1,33 @@
+{
+  "checked_at": "2026-10-02T16:56:00Z",
+  "browser": "Cloud Chrome, CPU/WASM int8, isolated unadopted V5",
+  "video": "Original 1ninn.mkv",
+  "duration": 845.029,
+  "start_at": 843,
+  "EOF": {
+    "currentTime": 845.029,
+    "ended": true,
+    "paused": true,
+    "startEnabled": true,
+    "stopEnabled": false,
+    "heldFrameAvailable": false
+  },
+  "restart": {
+    "currentTime": 0.136297,
+    "ended": false,
+    "paused": false
+  },
+  "stop": {
+    "currentTime": 0.444739,
+    "videoPaused": false,
+    "observationStopped": true,
+    "note": "Stop controls observation, not video playback. Dedicated pause works."
+  },
+  "later_status": "Stopped/unobserved; no old position result restored; error text empty",
+  "final_video_pause": 56.210859,
+  "limits": [
+    "Cold preparation was in progress at EOF; no enemy accuracy assertion",
+    "No completed download path; browser internal downloads UI disallowed, no bypass attempted",
+    "Original prior tab30 expired; not filesystem reset"
+  ]
+}

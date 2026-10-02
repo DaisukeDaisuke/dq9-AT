@@ -606,3 +606,12 @@ NPC更新の時刻入力を固定33/phase2とみなさず、ROMの生成関数02
 - [解析注釈](https://github.com/DaisukeDaisuke/dqix-functions/blob/ef23f3a1667915cc8e4ff30512b7bf2fc874a290/docs/jpn-npc-clock-producer.md)（既存symbols保全、CI37035569262成功）
 - 私的再開ZIPは同一Library IDのversion4、4288099bytes、SHA256 44c63d493fbbb7c9de52d45bce55da6e884a9ce8d3350d8e3b12ee483669091d。ROM/SAV/動画/プロジェクトDBはZIP追加対象外。
 - 16:40 UTCの環境確認では作業ファイル、ROM、SAV、ランタイムが継続して存在。リセット根拠なし、再取得・再ビルドなし。
+
+
+## 2026-10-02 16:55 UTC — 有限の時計ソース確認・動画終了操作
+
+静的ソースでpending counterの+1 writer020129dc（FUN_020129a0）を特定。registry getterから+3c8を読み増分し、割込みチェックフラグ027e3ff8のbit0を設定する。初期化関数からmask1で登録するcallback literalと登録先を照合した。実行時刻・全alias writerの排除は未実測で、予測の入力条件とBOOT0/条件付き33は保持。
+
+未採用V5の実cloud Chromeで、元動画の843秒からEOF845.029秒への停止、EOF後Startによる0秒への巻戻し、準備中Stop後に過去枠が復活しないことを確認。Stopは観測のみ止める仕様で動画再生は継続し、専用一時停止が機能。これは操作確認で認識精度評価ではない。保存ファイル取得は未確認のまま（旧tab失効、内部download UIは利用不可、迂回なし）。
+
+私的checkpointは同一Library IDのversion5、4301300 bytes、SHA256 d6472c6e39eeb431e1cf54353b68e6da0a46f0015401b430f9098b9f713525bf。前版と固定入力を保持し、UPDATE_1655.mdから再開。通常認識ページ・既存AT replayは変更していない。
