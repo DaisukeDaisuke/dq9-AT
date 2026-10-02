@@ -615,3 +615,10 @@ NPC更新の時刻入力を固定33/phase2とみなさず、ROMの生成関数02
 未採用V5の実cloud Chromeで、元動画の843秒からEOF845.029秒への停止、EOF後Startによる0秒への巻戻し、準備中Stop後に過去枠が復活しないことを確認。Stopは観測のみ止める仕様で動画再生は継続し、専用一時停止が機能。これは操作確認で認識精度評価ではない。保存ファイル取得は未確認のまま（旧tab失効、内部download UIは利用不可、迂回なし）。
 
 私的checkpointは同一Library IDのversion5、4301300 bytes、SHA256 d6472c6e39eeb431e1cf54353b68e6da0a46f0015401b430f9098b9f713525bf。前版と固定入力を保持し、UPDATE_1655.mdから再開。通常認識ページ・既存AT replayは変更していない。
+
+
+## 2026-10-02 17:08 UTC — pending時計writerの限定実測
+
+原SAV・同一の元経路でcallback store020129dcを追加観測。開始pending1から180回の+1と67回のproducer入力/clearが一致（753events、drop0、不一致0、entry→clear間の曖昧な割込み0）。将来の呼出し時刻や全writer排除、全状態一致を証明したとはしない。追加off/on対なし、条件付き33とBOOT0を保持し、時計の一致件数を増やすだけの延長は行わない。
+
+V5では観測準備中に入力を動画から画像へ変更し、自動観測停止・過去枠クリア・画像では動画Start無効・遅延結果の復活なしを実Chromeで確認。実測資料と元パス依存を説明した復元READMEは私的checkpoint version6へ保存。4483767 bytes、SHA256 02c3f998b6a0abb153f7b526fba3862d73930c514b22cd2a30a62ec8093f2988。今回も本番追跡や通常の認識方式は変更なし。

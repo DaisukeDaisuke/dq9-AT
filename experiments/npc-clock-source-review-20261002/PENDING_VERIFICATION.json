@@ -1,0 +1,17 @@
+{
+  "scope": "Observed pending-counter recurrence from initial value plus source-bound callback stores and producer clears; not a forecast of hardware tick timing",
+  "captureSHA256": "60d82244f63543322b540ebab6d5dc71219ca787bd60cf1c2bf5c26e5aafc4f7",
+  "initialPending": 1,
+  "incrementCount": 180,
+  "producerInputs": 67,
+  "mismatchCount": 0,
+  "ambiguousInterleavings": 0,
+  "firstDifference": null,
+  "firstAmbiguity": null,
+  "eventCount": 753,
+  "dropped": 0,
+  "originalSaveUnchanged": true,
+  "bootProof": false,
+  "worldResolved": false,
+  "newObserverOffOnPair": false
+}

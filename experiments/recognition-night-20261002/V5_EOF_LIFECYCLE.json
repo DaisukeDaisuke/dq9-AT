@@ -29,5 +29,14 @@
     "Cold preparation was in progress at EOF; no enemy accuracy assertion",
     "No completed download path; browser internal downloads UI disallowed, no bypass attempted",
     "Original prior tab30 expired; not filesystem reset"
-  ]
+  ],
+  "source_change": {
+    "during": "ROM reference preparation after Start",
+    "newSource": "h5/03.png (960x720)",
+    "observationStopped": true,
+    "oldPositionListEmpty": true,
+    "startDisabledForImage": true,
+    "errorTextEmpty": true,
+    "laterCheck": "Same stopped/unobserved state after 30+ seconds"
+  }
 }
