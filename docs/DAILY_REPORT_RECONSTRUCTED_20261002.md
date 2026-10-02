@@ -291,3 +291,20 @@ D06M02／map7602では条件付きkind1定義が1件となり、H15／map16500�
 合成fixture170 checks、独立3,578 assertions（無条件配置のランダム500ケースを含む）と既存回帰が通過した。独立レビューは元ROM命令との照合とD06M02／H15の再実行も実施済み。公開前には170 checksと独立3,578 assertionsを再実行し、既存Clang／LLD19の通常aggregate buildもexit0で通過した。新しいtestをbuild.shに追加し、以後のCIでも維持する。セントシュタインのnative検証は別途進行中で、全マップの実行到達や正の下限証明が完成したとはしない。
 
 今回の公開対象はレビュー済み新規4ファイル、testのbuild接続、日報追記のみ。ROM／SAV／RAM／抽出資産／私有flag値／私有リンクは追加せず、生成WASMはcommitしない。既存の日報とWork方針は保持する。[入力契約と未解決の境界](NPC_MEMBERSHIP_PROJECTION.md)。
+
+
+## 15:55 JST定期保存の追記: セントシュタイン5状態の実測と来歴の限界
+
+15:17 JST時点で進行中としたセントシュタインのnative検証は、元SAV5件の限定実測まで完了した。町のparty／solo／馬返還後の3ケースでは、controller初期化の閉じた区間が11／11／13 draw、別のactor初期化が11／11／12 drawで、初期化小計は22／22／25だった。allocator、controller initializer、直接AT entry／return、閉じたcaller returnを同じcapture内で対応付けた。種別の異なるNPCを一律2 drawとせず、実際に確認した2種類の初期化を分けて数える。
+
+武器屋map104はNPC51がmode8、NPC24がmode0で、entry初期化は計4 draw。追加の無入力600 frame（1911〜2510）ではNPC51の方向候補選択とthreshold再抽選の2周期、計4 drawを観測した。道具屋map108はNPC218／20がともにmode0で、entry初期化は同じく4 draw、追加600 frameのATは0だった。道具屋の継続0という観測で初期化4を消さず、永久・全consumerの0へ拡張しない。方向選択とthreshold再抽選は別のcallで、毎frameの固定消費や固定周期ではない。
+
+町1,185 checks、店855 checksを通過。observer-off／onのCPU9／CPU7、画素、状態、full RAM比較が一致し、event sequenceの欠落とdropは0、元SAVのhashも維持した。configured siteとこの入力・観測窓での結果であり、全マップの保証、起動からの全seed-setter履歴、boot下限の確定、未来の継続予測完成を意味しない。以前の町captureを店検査のために再生成したわけではなく、今回の定期backupでもnative再実行・runtime再buildは行っていない。
+
+重要な来歴制限として、Stornway flagsのsource条件とdescriptor順11／11／13の照合は、constructor-entry後のsnapshotを用いた条件付き評価である。配置が作られる前の原状態からmembershipを生成できたというproducer証明ではない。後時点のflag／list値を元入力へ戻して、その不足を埋めたことにはしない。新しいpre-placement captureとstory-membership codeは進行中・未凍結で、今回の保存・完成判定から除外した。
+
+元ROMで確認したstory／questのRAM layoutと関数注釈は、dqix-functionsの既存mainへ追加公開済み。commit [7eaf0f13](https://github.com/DaisukeDaisuke/dqix-functions/commit/7eaf0f13cb0d93425722afc6120ce1c2c1eed19b)の[CI](https://github.com/DaisukeDaisuke/dqix-functions/actions/runs/36972911083)は成功し、[layout文書](https://github.com/DaisukeDaisuke/dqix-functions/blob/7eaf0f13cb0d93425722afc6120ce1c2c1eed19b/docs/jpn-story-quest-flag-layout.md)を確認できる。これはruntime layoutの注釈で、私有の現在flag値やSAV serialization offsetの公開ではない。今回dqix-functions自体は変更していない。
+
+武器屋NPCの既知開始snapshotから次の継続ATを予測するWork5指示書を本人へ提供し、その同じ文書1件を既存の非公開tools保存先へ保存した。指示書の提供はWork5実装完了を意味しない。元入力IDとprivate取得先を含む文書本体は公開日報に同梱しない。既に保存済みのsource checkpoint、共有復元書、追加台帳は変更・重複保存していない。Work3最終成果は取得・検算中で、境界検証も未完のため、未確定数値を結論へ採用していない。
+
+今回の公開変更はこの日報追記のみ。既存の記録とWork方針を維持し、runtime／WASMは変更しない。ROM／SAV／DST／RAM／画素／動画／抽出資産／raw flag・event／私有download URL／秘密情報は追加しない。
