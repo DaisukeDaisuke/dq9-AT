@@ -1,4 +1,4 @@
-日本語要約: F06の記録済み初期状態から、味方の上下左右への移動・キーを離した減速停止・下への再開を、実際の再現器の入口で検証した。直進・右転回・上転回・左転回の4経路で、位置・角度・速度・ノードと続く2回の乱数消費がROMに一致。対応入力はDown／Right／Up／Left／Noneに限定し、生成結果の手前で停止する。起動から全経路を予測した証明ではなく、初期状態・時計入力・カメラ不変などの条件を明示した限定対応。
+日本語要約: F06の記録済み初期状態から、味方の上下左右への移動・キーを離した減速停止・下への再開を、実際の再現器の入口で検証した。直進・右転回・上転回・左転回の4経路で、位置・角度・速度・ノードと続く2回の乱数消費がROMに一致。対応入力はDown／Right／Up／Left／Noneに限定する。従来packetは生成結果の手前で停止し、任意の同一初期時点creator packetがある場合は生成関数の戻りまで導出する。起動から全経路を予測した証明ではなく、初期状態・時計入力・カメラ不変などの条件を明示した限定対応。
 
 # Bounded F06 keyboard origin replay
 
@@ -10,7 +10,7 @@ The original state is a fresh F06 field0 with timer0, flags12, globalWord0, one 
 
 Every tick contains sourceFrame, scheduler delta, scaled controller delta, phase, one of Down/Right/Up/Left/None, and all ordinary keyboard gates. `None` means released directions. Diagonals, touch, changing camera yaw, special motion and missing/false/unknown gates are rejected. Keyboard effects occur after the current motion update. Release retains the target direction; resumed Down sets target0. Right6434/Down0/Up12868/Left19302 are read from guarded ARM9 input-reader, direction-byte branch and table literals in the locally supplied ROM.
 
-The factory stops before creator result. It does not accept `continueNewborn: true`, project a birth, or continue unknown post-creator consumers. Its other-consumer exclusion is a declared condition, not a full-world simulation. Reached clock inputs are explicit, not predicted.
+Without the optional creator input described below, the factory stops before creator result. It never accepts `continueNewborn: true` or continues unknown post-creator consumers. Its other-consumer exclusion is a declared condition, not a full-world simulation. Reached clock inputs are explicit, not predicted.
 
 ## Legacy compatibility
 
@@ -44,3 +44,13 @@ The new readers bind Up mask0x40 at02012134 and Left mask0x20 at0201210c, includ
 ## Deployed Down/Right UI check
 
 Release08e19525c6410672d4a79cd0250445dc82ddcac6 passed CI/deploy36955480109 and real cloud Chrome first-spawn panel checks. Both original routes reached30 stages,2 AT calls,seed0xa46fab4f,timer1019,node24/table20/species88,stopping before creator. Distinct endpoints matched the native comparison. Reset and repeated initialization reproduced results; missing files/declaration, wrong runtime schema and newborn continuation were gated. Restoring valid inputs recovered. These were UI-level checks, not a deployed-byte or traffic audit. The subsequent Up/Left release1ae134b5fec598fbd45b51f1e119f2f780b8f03e passed exact CI/deploy36956415149 and actual cloud Chrome checks: Up selected node25 at [-16220,9420,-155084], Left selected node24 at [-23134,9420,-149448], both30 stages/AT2/seed0xa46fab4f/timer1019/table20/species88. Reset/reinitialization, diagonal rejection and valid-input recovery, plus Down/Right smoke checks passed. This is bounded UI-level validation before creator, not a byte/traffic audit or whole-game proof.
+
+## Optional same-origin creator return
+
+The same factory now accepts paired optional `creator` and `creatorContext` fields. `creator` is the existing `dq9-f06-creator-v1` packet with the same original frame, original pool-heap words and the existing thirteen constructor/allocation/writer conditions. Those conditions remain explicit assumptions; this extension does not establish allocation success or introduce another success/stability flag. `creatorContext` contains only the original controller pointer, four field identity/map/flags/creation counters, twelve pool e0 bytes, and complete serial counter/registry/48-slot/four-external-record primitives. Original free slot/header identities must agree with the existing inventory. Groups1–3 must be explicitly known absent. Unknown, contradictory, extra/future fields and mismatched frames are rejected; false/unknown constructor conditions stop unresolved at the creator.
+
+`prepareF06Creator` and `bindF06CreatorOrigin` feed the existing `advanceF06Continuation` creator branch. Template/config/model resources, partial component tag, placement, serial selection and actor values are derived there from the local ROM and original inputs. No selected species, future pointer, animation allocation outcome, native later position/status or RNG result is accepted. Without the optional pair, original packet outputs remain unchanged.
+
+Four new native ROM+SAV boot replays cover straight, Right/release, Up/release and Left/release from fresh1990. The actual factory reaches the source creator return at2052, slot112/species88/table20/serial2/e0=0, with two AT calls from this origin and seed0xa46fab4f. Successful creation resets the scheduler timer to0. Thirty-one projected numeric actor fields match the post-creator/pre-body2053 RAM checkpoint for each route. Exact native creator entry/return and RNG entry/return registers agree; each off/on pair has65 CPU/state/pixel comparisons and seven equal4MiB RAM checkpoints, with zero dropped events. Projections are frozen before the verifier opens later outcomes.
+
+The native body at2053 is a later phase of the same controller invocation, not an additional scheduler tick. This optional path deliberately stops at creator/scheduler return before same-pass HERO/body and leaves `futureActorTicksPermitted:false`, visual state and world step unresolved. It is a real fresh-origin factory prerequisite, not first-body continuation or a carried1200 proof. Original1990 serial counter2 and slot112 e0=0 are used; the older1200 counter1/e0=128 are not substituted. The retained inner animation object remains the correlated null-or-owned family; no complete type word is invented.

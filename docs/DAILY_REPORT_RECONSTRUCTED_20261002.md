@@ -222,3 +222,14 @@ Pro2完全ZIPの全33 memberのhashと13フレームPNGの一致を確認し、�
 完全1ninn.mkvは330181795 bytes／SHA256 e9d3d37c62500d4a170eb38cca92361b66a9cfc0a61b91db1ef1174260a0c019。先頭324927488 bytesのSHA256はPro2記載のd5238b3e28fcca51970da5c3b32ada2c650a4a76093cfc825879759a7646876cと一致し、Pro2入力は5254307 bytes短いprefixと確認した。一方、実PTS125.846／125.896秒の操作画面cropは完全動画とbyte一致しており、この局所的な候補消失の診断は維持できる。全動画解析や新モデルの認識精度を証明する結果ではない。
 
 3報告の和集合は基準・派生・補助・将来学習を含む40比較単位で、40個の完成検出器とは数えない。3本のWork用指示を作成・提供した段階であり、Workでの実行完了とはしない。製品の認識実装は変更せず、再現script・入力hash・派生結果・復元手順の23 text-onlyファイルを既存の非公開ツール保存先へ通常pushし、remoteの全blob一致と既存276ファイルの保持を確認した。ROM／SAV／RAM／動画／PNG／RGBA／抽出資産／私有download URLは含めない。
+
+
+## 13:40 JST追記: fresh1990の実factoryをcreator returnまで接続
+
+fresh1990起点の下直進・右転回／停止・上転回・左転回の4経路で、任意のoriginal由来creator入力を実際のcreateFirstSpawnReplay→advanceへ接続した。各30 scheduler rows、AT2、seed0xa46fab4f、timer0、slot112／species88／serial2／e0=0までを再現する。従来packetの出力はbyte同一で、旧1200起点も維持した。比較用の将来RAM・eventは予測結果の固定後だけに使用し、入力は各original1990とROM、明示された到達clock・既存条件に限定する。
+
+独立レビューで発見した外部serial pointerと元heap／descriptorの重複を拒否する狭い入力整合性修正を入れ、再検査した。最終の統合aggregate buildはexit0、独立factory137 checks、関連14回帰、original/native1128 checks、実factoryのNode DOM72 checksが通過。別の4経路native照合1340 assertionsも通過した。Node DOM検査は実ブラウザ・画素検査の代用ではなく、この変更の公開後ブラウザQAは未実施である。
+
+今回の到達点はcreator／scheduler returnで、同passのHERO／bodyより前で停止する。2052→2053を別controller tickとして扱わず、postHeroや追加scheduler tickを挿入しない。continueNewborn=trueは拒否し、futureActorTicksPermitted／worldStepResolved／visualStateResolvedはfalseのまま。到達clockと既存条件を明示仮定とした限定再現であり、生成後body・full-world対応や一般的な状態保存証明ではない。
+
+レビュー済み4ソース／文書とこの日報だけを公開対象とし、生成WASMは変更しない。ROM／SAV／RAM／動画／画像／抽出資産／raw native events／GhidraDB／私有download URLは含めない。[対応範囲と入力契約](F06_KEYBOARD_ORIGIN.md)。
