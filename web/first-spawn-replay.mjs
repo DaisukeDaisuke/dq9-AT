@@ -1,3 +1,4 @@
+import {F06_ORIGIN_RUNTIME_SCHEMA,prepareF06OriginReplay} from './f06-origin-replay.mjs';
 import {bindF06CreatorOrigin} from './f06-creator.mjs';
 // Browser composition of existing guarded source models. Optional continuation
 // carries only internally created actors under explicit phase/runtime inputs.
@@ -59,6 +60,7 @@ export function validateSpawnTrajectory(input,mapId,graph,continueNewborn=false)
  * primitive input, declared stable within this conditional replay. */
 export function createFirstSpawnReplay({project,rom,kernel,fieldKernel,atKernel,runtime,trajectory,seed,continueNewborn=false}){
  check(uint(seed),'開始seedはu32が必要です');
+ if(runtime?.schema===F06_ORIGIN_RUNTIME_SCHEMA){check(continueNewborn===false,'Fresh F06 origin stops before creator result and does not accept newborn continuation');return new FirstSpawnReplay({...prepareF06OriginReplay(project,rom,runtime,trajectory),kernel,fieldKernel,atKernel,trig:preferredNodeTrigFromRom(rom),seed});}
  const composed=runtime?.schema==='dq9-first-spawn-runtime-v2',destination=trajectory?.schema==='dq9-pre-spawn-trajectory-v4',crosses=destination||trajectory?.schema==='dq9-pre-spawn-trajectory-v3';
  check(!crosses||(continueNewborn&&exact(trajectory,['schema','phase','mapId','steps','transitionPhases',...(destination?['destinationContinuation']:[])])&&trajectory.phase==='pre-spawn-and-post-hero-with-reached-transitions'),'移動再生には継続と到達済みphase軌跡が必要です');
  check(exact(runtime,['schema','mapId','fieldIndex','initialTimer','selectedHeroSlot','conditions','parties','runtimeNodeFlags','creatorContext',...(composed?['continuation']:[]),...(crosses?['transitionContext']:[]),...(destination?['destinationContinuation']:[])])&&(composed||runtime.schema===FIRST_SPAWN_RUNTIME_SCHEMA)&&runtime.mapId===7402,'7402の初期runtime primitive packetが必要です');
@@ -127,6 +129,7 @@ export class FirstSpawnReplay{
  constructor(input){Object.assign(this,input);this.scheduler=new FieldScheduler(input.fieldKernel);this.context=copy(input.context);this.parties=copy(input.parties);this.hero=this.parties[input.hero.slot];this.field=this.context.fields[input.field.index];this.seed=input.seed;this.timer=input.timer;this.consumed=0;this.events=[];this.heroTrace=[];this.actors=new Map();this.actorTrace=[];this.actor=null;this.birth=null;this.births=[];this.generationCount=0;this.stopped=false;this.status='ready';this.reason='';this.currentMapId=input.field.mapId;this.currentCoordinate=null;this.closedActors=[];this.transitionIndex=0;}
  advance(){
   if(this.stopped)return false;
+  if(this.f06Origin===true)return advanceF06Continuation(this);
   if(this.mapTransitions&&this.events.length>=this.steps.length){if(this.f06Continuation&&(this.transitionIndex??0)>=this.mapTransitions.phases.length)return advanceF06Continuation(this);return advanceMapTransition(this);}
   const next=this.advanceSpawn();
   const completedSample=this.steps[this.events.at(-1)?.index];if(completedSample)this.currentCoordinate={mapId:this.field.mapId,xyz:[...(completedSample.postHero?.xyz??completedSample.hero.xyz)],kind:'measured-effective-hero-input'};

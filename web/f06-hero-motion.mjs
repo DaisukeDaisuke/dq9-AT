@@ -1,3 +1,4 @@
+import {sourceF06KeyboardAngles} from './f06-creator.mjs';
 // Connected, conditional F06 motion/selection prefix. ROM placement and collision
 // metadata plus original runtime primitives; never a future pose, seed or actor.
 import {decodeCalls} from './map-core.mjs';
@@ -13,6 +14,11 @@ const dense=a=>Array.isArray(a)&&Array.from({length:a.length},(_,i)=>Object.hasO
 const exact=(o,k)=>o&&typeof o==='object'&&!Array.isArray(o)&&Object.keys(o).length===k.length&&k.every(x=>Object.hasOwn(o,x));
 const need=(p,m)=>{if(!p)throw Error(m);},copy=structuredClone,zero=[0,0,0];
 export const F06_MOTION_CONDITIONS=['ordinarySuccessfulSceneLoad','successfulEncounterTableLoad','sceneModeWithin0to3','noSceneObjectWriters','noMapSaveStateSetter','noOtherHeroKinematicWriters','noSpecialMotionActivation','noTouchOverride','cameraYawRemainsInitial','ordinaryHeroEnvironmentGates','noAdditionalCollisionActors','noNodeFlagWriters','noOtherClockOrEnvironmentSetters','fixedClockScaleAndConstants','completeControllerAndFadeStream','ordinaryOfflineSelectedHero'];
+export const F06_KEYBOARD_GATES=['ordinaryKeyboardControl','inputEnabledWhenUnlocked','ordinaryControlMode','directionLockAbsent','noTargetAngleOverride','noTouchOverride'];
+export function validateF06KeyboardInput(input){
+ need(exact(input,['heldDirection','gates'])&&['Down','Right','None'].includes(input.heldDirection),'Only explicit Down/Right/release keyboard inputs are supported');
+ need(exact(input.gates,F06_KEYBOARD_GATES)&&F06_KEYBOARD_GATES.every(k=>input.gates[k]===true),'Complete ordinary keyboard gates required');return copy(input);
+}
 const heroKeys=['header','turnRate','targetSpeed','acceleration','e0','c1','c2','delayWord','gravity','verticalVelocity','verticalLimit','verticalCounter','width','height','groundFlags','specialMotionByte'];
 const f32bits=n=>{need(uint(n),'float word must be u32');const a=new ArrayBuffer(4),v=new DataView(a);v.setUint32(0,n,true);const f=v.getFloat32(0,true);need(Number.isFinite(f),'nonfinite float word');return f;};
 
@@ -70,28 +76,40 @@ function nearest(graph,xyz,manhattan){
  const q=manhattan?xyz.map(v=>(v<<4)>>16):xyz;let best=null;
  for(let index=0;index<graph.nodes.length;index++){const n=graph.nodes[index];need(dense(n.position)&&n.position.length===3&&n.position.every(i16),'Graph coordinate domain');const distance=manhattan?n.position.reduce((s,v,k)=>s+Math.abs(v-q[k]),0):fieldNativeDistance(n.position.map(v=>v<<12),q);need(distance!==null,'Entry-node distance overflow');if(best===null||distance<best.distance)best={index,distance};}return best.index;
 }
+export function validateF06HeroPrimitive(hero,cameraYaw,mapSaveStateByte){
+ const h=hero;need(exact(h,heroKeys)&&uint(h.header,65535)&&(h.header&0x1200)!==0&&[h.turnRate,h.targetSpeed,h.acceleration,h.gravity].every(i16)&&[h.e0,h.c1,h.c2,h.specialMotionByte].every(x=>uint(x,255))&&uint(h.delayWord,65535)&&uint(h.verticalCounter,65535)&&[h.verticalVelocity,h.verticalLimit,h.width,h.height].every(i32)&&uint(h.groundFlags),'Complete original hero motion words required');
+ need(h.width>0&&h.height>0&&h.width<=65536&&h.height<=65536&&h.delayWord===0&&h.gravity===0&&h.verticalVelocity===0&&h.verticalLimit===0&&h.verticalCounter===0&&h.specialMotionByte===0&&(h.e0&5)===0&&(h.c1&4)===0&&(h.c2&32)===0&&(h.c2&64)!==0&&(h.groundFlags&0x0c000100)===0&&cameraYaw===0&&mapSaveStateByte===0,'Hero correction/special/ground/camera branch unsupported');
+ return copy(h);
+}
 export function validateF06MotionInputs(packet,stream,initialSourceFrame,ticks){
  need(uint(initialSourceFrame)&&dense(ticks)&&ticks.length>0&&ticks.length<=2000&&ticks.every(t=>t&&uint(t.sourceFrame)&&uint(t.delta,50)),'Bounded destination clock stream required');
  need(exact(packet,['schema','initialSourceFrame','hero','initialLock','cameraYaw','mapSaveStateByte','dayClock','conditions','provenance'])&&packet.schema==='dq9-f06-hero-motion-v1'&&packet.initialSourceFrame===initialSourceFrame,'Original-frame F06 motion packet required');
  need(exact(packet.provenance,['kind','sourceFrame'])&&packet.provenance.kind==='original-runtime-primitives'&&packet.provenance.sourceFrame===initialSourceFrame,'Original-state provenance required');
  need(exact(packet.conditions,F06_MOTION_CONDITIONS)&&F06_MOTION_CONDITIONS.every(k=>packet.conditions[k]===true),'Conditional camera/scene/clock/writer declarations required');
- const h=packet.hero;need(exact(h,heroKeys)&&uint(h.header,65535)&&(h.header&0x1200)!==0&&[h.turnRate,h.targetSpeed,h.acceleration,h.gravity].every(i16)&&[h.e0,h.c1,h.c2,h.specialMotionByte].every(x=>uint(x,255))&&uint(h.delayWord,65535)&&uint(h.verticalCounter,65535)&&[h.verticalVelocity,h.verticalLimit,h.width,h.height].every(i32)&&uint(h.groundFlags),'Complete original hero motion words required');
- need(h.width>0&&h.height>0&&h.width<=65536&&h.height<=65536&&h.delayWord===0&&h.gravity===0&&h.verticalVelocity===0&&h.verticalLimit===0&&h.verticalCounter===0&&h.specialMotionByte===0&&(h.e0&5)===0&&(h.c1&4)===0&&(h.c2&32)===0&&(h.c2&64)!==0&&(h.groundFlags&0x0c000100)===0&&packet.cameraYaw===0&&packet.mapSaveStateByte===0,'Hero correction/special/ground/camera branch unsupported');
- need(exact(stream,['prefixLockOperations','controllerPhases','heldDirections'])&&dense(stream.controllerPhases)&&stream.controllerPhases.length===ticks.length&&stream.controllerPhases.every(p=>uint(p,3))&&dense(stream.heldDirections)&&stream.heldDirections.length===ticks.length&&stream.heldDirections.every(x=>x==='Down'),'Explicit ordered controller phases and held Down inputs required');
+ const h=validateF06HeroPrimitive(packet.hero,packet.cameraYaw,packet.mapSaveStateByte);
+ const keyboard=Object.hasOwn(stream??{},'keyboardGates');
+ need(exact(stream,['prefixLockOperations','controllerPhases','heldDirections',...(keyboard?['keyboardGates']:[])])&&dense(stream.controllerPhases)&&stream.controllerPhases.length===ticks.length&&stream.controllerPhases.every(p=>uint(p,3))&&dense(stream.heldDirections)&&stream.heldDirections.length===ticks.length,'Explicit ordered controller phases and held inputs required');
+ if(keyboard){need(dense(stream.keyboardGates)&&stream.keyboardGates.length===ticks.length,'Per-tick keyboard gate stream required');stream.heldDirections.forEach((heldDirection,i)=>validateF06KeyboardInput({heldDirection,gates:stream.keyboardGates[i]}));}
+ else need(stream.heldDirections.every(x=>x==='Down'),'Legacy stream requires held Down');
  const lock=carryF06Lock(packet.initialLock,stream.prefixLockOperations,initialSourceFrame,ticks[0].sourceFrame),day=boundF06DayClock(packet.dayClock,lock.controllerEnds+ticks.length+2);
- return {hero:copy(h),lock,day};
+ return {hero:copy(h),lock,day,keyboard};
 }
-export function prepareF06HeroMotion({project,rom,packet,stream,transitions,ticks,initialSourceFrame}){
- const validated=validateF06MotionInputs(packet,stream,initialSourceFrame,ticks),h=validated.hero,lock=validated.lock,day=validated.day;
- const exit=transitions.exits.get(7400),load=transitions.loads.get(20006);need(exit?.target?.firstMapId===20006&&exit.destination.facingRaw16===0&&load?.descriptorIds?.length===0,'Reached ordinary F06 placement and empty NPC descriptors required');
+export function prepareF06MotionResources(project,rom){
  const record=project.records.find(r=>r.mapId===20006),graph=project.fieldGraphs.graphs.find(g=>g.key===record?.fieldGraph?.key);need(graph?.nodes?.length>0&&graph.nodes.length<=255,'Successful bounded F06 graph required');
  const scene=deriveF06Scene(callsFromArchive(project,'data/map/F06.ambl','F06M0000.bmbl'),callsFromArchive(project,'data/map/F06.amdj','F06M0000.bmdj')),resource=monsterCol2FromRom(rom,{archivePath:'data/map/F06.amdj',memberName:scene.resourceName}),terrain={mapId:20006,mapAux444:0,nonTiledMode:0,objectListComplete:true,objects:[{index:0,...scene,ancestorChainComplete:true,resourcePresent:true,resourceBindingVerified:true,resource}]};
  const decoded=decodeEncounterStream(new Uint8Array(project.nitro.readFile('data/prm/encfld.bin'))),groups=decoded.groups.filter(g=>g.mapId===20006);need(groups.length===1&&groups[0].conditions.every(n=>n===0),'Unconditional ROM F06 encounter group required');
  const rows=[],distributions={};for(const id of groups[0].tableIds){const t=decoded.tables.find(t=>t.tableId===id);need(t&&t.totalWeight>0&&t.rows.every(r=>(r.packedRaw&0x8000)===0&&!r.isTrapSpecies),'Unsupported F06 weighted table');rows.push({tableId:id,flags:t.flagsRaw});distributions[id]={maxRand:t.totalWeight,data:t.rows.map(r=>({monsterId:r.speciesId,start:r.start,end:r.end}))};}
- const state={xyz:[...exit.destination.xyzFixed],angle:exit.destination.facingRaw16,targetAngle:exit.destination.facingRaw16,speed:0,movementByte:0,...copy(h)};delete state.width;delete state.height;delete state.groundFlags;delete state.specialMotionByte;
- return {state,node:nearest(graph,state.xyz,false),lock:lock.counter,lockProjection:lock,day,phases:[...stream.controllerPhases],directions:[...stream.heldDirections],hero:copy(h),graph,terrain,scene,rows,distributions,nodeFlags:graph.nodes.map(()=>0),assumptions:[...F06_MOTION_CONDITIONS],provenance:copy(packet.provenance),worldResolved:false};
+ return {graph,terrain,scene,rows,distributions};
 }
-export function advanceF06HeroMotion(plan,kernel,clock){
+export function prepareF06HeroMotion({project,rom,packet,stream,transitions,ticks,initialSourceFrame}){
+ const validated=validateF06MotionInputs(packet,stream,initialSourceFrame,ticks),h=validated.hero,lock=validated.lock,day=validated.day;
+ const exit=transitions.exits.get(7400),load=transitions.loads.get(20006);need(exit?.target?.firstMapId===20006&&exit.destination.facingRaw16===0&&load?.descriptorIds?.length===0,'Reached ordinary F06 placement and empty NPC descriptors required');
+ const {graph,terrain,scene,rows,distributions}=prepareF06MotionResources(project,rom);
+ const state={xyz:[...exit.destination.xyzFixed],angle:exit.destination.facingRaw16,targetAngle:exit.destination.facingRaw16,speed:0,movementByte:0,...copy(h)};delete state.width;delete state.height;delete state.groundFlags;delete state.specialMotionByte;
+ return {keyboardInputs:validated.keyboard?stream.heldDirections.map((heldDirection,i)=>validateF06KeyboardInput({heldDirection,gates:stream.keyboardGates[i]})):null,keyboardAngles:validated.keyboard?sourceF06KeyboardAngles(rom):null,state,node:nearest(graph,state.xyz,false),lock:lock.counter,lockProjection:lock,day,phases:[...stream.controllerPhases],directions:[...stream.heldDirections],hero:copy(h),graph,terrain,scene,rows,distributions,nodeFlags:graph.nodes.map(()=>0),assumptions:[...F06_MOTION_CONDITIONS],provenance:copy(packet.provenance),worldResolved:false};
+}
+export function advanceF06HeroMotion(plan,kernel,clock,keyboardInput=null){
+ let keyboard=null;try{if(keyboardInput!==null){keyboard=validateF06KeyboardInput(keyboardInput);need(plan.keyboardAngles?.Down===0&&plan.keyboardAngles?.Right===6434,'ROM-bound keyboard angles required');}}catch(error){return {resolved:false,reason:error.message};}
  const before=copy(plan.state),r=kernel.kinematicPrefix(before,clock,{reached:true});if(!r.resolved)return {resolved:false,reason:r.reason};
  const displacement=fieldNativeDistance(before.xyz,r.kinematic.xyz);if(displacement===null||displacement>819)return {resolved:false,reason:'Hero multi-substep/correction branch unresolved'};
  const delta=r.kinematic.xyz.map((v,i)=>Math.abs(v-before.xyz[i]));if(delta.some(d=>d!==0)&&delta.every(d=>d<5))return {resolved:false,reason:'Hero small-motion rollback branch unresolved'};
@@ -101,7 +119,9 @@ export function advanceF06HeroMotion(plan,kernel,clock){
  // dynamic collisions and movement rollback require their own outer proof.
  if(g.nextXYZ.some((v,i)=>v!==r.kinematic.xyz[i]))return {resolved:false,reason:'Hero corrected-height outer branch unresolved'};
  const state={...r.kinematic,xyz:[...g.nextXYZ],gravity:0,e0:r.kinematic.e0&63};
- if(plan.lock>0)state.movementByte=0;else{state.movementByte=1;state.targetAngle=0;}
+ if(plan.lock>0)state.movementByte=0;
+ else if(keyboard?.heldDirection==='None'){if(state.movementByte===1)state.movementByte=0;}
+ else{state.movementByte=1;state.targetAngle=keyboard?plan.keyboardAngles[keyboard.heldDirection]:0;}
  const nextLock=plan.lock>0?(plan.lock-clock.scaledDelta)|0:plan.lock,node=nearest(plan.graph,state.xyz,true);
  return {resolved:true,state,node,lock:nextLock,ground:{bestY:g.bestY,height:g.height,selectedId:g.objects?.[0]?.selectedId},conditional:true,worldResolved:false};
 }

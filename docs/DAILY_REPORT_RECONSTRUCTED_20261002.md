@@ -169,3 +169,16 @@ private再現helperに一度、後時点のpool pointerを入力へコピーす�
 `8f18bbe84890715e69f6580e898a96da69d0db7f` の[CI/deploy](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/36951813772)と公開moduleのbyte一致を確認。実CPU/WASMの自動観測で125秒周辺のミイラ男cropを1番から識別へ渡し、複数cropでミイラ男1位となった。一時停止8秒保持・resume・EOFも通過。使用clipは121～129秒の再圧縮版で、固定PNGfixtureやユーザーGPU環境とは区別する。
 
 別cropでははにわナイトが僅差で1位になるため、種認識の完全解決とはしない。[詳細](MUMMY_WINDOW_20261002.md)に時刻・類似度・検証範囲を記録した。
+
+
+## 11:22 JST追記: 味方の方向転換・停止・再移動とAT一致
+
+[F06の限定キーボード経路](F06_KEYBOARD_ORIGIN.md)を実装。新しいframe1990起点から、Down固定とDown→Right→キー解除→Downの2経路を、実際のcreateFirstSpawnReplay→advance→F06 continuationで比較した。各30回の移動前・29回の移動後のXYZ／角度／ノード／速度、timer、2回のAT消費がnativeと一致。seedは0x16e2ca29→0x9cdec1ae→0xa46fab4f、node24／table20／species88で生成結果の手前まで。
+
+キー解除後に速度-7が1pass残る正常な減速をsource02032fc4に合わせ、movementByte0だけ非正速度を0へ戻す。負のactive/special速度は従来どおり未対応。Down/Right/NoneのROM由来方向値、明示clockとkeyboard gateを使い、nativeの将来位置・角度・seedは入力にしない。
+
+従来の1200起点はD04の実測姿勢を与えた条件付き経路であり、将来の姿勢を予測入力にしない新しいfresh-origin検証とは区別する。旧Down packet、従来149-phase/134-callの条件付き経路は互換維持。新規UIや任意マップ／任意状態の読み込みには拡張しない。
+
+8組のobserver有無ペアで、各64 frameのCPU／画素／状態と5点のfull RAMが一致。独立レビューで595 portable assertions、101 release checks、factory/native比較と入力の分離を確認。root統合buildも成功し、レビュー済み10ファイルと生成WASMのhash一致を確認。公開後のブラウザ確認は別途行う。
+
+別の生成後調査では、nativeは次の生成抽選で136 callsまで到達することを確認したが、再現側の出生後bodyは未接続のまま。先行調査で取り違えたdescriptor-arrayと内部animation objectの参照を訂正し、追加条件なしでstatus bit2のclearを導出した。ここから全body対応済みとはしない。再現用ソースと訂正記録は非公開の既存ツール保存先にバックアップ済み。

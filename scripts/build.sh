@@ -83,3 +83,7 @@ node scripts/test-monster-warm-split.mjs
 # Connected original-state F06 motion through the first guarded selection draws.
 node scripts/test-f06-hero-motion.mjs
 node scripts/test-f06-creator.mjs
+
+# Explicit bounded F06 fresh-origin keyboard contracts.
+node scripts/test-f06-keyboard.mjs
+node scripts/test-f06-origin.mjs

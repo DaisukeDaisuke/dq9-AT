@@ -68,7 +68,10 @@ API("monster_motion_prefix") int mm_prefix(uint32_t phase,uint32_t scaled_delta)
  if((s[11]&1U)||(s[13]&32U)||(s[12]&4U))return 1;
  uint32_t delay=s[14]&32767U;delay=scaled_delta<delay?delay-scaled_delta:0;o[14]=delay;
  int32_t old_speed=signed16(s[6]),goal=signed16(s[7]),accel=signed16(s[8]);
- if(old_speed<0||goal<0||accel<0)return 0;
+ /* Reached ordinary release may leave one negative deceleration residue.
+  * 02032fc4 movementByte!=1 resets nonpositive old speed to zero and does
+  * not translate. Keep negative active movement and all other modes closed. */
+ if((old_speed<0&&s[9]!=0U)||goal<0||accel<0)return 0;
  int32_t increment=mul32(accel,signed32(phase)),next_speed;
  if(s[9]==1U){if(old_speed<goal)next_speed=add32(old_speed,increment);else next_speed=sub32(old_speed,goal)<increment?goal:sub32(old_speed,increment);}
  else next_speed=old_speed>0?sub32(old_speed,increment):0;

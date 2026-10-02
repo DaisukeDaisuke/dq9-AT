@@ -46,22 +46,22 @@ export function advanceF06Continuation(session){
  const plan=session.f06Continuation,index=session.f06TickIndex??0,t=plan.ticks[index],motion=plan.motion;
  if(!t){session.status='trajectory-ended';session.reason='F06 clock軌跡の終端。以降のworld更新は未確定です';session.stopped=true;return false;}
  const row={index:session.events.length,sourceFrame:t.sourceFrame,phase:'destination-world-tick',mapId:20006,heroXYZ:null,seed:session.seed,timer:session.timer,consumed:0,invocationResolved:false,status:'unresolved',reason:''};
- const original={seed:session.seed,position:'0',timer:index===0?0:session.timer};let result;
+ const original={seed:session.seed,position:'0',timer:index===0&&!plan.origin?0:session.timer};let result;
  function finish(resolved,reason){
   const consumed=result?.consumed??0;session.seed=session.atKernel?session.atKernel.seedAt(original.seed,BigInt(consumed)):original.seed;session.consumed+=consumed;session.timer=result?.timer??session.timer;
-  Object.assign(row,{seed:session.seed,consumed,timer:session.timer,invocationResolved:resolved,status:resolved?'running':'unresolved',reason});session.status=row.status;session.reason=reason;session.f06TickIndex=index+1;session.stopped=!resolved;session.events.push(row);return resolved;
+  Object.assign(row,{seed:session.seed,consumed,timer:session.timer,invocationResolved:resolved,status:resolved?'running':'unresolved',reason});if(motion?.keyboardInputs)row.schedulerTrace=structuredClone(result?.events??[]);session.status=row.status;session.reason=reason;session.f06TickIndex=index+1;session.stopped=!resolved;session.events.push(row);return resolved;
  }
  try{
-  need(session.currentMapId===20006&&session.pendingTransition?.phase==='pickup-projected','Reached F06 pickup boundary required');
-  if(index===0){session.timer=0;session.field.flags=(session.field.index&3)|12;session.field.active=1;}
-  const applicable=plan.updates.filter(u=>u.sourceFrame<t.sourceFrame),last=applicable.at(-1);
-  session.pickupUpdater={cursor:last?.cursor??plan.initial.cursor,accumulatorBits:last?.accumulatorBits??plan.initial.accumulatorBits,projectedInvocations:applicable.length,consumed:0,motionResolved:false};
+  need(session.currentMapId===20006&&(plan.origin?session.f06Origin===true:session.pendingTransition?.phase==='pickup-projected'),'Reached F06 origin/pickup boundary required');
+  if(index===0&&!plan.origin){session.timer=0;session.field.flags=(session.field.index&3)|12;session.field.active=1;}
+  const applicable=plan.origin?[]:plan.updates.filter(u=>u.sourceFrame<t.sourceFrame),last=applicable.at(-1);
+  session.pickupUpdater=plan.origin?null:{cursor:last?.cursor??plan.initial.cursor,accumulatorBits:last?.accumulatorBits??plan.initial.accumulatorBits,projectedInvocations:applicable.length,consumed:0,motionResolved:false};
   const input={active:session.field.active===1,storyAllowed:true,delta:t.delta};result=session.scheduler.step(original,input,{});
   if(!result.resolved&&result.reason==='free-slot result unknown'){const free=deriveNaturalFreeSlot(session.context.inventory,{group:0});if(free.resolved){input.freeSlot=free.freeSlot;result=session.scheduler.step(original,input,{});}}
   row.updaterInvocations=applicable.length;row.freeSlot=input.freeSlot??null;
   if(motion){
    need(session.hero?.slot===0&&session.hero.mapId===20006&&session.hero.alternateMap===0xffffffff&&session.hero.headerFlags===motion.hero.header&&session.context.globalWord===0&&session.parties.every((p,i)=>i===0||p.pointer===0),'Carried ordinary selected-hero identity/global branch required');
-   Object.assign(session.hero,{xyz:[...motion.state.xyz],angle:motion.state.angle,nodeIndex:motion.node});row.heroXYZ=[...motion.state.xyz];row.conditionalPose=true;
+   Object.assign(session.hero,{xyz:[...motion.state.xyz],angle:motion.state.angle,nodeIndex:motion.node});row.heroXYZ=[...motion.state.xyz];row.conditionalPose=true;if(motion.keyboardInputs)row.heroMotionBefore={state:structuredClone(motion.state),node:motion.node};
    session.currentCoordinate={mapId:20006,xyz:[...motion.state.xyz],kind:'conditional-source-carried',sourceFrame:t.sourceFrame,assumptions:[...motion.assumptions]};
    if(!result.resolved&&result.reason==='next eligible member/geometry unknown'){
     const near=[];for(const slot of session.context.inventory.slots.filter(s=>s.slot>=112&&s.slot<124)){const d=describeInventorySlot(slot);need(d.allocated!==null&&d.active!==null,'Destination member proximity inventory unknown');if(!d.allocated||!d.active)continue;need(Array.isArray(d.xyz)&&d.xyz.length===3&&d.xyz.every(Number.isInteger),'Active destination actor position unknown');if(d.xyz.every((v,k)=>v>=((motion.state.xyz[k]-[61440,2048,61440][k])|0)&&v<=((motion.state.xyz[k]+[61440,6144,61440][k])|0)))near.push(slot.slot);}
@@ -86,8 +86,8 @@ export function advanceF06Continuation(session){
     if(!result.resolved)return finish(false,result.reason==='creation-result-unknown'?'条件付きposeからtable/weighted ATまで導出。F06 creator資源・template bindingが未確定のため生成前で停止':result.reason);
    }
    if(result.resolved){
-    const next=advanceF06HeroMotion(motion,session.kernel,{phase:motion.phases[index],scaledDelta:t.delta});if(!next.resolved){session.currentCoordinate=null;session.hero.xyz=null;return finish(false,next.reason);}
-    Object.assign(motion,{state:next.state,node:next.node,lock:next.lock});Object.assign(session.hero,{xyz:[...next.state.xyz],angle:next.state.angle,nodeIndex:next.node});session.currentCoordinate={mapId:20006,xyz:[...next.state.xyz],kind:'conditional-source-carried',sourceFrame:t.sourceFrame,assumptions:[...motion.assumptions]};session.heroTrace.push([...next.state.xyz]);row.postHeroXYZ=[...next.state.xyz];row.heroNode=next.node;row.heroGround=next.ground;session.pickupUpdater.motionResolved='conditional';
+    const next=advanceF06HeroMotion(motion,session.kernel,{phase:motion.phases[index],scaledDelta:t.scaledDelta??t.delta},motion.keyboardInputs?.[index]??null);if(!next.resolved){session.currentCoordinate=null;session.hero.xyz=null;return finish(false,next.reason);}
+    Object.assign(motion,{state:next.state,node:next.node,lock:next.lock});Object.assign(session.hero,{xyz:[...next.state.xyz],angle:next.state.angle,nodeIndex:next.node});session.currentCoordinate={mapId:20006,xyz:[...next.state.xyz],kind:'conditional-source-carried',sourceFrame:t.sourceFrame,assumptions:[...motion.assumptions]};session.heroTrace.push([...next.state.xyz]);row.postHeroXYZ=[...next.state.xyz];row.heroNode=next.node;row.heroGround=next.ground;if(motion.keyboardInputs)row.heroMotionAfter={state:structuredClone(next.state),node:next.node};if(session.pickupUpdater)session.pickupUpdater.motionResolved='conditional';
    }
   }
   need(motion||result.consumed===0,'Unexpected destination AT without resolved geometry');
