@@ -233,3 +233,13 @@ fresh1990起点の下直進・右転回／停止・上転回・左転回の4経�
 今回の到達点はcreator／scheduler returnで、同passのHERO／bodyより前で停止する。2052→2053を別controller tickとして扱わず、postHeroや追加scheduler tickを挿入しない。continueNewborn=trueは拒否し、futureActorTicksPermitted／worldStepResolved／visualStateResolvedはfalseのまま。到達clockと既存条件を明示仮定とした限定再現であり、生成後body・full-world対応や一般的な状態保存証明ではない。
 
 レビュー済み4ソース／文書とこの日報だけを公開対象とし、生成WASMは変更しない。ROM／SAV／RAM／動画／画像／抽出資産／raw native events／GhidraDB／私有download URLは含めない。[対応範囲と入力契約](F06_KEYBOARD_ORIGIN.md)。
+
+
+## 13:50 JST追記: ChatGPT Workへの依頼と深夜のdots単騎作業
+
+記録時刻: 2026年10月2日04:50 UTC／13:50 JST。
+
+- dotsでは時間がかかりすぎる実装は、本人が起きていると確認できた場合に限りChatGPT Workへ依頼する。Workの起動・操作は本人が行い、dotsは依頼文・入力の準備と、返ってきた成果のレビュー・統合を担当する
+- 深夜作業は引き続きdots単騎で進める。Workを使えないことや本人が就寝中であることを理由に、作業全体を停止しない
+- dots側で「Workでしか作業できないため作業不可」として止めず、許可済みのcloud環境で進められる解析・実装・検査を続ける
+- 必須入力の不足や権限など、実際に進行を妨げる条件は対象と理由を具体的に記録し、その条件に依存しない作業を継続する
