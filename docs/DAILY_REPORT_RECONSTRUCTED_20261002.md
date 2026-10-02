@@ -265,3 +265,18 @@ Work2の提出済み採用527ケースは、固定commit `4d174d2a57990817881b01
 05:25 UTC分のチェックポイントは、凍結済み30ソース／証跡ファイル、allowlist2、復元・検査文書4の計36 text filesを既存の非公開tools mainへ通常fast-forwardで保存し、remote commit・全新規blob・既存357 filesの保持を確認した。backup時の確認はhash／UTF-8／JSON／8構文検査と独立source-only検査で、上記の監査やnative実験をbackup処理で再実行したという意味ではない。ROM／SAV／DST／RAM／動画／画像／抽出資産／raw source dump／私有download URL／秘密情報は同梱していない。公開変更はこの日報追記だけで、runtimeは変更しない。
 
 斜め4方向を本人が起動する外部Work4へ依頼する指示書も準備・提供した。まだ実装完了ではなく、私有復元情報を含む指示書本体は公開リポジトリへ追加しない。13:50 JSTに記録したWorkの起動担当と深夜単騎の方針は維持する。
+
+
+## 14:49 JST追記: 全マップ共通AT台帳の未解決候補を保持
+
+目標は「全マップでAT下限を証明し続けたい」。既存のATSessionを維持し、マップ横断の観測台帳で未解決の結果を不可能と誤判定していた箇所を修正した。trap・区間重複・区間欠落・不正なtable構造は候補として残し、確定した別種だけを除外する。従来は先頭候補を落としてconditionalBoundを1から2へ過大に進め得た。tableMatchesには確定一致だけを記録し、未解決部分は別途残す。実経路はat-panel→at-worker→ATSession.observeMonsterで、未使用の旧weightedStateConstraintは変更していない。
+
+起動から証明済みのlowerBoundは今回の観測修正では増やさない。マップ変更、曖昧な場所、映像・入力の欠落、未探索の末尾を維持し、重複観測と重複したboot prefixの二重加算を拒否する。独立検査でも既知table・欠損tableの旧snapshotとのbyte一致、3マップの連鎖、自然生成仮定の有無、境界位置、失敗時の原子性を確認した。全マップのconsumer到達、新規の自然生成、seed epochの連続性、現在状態の確定を証明した結果ではない。
+
+修正前のred再現後、最終session suiteは327,798 checksを通過。全32,768出力のcompiler照合、malformed／sparse table、公開table、保存・復元、production WASMの初回出力を含む。独立の手計算6ケースと追加61 assertionsも通過した。build.sh内37本とcompiler試験1本の計38 Node commands、識別kernel2本の固定hash／ABI検査が通過。公開前に現行mainのsource依存へ照合し、C／WASM再コンパイルを含むaggregate buildも追加実行し、exit0で通過した。repo格納の旧WASMを未ビルドで使う場合の既存export不足と、CIでsourceから再生成する経路は区別する。生成WASMは今回のcommitへ含めず、実ブラウザQAとnative全マップ実行は未実施。CI／deployの成否はこのcommitに対するworkflow結果で別途確認する。
+
+旧コードが誤って引き上げたversion1の保存conditionalBoundは、復元時の再計算との不一致で安全に拒否される。元ファイルと証拠eventsは残り、同じseed・table資源で再評価する復旧余地はあるが、自動移行や保存数値だけの書換えは実装していない。正しい既存snapshotは復元可能。
+
+Nodeの参考計測では50,000位置の観測中央値は1表4.56ms、4表8.26ms。各表32,768出力の分類により1位置でも1表1.23ms、4表3.74msかかる。各30 sampleの比較で同時負荷は未制御、実ブラウザ性能やnative timingの保証ではない。
+
+次の正の下限接続には、観測時点までのconsumer到達、map依存の候補table条件、boot／seed epoch、順序・非重複、許容全経路の最小値、復元可能な根拠を揃える必要がある。既存F06の条件付きcreator prefixは再利用候補だが、未接続のfirst-body draftは最小追加AT0であり、これを全マップ下限の前提や優先課題にはしない。今回の公開対象はレビュー済み4ソース／文書と日報追記だけ。既存の日報・Work方針は保持し、ROM／SAV／RAM／動画／抽出資産／秘密情報／私有リンクは追加しない。[AT台帳の対応範囲](AT_TRACKING.md)。

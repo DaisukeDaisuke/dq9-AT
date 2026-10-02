@@ -20,12 +20,22 @@ export class ATSession {
   if(!id||this.ids.has(id))throw Error('観測IDが空または重複です。同じ出現を二重加算しません');
   const ids=[...new Set((tableIds??[tableId]).map(Number))];
   if(!ids.length||ids.some(x=>!Number.isInteger(x)||x<0))throw Error('生成地点のtable候補が必要です');
-  const available=ids.filter(t=>tables[String(t)]),unknown=ids.filter(t=>!tables[String(t)]),possible=available.filter(t=>tables[String(t)].data.some(m=>Number(m.monsterId)===Number(monsterId)&&!m.trapMonster));
-  if(!possible.length&&!unknown.length)throw Error('どのtable候補にも通常weighted選択としてこのmonsterがありません');
-  // Union across map/area/time hypotheses. Missing distributions retain every
-  // position in their branch rather than being mistaken for an impossible table.
+  // Match compileEvent's weighted predicate: missing/malformed tables and
+  // unresolved trap/overlap/hole outputs are possible, not negative evidence.
+  // 0 = resolved mismatch, 1 = resolved species match, 2 = unresolved outcome.
+  const uint=(n,max)=>Number.isInteger(n)&&n>=0&&n<=max,unknown=[],outcomes=new Map();
+  for(const id of ids){
+   const table=tables?.[String(id)],mask=new Uint8Array(32768);
+   const valid=table&&uint(table.maxRand,32767)&&table.maxRand>0&&Array.isArray(table.data)
+    &&Array.from({length:table.data.length},(_,i)=>Object.hasOwn(table.data,i)).every(Boolean)
+    &&table.data.every(r=>r&&uint(r.start,32767)&&Number.isInteger(r.end)&&r.end>=-1&&r.end<32768&&uint(r.monsterId,65535)&&typeof r.trapMonster==='boolean');
+   if(!valid)mask.fill(2);
+   else for(let random=0;random<32768;random++){const outcome=monsterForRandom(table,random);mask[random]=!outcome.monster?2:Number(outcome.monster.monsterId)===Number(monsterId)?1:0;}
+   if(mask.includes(2))unknown.push(id);outcomes.set(id,mask);
+  }
+  if(![...outcomes.values()].some(mask=>mask.some(Boolean)))throw Error('どのtable候補にも通常weighted選択としてこのmonsterがありません');
   const before=this.conditionalBound,min=naturalConfirmed?2n:1n,start=before+min-1n,pairs=this.kernel.generate(this.seed,start,window),positions=[],tableMatches=[];
-  for(let i=0;i<window;i++){const matching=possible.filter(t=>Number(monsterForRandom(tables[String(t)],pairs[i*2+1]).monster?.monsterId)===Number(monsterId));if(matching.length||unknown.length){const position=String(start+BigInt(i+1));positions.push(position);if(matching.length)tableMatches.push({position,tableIds:matching});}}
+  for(let i=0;i<window;i++){const random=pairs[i*2+1],matching=ids.filter(id=>outcomes.get(id)[random]===1),unresolved=ids.some(id=>outcomes.get(id)[random]===2);if(matching.length||unresolved){const position=String(start+BigInt(i+1));positions.push(position);if(matching.length)tableMatches.push({position,tableIds:matching});}}
   const first=positions.length?BigInt(positions[0]):start+BigInt(window)+1n;
   this.conditionalBound=first;this.ids.add(id);
   this.candidates={observationId:id,kind:'last-weighted-draw-position',searchedFrom:String(start+1n),searchedThrough:String(start+BigInt(window)),positions,tableMatches,tableIds:ids,unresolvedTableIds:unknown,unsearchedTailFrom:String(start+BigInt(window)+1n),tailPossible:true,currentMayBeLater:true};

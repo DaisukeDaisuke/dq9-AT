@@ -32,6 +32,9 @@ bash scripts/build-at-identify-stream.sh --verify
 node scripts/test-at-identify-index.mjs
 node scripts/test-at-identify-index-page.mjs
 
+# Cross-map session predicates retain unknown outcomes without proof increments.
+node scripts/test-at-session.mjs
+
 # Capture identity must stay tied to frozen pixels across asynchronous analyses.
 node --experimental-vm-modules scripts/check-video-panel-capture.mjs
 
