@@ -405,3 +405,21 @@ source座標の丸めで人工的なHUD重複が生じ、敵候補を失う限�
 直前のexport欄CSSは、[e4738a5のCI／deploy](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/36987703136)が09:05:59 UTCにsuccess。公開root／map-recognize両ページで2列配置、出口action／説明の全幅、縦潰れ・横はみ出し・ページ末尾への押し出し解消を確認した。download完了と保存内容の検証は引き続き未完了。
 
 BOX検出の修正担当は外部Work7のまま。未採用の丸め診断patchや追加BOX実験をこのreleaseへ混ぜない。ROM／SAV／DST／RAM／動画／画像／抽出ゲーム資産／秘密情報／生成WASMはcommitしない。公開commit固有のCI／deployはこの追記後に確認し、実施済みのローカル回帰と分けて扱う。
+
+## 18:30 JST追記: 観測した地図上の点から建物map ID候補を逆引き
+
+利用者が求める「表示されたおおよその位置から、家／建物の名称とmap IDを得る」方向を、既存のmap-recognizeの「文字→画像照合」へ接続した。同じ取得frameの地図名候補、地図画像の登録位置、パーティ点候補を使い、その点の誤差範囲に入るBMMP固定表示点からmap IDを逆引きする。正解の家IDを事前に一覧選択する必要はない。参照viewerの選択と独立し、名前候補に含まれないIDも同じdescriptorの固定点との対応から候補へ加える。
+
+結果は候補として表示する。同じ点にある階層・部屋・改装状態、複数marker、弱い画像登録、別descriptorを保持する。距離順は表示順だけで、最寄りを現在地と確定しない。追加許容幅は0〜64px、初期値4px。物理座標として同じ点に居る屋外mapの可能性も残し、currentMapId=null、mapIdentityResolved=false、minimumProvenATCalls=0を維持する。未校正の変換・点の本人対応・表示modeから、屋内滞在やAT消費を確定しない。
+
+### 最終統合の検証
+
+直前のWork4公開 `8a8644bcf56540d4f3ded7c8ed48dd5baa918a3f` に8ファイル差分を適用。Work4の5変更ファイルと最新日報を保持した。通常aggregateは09:28:39–09:28:59 UTCにexit0、既存44本のNode検査をすべて保持し新規1本を加えた45本が通過。一時object保存先だけを隔離し、公開build scriptは検証済み差分と一致させた。
+
+最終stageのcore＋ローカルROM118 assertions、実panel moduleの非同期フロー417 assertions、既存native実画素2枚を使う一連の47 assertionsが成功。最後の47件は、DS画面検出→名前枠→実ROM字形のCPU照合→同名57 ID→C01画像登録→点検出→逆引きをNodeで実行したもの。予測へ正解IDや事前選択した家を渡さず、予測後にのみ正解記録と比較した。武器屋は固定点候補map104、道具屋はmap108となり、点との差は約1.40px／0.91px。同じ点を物理表示するmap100や未探索の文字候補は残る。
+
+これは既存の非圧縮native実画素2例によるNode経路の検証で、ブラウザー操作、圧縮動画、全建物での認識精度の合格とはしない。実panel417件も模擬DOM／canvas／Workerの制御フローであり、実ブラウザー試験とは別。配信後の公開UI確認は担当を継続して行い、その結果までは利用者向けの最終完了としない。[逆引き契約と制限](mining/MAP_POSITION_IDENTIFICATION.md)を参照。
+
+ROM解放、source差替え・seek、許容幅変更で古い結果を無効化し、追跡時は同じ新frameから毎回計算し直す。評価上限4096分岐、無効分岐、未評価分を明示し、表示24件の外も観測ログに保持する。私的な画素・動画clip・字形・ROM・native実行結果は公開しない。
+
+Work4の[CI／deploy](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/36989408902)は09:23:54 UTCにsuccess。固定camera斜めだけの対応、camera回転未対応、ほこらの未解決、不足native証拠は維持する。BOX修正は引き続き外部Work7の担当で、今回も認識BOX sourceは変更しない。09:25の定期保存はこの確定差分の通常保存を兼ね、直前Work4の重複commitは作らない。

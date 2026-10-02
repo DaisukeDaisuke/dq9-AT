@@ -66,6 +66,7 @@ node scripts/test-map-marker-coordinate.mjs
 # ROM-local map display coordinates and reference overlays.
 node scripts/test-map-coordinate-index.mjs
 node scripts/test-map-coordinate-panel.mjs
+node scripts/test-map-position-identification.mjs
 
 # Static exit facts and explicit local mining action; no private inputs.
 node scripts/test-map-exits.mjs
