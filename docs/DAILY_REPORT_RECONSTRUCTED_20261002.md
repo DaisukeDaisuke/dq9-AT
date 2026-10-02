@@ -280,3 +280,14 @@ Work2の提出済み採用527ケースは、固定commit `4d174d2a57990817881b01
 Nodeの参考計測では50,000位置の観測中央値は1表4.56ms、4表8.26ms。各表32,768出力の分類により1位置でも1表1.23ms、4表3.74msかかる。各30 sampleの比較で同時負荷は未制御、実ブラウザ性能やnative timingの保証ではない。
 
 次の正の下限接続には、観測時点までのconsumer到達、map依存の候補table条件、boot／seed epoch、順序・非重複、許容全経路の最小値、復元可能な根拠を揃える必要がある。既存F06の条件付きcreator prefixは再利用候補だが、未接続のfirst-body draftは最小追加AT0であり、これを全マップ下限の前提や優先課題にはしない。今回の公開対象はレビュー済み4ソース／文書と日報追記だけ。既存の日報・Work方針は保持し、ROM／SAV／RAM／動画／抽出資産／秘密情報／私有リンクは追加しない。[AT台帳の対応範囲](AT_TRACKING.md)。
+
+
+## 15:17 JST追記: マップ共通のNPC所属条件を独立モジュール化
+
+全マップでAT下限を証明し続けるため、NPC定義の固定除外条件、配置IDの照合、無条件opcode3の挿入・削除・順序を、既存parserを使う共通moduleとして実装した。raw32の定義IDとbyteに格納される配置IDを区別し、重複配置の順位付け、条件付き命令、未知のmodifierは未対応として止める。source上の所属候補を条件付きで求める段階であり、実際のheap／配置list／loader到達／constructor完了を確定しない。
+
+D06M02／map7602では条件付きkind1定義が1件となり、H15／map16500では未対応opcode6により所属をunknownのまま保持する。source件数を実行済みAT消費数へ変換せず、provedMinimumATは0、actualATConsumedはnull、bootProofはfalseを維持する。ATSessionへの正の下限接続や実worldの変更はない。
+
+合成fixture170 checks、独立3,578 assertions（無条件配置のランダム500ケースを含む）と既存回帰が通過した。独立レビューは元ROM命令との照合とD06M02／H15の再実行も実施済み。公開前には170 checksと独立3,578 assertionsを再実行し、既存Clang／LLD19の通常aggregate buildもexit0で通過した。新しいtestをbuild.shに追加し、以後のCIでも維持する。セントシュタインのnative検証は別途進行中で、全マップの実行到達や正の下限証明が完成したとはしない。
+
+今回の公開対象はレビュー済み新規4ファイル、testのbuild接続、日報追記のみ。ROM／SAV／RAM／抽出資産／私有flag値／私有リンクは追加せず、生成WASMはcommitしない。既存の日報とWork方針は保持する。[入力契約と未解決の境界](NPC_MEMBERSHIP_PROJECTION.md)。
