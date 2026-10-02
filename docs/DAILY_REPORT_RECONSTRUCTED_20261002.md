@@ -308,3 +308,20 @@ D06M02／map7602では条件付きkind1定義が1件となり、H15／map16500�
 武器屋NPCの既知開始snapshotから次の継続ATを予測するWork5指示書を本人へ提供し、その同じ文書1件を既存の非公開tools保存先へ保存した。指示書の提供はWork5実装完了を意味しない。元入力IDとprivate取得先を含む文書本体は公開日報に同梱しない。既に保存済みのsource checkpoint、共有復元書、追加台帳は変更・重複保存していない。Work3最終成果は取得・検算中で、境界検証も未完のため、未確定数値を結論へ採用していない。
 
 今回の公開変更はこの日報追記のみ。既存の記録とWork方針を維持し、runtime／WASMは変更しない。ROM／SAV／DST／RAM／画素／動画／抽出資産／raw flag・event／私有download URL／秘密情報は追加しない。
+
+
+## 16:42 JST追記: Work1／2／3の受入結果を本番codeへ統合
+
+独立レビューを通過した3系統を、既存本番経路と通常buildへ統合した。調査結果だけを保存する段階から、利用中の処理と以後のCIで働く変更へ進めた。今回の対象は以下に限定する。
+
+- Work1: CPU候補生成でwarm-split由来の候補を選別通過数へ含め、保持数と枠上限による省略数を正しく計上する。本番認識UIには同じcaptureのCPU選別・保持・省略と入力切り抜きの特徴計算到達数を表示し、未計測と0件、保持中／履歴／現在frameを分ける。実候補の矩形・順序・priority、認識classifier、閾値、gate、最大2枠表示は変更していない。認識精度改善の主張ではない。
+- Work2: 受入監査でruntime defectが確認されなかったため、engineを変更せず、実際のhost／Worker／固定WASMを使う取消・checkpoint・coverage回帰と独立binary64 oracleを通常buildへ接続した。途中取消やWorker errorで未ackの仕事を探索済みと数えず、最後にackされた候補・範囲・materializationを保持する契約を検査する。新しいtestとhelperの変更でもPages CIが起動するようpath filterへ追加した。
+- Work3: 本番createFirstSpawnReplay入口が、利用者のローカルROMにあるUpdateATの全40命令byte＋12 literal byteを固定SHA-256で検査する。以前は実入口を通過していた算術命令の変更を、replay生成前に拒否する。同期API、既存ARM9 decoder本体、元ROMでのreplay結果は維持する。ROM命令byte自体は追加していない。[source結合の範囲](AT_SOURCE_BINDING.md)と[Work2本番回帰](AT_WORK2_REGRESSIONS.md)を参照。
+
+最終統合版で、既存Clang／LLD19.1.7による通常buildを07:39:19〜07:39:41 UTCに直列実行しexit0。既存Nodeチェック38本をすべて保持し、新規4本を加えた42本が通過した。既存ATSession 327,798 checksも通過し、正の下限・map表示選択・seed epochの意味を変更していない。生成WASMはcommit対象外とした。
+
+統合後の再検査では、Work1の会計10件、Node DOM／lifecycle 230件、既存proposal・warm-split・recognition・observer計142件が通過。独立レビューでは変更前後787ケースの候補とtrackingの完全一致も確認済み。Work2は24 Worker cases／3,156 assertions（実clock22件、隔離した模擬clock2件）、binary64 196,795 assertions、65,536 scalar比較、65,536 mask出力、18 Worker casesが通過した。独立レビューでは実production sourceへの7種類の故障注入をすべて検出した。有限範囲の検査であり全周期探索や任意入力の完全性の証明ではない。
+
+Work3はportable 529 checksと元ROMをローカル入力した695 checksが通過し、52 byteすべてを1 byteずつ変更した場合の拒否、同じbufferの変更後再検査、元入力不変を確認。統合後の完全replay出力も、既存の2入力で30 phases／2 drawと149 phases／134 drawが変更前と一致した。固定hashはこのleafの同一性だけを結合し、caller到達、seed setter不在、現在seed、全mapのAT下限を証明しない。
+
+公開前のNodeとローカルROM検査は完了した。公開commit固有のCI／deploy結果と公開ブラウザ確認は、この追記時点では未確認として別途確認する。Node DOM検査をブラウザ実測と扱わない。ROM／SAV／RAM／動画／抽出ゲーム資産／秘密情報は追加せず、既存日報の本文をそのまま保持して追記する。

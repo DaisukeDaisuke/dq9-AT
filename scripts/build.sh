@@ -32,6 +32,10 @@ bash scripts/build-at-identify-stream.sh --verify
 node scripts/test-at-identify-index.mjs
 node scripts/test-at-identify-index-page.mjs
 
+# Accepted Work2 finite oracles and real Worker cancellation/coverage regressions.
+node scripts/test-at-worker-regressions.mjs
+node scripts/test-at-binary64-regressions.mjs
+
 # Cross-map session predicates retain unknown outcomes without proof increments.
 node scripts/test-at-session.mjs
 
@@ -64,6 +68,7 @@ node scripts/test-map-exits.mjs
 node scripts/test-map-exits-ui.mjs
 
 # Explicit first-spawn replay; portable inputs only, no private fixture required.
+node scripts/test-at-source.mjs
 node scripts/test-first-spawn.mjs
 node scripts/test-first-spawn-page.mjs
 node scripts/test-monster-newborn.mjs
@@ -85,6 +90,7 @@ node scripts/test-rtdetr-runtime-check.mjs
 node scripts/test-resource-decoders.mjs
 node scripts/test-monster-position-proposals.mjs
 node scripts/test-monster-warm-split.mjs
+node scripts/test-monster-proposal-accounting.mjs
 
 # Connected original-state F06 motion through the first guarded selection draws.
 node scripts/test-f06-hero-motion.mjs

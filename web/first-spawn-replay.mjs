@@ -1,3 +1,4 @@
+import {verifyATSourceRom} from './at-source.mjs';
 import {F06_ORIGIN_RUNTIME_SCHEMA,prepareF06OriginReplay} from './f06-origin-replay.mjs';
 import {bindF06CreatorOrigin} from './f06-creator.mjs';
 // Browser composition of existing guarded source models. Optional continuation
@@ -60,6 +61,9 @@ export function validateSpawnTrajectory(input,mapId,graph,continueNewborn=false)
  * primitive input, declared stable within this conditional replay. */
 export function createFirstSpawnReplay({project,rom,kernel,fieldKernel,atKernel,runtime,trajectory,seed,continueNewborn=false}){
  check(uint(seed),'開始seedはu32が必要です');
+ // Resource-compatible ROMs may still have changed arithmetic. Bind the entire
+ // reviewed AT leaf before any replay state, resource allocation or draw.
+ verifyATSourceRom(rom);
  if(runtime?.schema===F06_ORIGIN_RUNTIME_SCHEMA){check(continueNewborn===false,'Fresh F06 origin does not accept newborn/body continuation');return new FirstSpawnReplay({...prepareF06OriginReplay(project,rom,runtime,trajectory),kernel,fieldKernel,atKernel,trig:preferredNodeTrigFromRom(rom),seed});}
  const composed=runtime?.schema==='dq9-first-spawn-runtime-v2',destination=trajectory?.schema==='dq9-pre-spawn-trajectory-v4',crosses=destination||trajectory?.schema==='dq9-pre-spawn-trajectory-v3';
  check(!crosses||(continueNewborn&&exact(trajectory,['schema','phase','mapId','steps','transitionPhases',...(destination?['destinationContinuation']:[])])&&trajectory.phase==='pre-spawn-and-post-hero-with-reached-transitions'),'移動再生には継続と到達済みphase軌跡が必要です');

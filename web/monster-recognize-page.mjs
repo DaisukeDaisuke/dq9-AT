@@ -14,6 +14,19 @@ const defaultEnsureInferenceAssets = async options => (await import('./monster-i
 const cloneValue = value => value === null || typeof value !== 'object' ? value : Object.fromEntries(Object.entries(value).map(([key, item]) => [key, cloneValue(item)]));
 const sameRect = (left, right) => left === right || !!left && !!right && ['x', 'y', 'w', 'h'].every(key => left[key] === right[key]);
 
+// CPU proposal counts describe this capture, not enemies, descriptors or DINO additions.
+export function proposalCoverageText(result) {
+  const c = result?.coverage;
+  if (!c || ![c.candidateComponents, c.retainedCandidates, c.budgetDropped].every(n => Number.isSafeInteger(n) && n >= 0) || c.retainedCandidates + c.budgetDropped !== c.candidateComponents) return 'CPU候補の段階別件数は未計測です。';
+  const reasons = new Set((c.exclusions || []).map(r => r.reason));
+  const masks = [reasons.has('central-field-exclusion') ? '中央' : '', reasons.has('command-hud-exclusion') ? 'HUD' : ''].filter(Boolean);
+  return `CPU選別通過 ${c.candidateComponents}候補 → 保持 ${c.retainedCandidates}候補（枠上限で${c.budgetDropped}候補省略）。${masks.length ? `${masks.join('・')}除外内は未観測です。` : ''}`;
+}
+export function queryDescriptorText(result) {
+  const n = result?.coverage?.queryDescriptorsComputed;
+  return `入力切り抜きの特徴計算 ${n === 0 ? '0件（未観測）' : n === 1 ? '1件' : '未計測'}`;
+}
+
 export function gameplayROIForLayout(layout, frame, manual) {
   if (!frame) return null;
   let rect;
@@ -363,7 +376,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
       else { const canvas = $('video-observation-view'); canvas.hidden = true; canvas.width = canvas.height = 0; $('video-position-age').textContent = '現在の位置候補は停止・未観測です。過去の切り抜き記録は現在位置に貼り付けません。'; }
     }
     const s = info.stats || {};
-    $('video-observation-status').textContent = info.running ? `${info.phase === 'preparing' ? '64姿勢を準備中（動画フレームは最新の1枚だけ保持）' : '自動観測中'} · CPU ${s.sampledFrames || 0}枚 / 照合 ${s.classificationsCompleted || 0}件 / 補助 ${s.supplementsStarted || 0}回` : observer.held ? '動画と自動観測を一時停止中 · 枠付きの観測フレームを1枚固定しています。再開は明示操作です。' : `自動観測を停止しました（${info.phase}）。順位は観測した過去の切り抜きにだけ対応します。`;
+    $('video-observation-status').textContent = info.running ? `${info.phase === 'preparing' ? '64姿勢を準備中（動画フレームは最新の1枚だけ保持）' : '自動観測中'} · 累計 CPU ${s.sampledFrames || 0}枚 / 照合応答 ${s.classificationsCompleted || 0}件 / 補助 ${s.supplementsStarted || 0}回` : observer.held ? '動画と自動観測を一時停止中 · 枠付きの観測フレームを1枚固定しています。再開は明示操作です。' : `自動観測を停止しました（${info.phase}）。順位は観測した過去の切り抜きにだけ対応します。`;
     if (String(info.phase).startsWith('error:')) error(info.error || info.phase.slice(7), 'video-observation');
     if (info.running) queueObservationAge();
     updateObservationAges(); controls();
@@ -394,6 +407,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
       const card = makeElement('li',undefined,'video-observation-card'), r = item.roi;
       const ordinal = Number.isInteger(item.proposalOrdinal) && item.proposalOrdinal > 0 ? ` · この時刻の枠 ${item.proposalOrdinal}` : '';
       card.append(makeElement('strong',`実際に照合した切り抜き · 動画 ${item.captureStamp.videoTime.toFixed(3)}秒${ordinal} · ${item.candidateSource === 'dino-patch' ? 'DINO補助枠' : 'CPU枠'}`),item.thumbnail);
+      card.append(makeElement('p',`${queryDescriptorText(item.result)} · 順位表示 ${(item.result.rankings || []).length}モデル（この過去の切り抜きのみ）`));
       card.append(makeElement('p',`この時刻の範囲: x ${r.x}, y ${r.y}, ${r.w} × ${r.h}px`));
       for (const [index, rank] of (item.result.rankings || []).entries()) card.append(makeElement('p',`${index+1}. ${rank.modelId} · ${labels(rank)} · ${Number.isFinite(rank.similarity)?rank.similarity.toFixed(4):'類似度不明'}`));
       card.append(makeElement('p','候補外・判別不能。背景にも順位が出ます。敵・種類・出現・ATは確定しません。','muted'));
@@ -406,11 +420,11 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     if (observer.held) {
       const held = observer.held, stamp = held.result.captureStamp;
       $('video-observation-view').hidden = false;
-      $('video-position-age').textContent = `固定した観測 · 動画 ${stamp.videoTime.toFixed(3)}秒 · 観測 #${stamp.frameSerial} · 表示 ${Math.min(VIDEO_PREVIEW_BOX_LIMIT,held.result.proposals.length)}枠 / 内部候補 ${held.result.proposals.length}枠（上限8） · ${stamp.timestampBasis === 'requestVideoFrameCallback.mediaTime' ? '表示フレームの時刻' : '再生時刻の概算'}。この画像・枠・時刻は同一フレームの記録です。停止した再生位置とは異なる場合があります。現在の位置・敵の種類は未確認です。`;
+      $('video-position-age').textContent = `固定した観測 · 動画 ${stamp.videoTime.toFixed(3)}秒 · 観測 #${stamp.frameSerial} · 表示 ${Math.min(VIDEO_PREVIEW_BOX_LIMIT,held.result.proposals.length)}枠 / 内部候補 ${held.result.proposals.length}枠（上限8） · ${stamp.timestampBasis === 'requestVideoFrameCallback.mediaTime' ? '表示フレームの時刻' : '再生時刻の概算'}。この画像・枠・時刻は同一フレームの記録です。停止した再生位置とは異なる場合があります。現在の位置・敵の種類は未確認です。 ${proposalCoverageText(held.result)}`;
     } else if (observer.running && observer.latest) {
       const latest = observer.latest, age = Math.max(0,(now-latest.wallAt)/1000), stale = age > 1;
       $('video-observation-view').hidden = stale;
-      $('video-position-age').textContent = `位置候補 · 表示 ${stale ? 0 : Math.min(VIDEO_PREVIEW_BOX_LIMIT,latest.result.proposals.length)}枠 / 内部候補 ${latest.result.proposals.length}枠（上限8） · 動画 ${latest.result.captureStamp.videoTime.toFixed(3)}秒 · 撮影から${age.toFixed(1)}秒（実時間） · ${stale ? '古い位置のため枠を非表示・現在は未観測' : 'すべて未確認'}。不在や消滅の証拠ではありません。`;
+      $('video-position-age').textContent = `位置候補 · 表示 ${stale ? 0 : Math.min(VIDEO_PREVIEW_BOX_LIMIT,latest.result.proposals.length)}枠 / 内部候補 ${latest.result.proposals.length}枠（上限8） · 動画 ${latest.result.captureStamp.videoTime.toFixed(3)}秒 · 撮影から${age.toFixed(1)}秒（実時間） · ${stale ? '古い位置のため枠を非表示・現在は未観測' : 'すべて未確認'}。不在や消滅の証拠ではありません。 ${proposalCoverageText(latest.result)}`;
     }
     for (const item of state.observationRecords) if (item.ageElement) item.ageElement.textContent = `撮影から${Math.max(0,(now-item.positionObservedAt)/1000).toFixed(1)}秒（実時間） · 処理${Math.max(0,(item.completedAt-item.dispatchedAt)/1000).toFixed(2)}秒 · ${observer.running ? '過去の切り抜き記録' : '停止時点の記録'}。新しい枠への種類の引継ぎはしません。`;
   }
@@ -474,7 +488,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
       state.proposalResult = { ...result, captureStamp }; state.busy = false; state.denseBusy = false;
       const p = result.densePreparation || {}, t = result.denseTimings || {}, added = candidates.length - sourceSet.proposals.length;
       state.denseStatus = `DINO補助 ${added}枠追加・計${candidates.length}/8枠 · 全体${((performance.now()-started)/1000).toFixed(1)}秒 · 姿勢特徴 新規${p.templateCacheMisses ?? 0} / 再利用${p.templateCacheHits ?? 0}（保存から${p.persistentRestored ?? 0}） · 画面パッチ${((t.totalMs || 0)/1000).toFixed(2)}秒。背景候補も増えます。分類は選んだ切り抜きごとに別途実行します。${result.cacheWarnings?.length ? ` 保存キャッシュの注意: ${result.cacheWarnings.join(' ')}` : ''}`;
-      $('proposal-status').textContent = `${candidates.length}候補はすべて未確認です。候補を選び、元画像の切り抜きを既存の分類器で照合してください。`;
+      $('proposal-status').textContent = `${candidates.length}候補はすべて未確認です。${proposalCoverageText(sourceSet)} DINO補助 ${added}候補は別枠の追加です。候補を選び、元画像の切り抜きを既存の分類器で照合してください。`;
       renderProposals(); paint(); controls(); $('progress').max = 1; $('progress').value = 1;
       status('固定画像の補助候補を追加しました。敵・種類・出現やATは確定していません。');
     } catch (failure) {
@@ -535,7 +549,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
       const milliseconds = Number.isFinite(result.elapsedMs) ? `${result.elapsedMs.toFixed(1)} ms` : '時間不明';
       const unprocessed = valid.filter(p => !p.classificationEligible).length;
       const omittedNote = `${unprocessed ? ` ${unprocessed}件はサイズ上限のため未処理です。手動で範囲を調整してください。` : ''}${invalidBounds ? ` 範囲不正${invalidBounds}件は表示しません。` : ''}`;
-      $('proposal-status').textContent = valid.length ? `${valid.length}候補 · CPU領域探索 ${milliseconds}（分類時間は別）。候補を1つ選んでから照合してください。枠は未確認です。${omittedNote}` : `領域候補は0件でした（CPU領域探索 ${milliseconds}）。敵がいない証拠ではありません。手動で範囲を指定できます。`;
+      $('proposal-status').textContent = valid.length ? `${valid.length}候補 · CPU領域探索 ${milliseconds}（分類時間は別）。${proposalCoverageText(state.proposalResult)} 候補を1つ選んでから照合してください。枠は未確認です。${omittedNote}` : `領域候補は0件でした（CPU領域探索 ${milliseconds}）。敵がいない証拠ではありません。手動で範囲を指定できます。 ${proposalCoverageText(state.proposalResult)}`;
       status('固定した画像だけの領域候補を表示しました。分類はまだ行っていません。');
     } catch (failure) {
       clearProposals('領域候補を作れませんでした。手動の範囲指定は使えます。'); error(failure); paint(); controls();
@@ -884,7 +898,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     const unknown = result.unknown || {};
     $('unknown-status').textContent = skipped ? `中央除外による未観測・判別不能です。${unknown.reason ? ` ${unknown.reason}` : ''} 敵がいないことや候補が違うことの根拠にはなりません。候補外の可能性も残ります。` : `候補外・判別不能を含む未確定の結果です。${unknown.reason ? ` ${unknown.reason}` : ''} 受理判定のしきい値は未検証です。1位でも確定ではありません。`;
     const coverage = result.coverage || {}; const valueText = value => Array.isArray(value) ? `${value.length} (${value.map(item => typeof item === 'object' ? item.modelId || '' : item).join(', ')})` : value ?? '不明';
-    $('coverage').textContent = `比較方法: ${dino ? 'DINOv2画像特徴（cosine類似度）' : '色ヒストグラム（距離）'} · 要求モデル: ${valueText(coverage.requestedModels)} · 比較できたモデル: ${valueText(coverage.completedModels)} · 生成した比較画像: ${coverage.renderedTemplates ?? '不明'}${coverage.scope ? ` · 範囲: ${typeof coverage.scope === 'string' ? coverage.scope : JSON.stringify(coverage.scope)}` : ''}`;
+    $('coverage').textContent = `比較方法: ${dino ? 'DINOv2画像特徴（cosine類似度）' : '色ヒストグラム（距離）'} · ${queryDescriptorText(result)} · 要求モデル: ${valueText(coverage.requestedModels)} · 比較できたモデル: ${valueText(coverage.completedModels)} · 生成した比較画像: ${coverage.renderedTemplates ?? '不明'}${coverage.scope ? ` · 範囲: ${typeof coverage.scope === 'string' ? coverage.scope : JSON.stringify(coverage.scope)}` : ''}`;
     $('unsupported').replaceChildren(...(coverage.unsupported || []).map(item => makeElement('li', `${item.modelId}: ${item.reason}`)));
     $('limitations').replaceChildren(...[state.selectedProposalId ? '端末内で行う実験的な照合です。未確認の領域候補を選び、元画像の切り抜きを比較しています。' : '端末内で行う実験的な照合です。敵の範囲は手動で指定しています。', '順位は選択したモデルと生成できた姿勢の範囲だけで比較しています。候補外の敵は判別できません。', ...(result.cacheWarnings || []), ...(result.limitations || [])].map(text => makeElement('li', text)));
     const stamp = result.captureStamp;

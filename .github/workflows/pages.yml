@@ -2,7 +2,20 @@ name: Build and deploy map miner
 on:
   push:
     branches: [main]
-    paths: ['web/**', 'wasm/**', 'scripts/build.sh', '.github/workflows/pages.yml']
+    paths:
+      - 'web/**'
+      - 'wasm/**'
+      - 'scripts/build.sh'
+      - 'scripts/test-monster-proposal-accounting.mjs'
+      - 'scripts/test-monster-recognize-page.mjs'
+      - 'scripts/test-at-source.mjs'
+      - 'scripts/test-at-worker-regressions.mjs'
+      - 'scripts/at-identify-regression-node-worker.mjs'
+      - 'scripts/test-at-binary64-regressions.mjs'
+      - 'scripts/at-identify-node-worker.mjs'
+      - 'scripts/at-identify-index-node-worker.mjs'
+      - 'scripts/fixtures/at-ieee754-reference.mjs'
+      - '.github/workflows/pages.yml'
   workflow_dispatch:
 permissions:
   contents: read

@@ -188,8 +188,11 @@ export function proposeEnemyROIs(image, captureStamp, { profile, excludeCommandH
   splitCandidates.sort((a, b) => b.priority - a.priority || a.roi.y - b.roi.y || a.roi.x - b.roi.x);
   const kept = candidates.slice(0, maxProposals), spare = maxProposals - kept.length;
   base.proposals = [...kept, ...splitCandidates.slice(0, spare)].map((p, i) => ({ proposalId: `${stamp.frameSerial}:${i}`, ...p }));
-  if (oversizedWarmSplit) base.warmSplitExperiment = { enabled: true, diagnostics: warmDiagnostics, candidateCount: splitCandidates.length, added: Math.min(spare, splitCandidates.length), originalOrderPreserved: true };
-  return { ...base, coverage: { candidateComponents: candidates.length, budgetDropped: Math.max(0, candidates.length - maxProposals), oversizedComponents, exclusions: localExclusions.map(r => ({ ...r, coordinateSystem: '256x192-gameplay' })), expectedScaleModel: 'uncalibrated broad y-dependent speckle floor only', absenceCertified: false }, elapsedMs: performance.now() - start,
+  if (oversizedWarmSplit) base.warmSplitExperiment = { enabled: true, evaluated: candidates.length < maxProposals, diagnostics: warmDiagnostics, candidateCount: splitCandidates.length, added: Math.min(spare, splitCandidates.length), originalOrderPreserved: true };
+  // Count only gate-passing candidates actually evaluated, including warm additions.
+  // Rejected parent components and unevaluated splits are not extra candidates.
+  const candidateCount = candidates.length + splitCandidates.length;
+  return { ...base, coverage: { candidateComponents: candidateCount, originalCandidateComponents: candidates.length, warmSplitCandidateComponents: splitCandidates.length, retainedCandidates: base.proposals.length, budgetDropped: candidateCount - base.proposals.length, oversizedComponents, exclusions: localExclusions.map(r => ({ ...r, coordinateSystem: '256x192-gameplay' })), expectedScaleModel: 'uncalibrated broad y-dependent speckle floor only', absenceCertified: false }, elapsedMs: performance.now() - start,
     // Ephemeral small CPU buffers for camera registration; never inference inputs.
     trackingFrame: { width: 256, height: 192, gray, mask, blocked, identity: identity(stamp, profile, excludeCommandHUD, oversizedWarmSplit) } };
 }

@@ -4,6 +4,7 @@ import { proposeEnemyROIs, EnemyProposalTracker } from '../web/monster-position-
 import { CENTER_MASK, DEFAULT_MODELS, LIMITS, RequestGate, RecognitionWorkerClient, cloneCaptureStamp, gameplayROIForLayout, mountRecognitionPage, pointerROI, stampEquals, validateROI } from '../web/monster-recognize-page.mjs';
 
 let passed = 0;
+const accountingTextSnapshots = {};
 const check = (name, fn) => { fn(); passed++; console.log(`ok ${passed} - ${name}`); };
 const settle = async () => { for (let i = 0; i < 5; i++) await Promise.resolve(); };
 const stamp = { sourceId: 'local-test', sourceEpoch: 2, timelineSegment: 3, frameSerial: 4, romEpoch: 5, sourceFrame: { width: 640, height: 480 }, videoTime: 1.25, timestampBasis: 'video.currentTime (approximate)', capturedAt: '2026-09-30T23:00:00.000Z', enemyROI: { x: 10, y: 20, w: 40, h: 50 } };
@@ -85,7 +86,7 @@ const documentEvents = new Element('document');
 const doc = { hidden: false, addEventListener: (...args) => documentEvents.addEventListener(...args), getElementById: id => { assert(elements.has(id), `missing HTML element ${id}`); return elements.get(id); }, createElement: tag => new Element(tag) };
 let probeGPU = async () => ({}), clearLocalFeatures = async () => {}; let prepareInference = async () => ({}); const preparationCalls = [];
 const proposalCalls = [];
-let proposalFactory = (image, captureStamp) => ({ captureStamp: cloneCaptureStamp(captureStamp), elapsedMs: 3, proposals: [{ proposalId: `${captureStamp.frameSerial}:0`, roi: { x: 40, y: 45, w: 50, h: 60 } }, { proposalId: `${captureStamp.frameSerial}:1`, roi: { x: 430, y: 80, w: 70, h: 90 } }], unknown: { suggested: true, calibrated: false } });
+let proposalFactory = (image, captureStamp) => ({ captureStamp: cloneCaptureStamp(captureStamp), elapsedMs: 3, coverage: {candidateComponents:4,retainedCandidates:2,budgetDropped:2,exclusions:[{reason:'central-field-exclusion'},{reason:'command-hud-exclusion'}]}, proposals: [{ proposalId: `${captureStamp.frameSerial}:0`, roi: { x: 40, y: 45, w: 50, h: 60 } }, { proposalId: `${captureStamp.frameSerial}:1`, roi: { x: 430, y: 80, w: 70, h: 90 } }], unknown: { suggested: true, calibrated: false } });
 const defaultProposalFactory = proposalFactory;
 const win = new Element('window'); const ui = mountRecognitionPage(doc, win, { proposeROIs: (image, captureStamp, options) => { proposalCalls.push({ firstPixel: image.rgba[0], captureStamp: cloneCaptureStamp(captureStamp), options }); return proposalFactory(image, captureStamp, options); }, probeWebGPU: options => probeGPU(options), clearFeatureCache: () => clearLocalFeatures(), ensureInferenceAssets: options => { preparationCalls.push(options); return prepareInference(options); } }); const el = id => elements.get(id);
 el('variant').value = '_f'; el('preset').value = 'quick'; el('top-k').value = '4';
@@ -166,7 +167,8 @@ check('DINO valid quick single variant enables scoring', () => { assert(!el('sta
 el('scene-kind').value = 'field'; await el('scene-kind').trigger('change'); ui.setROI({ x: 1400, y: 300, w: 30, h: 30 });
 dinoJob = await beginScoring(); dinoRequest = dinoJob.worker.messages.at(-1).message;
 check('explicit central field overlap skips asset preparation and retains original pixels', () => { assert.equal(preparationCalls.length, 0); assert.equal(dinoRequest.type, 'recognize'); assert.equal(dinoRequest.featureMethod, 'dinov2'); assert.deepEqual(dinoRequest.sceneContext.gameplayROI, { x: 960, y: 0, w: 960, h: 720 }); assert(dinoRequest.sceneContext.excludeCenter); assert.equal(dinoRequest.crop.rgba[0], 37); assert.match(el('mask-status').textContent, /重なる/); });
-emitResult(dinoJob.worker, dinoRequest, { rankings: [], skipped: 'central-field-exclusion', coverage: { requestedModels: 4, completedModels: 0, renderedTemplates: 0, unsupported: [] } }); await dinoJob.completion;
+emitResult(dinoJob.worker, dinoRequest, { rankings: [], skipped: 'central-field-exclusion', coverage: { queryDescriptorsComputed:0,requestedModels: 4, completedModels: 0, renderedTemplates: 0, unsupported: [] } }); await dinoJob.completion;
+check('gate-skipped fixed result reports zero descriptor computations instead of ranked rejection',()=>assert.match(el('coverage').textContent,/入力切り抜きの特徴計算 0件（未観測）/));
 check('masked result remains unknown and unobserved without negative evidence', () => { assert.equal(el('rankings').children.length, 0); assert.match(el('unknown-status').textContent, /未観測・判別不能/); assert.match(el('unknown-status').textContent, /根拠にはなりません/); });
 ui.setROI({ x: 1000, y: 50, w: 40, h: 50 });
 let resolveAssets; prepareInference = () => new Promise(resolve => { resolveAssets = resolve; });
@@ -257,6 +259,8 @@ let countBeforeProposals = recognitionCount();
 await el('generate-roi-proposals').click();
 check('proposal generation uses frozen pixels/time and never classifies automatically', () => { const call=proposalCalls.at(-1); assert.equal(call.firstPixel,61); assert.equal(call.captureStamp.videoTime,12); assert.equal(call.options.profile,'shrine-blue-v1'); assert.equal(call.options.maxProposals,8); assert(call.options.excludeCommandHUD); assert.equal(recognitionCount(),countBeforeProposals); });
 check('candidate list is unverified and leaves manual ROI unset until selection', () => { assert.equal(el('roi-proposal-list').children.length,2); assert.equal(ui.state.roi,null); assert.match(el('proposal-status').textContent,/分類時間は別/); assert.match(el('roi-proposal-list').children[0].textContent,/未確認/); });
+accountingTextSnapshots.fixed = el('proposal-status').textContent;
+check('fixed CPU status exposes gate-passing and budget units without claiming classification',()=>{assert.equal(accountingTextSnapshots.fixed,'2候補 · CPU領域探索 3.0 ms（分類時間は別）。CPU選別通過 4候補 → 保持 2候補（枠上限で2候補省略）。中央・HUD除外内は未観測です。 候補を1つ選んでから照合してください。枠は未確認です。');assert.equal(recognitionCount(),countBeforeProposals);});
 const firstProposalButton = el('roi-proposal-list').children[0];
 await firstProposalButton.click();
 check('choosing a proposal sets the existing ROI without changing WebGPU or launching inference', () => { assert.deepEqual(ui.state.roi,{x:40,y:45,w:50,h:60}); assert.equal(el('inference-backend').value,'webgpu'); assert.equal(recognitionCount(),countBeforeProposals); assert.equal(el('roi-proposal-list').children[0].getAttribute('aria-pressed'),'true'); assert(!el('start').disabled); });
@@ -284,8 +288,8 @@ el('exclude-center').checked=true;await el('exclude-center').trigger('change');a
 el('enable-roi-proposals').checked=false;await el('enable-roi-proposals').trigger('change');
 check('turning the experiment off removes all proposal state',()=>{assert.equal(ui.state.proposalResult,null);assert.equal(el('roi-proposal-list').children.length,0);assert(el('generate-roi-proposals').disabled);});
 el('enable-roi-proposals').checked=true;await el('enable-roi-proposals').trigger('change');ui.setROI({x:25,y:30,w:30,h:40});
-proposalFactory=(image,captureStamp)=>({captureStamp:cloneCaptureStamp(captureStamp),proposals:[],elapsedMs:2});await el('generate-roi-proposals').click();
-check('zero proposals retain unknown and manual classification remains possible',()=>{assert.match(el('proposal-status').textContent,/敵がいない証拠ではありません/);assert(!el('start').disabled);});
+proposalFactory=(image,captureStamp)=>({captureStamp:cloneCaptureStamp(captureStamp),proposals:[],elapsedMs:2,coverage:{candidateComponents:0,retainedCandidates:0,budgetDropped:0,exclusions:[{reason:'central-field-exclusion'},{reason:'command-hud-exclusion'}]}});await el('generate-roi-proposals').click();
+check('zero proposals retain unknown and manual classification remains possible',()=>{assert.match(el('proposal-status').textContent,/CPU選別通過 0候補 → 保持 0候補（枠上限で0候補省略）/);assert(!el('proposal-status').textContent.includes('4候補'));assert.match(el('proposal-status').textContent,/敵がいない証拠ではありません/);assert(!el('start').disabled);});
 proposalFactory=()=>{throw new Error('proposal fixture failure');};await el('generate-roi-proposals').click();
 check('proposal failure leaves manual ROI workflow usable and clears stale suggestions',()=>{assert.equal(ui.state.proposalResult,null);assert.match(el('error').textContent,/proposal fixture failure/);assert(!el('start').disabled);});
 proposalFactory=(image,captureStamp)=>({...defaultProposalFactory(image,captureStamp),captureStamp:{...captureStamp,frameSerial:captureStamp.frameSerial+1}});await el('generate-roi-proposals').click();
@@ -563,18 +567,23 @@ Object.assign(ui.state,{sourceReady:true,sourceKind:'video',sourceId:'filtered-p
 Object.assign(video,{videoWidth:640,videoHeight:480,readyState:4,seeking:false,ended:false,paused:true});
 const allPreviewCandidates=Object.freeze(Array.from({length:8},(_,i)=>Object.freeze({proposalId:`original-${i+1}`,roi:Object.freeze({x:10+i*70,y:30+i*5,w:30,h:40})})));
 const originalPreviewCandidates=structuredClone(allPreviewCandidates);
-ui.observer.propose=(image,captureStamp)=>({captureStamp:cloneCaptureStamp(captureStamp),proposals:allPreviewCandidates,trackingFrame:{}});
+ui.observer.propose=(image,captureStamp)=>({captureStamp:cloneCaptureStamp(captureStamp),proposals:allPreviewCandidates,coverage:{candidateComponents:captureStamp.videoTime===20?11:10,retainedCandidates:8,budgetDropped:captureStamp.videoTime===20?3:2,exclusions:[{reason:'central-field-exclusion'},{reason:'command-hud-exclusion'}]},trackingFrame:{}});
 ui.observer.tracker={reset(){},update(r){return{observed:r.proposals.map((p,i)=>({...p,id:`preview-track-${i}`,sightings:2})),unobserved:[],camera:{reliable:true}}}};
 await ui.startVideoObservation();auto=await preparedWorker();await fireFrame(20000,150);
 const previewCanvas=el('video-observation-view'),previewContext=previewCanvas.context;
 // Exercise the renderer with immutable input, independently of the observer's clones.
 ui.observer.onPositions({...ui.observer.latest,result:Object.freeze({...ui.observer.latest.result,proposals:allPreviewCandidates})});
 check('preview draws only original numbers 1 and 2 without mutating eight candidates',()=>{assert.deepEqual(previewContext.boxes,allPreviewCandidates.slice(0,2).map(p=>Object.values(p.roi)));assert.deepEqual(previewContext.labels,['1','2']);assert.deepEqual(allPreviewCandidates,originalPreviewCandidates);assert.equal(ui.observer.latest.result.proposals.length,8);assert.deepEqual(ui.observer.latest.result.proposals.map(p=>p.proposalId),allPreviewCandidates.map(p=>p.proposalId));assert.match(el('video-position-age').textContent,/表示 2枠 \/ 内部候補 8枠/);});
+accountingTextSnapshots.live = el('video-position-age').textContent;
+check('live status keeps display, CPU retained and budget losses as distinct units',()=>{assert.match(accountingTextSnapshots.live,/表示 2枠 \/ 内部候補 8枠.*CPU選別通過 11候補 → 保持 8候補（枠上限で3候補省略）/);});
 auto.worker.emit({type:'result',id:auto.req.id,romEpoch:ui.state.romEpoch,result:{prepared:true}});await settle();
 const historicalPreviewRequest=auto.worker.messages.at(-1).message;
 await fireFrame(20500,170);
 const currentPreviewBoxes=structuredClone(previewContext.boxes),currentPreviewLabels=[...previewContext.labels];
-emitResult(auto.worker,historicalPreviewRequest);await settle();
+check('new frame replaces previous frame budget counts before historical classification finishes',()=>{const text=el('video-position-age').textContent;assert.match(text,/20.500秒.*CPU選別通過 10候補 → 保持 8候補（枠上限で2候補省略）/);assert(!text.includes('11候補'));});
+emitResult(auto.worker,historicalPreviewRequest,{coverage:{queryDescriptorsComputed:1,requestedModels:4,completedModels:1}});await settle();
+accountingTextSnapshots.historical = el('video-observations').children[0].children[2].textContent;
+check('historical descriptor reach belongs to the old crop and is not current-frame coverage',()=>{assert.equal(accountingTextSnapshots.historical,'入力切り抜きの特徴計算 1件 · 順位表示 1モデル（この過去の切り抜きのみ）');assert.match(el('video-observation-status').textContent,/累計 CPU/);});
 check('actual classified crop keeps its original pixels and time without replacing newer overlay',()=>{const item=ui.state.observationRecords[0],card=el('video-observations').children[0];assert.equal(item.captureStamp.videoTime,20);assert.deepEqual(item.roi,historicalPreviewRequest.captureStamp.enemyROI);assert.equal(item.thumbnail.context.snapshot,150);assert.match(item.thumbnail.getAttribute('aria-label'),/実際に照合した/);assert.match(card.children[0].textContent,/実際に照合した切り抜き.*20.000秒/);assert.equal(ui.observer.latest.result.captureStamp.videoTime,20.5);assert.equal(previewContext.paintedPixels[0],170);assert.deepEqual(previewContext.boxes,currentPreviewBoxes);assert.deepEqual(previewContext.labels,currentPreviewLabels);assert(ui.observer.latest.result.proposals.every(p=>!p.rankings));});
 // Ordinals come from the classified capture, never a lookup in the current proposal set.
 ui.observer.onObservation({captureStamp:cloneCaptureStamp(historicalPreviewRequest.captureStamp),roi:{...historicalPreviewRequest.captureStamp.enemyROI},preview:{width:historicalPreviewRequest.crop.width,height:historicalPreviewRequest.crop.height,rgba:historicalPreviewRequest.crop.rgba.slice()},proposalOrdinal:7,candidateSource:'cpu-component',result:{rankings:[]},positionObservedAt:20000,dispatchedAt:20000,completedAt:20500});
@@ -582,11 +591,14 @@ check('historical card retains the supplied original ordinal instead of a displa
 const filterJobsBeforePause=autoCount(),pendingFilteredRequest=auto.worker.messages.at(-1).message;
 video.currentTime=20.777;video.frameValue=199;await el('pause-video-observation').click();
 const filteredHeld=ui.observer.held,filteredHeldLabel=el('video-position-age').textContent;
+accountingTextSnapshots.held = filteredHeldLabel;
+check('pause retains exact capture accounting without converting it to a fresh count',()=>{assert.match(filteredHeldLabel,/固定した観測.*20.500秒.*CPU選別通過 10候補 → 保持 8候補（枠上限で2候補省略）/);assert.equal(filteredHeld.result.coverage.budgetDropped,2);});
 check('held filtered preview keeps the same two boxes, eight internal candidates and immutable time',()=>{assert(filteredHeld);assert(Object.isFrozen(filteredHeld.result.captureStamp));assert.equal(filteredHeld.result.captureStamp.videoTime,20.5);assert.equal(filteredHeld.image.rgba[0],170);assert.equal(filteredHeld.result.proposals.length,8);assert.deepEqual(previewContext.boxes,currentPreviewBoxes);assert.deepEqual(previewContext.labels,['1','2']);assert.equal(previewContext.paintedPixels[0],170);assert.match(filteredHeldLabel,/20.500秒.*表示 2枠 \/ 内部候補 8枠/);assert.match(filteredHeldLabel,/同一フレーム/);assert.equal(autoCount(),filterJobsBeforePause);assert.equal(frameCallbacks.size,0);});
 emitResult(auto.worker,pendingFilteredRequest);await settle();observerClock=90000;await el('pause-video-observation').click();
 check('late result and repeat pause cannot repaint the filtered held frame',()=>{assert.strictEqual(ui.observer.held,filteredHeld);assert.equal(el('video-position-age').textContent,filteredHeldLabel);assert.deepEqual(previewContext.boxes,currentPreviewBoxes);assert.deepEqual(previewContext.labels,['1','2']);assert.equal(previewContext.paintedPixels[0],170);assert.equal(ui.state.observationRecords.length,2);});
 el('source-file').files=[];ui.selectSource();
-check('source replacement clears filtered frame, counts and historical crops without starting work',()=>{assert.equal(ui.observer.held,null);assert.equal(ui.observer.latest,null);assert(previewCanvas.hidden);assert.equal(previewCanvas.width,0);assert.equal(previewCanvas.height,0);assert(!el('video-position-age').textContent.includes('内部候補'));assert.equal(ui.state.observationRecords.length,0);assert.equal(el('video-observations').children.length,0);assert.equal(autoCount(),filterJobsBeforePause);assert.equal(frameCallbacks.size,0);});
+check('source replacement clears filtered frame, counts and historical crops without starting work',()=>{assert.equal(ui.observer.held,null);assert.equal(ui.observer.latest,null);assert(previewCanvas.hidden);assert.equal(previewCanvas.width,0);assert.equal(previewCanvas.height,0);assert(!el('video-position-age').textContent.includes('内部候補'));assert(!el('video-position-age').textContent.includes('CPU選別通過'));assert.equal(ui.state.observationRecords.length,0);assert.equal(el('video-observations').children.length,0);assert.equal(autoCount(),filterJobsBeforePause);assert.equal(frameCallbacks.size,0);});
 check('HTML explains two original-number boxes and distinct actual classified crops',()=>{assert.match(html,/先頭2枠（元の番号1・2）/);assert.match(html,/内部では最大8候補を保持/);assert.match(html,/実際に照合した切り抜き/);});
 await win.trigger('pagehide');
+console.log(JSON.stringify({accountingTextSnapshots}));
 console.log(`\n${passed} UI and lifecycle checks passed (Node DOM harness; no browser launched).`);
