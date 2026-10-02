@@ -202,3 +202,14 @@ private再現helperに一度、後時点のpool pointerを入力へコピーす�
 重要な時点差として、creatorのcompletedFrames2052とbodyの2053は同じcontroller呼出しに含まれる。フレーム番号が変わっただけで、新しいscheduler更新や余分なdeltaを加算しない。途中のpending-record処理が敵のdelay値を書き換え得るため、元の4つのmap値がその処理まで保たれるか、コピー・復元・packet経路を調査中。offlineだから無効と決め打ちしない。
 
 公開ソース・日報は現在のmainへ、再測定用ヘッドレスhelperと復元手順は既存の非公開ツール保存先へ通常pushし、remote反映を確認している。ROM／SAV／RAM／画像／動画／抽出資産は含めない。
+
+
+## 12:35 JST追記: 初回bodyの解析ソースと復元用チェックポイント
+
+初回animationのnull／owned両分岐、同じcontroller呼出し内の2052→2053、元1200のpending-record保存条件、別起点1990のtransfer除外を、再現helper・query定義・復元手順として保存した。元の1200解析と新しい1990解析の前提を混ぜず、実行に必要な私有入力は別途復旧・再生成する。
+
+fresh1990の解析では、元の4方向profileにtransfer objectがqueueされず、buffer pointerもnullであることを確認した記録がある。特定したtransfer初期化・mode設定・enqueueはnonzero-global分岐内にあるため、既存のoffline／scene再入場なしの範囲ではその復元経路を除外できる。1200起点の保存証明を修復したことや、全writer／全経路を尽くしたことにはしない。製品のcreator後bodyは未接続で、134 calls／seed0xa46fab4fの境界とfutureActorTicksPermitted:falseを維持する。
+
+非公開の既存ツール保存先へ45のtext-onlyファイルを通常pushし、remoteのcommitと全blobの一致を確認した。既存231ファイルは変更していない。
+
+今回のバックアップ検査はsource-onlyのbyte/hash、UTF-8、query JSON、秘密情報pattern、Node／Python／shell構文まで。報告済みの11,291 primitive checks、15,324照合、198 sampled comparisons、8組のfull-RAM一致などを今回再実行したとはしない。ROM／SAV／RAM／画像／動画／抽出資産、raw event・query responseは保存対象から除外した。
