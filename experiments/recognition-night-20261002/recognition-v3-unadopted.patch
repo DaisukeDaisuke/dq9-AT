@@ -1,0 +1,333 @@
+--- a/sources/dq9-AT-main/web/monster-local-proposals.mjs
++++ b/sources/dq9-AT-main/web/monster-local-proposals.mjs
+@@ -5,8 +5,8 @@
+ import {normalizeSceneContext} from './monster-field-mask.mjs';
+ import {extractAppearanceComponents} from './monster-position-proposals.mjs';
+ 
+-export const LOCAL_POSITION_REVISION = 'rom-foreground-patch-v2';
+-// Frozen using Work1 D1 only. D2/H1/H2 are known regression data for v2.
++export const LOCAL_POSITION_REVISION = 'rom-foreground-patch-v3-night';
++// Development repair after Work7 failure analysis. Existing splits are known regression data; H5 remains unopened.
+ export const LOCAL_POSITION_CONFIG = Object.freeze({seed:.50, minSeedPixels:24, part:.40, minParts:6, minMean:.40, negativeWeight:.35, maxProposals:8, fineMaxHeight:32, fineMinPixels:20, fineSeed:.37});
+ const tiles = Object.freeze([{x:0,y:0,w:160,h:128},{x:96,y:0,w:160,h:128},{x:0,y:64,w:160,h:128},{x:96,y:64,w:160,h:128}]);
+ const need=(v,m)=>{if(!v)throw Error(m);};
+@@ -84,13 +84,13 @@
+ function peakInROI(r,maps) {
+   let peak=-1;for(const map of Object.values(maps))for(let y=r.y;y<r.y+r.h;y++)for(let x=r.x;x<r.x+r.w;x++)peak=Math.max(peak,map[y*256+x]);return peak;
+ }
+-/** Automatic small components are re-encoded at body resolution. The alpha is
++/** Automatic promising components are re-encoded at body resolution. The alpha is
+  * the image-derived chroma mask, never a human label or ROM projected mask. */
+ export async function encodeSmallComponents(seeds,maps,backend,{signal,onProgress=()=>{}}={}) {
+-  const selected=seeds.components.filter(c=>c.coreROI.h<=LOCAL_POSITION_CONFIG.fineMaxHeight&&c.foregroundPixels>=LOCAL_POSITION_CONFIG.fineMinPixels&&peakInROI(c.coreROI,maps)>=LOCAL_POSITION_CONFIG.fineSeed),grids=new Map();
++  const selected=seeds.components.filter(c=>c.foregroundPixels>=LOCAL_POSITION_CONFIG.fineMinPixels&&peakInROI(c.coreROI,maps)>=LOCAL_POSITION_CONFIG.fineSeed),grids=new Map();
+   for(const c of selected){abort(signal);const r=c.coreROI,image=cropRGBA(seeds.frame,r.x,r.y,r.w,r.h);
+     for(let y=0;y<r.h;y++)for(let x=0;x<r.w;x++)image.rgba[(y*r.w+x)*4+3]=seeds.mask[(r.y+y)*256+r.x+x]?255:0;
+-    onProgress({phase:'position-refinement',done:grids.size,total:selected.length,message:'小さい前景の身体支持を確認中'});
++    onProgress({phase:'position-refinement',done:grids.size,total:selected.length,message:'前景の身体支持を確認中'});
+     grids.set(roiKey(r),await backend.encodePatchGrid(image,{signal}));
+   }return grids;
+ }
+@@ -109,14 +109,14 @@
+   abort(signal);validateRGBA(image,4096*4096);need(image.width===captureStamp.sourceFrame.width&&image.height===captureStamp.sourceFrame.height,'位置入力とcapture寸法が一致しません');
+   const scene=normalizeSceneContext(captureStamp.sceneContext,captureStamp.sourceFrame),base={schema:'dq9-enemy-roi-proposals-v1',revision:LOCAL_POSITION_REVISION,profile:'rom-local-v1',captureStamp:structuredClone(captureStamp),proposals:[],excluded:[],safeForHardPruning:false,enemyIdentityCertified:false,birthCertified:false,ATDrawsCertified:0,unknown:{suggested:true,calibrated:false,reason:'ROM-supported location only; missing/partial/unknown enemies remain possible.'}};
+   if(scene.kind!=='field')return{...base,skipped:'field-scene-required'};
+-  const seeds=geometrySeeds??extractAppearanceComponents(image,scene.gameplayROI),scores=maps??positionScoreMaps(encoded,bank,{signal}),raw=[],rejected=[];
++  const seeds=geometrySeeds??extractAppearanceComponents(image,scene.gameplayROI,{splitOversized:true}),scores=maps??positionScoreMaps(encoded,bank,{signal}),raw=[],rejected=[];
+   for(const c of seeds.components){abort(signal);const r=c.coreROI;let best=null;
+     for(const[m,map]of Object.entries(scores)){
+       let peak=-1,strong=0;for(let y=r.y;y<r.y+r.h;y++)for(let x=r.x;x<r.x+r.w;x++){peak=Math.max(peak,map[y*256+x]);strong+=map[y*256+x]>=LOCAL_POSITION_CONFIG.seed;}
+       if(peak<LOCAL_POSITION_CONFIG.seed||strong<LOCAL_POSITION_CONFIG.minSeedPixels)continue;
+       const spatial=spatialEvidence(r,m,encoded,bank),evidence={...spatial,peak,strong};if(!best||evidence.score>best.score)best=evidence;
+     }
+-    const coherent=e=>e&&e.mean>=LOCAL_POSITION_CONFIG.minMean&&e.support>=LOCAL_POSITION_CONFIG.minParts&&e.vertical>=3&&e.horizontal>=2;
++    const coherent=e=>e&&e.mean>=LOCAL_POSITION_CONFIG.minMean&&e.support>=LOCAL_POSITION_CONFIG.minParts&&e.horizontal>=2&&(e.vertical>=3||(e.refined&&e.vertical>=2&&e.support>=8));
+     if(!coherent(best)&&fineGrids?.has(roiKey(r))){const fine=fineEvidence(fineGrids.get(roiKey(r)),bank);if(coherent(fine))best={...fine,peak:peakInROI(r,scores),strong:null};else{rejected.push({nativeROI:r,reason:'incoherent-small-body-parts',evidence:fine,coarseEvidence:best});continue;}}
+     if(!best){rejected.push({nativeROI:r,reason:'no-foreground-patch-seed'});continue;}
+     if(!coherent(best)){rejected.push({nativeROI:r,reason:'incoherent-reference-parts',evidence:best});continue;}
+@@ -129,6 +129,6 @@
+ export async function proposeLocalEnemyROIs(image,captureStamp,{backend,bank,signal,onProgress}={}) {
+   const start=performance.now(),scene=normalizeSceneContext(captureStamp.sceneContext,captureStamp.sourceFrame);need(scene.kind==='field','フィールドを指定してください');need(Math.abs(scene.gameplayROI.w/scene.gameplayROI.h-4/3)<.04,'4:3ゲーム画面を指定してください');
+   need(bank.romEpoch===captureStamp.romEpoch&&bank.identity===backend.identity,'位置参照のROM・推論方式が一致しません');
+-  const seeds=extractAppearanceComponents(image,scene.gameplayROI),preprocessMs=performance.now()-start,encoded=await encodePositionTiles(seeds.frame,backend,{signal,onProgress}),tileEnd=performance.now(),maps=positionScoreMaps(encoded,bank,{signal}),mapEnd=performance.now(),fineGrids=await encodeSmallComponents(seeds,maps,backend,{signal,onProgress}),inferredAt=performance.now(),result=localPositionFromTiles(image,captureStamp,bank,encoded,{signal,geometrySeeds:seeds,maps,fineGrids});
++  const seeds=extractAppearanceComponents(image,scene.gameplayROI,{splitOversized:true}),preprocessMs=performance.now()-start,encoded=await encodePositionTiles(seeds.frame,backend,{signal,onProgress}),tileEnd=performance.now(),maps=positionScoreMaps(encoded,bank,{signal}),mapEnd=performance.now(),fineGrids=await encodeSmallComponents(seeds,maps,backend,{signal,onProgress}),inferredAt=performance.now(),result=localPositionFromTiles(image,captureStamp,bank,encoded,{signal,geometrySeeds:seeds,maps,fineGrids});
+   const finish=performance.now();return{...result,timings:{preprocessMs,inferenceAndReadbackMs:tileEnd-start-preprocessMs+inferredAt-mapEnd,postprocessMs:mapEnd-tileEnd+finish-inferredAt,tiles:encoded.map(t=>t.timings),smallComponents:[...fineGrids.values()].map(t=>t.timings),totalMs:finish-start},elapsedMs:finish-start};
+ }
+--- a/sources/dq9-AT-main/web/monster-position-proposals.mjs
++++ b/sources/dq9-AT-main/web/monster-position-proposals.mjs
+@@ -75,10 +75,18 @@
+ /** Automatic geometry seeds for the learned position detector. No center gate,
+  * source-space overlap gate, padding, priority truncation, or manual enemy ROI.
+  * HUD pixels are removed before connectivity, in native coordinates only. */
+-export function extractAppearanceComponents(image, gameplayROI, {excludeCommandHUD = true} = {}) {
++export function extractAppearanceComponents(image, gameplayROI, {excludeCommandHUD = true, splitOversized = false} = {}) {
+   const frame = sampleField(image, gameplayROI), {mask, gray} = appearanceMask(frame), blocked = new Uint8Array(mask.length);
+   if (excludeCommandHUD) for (let y = 0; y < 39; y++) for (let x = 212; x < 256; x++) { mask[y * 256 + x] = 0; blocked[y * 256 + x] = 1; }
+-  return {frame, gray, mask, blocked, components: components(mask, 256, 192, blocked).filter(c => c.foregroundPixels >= 8 && c.w >= 3 && c.h >= 3 && c.w <= 110 && c.h <= 120)};
++  const all = components(mask, 256, 192, blocked, splitOversized);
++  const eligible = c => c.foregroundPixels >= 8 && c.w >= 3 && c.h >= 3 && c.w <= 110 && c.h <= 120;
++  const seeds = all.filter(eligible);
++  if (splitOversized) for (const parent of all) {
++    if (parent.w <= 110 && parent.h <= 120) continue;
++    const split = warmSubcomponents(frame, parent, blocked);
++    if (split) for (const child of split.components.filter(eligible)) seeds.push({...child,derivedFromAutomaticOversized:true,splitChromaThreshold:split.threshold,parentCore:parent.coreROI});
++  }
++  return {frame, gray, mask, blocked, components: seeds};
+ }
+ // Isolated opt-in experiment, specific to shrine-blue-v1 warm foreground.
+ // One data-derived split per rejected component; no per-frame coordinates or training.
+--- /dev/null
++++ b/sources/dq9-AT-main/web/monster-local-proposals-v2-frozen.mjs
+@@ -0,0 +1,134 @@
++/* ROM foreground patch correspondence. Location proposals remain experimental:
++ * no species, absence, birth, or AT certification follows from these boxes.
++ * The four selected models, their alpha, and source pixels are the only inputs. */
++import {cropRGBA, validateRGBA} from './monster-roi-descriptor.mjs';
++import {normalizeSceneContext} from './monster-field-mask.mjs';
++import {extractAppearanceComponents} from './monster-position-proposals.mjs';
++
++export const LOCAL_POSITION_REVISION = 'rom-foreground-patch-v2';
++// Frozen using Work1 D1 only. D2/H1/H2 are known regression data for v2.
++export const LOCAL_POSITION_CONFIG = Object.freeze({seed:.50, minSeedPixels:24, part:.40, minParts:6, minMean:.40, negativeWeight:.35, maxProposals:8, fineMaxHeight:32, fineMinPixels:20, fineSeed:.37});
++const tiles = Object.freeze([{x:0,y:0,w:160,h:128},{x:96,y:0,w:160,h:128},{x:0,y:64,w:160,h:128},{x:96,y:64,w:160,h:128}]);
++const need=(v,m)=>{if(!v)throw Error(m);};
++const abort=s=>{if(s?.aborted)throw new DOMException('中止','AbortError');};
++const dot=(a,b)=>{let s=0;for(let k=0;k<384;k++)s+=a[k]*b[k];return s;};
++const select=(a,n)=>Array.from({length:Math.min(n,a.length)},(_,i)=>a[Math.floor((i+.5)*a.length/Math.min(n,a.length))]);
++const overlap=(a,b)=>{const i=Math.max(0,Math.min(a.x+a.w,b.x+b.w)-Math.max(a.x,b.x))*Math.max(0,Math.min(a.y+a.h,b.y+b.h)-Math.max(a.y,b.y));return i/(a.w*a.h+b.w*b.h-i);};
++const sourceRect=(r,g)=>{const x=g.x+Math.floor(r.x*g.w/256),y=g.y+Math.floor(r.y*g.h/192);return{x,y,w:g.x+Math.ceil((r.x+r.w)*g.w/256)-x,h:g.y+Math.ceil((r.y+r.h)*g.h/192)-y};};
++
++/** Tight bounds and foreground support come exclusively from rendered ROM alpha. */
++export async function encodeForegroundReference(image, metadata, backend, {signal}={}) {
++  validateRGBA(image);abort(signal);let x0=image.width,y0=image.height,x1=0,y1=0;
++  for(let y=0;y<image.height;y++)for(let x=0;x<image.width;x++)if(image.rgba[(y*image.width+x)*4+3]>=128){x0=Math.min(x0,x);y0=Math.min(y0,y);x1=Math.max(x1,x+1);y1=Math.max(y1,y+1);}
++  need(x1>x0&&y1>y0,'ROM参照に不透明な身体がありません');
++  const tight=cropRGBA(image,x0,y0,x1-x0,y1-y0),grid=await backend.encodePatchGrid(tight,{signal}),g=grid.geometry,positive=[],negative=[];
++  abort(signal);
++  for(let j=0;j<256;j++){
++    const px=j%16,py=Math.floor(j/16);let alpha=0;
++    for(const dy of [2,7,12])for(const dx of [2,7,12]){
++      const x=Math.floor((px*14+dx-g.padX)*tight.width/g.resizedWidth),y=Math.floor((py*14+dy-g.padY)*tight.height/g.resizedHeight);
++      if(x>=0&&x<tight.width&&y>=0&&y<tight.height&&tight.rgba[(y*tight.width+x)*4+3]>=128)alpha++;
++    }
++    const p={x:(px*14+7-g.padX)/g.resizedWidth,y:(py*14+7-g.padY)/g.resizedHeight,vector:grid.patches.slice(j*384,(j+1)*384)};
++    if(alpha/9>=.6)positive.push(p);else if(alpha===0)negative.push(p);
++  }
++  need(positive.length>=6&&negative.length,'ROM前景・背景patchの支持が不足しています');
++  const pp=select(positive,12),nn=select(negative,8),mean=new Float32Array(384);
++  for(let k=0;k<384;k++)mean[k]=nn.reduce((s,p)=>s+p.vector[k],0)/nn.length;
++  const norm=Math.hypot(...mean);for(let k=0;k<384;k++)mean[k]/=norm;
++  return {...metadata,positives:pp,negative:mean,aspect:tight.width/tight.height,alphaBounds:{x:x0,y:y0,w:tight.width,h:tight.height},timings:grid.timings};
++}
++export function indexLocalBank(references, identity={}) {
++  need(references.length===64,'初期4モデル・64姿勢の前景patchが必要です');
++  const models={};for(const ref of references){const b=models[ref.modelId]??=( {positives:[],negatives:[]} );b.positives.push(...ref.positives.map(p=>p.vector));b.negatives.push(ref.negative);}
++  need(Object.keys(models).length===4,'4モデルを準備してください');
++  return{revision:LOCAL_POSITION_REVISION,...identity,references,models};
++}
++/** Four overlapping 160×128 tiles keep small bodies at useful model resolution. */
++export async function encodePositionTiles(frame,backend,{signal,onProgress=()=>{}}={}) {
++  const encoded=[];
++  for(const tile of tiles){abort(signal);onProgress({phase:'position-inference',done:encoded.length,total:4,message:'ゲーム画面の局所特徴を計算中'});const grid=await backend.encodePatchGrid(cropRGBA(frame,tile.x,tile.y,tile.w,tile.h),{signal});encoded.push({tile,geometry:grid.geometry,patches:grid.patches,timings:grid.timings});}
++  return encoded;
++}
++export function positionScoreMaps(encoded,bank,{signal}={}) {
++  const maps=Object.fromEntries(Object.keys(bank.models).map(m=>[m,new Float32Array(256*192).fill(-1)]));
++  for(const t of encoded){abort(signal);const a=t.tile,g=t.geometry;
++    for(let j=0;j<256;j++){
++      const px=j%16,py=Math.floor(j/16),cx=(px*14+7-g.padX)*a.w/g.resizedWidth,cy=(py*14+7-g.padY)*a.h/g.resizedHeight;
++      if(cx<0||cx>=a.w||cy<0||cy>=a.h)continue;
++      const vector=t.patches.subarray(j*384,(j+1)*384),x0=Math.max(0,a.x+Math.floor((px*14-g.padX)*a.w/g.resizedWidth)),y0=Math.max(0,a.y+Math.floor((py*14-g.padY)*a.h/g.resizedHeight)),x1=Math.min(256,a.x+Math.ceil(((px+1)*14-g.padX)*a.w/g.resizedWidth)),y1=Math.min(192,a.y+Math.ceil(((py+1)*14-g.padY)*a.h/g.resizedHeight));
++      for(const[m,b]of Object.entries(bank.models)){
++        let positive=-1,negative=-1;for(const p of b.positives)positive=Math.max(positive,dot(vector,p));for(const p of b.negatives)negative=Math.max(negative,dot(vector,p));
++        const score=positive-LOCAL_POSITION_CONFIG.negativeWeight*Math.max(0,negative),map=maps[m];
++        for(let y=y0;y<y1;y++)for(let x=x0;x<x1;x++)map[y*256+x]=Math.max(map[y*256+x],score);
++      }
++    }
++  }return maps;
++}
++function spatialEvidence(r,modelId,encoded,bank) {
++  let best=null;
++  for(const ref of bank.references.filter(r=>r.modelId===modelId)){
++    const scores=ref.positives.map(p=>{
++      const x=r.x+p.x*r.w,y=r.y+p.y*r.h;let score=-1;
++      for(const t of encoded){const a=t.tile,g=t.geometry;if(x<a.x||x>=a.x+a.w||y<a.y||y>=a.y+a.h)continue;
++        const px=Math.floor(((x-a.x)*g.resizedWidth/a.w+g.padX)/14),py=Math.floor(((y-a.y)*g.resizedHeight/a.h+g.padY)/14);if(px<0||px>=16||py<0||py>=16)continue;
++        const v=t.patches.subarray((py*16+px)*384,(py*16+px+1)*384);score=Math.max(score,dot(v,p.vector)-LOCAL_POSITION_CONFIG.negativeWeight*Math.max(0,dot(v,ref.negative)));
++      }return{score,x:p.x,y:p.y};
++    });
++    const supported=scores.filter(p=>p.score>=LOCAL_POSITION_CONFIG.part),mean=scores.reduce((n,p)=>n+p.score,0)/scores.length,vertical=new Set(supported.map(p=>Math.min(2,Math.floor(p.y*3)))).size,horizontal=new Set(supported.map(p=>p.x>=.5?1:0)).size;
++    const evidence={modelId,referenceId:ref.id,mean,support:supported.length,parts:scores.length,vertical,horizontal,score:mean+.05*supported.length/scores.length};
++    if(!best||evidence.score>best.score)best=evidence;
++  }return best;
++}
++const roiKey=r=>`${r.x},${r.y},${r.w},${r.h}`;
++function peakInROI(r,maps) {
++  let peak=-1;for(const map of Object.values(maps))for(let y=r.y;y<r.y+r.h;y++)for(let x=r.x;x<r.x+r.w;x++)peak=Math.max(peak,map[y*256+x]);return peak;
++}
++/** Automatic small components are re-encoded at body resolution. The alpha is
++ * the image-derived chroma mask, never a human label or ROM projected mask. */
++export async function encodeSmallComponents(seeds,maps,backend,{signal,onProgress=()=>{}}={}) {
++  const selected=seeds.components.filter(c=>c.coreROI.h<=LOCAL_POSITION_CONFIG.fineMaxHeight&&c.foregroundPixels>=LOCAL_POSITION_CONFIG.fineMinPixels&&peakInROI(c.coreROI,maps)>=LOCAL_POSITION_CONFIG.fineSeed),grids=new Map();
++  for(const c of selected){abort(signal);const r=c.coreROI,image=cropRGBA(seeds.frame,r.x,r.y,r.w,r.h);
++    for(let y=0;y<r.h;y++)for(let x=0;x<r.w;x++)image.rgba[(y*r.w+x)*4+3]=seeds.mask[(r.y+y)*256+r.x+x]?255:0;
++    onProgress({phase:'position-refinement',done:grids.size,total:selected.length,message:'小さい前景の身体支持を確認中'});
++    grids.set(roiKey(r),await backend.encodePatchGrid(image,{signal}));
++  }return grids;
++}
++function fineEvidence(grid,bank) {
++  const g=grid.geometry;let best=null;
++  for(const ref of bank.references){
++    const scores=ref.positives.map(p=>{const px=Math.max(0,Math.min(15,Math.floor((p.x*g.resizedWidth+g.padX)/14))),py=Math.max(0,Math.min(15,Math.floor((p.y*g.resizedHeight+g.padY)/14))),v=grid.patches.subarray((py*16+px)*384,(py*16+px+1)*384);return{...p,score:dot(v,p.vector)-LOCAL_POSITION_CONFIG.negativeWeight*Math.max(0,dot(v,ref.negative))};});
++    const supported=scores.filter(p=>p.score>=LOCAL_POSITION_CONFIG.part),mean=scores.reduce((s,p)=>s+p.score,0)/scores.length,evidence={modelId:ref.modelId,referenceId:ref.id,mean,support:supported.length,parts:scores.length,vertical:new Set(supported.map(p=>Math.min(2,Math.floor(p.y*3)))).size,horizontal:new Set(supported.map(p=>p.x>=.5?1:0)).size,score:mean+.05*supported.length/scores.length,refined:true};
++    if(!best||mean>best.mean)best=evidence;
++  }return best;
++}
++/** Geometry is generated across the whole native field, before semantic verification.
++ * Alpha-supported part correspondence and background contrast reject chance hits.
++ * Color connectivity still limits this first version on non-blue fields/gray bodies. */
++export function localPositionFromTiles(image,captureStamp,bank,encoded,{signal,geometrySeeds,maps,fineGrids}={}) {
++  abort(signal);validateRGBA(image,4096*4096);need(image.width===captureStamp.sourceFrame.width&&image.height===captureStamp.sourceFrame.height,'位置入力とcapture寸法が一致しません');
++  const scene=normalizeSceneContext(captureStamp.sceneContext,captureStamp.sourceFrame),base={schema:'dq9-enemy-roi-proposals-v1',revision:LOCAL_POSITION_REVISION,profile:'rom-local-v1',captureStamp:structuredClone(captureStamp),proposals:[],excluded:[],safeForHardPruning:false,enemyIdentityCertified:false,birthCertified:false,ATDrawsCertified:0,unknown:{suggested:true,calibrated:false,reason:'ROM-supported location only; missing/partial/unknown enemies remain possible.'}};
++  if(scene.kind!=='field')return{...base,skipped:'field-scene-required'};
++  const seeds=geometrySeeds??extractAppearanceComponents(image,scene.gameplayROI),scores=maps??positionScoreMaps(encoded,bank,{signal}),raw=[],rejected=[];
++  for(const c of seeds.components){abort(signal);const r=c.coreROI;let best=null;
++    for(const[m,map]of Object.entries(scores)){
++      let peak=-1,strong=0;for(let y=r.y;y<r.y+r.h;y++)for(let x=r.x;x<r.x+r.w;x++){peak=Math.max(peak,map[y*256+x]);strong+=map[y*256+x]>=LOCAL_POSITION_CONFIG.seed;}
++      if(peak<LOCAL_POSITION_CONFIG.seed||strong<LOCAL_POSITION_CONFIG.minSeedPixels)continue;
++      const spatial=spatialEvidence(r,m,encoded,bank),evidence={...spatial,peak,strong};if(!best||evidence.score>best.score)best=evidence;
++    }
++    const coherent=e=>e&&e.mean>=LOCAL_POSITION_CONFIG.minMean&&e.support>=LOCAL_POSITION_CONFIG.minParts&&e.vertical>=3&&e.horizontal>=2;
++    if(!coherent(best)&&fineGrids?.has(roiKey(r))){const fine=fineEvidence(fineGrids.get(roiKey(r)),bank);if(coherent(fine))best={...fine,peak:peakInROI(r,scores),strong:null};else{rejected.push({nativeROI:r,reason:'incoherent-small-body-parts',evidence:fine,coarseEvidence:best});continue;}}
++    if(!best){rejected.push({nativeROI:r,reason:'no-foreground-patch-seed'});continue;}
++    if(!coherent(best)){rejected.push({nativeROI:r,reason:'incoherent-reference-parts',evidence:best});continue;}
++    const roi=sourceRect(r,scene.gameplayROI);raw.push({roi,nativeROI:{...r},component:{...c},priority:best.score,edgeMean:0,classificationEligible:roi.w<=1024&&roi.h<=1024,classificationStatus:'unverified',unknown:true,clipped:r.x===0||r.y===0||r.x+r.w===256||r.y+r.h===192,proposalSource:'rom-foreground-patch',detectionEvidence:best,screenPosition:{x:roi.x+roi.w/2,y:roi.y+roi.h,basis:'foreground-body-box-bottom-center',calibrated:false}});
++  }
++  raw.sort((a,b)=>b.priority-a.priority||a.roi.y-b.roi.y||a.roi.x-b.roi.x);const distinct=[];
++  for(const p of raw){if(distinct.some(q=>overlap(p.nativeROI,q.nativeROI)>.35)){rejected.push({nativeROI:p.nativeROI,reason:'duplicate-body'});continue;}distinct.push(p);}
++  return{...base,rawCandidates:distinct,proposals:distinct.slice(0,8).map((p,i)=>({...p,proposalId:`${captureStamp.frameSerial}:${i}`})),rejected,coverage:{geometryComponents:seeds.components.length,candidateComponents:distinct.length,retainedCandidates:Math.min(8,distinct.length),budgetDropped:Math.max(0,distinct.length-8),absenceCertified:false},trackingFrame:{width:256,height:192,gray:seeds.gray,mask:seeds.mask,blocked:seeds.blocked,identity:JSON.stringify({sourceId:captureStamp.sourceId,sourceEpoch:captureStamp.sourceEpoch,timelineSegment:captureStamp.timelineSegment,sceneContext:scene,profile:'rom-local-v1'})}};
++}
++export async function proposeLocalEnemyROIs(image,captureStamp,{backend,bank,signal,onProgress}={}) {
++  const start=performance.now(),scene=normalizeSceneContext(captureStamp.sceneContext,captureStamp.sourceFrame);need(scene.kind==='field','フィールドを指定してください');need(Math.abs(scene.gameplayROI.w/scene.gameplayROI.h-4/3)<.04,'4:3ゲーム画面を指定してください');
++  need(bank.romEpoch===captureStamp.romEpoch&&bank.identity===backend.identity,'位置参照のROM・推論方式が一致しません');
++  const seeds=extractAppearanceComponents(image,scene.gameplayROI),preprocessMs=performance.now()-start,encoded=await encodePositionTiles(seeds.frame,backend,{signal,onProgress}),tileEnd=performance.now(),maps=positionScoreMaps(encoded,bank,{signal}),mapEnd=performance.now(),fineGrids=await encodeSmallComponents(seeds,maps,backend,{signal,onProgress}),inferredAt=performance.now(),result=localPositionFromTiles(image,captureStamp,bank,encoded,{signal,geometrySeeds:seeds,maps,fineGrids});
++  const finish=performance.now();return{...result,timings:{preprocessMs,inferenceAndReadbackMs:tileEnd-start-preprocessMs+inferredAt-mapEnd,postprocessMs:mapEnd-tileEnd+finish-inferredAt,tiles:encoded.map(t=>t.timings),smallComponents:[...fineGrids.values()].map(t=>t.timings),totalMs:finish-start},elapsedMs:finish-start};
++}
+--- /dev/null
++++ b/work7/evaluate-v3-frames.mjs
+@@ -0,0 +1,34 @@
++import fs from 'node:fs/promises';
++import {createHash} from 'node:crypto';
++import sharp from 'sharp';
++import {pythonBackend} from './python-backend.mjs';
++import {indexLocalBank,proposeLocalEnemyROIs,localPositionFromTiles,positionScoreMaps,encodeSmallComponents} from '../sources/dq9-AT-main/web/monster-local-proposals.mjs';
++import {extractAppearanceComponents} from '../sources/dq9-AT-main/web/monster-position-proposals.mjs';
++import {proposeEnemyROIs} from './baseline-source/web/monster-position-proposals.mjs';
++const root='../private-inputs/work1/vision-comparison';
++const dataset=JSON.parse(await fs.readFile(`${root}/dataset/SAMPLING_MANIFEST.json`,'utf8')),holdout=JSON.parse(await fs.readFile('results/HOLDOUT_MANIFEST_V2.json','utf8'));
++const saved=JSON.parse(await fs.readFile('private-evidence/local-patch-bank.json','utf8')),backend=await pythonBackend(),bank=indexLocalBank(saved.references,{identity:backend.identity,romEpoch:1,romSHA256:'3c9d809eb8e446b0da6a9b383c7a6c5146001636038384aa49cb1a2e367546d7'});
++// A portable replay can recompute every tile rather than require development caches.
++const noCache=process.argv.includes('--no-cache');
++const cached=noCache?null:JSON.parse(await fs.readFile('private-evidence/D1-local-patch-maps.json','utf8'));
++const additional=process.argv.includes('--additional'),diagnostic=process.argv.includes('--diagnostic'),h3=process.argv.includes('--h3'),temporal=process.argv.includes('--temporal'),h4=process.argv.includes('--h4');
++const extra=additional?JSON.parse(await fs.readFile('results/HOLDOUT_H2_MANIFEST.json','utf8')).frames.map(f=>({...f,split:'H2'})):[];
++const diag=diagnostic?[125.850,125.900].map(t=>({frame_id:`d0-${t.toFixed(3)}`,image_path:`../private-inputs/pro2/dq9_monster_recognition_research/exact_frames/${t.toFixed(3)}.png`,video:'v1',actual_pts_seconds:t-.004,split:'D0'})):[];
++const frames=h4?JSON.parse(await fs.readFile('results/HOLDOUT_H4_MANIFEST.json','utf8')).frames.map(f=>({...f,split:'H4'})):temporal?JSON.parse(await fs.readFile('results/TEMPORAL_MANIFEST.json','utf8')).frames.map(f=>({...f,split:`T${f.block}`})):h3?JSON.parse(await fs.readFile('results/HOLDOUT_H3_MANIFEST.json','utf8')).frames.map(f=>({...f,split:'H3'})):additional?extra:diagnostic?diag:[...dataset.frames.map(f=>({...f,image_path:`${root}/${f.image_path}`})),...holdout.frames.map(f=>({...f,split:'H'}))];
++const resultFile=h4?'results/V3_H4_FRAME_RESULTS.json':temporal?'results/V3_TEMPORAL_FRAME_RESULTS.json':h3?'results/V3_H3_FRAME_RESULTS.json':additional?'results/V3_H2_FRAME_RESULTS.json':diagnostic?'results/V3_D0_FRAME_RESULTS.json':'results/V3_FRAME_RESULTS.json',records=[];
++try{
++ for(const f of frames){
++  const {data,info}=await sharp(f.image_path).ensureAlpha().raw().toBuffer({resolveWithObject:true}),image={width:info.width,height:info.height,rgba:new Uint8ClampedArray(data)};
++  if(f.rgba_sha256&&createHash('sha256').update(data).digest('hex')!==f.rgba_sha256)throw Error('Frame hash mismatch '+f.frame_id);
++  const captureStamp={sourceId:f.video_id??f.video,sourceEpoch:1,timelineSegment:0,frameSerial:records.length,romEpoch:1,sourceFrame:{width:info.width,height:info.height},videoTime:f.actual_pts_seconds??f.actual_pts,timestampBasis:'decoded-original-PTS',featureMethod:'dinov2',inferenceBackend:'wasm',sceneContext:{kind:'field',gameplayROI:diagnostic?{x:960,y:0,w:960,h:720}:{x:0,y:0,w:info.width,h:info.height},excludeCenter:false,maskNormalized:{x:.42,y:.36,w:.16,h:.24}}};
++  // Baseline gets its own identical pixels and original center-exclusion policy.
++  const baseline=proposeEnemyROIs(image,{...captureStamp,sceneContext:{...captureStamp.sceneContext,excludeCenter:true}},{profile:'shrine-blue-v1',excludeCommandHUD:true,maxProposals:8,oversizedWarmSplit:true});
++  let revised;
++  if(f.split==='D1'&&!noCache){
++   const c=cached.results.find(c=>c.frame_id===f.frame_id),encoded=await Promise.all(c.tiles.map(async t=>{const b=await fs.readFile(t.file);return{...t,patches:new Float32Array(b.buffer,b.byteOffset,b.length/4)};})),seeds=extractAppearanceComponents(image,captureStamp.sceneContext.gameplayROI),maps=positionScoreMaps(encoded,bank),fineGrids=await encodeSmallComponents(seeds,maps,backend);revised=localPositionFromTiles(image,captureStamp,bank,encoded,{geometrySeeds:seeds,maps,fineGrids});
++  }else revised=await proposeLocalEnemyROIs(image,captureStamp,{backend,bank});
++  const strip=({trackingFrame,...r})=>r;
++  const record={frame_id:f.frame_id,split:f.split,image_path:f.image_path,rgba_sha256:createHash('sha256').update(data).digest('hex'),baseline:strip(baseline),revised:strip(revised),offline_runtime:{provider:'Python ORT CPUExecutionProvider',version:'1.23.2',threads:2,browser_performance:false}};records.push(record);console.log(JSON.stringify({id:f.frame_id,baseline:baseline.proposals.length,revised:revised.proposals.length,boxes:revised.proposals.map(p=>p.nativeROI)}));
++  await fs.writeFile(resultFile,JSON.stringify({config_sha256:createHash('sha256').update(await fs.readFile('CALIBRATION_WORK7_V3_DEVELOPMENT.json')).digest('hex'),records},null,2));
++ }
++}finally{await backend.dispose();}
+--- /dev/null
++++ b/work7/evaluate-h5.mjs
+@@ -0,0 +1,22 @@
++import fs from 'node:fs/promises';
++import {createHash} from 'node:crypto';
++import sharp from 'sharp';
++import {pythonBackend} from './python-backend.mjs';
++import * as v2 from '../sources/dq9-AT-main/web/monster-local-proposals-v2-frozen.mjs';
++import * as v3 from '../sources/dq9-AT-main/web/monster-local-proposals.mjs';
++import {proposeEnemyROIs} from './baseline-source/web/monster-position-proposals.mjs';
++const root='/workspace/scratch/4d4d74ad4379/work7-night-recognition-20261002';
++const manifest=JSON.parse(await fs.readFile(root+'/H5_SAMPLING_MANIFEST.json','utf8'));
++const config=await fs.readFile('CALIBRATION_WORK7_V3_DEVELOPMENT.json'), saved=JSON.parse(await fs.readFile('private-evidence/local-patch-bank.json','utf8')),backend=await pythonBackend();
++const identity={identity:backend.identity,romEpoch:1,romSHA256:'3c9d809eb8e446b0da6a9b383c7a6c5146001636038384aa49cb1a2e367546d7'},bank2=v2.indexLocalBank(saved.references,identity),bank3=v3.indexLocalBank(saved.references,identity),records=[];
++const strip=({trackingFrame,...x})=>x;
++try{for(const f of manifest.frames){
++ const {data,info}=await sharp(f.image_path).ensureAlpha().raw().toBuffer({resolveWithObject:true});
++ if(createHash('sha256').update(data).digest('hex')!==f.rgba_sha256)throw Error('Frame hash mismatch');
++ const image={width:info.width,height:info.height,rgba:new Uint8ClampedArray(data)},stamp={sourceId:f.video_id,sourceEpoch:1,timelineSegment:0,frameSerial:records.length,romEpoch:1,sourceFrame:{width:info.width,height:info.height},videoTime:f.actual_pts_seconds,timestampBasis:'decoded-original-PTS',featureMethod:'dinov2',inferenceBackend:'wasm',sceneContext:{kind:'field',gameplayROI:{x:0,y:0,w:info.width,h:info.height},excludeCenter:false,maskNormalized:{x:.42,y:.36,w:.16,h:.24}}};
++ const baseline=proposeEnemyROIs(image,{...stamp,sceneContext:{...stamp.sceneContext,excludeCenter:true}},{profile:'shrine-blue-v1',excludeCommandHUD:true,maxProposals:8,oversizedWarmSplit:true});
++ const frozen=await v2.proposeLocalEnemyROIs(image,stamp,{backend,bank:bank2}),revised=await v3.proposeLocalEnemyROIs(image,stamp,{backend,bank:bank3});
++ records.push({frame_id:f.frame_id,rgba_sha256:f.rgba_sha256,baseline:strip(baseline),frozen:strip(frozen),revised:strip(revised)});
++ await fs.writeFile(root+'/H5_RAW_PREDICTIONS.json',JSON.stringify({actual_provider:'Python ORT CPU EP1.23.2; not browser speed',config_sha256:createHash('sha256').update(config).digest('hex'),annotations_used_for_inference:false,records},null,2)+'\n');
++ console.log(JSON.stringify({id:f.frame_id,B0:baseline.proposals.length,V2:frozen.proposals.length,V3:revised.proposals.length}));
++}}finally{await backend.dispose();}
+--- /dev/null
++++ b/work7/metrics-v3.mjs
+@@ -0,0 +1,31 @@
++import fs from 'node:fs/promises';
++const v2=process.argv.includes('--v2'),prefix=v2?'V3_':'';
++const target=new Set(['z019b','z021a','z064a','z000c']),ann1=JSON.parse(await fs.readFile('../private-inputs/work1/vision-comparison/dataset/ANNOTATIONS.json','utf8')),ann2=JSON.parse(await fs.readFile('results/HOLDOUT_ANNOTATIONS.json','utf8')),ann3=v2?JSON.parse(await fs.readFile('results/ADDITIONAL_ANNOTATIONS.json','utf8')):{frames:[]},annotations=new Map([...ann1.frames,...ann2.frames,...ann3.frames].map(f=>[f.frame_id,f]));
++if(v2)for(const f of JSON.parse(await fs.readFile('results/H4_ANNOTATIONS.json','utf8')).frames)annotations.set(f.frame_id,f);
++if(v2)for(const f of JSON.parse(await fs.readFile('results/TEMPORAL_NEGATIVE_REGIONS.json','utf8')).frames){const a=annotations.get(f.frame_id);if(!a)throw Error('Unknown negative-region label');a.objects.push(...f.objects);a.negative_type_annotation='manual party region overlap proxy';}
++const iou=(a,b)=>{const i=Math.max(0,Math.min(a.x+a.w,b.x+b.w)-Math.max(a.x,b.x))*Math.max(0,Math.min(a.y+a.h,b.y+b.h)-Math.max(a.y,b.y));return i/(a.w*a.h+b.w*b.h-i);},rect=b=>({x:b[0],y:b[1],w:b[2],h:b[3]});
++const sets=v2?['V3_FRAME_RESULTS','V3_H2_FRAME_RESULTS','V3_H3_FRAME_RESULTS','V3_H4_FRAME_RESULTS','V3_TEMPORAL_FRAME_RESULTS']:['FRAME_RESULTS','H2_FRAME_RESULTS'],records=[];for(const n of sets)records.push(...JSON.parse(await fs.readFile(`results/${n}.json`,'utf8')).records);
++const rows=[],positions=[];
++for(const split of [...new Set(records.map(r=>r.split))])for(const method of['baseline','revised'])for(const budget of['raw',8,2,'displayed'])for(const threshold of[.3,.5]){
++ let tp=0,fp=0,gtCount=0,gtTarget=0,tpTarget=0,partyFalse=0,backgroundFalse=0,eligible=0;const frames=[];
++ for(const f of records.filter(r=>r.split===split)){
++  const a=annotations.get(f.frame_id);if(!a)throw Error('No independent labels '+f.frame_id);if(!a.eligible){frames.push({id:f.frame_id,excluded:a.reason,predicted:f[method].proposals.length});continue;}eligible++;
++  const enemies=a.objects.filter(o=>o.kind.startsWith('enemy')),negatives=a.objects.filter(o=>['player','player_party','npc'].includes(o.kind)),result=f[method];
++  let ps=budget==='raw'?(result.rawCandidates??result.proposals):result.proposals.slice(0,budget==='displayed'?2:budget);const pairs=[];
++  for(let p=0;p<ps.length;p++)for(let g=0;g<enemies.length;g++){const v=iou(ps[p].nativeROI,rect(enemies[g].bbox));if(v>=threshold)pairs.push({p,g,iou:v});}
++  pairs.sort((a,b)=>b.iou-a.iou||a.p-b.p||a.g-b.g);const usedP=new Set(),usedG=new Set(),matches=[];for(const p of pairs)if(!usedP.has(p.p)&&!usedG.has(p.g)){usedP.add(p.p);usedG.add(p.g);matches.push(p);}
++  tp+=matches.length;fp+=ps.length-matches.length;gtCount+=enemies.length;gtTarget+=enemies.filter(o=>target.has(o.model_id)).length;tpTarget+=matches.filter(p=>target.has(enemies[p.g].model_id)).length;
++  let framePartyFalse=0,frameBackgroundFalse=0;
++  for(let p=0;p<ps.length;p++)if(!usedP.has(p)){if(a.negative_type_annotation==='not available in temporal block')continue;if(negatives.some(o=>iou(ps[p].nativeROI,rect(o.bbox))>=.1)){partyFalse++;framePartyFalse++;}else{backgroundFalse++;frameBackgroundFalse++;}}
++  if(budget==='displayed'&&threshold===.3)for(let g=0;g<enemies.length;g++){
++   const match=matches.find(p=>p.g===g),box=match?ps[match.p].nativeROI:null,truth=rect(enemies[g].bbox);
++   positions.push({split,method,id:f.frame_id,enemy:g,model_id:enemies[g].model_id??null,gt:truth,box,iou:match?.iou??0,center_error_px:box?Math.hypot(box.x+box.w/2-truth.x-truth.w/2,box.y+box.h/2-truth.y-truth.h/2):null,bottom_center_error_px:box?Math.hypot(box.x+box.w/2-truth.x-truth.w/2,box.y+box.h-truth.y-truth.h):null,area_ratio:box?box.w*box.h/(truth.w*truth.h):null,body_bbox_covered_fraction:box?(Math.max(0,Math.min(box.x+box.w,truth.x+truth.w)-Math.max(box.x,truth.x))*Math.max(0,Math.min(box.y+box.h,truth.y+truth.h)-Math.max(box.y,truth.y)))/(truth.w*truth.h):0});
++  }
++  frames.push({id:f.frame_id,predictions:ps.length,tp:matches.length,fp:ps.length-matches.length,party_or_npc_false:framePartyFalse,background_false:frameBackgroundFalse,negative_type_scope:a.negative_type_annotation??'manual negative-body bbox overlap',missed:enemies.length-matches.length,matches:matches.map(m=>({...m,gt:enemies[m.g].bbox,pred:ps[m.p].nativeROI}))});
++ }
++ rows.push({split,method,budget,IoU:threshold,eligible_frames:eligible,tp,fp,gt_all_enemies:gtCount,gt_target_models:gtTarget,tp_target_models:tpTarget,precision:tp+fp?tp/(tp+fp):null,recall_all:gtCount?tp/gtCount:null,recall_target:gtTarget?tpTarget/gtTarget:null,party_or_npc_false:partyFalse,background_false:backgroundFalse,frames});
++}
++await fs.writeFile(`results/${prefix}METRICS.json`,JSON.stringify({matching:'one-to-one greedy descending IoU; location only, model identity not required',displayed_scope:'offline first2 projection of video UI; frozen UI can display up to8; actual browser results separately reported',negative_type_scope:'Party/NPC overlap uses IoU>=0.1 to manual negative-body bboxes. Temporal regions were added after outputs were known and can group multiple party members with gaps; these are overlap proxies. Background means no annotated party overlap, not a certified semantic label.',rows,positions},null,2));
++const columns=['split','method','budget','IoU','eligible_frames','tp','fp','gt_all_enemies','gt_target_models','tp_target_models','precision','recall_all','recall_target','party_or_npc_false','background_false'];await fs.writeFile(`results/${prefix}METRICS.csv`,columns.join(',')+'\n'+rows.map(r=>columns.map(k=>r[k]??'').join(',')).join('\n')+'\n');
++await fs.writeFile(`results/${prefix}POSITION_ERRORS.json`,JSON.stringify(positions,null,2));
++console.log(JSON.stringify(rows.filter(r=>r.budget==='displayed').map(({frames,...r})=>r),null,2));
+--- /dev/null
++++ b/work7/CALIBRATION_WORK7_V3_DEVELOPMENT.json
+@@ -0,0 +1,19 @@
++{
++  "changes": [
++    "Otsu warm split only automatically oversized color components before the same ROM gates",
++    "body-resolution refinement also for larger promising components; no new mean/seed threshold",
++    "refined 8-of-12 strong parts may cover two vertical bands, rather than requiring all three regardless of pose"
++  ],
++  "thresholds_unchanged": {
++    "seed": 0.5,
++    "part": 0.4,
++    "minMean": 0.4,
++    "negativeWeight": 0.35,
++    "fineSeed": 0.37
++  },
++  "GT_used_for_inference": false,
++  "source_sha256": {
++    "monster-local-proposals.mjs": "a0e283852b6809d9ead60122bb57575fb51183fa9b3d83f49c0487c6035a2633",
++    "monster-position-proposals.mjs": "5730456d667d65b7d3aeff24b3037958a366d930da232cbd773bd112f0be49cb"
++  }
++}

@@ -1,0 +1,368 @@
+{
+  "matching": "one-to-one descending IoU, location only",
+  "provider": "ORT CPU; not browser performance",
+  "fresh_frames": 7,
+  "fresh_enemy_count": 2,
+  "rows": [
+    {
+      "known_regression": false,
+      "method": "baseline",
+      "budget": 2,
+      "iou": 0.3,
+      "frames": 7,
+      "gt": 2,
+      "tp": 2,
+      "fp": 12
+    },
+    {
+      "known_regression": false,
+      "method": "baseline",
+      "budget": 2,
+      "iou": 0.5,
+      "frames": 7,
+      "gt": 2,
+      "tp": 1,
+      "fp": 13
+    },
+    {
+      "known_regression": false,
+      "method": "baseline",
+      "budget": 8,
+      "iou": 0.3,
+      "frames": 7,
+      "gt": 2,
+      "tp": 2,
+      "fp": 38
+    },
+    {
+      "known_regression": false,
+      "method": "baseline",
+      "budget": 8,
+      "iou": 0.5,
+      "frames": 7,
+      "gt": 2,
+      "tp": 1,
+      "fp": 39
+    },
+    {
+      "known_regression": false,
+      "method": "baseline",
+      "budget": "raw",
+      "iou": 0.3,
+      "frames": 7,
+      "gt": 2,
+      "tp": 2,
+      "fp": 38
+    },
+    {
+      "known_regression": false,
+      "method": "baseline",
+      "budget": "raw",
+      "iou": 0.5,
+      "frames": 7,
+      "gt": 2,
+      "tp": 1,
+      "fp": 39
+    },
+    {
+      "known_regression": false,
+      "method": "frozen",
+      "budget": 2,
+      "iou": 0.3,
+      "frames": 7,
+      "gt": 2,
+      "tp": 1,
+      "fp": 1
+    },
+    {
+      "known_regression": false,
+      "method": "frozen",
+      "budget": 2,
+      "iou": 0.5,
+      "frames": 7,
+      "gt": 2,
+      "tp": 1,
+      "fp": 1
+    },
+    {
+      "known_regression": false,
+      "method": "frozen",
+      "budget": 8,
+      "iou": 0.3,
+      "frames": 7,
+      "gt": 2,
+      "tp": 1,
+      "fp": 1
+    },
+    {
+      "known_regression": false,
+      "method": "frozen",
+      "budget": 8,
+      "iou": 0.5,
+      "frames": 7,
+      "gt": 2,
+      "tp": 1,
+      "fp": 1
+    },
+    {
+      "known_regression": false,
+      "method": "frozen",
+      "budget": "raw",
+      "iou": 0.3,
+      "frames": 7,
+      "gt": 2,
+      "tp": 1,
+      "fp": 1
+    },
+    {
+      "known_regression": false,
+      "method": "frozen",
+      "budget": "raw",
+      "iou": 0.5,
+      "frames": 7,
+      "gt": 2,
+      "tp": 1,
+      "fp": 1
+    },
+    {
+      "known_regression": false,
+      "method": "revised",
+      "budget": 2,
+      "iou": 0.3,
+      "frames": 7,
+      "gt": 2,
+      "tp": 1,
+      "fp": 2
+    },
+    {
+      "known_regression": false,
+      "method": "revised",
+      "budget": 2,
+      "iou": 0.5,
+      "frames": 7,
+      "gt": 2,
+      "tp": 1,
+      "fp": 2
+    },
+    {
+      "known_regression": false,
+      "method": "revised",
+      "budget": 8,
+      "iou": 0.3,
+      "frames": 7,
+      "gt": 2,
+      "tp": 1,
+      "fp": 2
+    },
+    {
+      "known_regression": false,
+      "method": "revised",
+      "budget": 8,
+      "iou": 0.5,
+      "frames": 7,
+      "gt": 2,
+      "tp": 1,
+      "fp": 2
+    },
+    {
+      "known_regression": false,
+      "method": "revised",
+      "budget": "raw",
+      "iou": 0.3,
+      "frames": 7,
+      "gt": 2,
+      "tp": 1,
+      "fp": 2
+    },
+    {
+      "known_regression": false,
+      "method": "revised",
+      "budget": "raw",
+      "iou": 0.5,
+      "frames": 7,
+      "gt": 2,
+      "tp": 1,
+      "fp": 2
+    },
+    {
+      "known_regression": true,
+      "method": "baseline",
+      "budget": 2,
+      "iou": 0.3,
+      "frames": 1,
+      "gt": 0,
+      "tp": 0,
+      "fp": 2
+    },
+    {
+      "known_regression": true,
+      "method": "baseline",
+      "budget": 2,
+      "iou": 0.5,
+      "frames": 1,
+      "gt": 0,
+      "tp": 0,
+      "fp": 2
+    },
+    {
+      "known_regression": true,
+      "method": "baseline",
+      "budget": 8,
+      "iou": 0.3,
+      "frames": 1,
+      "gt": 0,
+      "tp": 0,
+      "fp": 6
+    },
+    {
+      "known_regression": true,
+      "method": "baseline",
+      "budget": 8,
+      "iou": 0.5,
+      "frames": 1,
+      "gt": 0,
+      "tp": 0,
+      "fp": 6
+    },
+    {
+      "known_regression": true,
+      "method": "baseline",
+      "budget": "raw",
+      "iou": 0.3,
+      "frames": 1,
+      "gt": 0,
+      "tp": 0,
+      "fp": 6
+    },
+    {
+      "known_regression": true,
+      "method": "baseline",
+      "budget": "raw",
+      "iou": 0.5,
+      "frames": 1,
+      "gt": 0,
+      "tp": 0,
+      "fp": 6
+    },
+    {
+      "known_regression": true,
+      "method": "frozen",
+      "budget": 2,
+      "iou": 0.3,
+      "frames": 1,
+      "gt": 0,
+      "tp": 0,
+      "fp": 1
+    },
+    {
+      "known_regression": true,
+      "method": "frozen",
+      "budget": 2,
+      "iou": 0.5,
+      "frames": 1,
+      "gt": 0,
+      "tp": 0,
+      "fp": 1
+    },
+    {
+      "known_regression": true,
+      "method": "frozen",
+      "budget": 8,
+      "iou": 0.3,
+      "frames": 1,
+      "gt": 0,
+      "tp": 0,
+      "fp": 1
+    },
+    {
+      "known_regression": true,
+      "method": "frozen",
+      "budget": 8,
+      "iou": 0.5,
+      "frames": 1,
+      "gt": 0,
+      "tp": 0,
+      "fp": 1
+    },
+    {
+      "known_regression": true,
+      "method": "frozen",
+      "budget": "raw",
+      "iou": 0.3,
+      "frames": 1,
+      "gt": 0,
+      "tp": 0,
+      "fp": 1
+    },
+    {
+      "known_regression": true,
+      "method": "frozen",
+      "budget": "raw",
+      "iou": 0.5,
+      "frames": 1,
+      "gt": 0,
+      "tp": 0,
+      "fp": 1
+    },
+    {
+      "known_regression": true,
+      "method": "revised",
+      "budget": 2,
+      "iou": 0.3,
+      "frames": 1,
+      "gt": 0,
+      "tp": 0,
+      "fp": 1
+    },
+    {
+      "known_regression": true,
+      "method": "revised",
+      "budget": 2,
+      "iou": 0.5,
+      "frames": 1,
+      "gt": 0,
+      "tp": 0,
+      "fp": 1
+    },
+    {
+      "known_regression": true,
+      "method": "revised",
+      "budget": 8,
+      "iou": 0.3,
+      "frames": 1,
+      "gt": 0,
+      "tp": 0,
+      "fp": 1
+    },
+    {
+      "known_regression": true,
+      "method": "revised",
+      "budget": 8,
+      "iou": 0.5,
+      "frames": 1,
+      "gt": 0,
+      "tp": 0,
+      "fp": 1
+    },
+    {
+      "known_regression": true,
+      "method": "revised",
+      "budget": "raw",
+      "iou": 0.3,
+      "frames": 1,
+      "gt": 0,
+      "tp": 0,
+      "fp": 1
+    },
+    {
+      "known_regression": true,
+      "method": "revised",
+      "budget": "raw",
+      "iou": 0.5,
+      "frames": 1,
+      "gt": 0,
+      "tp": 0,
+      "fp": 1
+    }
+  ]
+}

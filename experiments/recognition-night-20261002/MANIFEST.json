@@ -1,0 +1,18 @@
+{
+  "score-h5.py": {
+    "bytes": 1690,
+    "sha256": "7173b3687d5df31028f57ef4681a2c5f37b32baa2ad112c56bfb4ac034ffaad0"
+  },
+  "README.md": {
+    "bytes": 3283,
+    "sha256": "feb4d245f1564282631c4bfec80a0fe6a785efdcfce4f64ae7d448ea65a2177b"
+  },
+  "recognition-v3-unadopted.patch": {
+    "bytes": 37759,
+    "sha256": "145efd5030567656f8341b42b0f15437c81f07ef2cc6325c165e7f1ef1fb37a1"
+  },
+  "H5_METRICS_SUMMARY.json": {
+    "bytes": 6438,
+    "sha256": "f772d67096c038de6dae1e737595442f8c31523a8384503d09c80ac431477aff"
+  }
+}

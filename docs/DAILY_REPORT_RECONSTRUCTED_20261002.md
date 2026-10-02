@@ -527,3 +527,14 @@ loader・heap・geometry等の条件、controller外部flag setter、kind2等、
 at-panelの表示だけを、イベント種別・件数・境界・hash・最初の差分などを取り出した要約にした。raw trace/source/比較列と保存・restore・Workerは変更していない。実sessionのプレビューは6,475 bytes、Node単発の作成時間0.379 ms、元sessionのJSONは不変。これはブラウザー性能測定ではない。既存12件と追加した同じテスト内の大きいログ確認、既存aggregate50コマンドが成功。修正後の公開ブラウザーでの展開は次に確認する。
 
 夜間の短期優先は実動画での物体認識比較・修正と、Work8資料に基づくAT再現の不足確認。Work9は準備のみ・未開始のまま。Work7の未採用版を認識改善済みとして配信していない。
+
+
+## 2026-10-02 14:30 UTC — recognition repair checkpoint (not adopted)
+
+- Preserved original Work7 failed result and reproduced its V2 H4 boxes with the pinned ORT CPU setup.
+- Saved an isolated V3 source patch and reproducible scorer under `experiments/recognition-night-20261002/`; it does not replace production recognition.
+- Known T1190 regression: displayed top2, IoU0.5, B0 TP17/22 FP42; V2 TP8/22 FP0; V3 TP16/22 FP8.
+- Fresh H5 after source-only pre-prediction annotation: 7 field frames, 2 enemies; B0 TP1/2 FP13, V2 TP1/2 FP1, V3 TP1/2 FP2. One known H2 frame and four non-field frames are excluded from the fresh denominator. These limited results do not establish a fresh recall gain; V3 is **not adopted**.
+- Source patch clean-application check passed. Actual browser inference/performance is unmeasured; these results use ORT CPU. H5 is now observed and becomes regression data for subsequent tuning.
+- AT log preview fix `7e9619fba6222ba9c7596b72d35c257ff27c358c` passed CI and 50 existing Node checks; browser post-deploy verification remains pending. Work8 conditional27+6 remains preserved; unresolved controllerFlags difference is not counted as completed world reproduction.
+- Next: examine remaining small-enemy miss and extra false positives, keep candidate isolated until supported. Continue the remaining AT discrepancy from saved evidence without repeating verified entry capture.
