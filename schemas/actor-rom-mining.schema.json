@@ -1,0 +1,28 @@
+{
+ "$schema":"https://json-schema.org/draft/2020-12/schema",
+ "$id":"dq9-actor-rom-mining-v1",
+ "type":"object","additionalProperties":false,
+ "required":["schema","staticOnly","rom","coverage","inventory","containers","calls","interpretedCallIds","unresolvedCallIds","npcDefinitions","placementCreates","movementCommands","modelRecords","initializerFields","staticPlacements","resources","predictionResources","mapNames","unsupported"],
+ "properties":{
+  "schema":{"const":"dq9-actor-rom-mining-v1"},"staticOnly":{"const":true},
+  "rom":{"type":"object","required":["sha256","bytes","gameCode","revision"],"properties":{"sha256":{"type":"string","pattern":"^[0-9a-f]{64}$"},"bytes":{"type":"integer","minimum":512},"gameCode":{"const":"YDQJ"},"revision":{"const":0}}},
+  "coverage":{"type":"object","required":["enumerationComplete","globalActorCompleteness","globalActorDenominator","scope","remaining","denominator","categories"],"properties":{"enumerationComplete":{"type":"boolean"},"globalActorCompleteness":{"const":false},"globalActorDenominator":{"const":null},"categories":{"type":"array","minItems":4,"items":{"type":"object","required":["category","sources","denominator","extracted","unsupported","complete"],"properties":{"complete":{"const":false},"category":{"enum":["ordinary-npc","enemy","player","script-generated-and-other"]}}}}}},
+  "inventory":{"type":"array","items":{"type":"object","required":["id","path","romOffset","bytes","sha256","status","reason"]}},
+  "containers":{"type":"array","items":{"type":"object","required":["file","member","romOffset","bytes","role","header","declaredCount","extractedCount","complete","issues"]}},
+  "calls":{"type":"array","items":{"$ref":"#/$defs/call"}},
+  "interpretedCallIds":{"$ref":"#/$defs/ids"},"unresolvedCallIds":{"$ref":"#/$defs/ids"},"npcDefinitions":{"$ref":"#/$defs/ids"},"placementCreates":{"$ref":"#/$defs/ids"},"movementCommands":{"$ref":"#/$defs/ids"},
+  "modelRecords":{"type":"array","items":{"type":"object","required":["id","index","offset","speciesKey","fields","status","reason"],"properties":{"fields":{"type":"array","minItems":8,"maxItems":8,"items":{"$ref":"#/$defs/value"}}}}},
+  "initializerFields":{"type":"object","required":["placement","ordinaryActor","controller"]},
+  "staticPlacements":{"type":"array","items":{"type":"object","required":["id","mapId","storedId","conditional","fields","modifiers","status","reason"],"properties":{"conditional":{"type":"boolean"},"status":{"enum":["extracted","partial"]}}}},
+  "resources":{"type":"object","required":["fullAngle","positiveHalf","negativeHalf","angleLimits","vectors","trig","atan","numberScale"]},
+  "predictionResources":{"type":"object","additionalProperties":false,"required":["fullAngle","positiveHalf","negativeHalf","angleLimits","vectors","trig","atan"],"properties":{"fullAngle":{"type":"integer"},"positiveHalf":{"type":"integer"},"negativeHalf":{"type":"integer"},"angleLimits":{"type":"array","minItems":3,"maxItems":3,"items":{"type":"integer"}},"vectors":{"type":"array","minItems":4,"maxItems":4,"items":{"type":"array","minItems":3,"maxItems":3,"items":{"type":"integer"}}},"trig":{"type":"array","minItems":8192,"maxItems":8192,"items":{"type":"integer","minimum":-32768,"maximum":32767}},"atan":{"type":"array","minItems":129,"maxItems":129,"items":{"type":"integer","minimum":0,"maximum":3217}}}},
+  "mapNames":{"type":"object","required":["source","csvRecords","romMapRecords","romUniqueIds","matchedIds","romOnlyIds","csvOnlyIds","bindings"]},
+  "unsupported":{"type":"array","items":{"type":"object","required":["source","reason"]}}
+ },
+ "$defs":{
+  "ids":{"type":"array","items":{"type":"string"},"uniqueItems":true},
+  "source":{"type":"object","required":["file","offset","address","romOffset","containerRomOffset","compression","widthBytes"],"properties":{"file":{"type":"string"},"offset":{"type":"integer","minimum":0},"address":{"type":["integer","null"]},"romOffset":{"type":["integer","null"]},"containerRomOffset":{"type":"integer","minimum":0},"compression":{"enum":["none","blz","lz10"]},"widthBytes":{"type":"integer","minimum":1}}},
+  "value":{"type":"object","required":["value","raw","type","widthBits","signed","source","reference","status","reason"],"properties":{"value":{"type":["number","string","null"]},"raw":{"type":"integer","minimum":0,"maximum":4294967295},"type":{"type":"string"},"widthBits":{"enum":[8,16,32]},"signed":{"type":"boolean"},"source":{"$ref":"#/$defs/source"},"reference":{"type":["object","null"]},"status":{"enum":["extracted","unresolved"]},"reason":{"type":["string","null"]}},"allOf":[{"if":{"properties":{"status":{"const":"unresolved"}}},"then":{"properties":{"reason":{"type":"string","minLength":1}}}}]},
+  "call":{"type":"object","required":["id","role","index","offset","rawCommandHex","opcode","argumentCount","fields","semanticStatus","reason","references"],"properties":{"id":{"type":"string"},"rawCommandHex":{"type":"string","pattern":"^(?:[0-9a-f]{2})+$"},"opcode":{"$ref":"#/$defs/value"},"argumentCount":{"type":"integer","minimum":0,"maximum":255},"fields":{"type":"array","items":{"$ref":"#/$defs/value"}},"semanticStatus":{"enum":["extracted","partial","unresolved"]},"reason":{"type":["string","null"]},"references":{"type":"array"}}}
+ }
+}

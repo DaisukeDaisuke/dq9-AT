@@ -423,3 +423,29 @@ BOX検出の修正担当は外部Work7のまま。未採用の丸め診断patch�
 ROM解放、source差替え・seek、許容幅変更で古い結果を無効化し、追跡時は同じ新frameから毎回計算し直す。評価上限4096分岐、無効分岐、未評価分を明示し、表示24件の外も観測ログに保持する。私的な画素・動画clip・字形・ROM・native実行結果は公開しない。
 
 Work4の[CI／deploy](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/36989408902)は09:23:54 UTCにsuccess。固定camera斜めだけの対応、camera回転未対応、ほこらの未解決、不足native証拠は維持する。BOX修正は引き続き外部Work7の担当で、今回も認識BOX sourceは変更しない。09:25の定期保存はこの確定差分の通常保存を兼ね、直前Work4の重複commitは作らない。
+
+## 19:01 JST追記: Work5の条件付きNPC継続予測を既存AT機能へ接続
+
+最終Work5のsource-only成果を、既存AT Workerのreplay経路とAT画面へ接続した。「起動連続trace / 実測replay」の「開始snapshotからのNPC継続予測」でorigin.json、clocks.json、actor-rom-data.jsonを端末内で読み、条件付きdraw、終了seed、停止境界を表示・JSON保存できる。新しい独立ATアプリへの置換ではなく、既存セッションの証明済み下限・観測仮定下限・seed追跡を変更しない別の条件付き計算である。
+
+開始時の動的状態と、ROM由来の静的値と、外部clock／invocation条件を分ける。controller巡回、移動・flags・elapsed、mode7/8の順序付き候補、方向drawとreset drawをつなぐ一方、mode9/10、未知mode、空候補、alias、特殊actor、未支持算術は明示的な未解決境界を維持する。条件付き4 draw等を、全世界のAT minimumへ加算しない。[入力契約・再現手順](NPC_AT_CONTINUATION.md)を参照。
+
+元の提出sourceの固定base141b979と、今回の製品統合基準442f6fbは区別する。現在のWork4固定camera斜めと地図逆引きを保持した23ファイルのsource／schema／tests／UI差分だけを統合し、native証拠、RAM、抽出table、画像、ROMや生成binaryをcommitしない。通常aggregateは10:00:08–10:00:29 UTCにexit0、既存45本を保持した49本のNode検査が通過した。一時object保存先だけを隔離し、公開build scriptは承認済みsourceと一致する。
+
+最終公開stageで実production Workerのportable回帰22件、実panel controllerの模擬DOM回帰18件を実行。保存済み入力を使った43 checksでは、武器屋／道具屋／武器屋vectorの3ケースが凍結projectionと完全一致し、条件付きdrawは4／0／4、各300 tickだった。既存replay入口と専用入口の一致、結果保存、連打抑制、入力差替え／クリア後の遅い返答の無効化、壊れたJSON後の古い結果除去、既存ATSessionが不変であることも確認した。
+
+この43件は実Workerと模擬DOMを使う制御フローの検証で、新native captureや実ブラウザーの見た目の合格ではない。公開後に実UIから確認し、それまではブラウザー確認待ちと明記する。単体report、source ZIP、private evidence、再現手順の最終4点はLibraryに保持し、追加台帳にも参照を保存した。
+
+### 地図逆引きの公開UI確認
+
+442f6fbの[CI／deploy](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/36990459916)は09:34:24 UTCにsuccess。その後、新規cloudブラウザーで、元native実画素から作った可逆動画とローカルROMを通常入力し、正解の家IDを選ばずに武器屋104/C01M04（1.4px）、道具屋108/C01M08（0.9px）が表示された。WebGPUが利用できずCPU単発10秒の設定を使った。map100と未探索候補の維持、動画切替／ROM解放での古い結果消去を確認した。
+
+これは2つの可逆clipでの実UI確認で、圧縮動画や全建物の精度保証ではない。既存player-statusの長いID列が隣列へはみ出す軽微な表示問題は残り、逆引き結果の行は読める。
+
+### 優先課題とWork6の保存状態
+
+利用者が新しく最優先にしたWork8「map進入時の青宝箱／NPCなどの具体的AT消費」は別課題で、今回の既知開始snapshotからの通常NPC継続予測では完了しない。進入前後の消費、起点、他consumer、seed setterとの結合を別途閉じる必要がある。
+
+Work6はエミュレータtool側の変更であり、ATアプリの置換ではない。失敗時lifecycle、遅延prologue、IRQ境界、最外frame returnのlane誤接続を修正後、30/30回帰、native hook9件、実CPUfixture9件、元ROMのOFF／OFF／ON各600frameのCPU／RAM／最終画像一致、drop0を再確認した。修正版はprivate tool repoのcanonical sourceと新しいversioned runtime cacheへ通常pushし、38 textファイルと779,274 Bのraw gzip runtime archiveをremoteからbyte一致で確認した。元cacheと元lockをrollback用に保持し、以前のLibrary ZIPが修正後runtimeを含むとは扱わない。
+
+ARM9の推定stack／unknown rootという限界は残る。今回の約19.1%のstep時間増加は限定実行の測定であり、全ゲーム・全Stateやcycle単位の中立性を証明しない。緊急保存した旧UNFINISHED版は履歴として保持する。今回のWork5公開にWork6 sourceや未採用BOX修正を混ぜない。

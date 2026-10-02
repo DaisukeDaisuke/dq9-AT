@@ -1,3 +1,4 @@
+import {replayNpcContinuation,replayNpcFiles} from './npc-at-replay.mjs';
 import {TreasureEntryKernel} from './treasure-entry.mjs';
 import {WorldATKernel,MovementATStep,replayWorldPairs} from './world-at.mjs';
 import {ATKernel,ATSession,replayObservedTrace} from './at-core.mjs';
@@ -16,7 +17,9 @@ self.onmessage=async({data:m})=>{try{await ready;let value;
   case 'forecast':if(!session)throw Error('initial seedを先に入力してください');value=session.forecast(tables,m.tableIds,m.targets,m.window,{conditional:m.conditional});break;
   case 'field-forecast':if(!session)throw Error('initial seedを先に入力してください');if(!m.context?.resolved)throw Error('フィールド条件が未解決です');value=fieldKernel.forecastNaturalTails({seed:session.seed,position:m.conditional?session.conditionalBound:session.lowerBound,rows:m.context.rows,areaMasks:m.context.areaMasks,timeValues:m.context.timeValues,targetIds:m.targets,window:m.window},tables);break;
   case 'boot-trace':if(!session)throw Error('initial seedを先に入力してください');value=session.ingestBootTrace(m.trace);break;
-  case 'replay':if(m.trace.format==='dq9-nonspawn-actual-pairs'){value={world:replayWorldPairs(m.trace,kernel),updates:m.trace.items.length,intCalls:0,spawns:[],mismatches:[]};value.mismatches=value.world.mismatches;break;}value=replayObservedTrace(m.trace,kernel,tables);if(m.trace.schedulerEvents){const contexts={...(m.trace.contexts||{})};const c=m.context;if(c?.resolved&&c.rows?.length&&c.rows.every(r=>(r.flags&7)>1))contexts[String(c.mapId)]={rows:c.rows,timeValue:0,basis:'time-invariant complete map rows'};value.scheduler=replaySchedulerTrace({...m.trace,contexts},fieldKernel,tables);}break;
+  case 'npc-continuation':value=replayNpcContinuation(m.input);break;
+  case 'npc-continuation-files':value=await replayNpcFiles(m.files);break;
+  case 'replay':if(m.trace.format==='dq9-npc-replay-v1'){value=replayNpcContinuation(m.trace);break;}if(m.trace.format==='dq9-nonspawn-actual-pairs'){value={world:replayWorldPairs(m.trace,kernel),updates:m.trace.items.length,intCalls:0,spawns:[],mismatches:[]};value.mismatches=value.world.mismatches;break;}value=replayObservedTrace(m.trace,kernel,tables);if(m.trace.schedulerEvents){const contexts={...(m.trace.contexts||{})};const c=m.context;if(c?.resolved&&c.rows?.length&&c.rows.every(r=>(r.flags&7)>1))contexts[String(c.mapId)]={rows:c.rows,timeValue:0,basis:'time-invariant complete map rows'};value.scheduler=replaySchedulerTrace({...m.trace,contexts},fieldKernel,tables);}break;
   case 'unresolved-consumption':if(!session)throw Error('initial seedを先に入力してください');value=session.noteUnresolvedConsumption(m.observation);break;
   case 'treasure-entry':value=new TreasureEntryKernel(kernel).consume(m.state,m.source,{loadComplete:m.loadComplete,initialFlags:m.initialFlags});break;
   case 'movement-elapsed-write':value=new MovementATStep(kernel).elapsedWrite(m.state,m.input);break;

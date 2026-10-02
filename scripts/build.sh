@@ -41,6 +41,10 @@ node scripts/test-at-session.mjs
 
 # Conditional NPC membership stays separate from runtime AT proof.
 node scripts/test-npc-membership.mjs
+node scripts/test-npc-at-continuation.mjs
+node scripts/test-actor-rom-mining.mjs
+node scripts/test-npc-at-replay.mjs
+node scripts/test-npc-replay-panel.mjs
 
 # Capture identity must stay tied to frozen pixels across asynchronous analyses.
 node --experimental-vm-modules scripts/check-video-panel-capture.mjs

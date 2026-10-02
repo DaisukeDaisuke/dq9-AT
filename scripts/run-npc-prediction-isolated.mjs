@@ -1,0 +1,9 @@
+#!/usr/bin/env node
+import fs from 'node:fs/promises';import path from 'node:path';import {spawnSync} from 'node:child_process';import assert from 'node:assert/strict';
+const [originArg,clockArg,minedArg,outArg,forbiddenArg]=process.argv.slice(2);if(!outArg||!forbiddenArg)throw Error('Usage: run-npc-prediction-isolated.mjs origin.json clocks.json actor-rom-data.json OUTPUT_DIR FORBIDDEN_FUTURE_FILE');
+const [origin,clock,mined,out,forbidden]=[originArg,clockArg,minedArg,outArg,forbiddenArg].map(x=>path.resolve(x)),epoch=JSON.parse(await fs.readFile(origin,'utf8')).epoch,cli=path.resolve(new URL('./predict-npc-continuation.mjs',import.meta.url).pathname),model=path.resolve(new URL('../web/npc-at-continuation.mjs',import.meta.url).pathname);
+await fs.mkdir(out,{recursive:true});const read=[cli,model,origin,clock,mined],flags=['--permission',...read.map(p=>'--allow-fs-read='+p),'--allow-fs-write='+out];
+// Assert denial without reading any byte from the future file. Module loading
+// and explicit input files are allowed; the native capture directory is not.
+const deny=spawnSync(process.execPath,[...flags,'--input-type=module','-e',"import fs from 'node:fs';try{fs.readFileSync(process.argv[1]);process.exit(2)}catch(e){if(e.code!=='ERR_ACCESS_DENIED')throw e;console.log(e.code)}",forbidden],{encoding:'utf8'});assert.equal(deny.status,0,deny.stderr);assert.match(deny.stdout,/ERR_ACCESS_DENIED/);
+const result=spawnSync(process.execPath,[...flags,cli,origin,clock,mined,epoch,out],{encoding:'utf8'});await fs.writeFile(path.join(out,'isolation.json'),JSON.stringify({schema:'work5-predictor-isolation-v1',node:process.version,allowedReadFiles:read,allowedWriteDirectory:out,deniedFuturePath:forbidden,deniedFutureRead:deny.stdout.trim(),exitCode:result.status,stdout:result.stdout,stderr:result.stderr},null,2)+'\n');process.stdout.write(result.stdout);process.stderr.write(result.stderr);process.exitCode=result.status??1;
