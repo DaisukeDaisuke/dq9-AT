@@ -325,3 +325,29 @@ D06M02／map7602では条件付きkind1定義が1件となり、H15／map16500�
 Work3はportable 529 checksと元ROMをローカル入力した695 checksが通過し、52 byteすべてを1 byteずつ変更した場合の拒否、同じbufferの変更後再検査、元入力不変を確認。統合後の完全replay出力も、既存の2入力で30 phases／2 drawと149 phases／134 drawが変更前と一致した。固定hashはこのleafの同一性だけを結合し、caller到達、seed setter不在、現在seed、全mapのAT下限を証明しない。
 
 公開前のNodeとローカルROM検査は完了した。公開commit固有のCI／deploy結果と公開ブラウザ確認は、この追記時点では未確認として別途確認する。Node DOM検査をブラウザ実測と扱わない。ROM／SAV／RAM／動画／抽出ゲーム資産／秘密情報は追加せず、既存日報の本文をそのまま保持して追記する。
+
+## 17:28 JST追記: Work1–3の配信後確認と再開用チェックポイント
+
+Work1–3の公開commitは `6d8e38582c678823aa9882e2c67701a3da4c6176`。[該当CI/deploy](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/36980155810)は2026年10月2日07:45:26 UTCにsuccessとなり、remote mainと公開sourceの一致も確認した。前節の「公開commit固有のCI／deployは未確認」はこの結果で解消する。
+
+### 公開ブラウザーで実測した範囲
+
+07:49–07:57 UTC、cloud Chromeの公開認識ページで、この検査用に作った矩形画像と6.2秒の合成動画を操作した。暖色分割だけの1候補、9候補を8件保持／1件省略、元候補11件を8件保持／3件省略、0候補を確認。繰返し生成、8番選択、画像差替え、中央除外設定変更、候補消去、動画0／3／5秒の手動固定、再生位置と固定時刻の区別、最後のreloadで旧候補と旧件数が混在しないことを確認した。
+
+固定画像の候補会計と操作は13項目PASS。軽微な案内不整合が1件あり、画像差替え後に固定画像と有効な候補生成ボタンがあっても「先に動画のフレームを固定するか画像を開いてください。」が残る。候補生成後は正しく更新し、古い候補・件数の残留はない。今回の変更による回帰か既存かは未判定で、修正は未実施。
+
+NDS／モデル一覧を読み込まない合成入力の検査なので、自動liveの2枠描画、観測を保持する一時停止／再開、実分類の特徴計算件数・履歴・遅延応答は未実行。手動の動画固定をその代用合格にしない。ROM・ユーザー動画を用いた認識精度、WebGPU性能、AT連携の新しい保証もしていない。ブラウザーのscript参照には完全なcommit SHA表示がなく、releaseとの結びつきは別途確認したCI／remote証拠に依存する。
+
+### Work4の受入監査
+
+固定cameraYaw=0の斜め4方向source patchは、隔離copyで適用と通常aggregateが成功。keyboard portable 516 checks、元ROMをローカル入力した517 checks、origin 208 checksを独立実行した。原ROMの同時押しbranch、direction byte、table、target writerも照合済み。patchの5変更対象は監査基準と一致し、Work3追加との適用整合も確認した。
+
+本番への統合・公開はまだ行っていない。F06 native全profileのraw／比較器等が揃っておらず、報告の内部整合性確認とnative完全再実行を分ける。ほこらのUpRight+Rはcontroller-end XYZが25/32一致、計31 field差分という既知失敗を維持する。camera回転、一般world/body再現の完成とはしない。再開用のprivate保存には未適用source patchと監査文書だけを収め、RAM・events・抽出物は入れない。
+
+### Work5中間成果と次の作業
+
+中間提出の報告では、既知開始状態から各600 frameの継続について武器屋map104は予測／実測4 draw、道具屋map108は0 draw、比較対象の状態差分0。これは提出側のnative比較報告で、この保存作業で再実行した値ではない。現行依存関係を使った中間互換性検査は新規9ファイルに既存pathとの衝突なし、予測器20件＋抽出器5件がPASS。最終回帰・最終patch・本番接続は未完了で、候補配列の直接stack採録や未対応branchを残す。条件付きdrawをworld minimumへ昇格しない。
+
+callstack移植の対象は現在のheadless実装である。ブラウザー向けの古い指示案を置き換える修正版が完成したため、既存Node API／非停止observerの接続先を明記した指示書をprivate checkpointへ保存する。移植実装そのものは未完了。既存BMMP座標の索引化・可視化も新しい隔離stageで着手したところで、実装完了・公開済みとはしない。
+
+今回の公開変更はこの日報追記だけ。稼働sourceと配信内容は変更しない。private再開用checkpointはsource／監査／進捗の明示allowlistだけを保存し、ROM・SAV・DST・RAM・動画・抽出ゲーム資産・秘密情報・Work5 private ZIPを含めない。`dqix-functions`は新しい確定注釈の差分がなく、`7eaf0f13cb0d93425722afc6120ce1c2c1eed19b`を維持する。変更中のstageを完成物として固定せず、重複・空commitを作らない。
