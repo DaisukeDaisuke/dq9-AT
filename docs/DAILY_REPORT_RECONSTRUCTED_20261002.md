@@ -594,3 +594,15 @@ The native capture tool is backed up only in private dots-tools, and raw registe
 Recognition: a simplification that classifies all automatic components before the8box budget still missed the small H5 enemy and increased false positives relative to V5+CLS. It was rejected, with fixed thresholds unchanged. No new recognition candidate was adopted.
 
 Next bounded AT issue: identify the producer of NPC updater clock arguments before claiming a source-derived continuation clock. Do not keep extending native capture windows merely to accumulate matching counts.
+
+
+## 2026-10-02 16:25–16:43 UTC — NPC時計の実測対応
+
+NPC更新の時刻入力を固定33/phase2とみなさず、ROMの生成関数0200ffacと転送元0203e21cを対応付けた。元道具屋SAVから既存Left300の最初180frameを観測し、独立に記述した生成算術67回とNPC引数372回が一致（573events、drop0、不一致0）。33/2以外に50/3、29/2、35/2、31/2を観測。入力経過時間の上限50000、pending phase上限3、Q12比の除数17.0はROM由来。
+
+上流hardware tick、pending counter生成、呼出し時刻は未予測。これは入力→生成値の対応検証であり、既存条件付き33消費・BOOT下限を増やしていない。r1は入力ベクトルポインタでありdeltaへ転用しない。原SAVと固定入力を保持。
+
+- [ソース・検証範囲](../experiments/npc-clock-source-review-20261002/RESULT.md)
+- [解析注釈](https://github.com/DaisukeDaisuke/dqix-functions/blob/ef23f3a1667915cc8e4ff30512b7bf2fc874a290/docs/jpn-npc-clock-producer.md)（既存symbols保全、CI37035569262成功）
+- 私的再開ZIPは同一Library IDのversion4、4288099bytes、SHA256 44c63d493fbbb7c9de52d45bce55da6e884a9ce8d3350d8e3b12ee483669091d。ROM/SAV/動画/プロジェクトDBはZIP追加対象外。
+- 16:40 UTCの環境確認では作業ファイル、ROM、SAV、ランタイムが継続して存在。リセット根拠なし、再取得・再ビルドなし。

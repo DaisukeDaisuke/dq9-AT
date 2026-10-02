@@ -1,0 +1,61 @@
+{
+  "scope": "Isolated source producer from original arguments + scale/pending words at entry, compared to subsequent native results; upstream tick scheduling unproved",
+  "captureSHA256": "36324de26c4556e1bd020b1bcbca304068a0b5017cb17350b44094364bc80afb",
+  "producerSourceSHA256": "c465b6ae5d24e9a11e69fc6dfb6c3feaa8097d5f8699a7319e1978a5a41a2ace",
+  "producerCalls": 67,
+  "NPCArgumentsCompared": 372,
+  "initialUnboundNPC": 0,
+  "pendingProducerAtEnd": false,
+  "mismatchCount": 0,
+  "firstDifference": null,
+  "observedClockPairs": [
+    [
+      33,
+      33,
+      2,
+      7951
+    ],
+    [
+      50,
+      50,
+      3,
+      12047
+    ],
+    [
+      29,
+      29,
+      2,
+      6987
+    ],
+    [
+      35,
+      35,
+      2,
+      8432
+    ],
+    [
+      31,
+      31,
+      2,
+      7469
+    ]
+  ],
+  "elapsedInputRange": [
+    29477,
+    322350
+  ],
+  "scaleValues": [
+    4096
+  ],
+  "phaseAccumulatorValues": [
+    2,
+    5,
+    8,
+    3,
+    20,
+    4
+  ],
+  "bootProof": false,
+  "worldResolved": false,
+  "negativeScaleSupported": false
+}
