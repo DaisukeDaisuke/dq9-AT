@@ -243,3 +243,14 @@ fresh1990起点の下直進・右転回／停止・上転回・左転回の4経�
 - 深夜作業は引き続きdots単騎で進める。Workを使えないことや本人が就寝中であることを理由に、作業全体を停止しない
 - dots側で「Workでしか作業できないため作業不可」として止めず、許可済みのcloud環境で進められる解析・実装・検査を続ける
 - 必須入力の不足や権限など、実際に進行を妨げる条件は対象と理由を具体的に記録し、その条件に依存しない作業を継続する
+
+
+## 14:02 JST追記: ROM算術・同一mapのscript gate確定と実ブラウザ確認
+
+ROMの乱数整数化は、binary64の除算、乗算を別々に丸めてから整数へ切り捨てる。metaru_nasi.dstから入力を注入した11例で、元ROM・本番JS・既存WASMが一致した。max93／r17970では50となり、厳密有理数の51とは異なる。6コード領域の一致も確認済み。host側のmax1〜93／r0〜32767、3,047,424組では最初の差がmax93だった。検査したenc.jsonの283表はmaxRand≦35なので、この反例を本番weighted選択のfalse negativeや修正の根拠にはしない。自然spawn・呼出し順・timingの再現試験ではない。
+
+original1990／map20006／通常offline／scene再入場なしの範囲では、元のevent tableがnullで、ROMのtriggerF全90 commandにもmap20006行がない。同一mapのreloadが起きても空tableを保ち、event由来のactivationを除外できる。562 ROM/parser checksと214 source checksを記録した。過去にqueueされたmenu／encounter handler、controller word全体の保存、creator後のbody接続は引き続き未完了で、製品の継続条件は増やしていない。
+
+04:55 UTC分のsource-only checkpointを非公開toolsの既存mainへ通常fast-forwardで保存し、22 text filesの全blob一致と既存335 filesの保持を確認した。復元手順・manifestを含み、未完のcontroller-writersは除外した。元probeに埋め込まれていた12 bytesのROM命令列は保存せず、手元の入力から読み出してhash確認する派生scriptに置き換え、その差分をmanifestに明記した。今回のbackupで元のnative実験を再実行したとはしない。ROM／SAV／DST／RAM／動画／画像／抽出資産／raw response／byte dump／私有link／秘密情報は同梱していない。
+
+別途、公開creator版9df2f2bdac1347945e50405d4c04665556501262を実cloudブラウザで確認した。4方向のcreator結果、旧creatorなしpacketの停止、reset・再初期化・新fileでの消去、paired schema不足／誤入力／不正JSON／heap・descriptor serial aliasの拒否と復帰、未対応bodyの明示拒否、ROM解放時の状態消去を通過した。4方向とも30 scheduler段階、AT2／seed0xa46fab4f／timer0／species88／slot112／serial2でcreator return後に停止し、application由来のerrorはなかった。これは実ページの条件付きfactory/UI確認である。配信moduleへの直接アクセスはERR_BLOCKED_BY_CLIENTとなり、配信byteの独立照合と通信監査は未実施。body継続・全world・live現在状態の完成を意味しない。この追記では公開runtimeを変更せず、13:50 JSTのWork依頼・深夜単騎方針もそのまま維持する。
