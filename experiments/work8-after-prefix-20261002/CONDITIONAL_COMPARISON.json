@@ -1,0 +1,79 @@
+{
+  "kind": "retrospective conditional source comparison",
+  "clock_assumption": "Every second source frame2652..3250: delta0,scaledDelta33,phase2. Extrapolated from preceding steady clocks; not independently source-proven or newly measured per-dispatch here.",
+  "future_actor_state_used": false,
+  "future_random_values_used_as_input": false,
+  "original_prefix_draws": 6,
+  "additional_predicted_draws": 4,
+  "additional_observed_draws": 4,
+  "all_ordered_pairs_match": true,
+  "predicted_seed_after": 3515178439,
+  "observed_seed_after": 3515178439,
+  "seed_matches": true,
+  "pairs": [
+    {
+      "predicted": {
+        "sourceFrame": 2950,
+        "lr": 33822260,
+        "seedBefore": 1926876651,
+        "seedAfter": 842823496,
+        "consumer": "direction"
+      },
+      "observed": {
+        "sourceFrame": 2950,
+        "lr": 33822260,
+        "seedBefore": 1926876651
+      },
+      "matches": true
+    },
+    {
+      "predicted": {
+        "sourceFrame": 2950,
+        "lr": 33821220,
+        "seedBefore": 842823496,
+        "seedAfter": 1506208225,
+        "consumer": "threshold-reset"
+      },
+      "observed": {
+        "sourceFrame": 2950,
+        "lr": 33821220,
+        "seedBefore": 842823496
+      },
+      "matches": true
+    },
+    {
+      "predicted": {
+        "sourceFrame": 3198,
+        "lr": 33822260,
+        "seedBefore": 1506208225,
+        "seedAfter": 3657061126,
+        "consumer": "direction"
+      },
+      "observed": {
+        "sourceFrame": 3198,
+        "lr": 33822260,
+        "seedBefore": 1506208225
+      },
+      "matches": true
+    },
+    {
+      "predicted": {
+        "sourceFrame": 3198,
+        "lr": 33821220,
+        "seedBefore": 3657061126,
+        "seedAfter": 3515178439,
+        "consumer": "threshold-reset"
+      },
+      "observed": {
+        "sourceFrame": 3198,
+        "lr": 33821220,
+        "seedBefore": 3657061126
+      },
+      "matches": true
+    }
+  ],
+  "bootProof": false,
+  "worldResolved": false,
+  "controller_flags_mismatch_retained": true,
+  "not_a_production_replay_extension": true
+}

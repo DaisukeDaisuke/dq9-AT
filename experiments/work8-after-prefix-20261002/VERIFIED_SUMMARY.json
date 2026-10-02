@@ -1,0 +1,50 @@
+{
+  "scope": "native observation only; not a newly predicted extension",
+  "startFrame": 2651,
+  "endFrame": 3251,
+  "mapId": 100,
+  "calls": [
+    {
+      "completedFrame": 2950,
+      "callerLR": "0x2041634",
+      "seedBefore": 1926876651,
+      "seedAfter": 842823496
+    },
+    {
+      "completedFrame": 2950,
+      "callerLR": "0x2041224",
+      "seedBefore": 842823496,
+      "seedAfter": 1506208225
+    },
+    {
+      "completedFrame": 3198,
+      "callerLR": "0x2041634",
+      "seedBefore": 1506208225,
+      "seedAfter": 3657061126
+    },
+    {
+      "completedFrame": 3198,
+      "callerLR": "0x2041224",
+      "seedBefore": 3657061126,
+      "seedAfter": 3515178439
+    }
+  ],
+  "drawCount": 4,
+  "newCallerOutsideKnownNPC": false,
+  "observerDrops": 0,
+  "calltreeNodes": 12,
+  "calltreeAccepted": 4,
+  "calltreeUnknownRoot": true,
+  "calltreeEstimated": true,
+  "worldResolved": false,
+  "bootProof": false,
+  "originalSaveUnchanged": true,
+  "captureSHA256": "12920b7087f0fdf91a174f04e268353dab41a483d91f2f84f3e0dbc86d1896e5",
+  "limitations": [
+    "Single fresh observer run; no new off/on pair here. Prior runtime parity is not proof for all future states.",
+    "No source clock/controller projection extension or prefix lower-bound change.",
+    "First attempt used a nonexistent event.lr field, so stopped on first actual NPC call. Corrected attempt uses observed regs[14] schema.",
+    "One corrected-attempt output-path collision was rejected before emulator startup; prior data unchanged.",
+    "No new unknown caller appeared in this10-second emulated interval; do not expand aimlessly."
+  ]
+}

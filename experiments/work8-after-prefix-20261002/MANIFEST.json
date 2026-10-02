@@ -1,0 +1,14 @@
+{
+  "VERIFIED_SUMMARY.json": {
+    "bytes": 1620,
+    "sha256": "fa7f76e0353421209d04b68518ca837c38559e9a7b4859a77231d86bfbf67c1c"
+  },
+  "CONDITIONAL_COMPARISON.json": {
+    "bytes": 2072,
+    "sha256": "208a43bfcb10714ca42345b0f108ce9e5e3602302a35d1aefb5c14eb2f8fb405"
+  },
+  "compare-conditional-extension.mjs": {
+    "bytes": 2513,
+    "sha256": "a899c1fceb43a74f5c965a7974bf72ab7fbeb6fef8bc6fabdaa1bb72b056bc05"
+  }
+}
