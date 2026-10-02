@@ -1,10 +1,11 @@
+import {compareCandidateTails,verifyCandidateAssociation} from './at-candidate-forecast.mjs';
 import {replayNpcContinuation,replayNpcFiles} from './npc-at-replay.mjs';
 import {TreasureEntryKernel} from './treasure-entry.mjs';
 import {WorldATKernel,MovementATStep,replayWorldPairs} from './world-at.mjs';
 import {ATKernel,ATSession,replayObservedTrace} from './at-core.mjs';
 import {FieldATKernel} from './field-at.mjs';
 import {FieldScheduler,replaySchedulerTrace} from './field-scheduler.mjs';
-let session=null,kernel=null,tables=null,fieldKernel=null;
+let session=null,kernel=null,tables=null,fieldKernel=null,candidateForecastEpoch=0;
 const ready=(async()=>{const [r,t]=await Promise.all([fetch('./wasm/map_render.wasm'),fetch('./data/enc.json')]);if(!r.ok||!t.ok)throw Error('AT資産の取得に失敗しました');const {instance}=await WebAssembly.instantiate(await r.arrayBuffer(),{});kernel=new ATKernel(instance);fieldKernel=new FieldATKernel(kernel);tables=(await t.json()).main;})();
 self.onmessage=async({data:m})=>{try{await ready;let value;
  switch(m.type){
@@ -16,6 +17,8 @@ self.onmessage=async({data:m})=>{try{await ready;let value;
   case 'observe':if(!session)throw Error('initial seedを先に入力してください');value=session.observeMonster(m.observation,tables,m.window);break;
   case 'forecast':if(!session)throw Error('initial seedを先に入力してください');value=session.forecast(tables,m.tableIds,m.targets,m.window,{conditional:m.conditional});break;
   case 'field-forecast':if(!session)throw Error('initial seedを先に入力してください');if(!m.context?.resolved)throw Error('フィールド条件が未解決です');value=fieldKernel.forecastNaturalTails({seed:session.seed,position:m.conditional?session.conditionalBound:session.lowerBound,rows:m.context.rows,areaMasks:m.context.areaMasks,timeValues:m.context.timeValues,targetIds:m.targets,window:m.window},tables);break;
+  case 'candidate-forecast':{const mine=++candidateForecastEpoch;verifyCandidateAssociation(m.result,session?.snapshot());value=await compareCandidateTails(m.result,m.options,kernel,fieldKernel,tables,{cancelled:()=>mine!==candidateForecastEpoch});break;}
+  case 'candidate-forecast-cancel':candidateForecastEpoch++;value={cancelled:true};break;
   case 'boot-trace':if(!session)throw Error('initial seedを先に入力してください');value=session.ingestBootTrace(m.trace);break;
   case 'npc-continuation':value=replayNpcContinuation(m.input);break;
   case 'npc-continuation-files':value=await replayNpcFiles(m.files);break;
