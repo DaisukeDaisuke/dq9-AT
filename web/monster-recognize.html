@@ -59,7 +59,9 @@
           <p class="muted">位置候補は最大4回/秒。照合は同時1件、最大2件/秒で最新フレームから1枠ずつ選びます。処理待ちの動画列は作りません。画面の枠は未確認、下の順位はその撮影時刻の切り抜きだけの記録です。</p>
           <p class="muted">暖色分割の追加前の短い開発用動画窓では、照合した30枠の事後目視は明瞭な敵体を含む5枠・背景/UI 23枠・曖昧2枠でした。同じ録画の反復を含み、精度保証ではありません。信頼できる敵の自動受理やAT連携の完成版ではありません。</p>
           <label class="check-label"><input id="video-observation-dense" type="checkbox">DINO補助も使う（3秒以上空け、照合の間に最大1回。背景候補・処理時間も増えます）</label>
-          <div class="proposal-actions"><button id="start-video-observation" type="button" disabled>観測を開始して再生</button><button id="stop-video-observation" type="button" disabled>自動観測を停止</button></div>
+          <p id="shrine-video-preset-note" class="muted">ふういんのほこらを、OBS左右配置の右上DS画面で録画した動画用です。下のボタンで領域候補・フィールド・右上4:3・中央除外・DINOv2・_f・クイック・初期4モデルをまとめて設定します。AIの実行方式は変えません。DINO補助は任意です。別の場面・配置にはこの設定を使わないでください。</p>
+          <p><button id="apply-shrine-video-preset" type="button" aria-describedby="shrine-video-preset-note">ふういんのほこら・OBS右上の設定を適用</button></p>
+          <div class="proposal-actions"><button id="start-video-observation" type="button" aria-describedby="video-observation-requirements" disabled>観測を開始して再生</button><button id="stop-video-observation" type="button" disabled>自動観測を停止</button></div>
           <p id="video-observation-requirements" class="muted"></p>
           <p id="video-observation-status" role="status" aria-live="polite">停止中。開始を押すまで自動の観測・照合は行いません。</p>
           <canvas id="video-observation-view" hidden aria-label="最新に観測した位置候補。すべて未確認"></canvas>
@@ -88,10 +90,12 @@
         <div class="settings-grid"><label class="control-label">姿勢の探索<select id="preset"><option value="quick">クイック（少ない姿勢）</option><option value="standard">標準（より多くの姿勢）</option></select></label><label class="control-label">表示する順位<select id="top-k"><option value="4">上位4件</option><option value="3">上位3件</option><option value="1">上位1件</option></select></label></div>
         <p class="muted">比較には時間がかかる場合があります。標準探索は色ヒストグラムで利用できます。</p>
         <p id="configuration-error" class="error" role="status" hidden></p>
-        <div class="actions"><button id="start" type="button" class="primary" disabled>この切り抜きを照合</button><button id="cancel" type="button" disabled>中止</button><button id="restart" type="button" disabled>最初から再照合</button></div>
+        <p id="recognition-requirements" class="muted">先にNDSファイルを選択してください。</p>
+        <div class="actions"><button id="start" type="button" aria-describedby="recognition-requirements" class="primary" disabled>この切り抜きを照合</button><button id="cancel" type="button" disabled>中止</button><button id="restart" type="button" disabled>最初から再照合</button></div>
         <progress id="progress" max="1" value="0" aria-label="照合の進捗"></progress>
         <p id="status" role="status" aria-live="polite">NDSと動画または画像を選択してください。</p>
         <p id="error" class="error" role="alert" hidden></p>
+        <details id="error-details" hidden><summary>元のエラー詳細（工程・名前・スタック）</summary><pre id="error-stack" style="white-space:pre-wrap;overflow-wrap:anywhere"></pre></details>
       </aside>
     </div>
     <section id="results" aria-labelledby="results-heading">

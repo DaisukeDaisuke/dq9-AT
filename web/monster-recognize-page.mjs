@@ -80,15 +80,20 @@ export class RecognitionWorkerClient {
       if (this.worker !== worker || this.generation !== generation) return;
       const pending = this.pending.get(data.id);
       if (!pending || data.romEpoch !== pending.romEpoch) return;
-      if (data.type === 'progress') { this.onProgress(data); return; }
+      if (data.type === 'progress') { if (data.phase) pending.stage = data.phase; this.onProgress(data); return; }
       if (data.type !== 'error' && data.type !== pending.expected) return;
       this.pending.delete(data.id);
-      if (data.type === 'error') pending.reject(new Error(data.message || '照合処理に失敗しました。'));
+      if (data.type === 'error') {
+        const detail = data.error || {}, failure = new Error(detail.message || data.message || '照合処理に失敗しました。');
+        failure.name = detail.name || 'Error'; if (detail.stack) failure.stack = detail.stack;
+        failure.stage = detail.stage || pending.stage; pending.reject(failure);
+      }
       else pending.resolve(data);
     };
     worker.onerror = event => {
       if (this.worker !== worker) return;
-      const error = new Error(event.message || 'Workerを起動できませんでした。このページをHTTP(S)で開いてください。');
+      const detail = event.error, error = new Error(detail?.message || event.message || 'Workerを起動できませんでした。このページをHTTP(S)で開いてください。');
+      error.name = detail?.name || 'Error'; if (detail?.stack) error.stack = detail.stack; error.stage = 'worker-runtime';
       for (const pending of this.pending.values()) pending.reject(error);
       this.pending.clear(); this.terminate();
     };
@@ -97,7 +102,7 @@ export class RecognitionWorkerClient {
   request(message, transfer, expected) {
     const worker = this.createWorker();
     return new Promise((resolve, reject) => {
-      this.pending.set(message.id, { resolve, reject, expected, romEpoch: message.romEpoch });
+      this.pending.set(message.id, { resolve, reject, expected, romEpoch: message.romEpoch, stage: message.type });
       try { worker.postMessage(message, transfer); } catch (error) { this.pending.delete(message.id); reject(error); }
     });
   }
@@ -153,7 +158,13 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
   });
   function phaseName(phase) { return ({ render: 'モデル画像を生成中', score: '切り抜きと比較中', load: 'NDSを読込中', download: '公開AIモデルを準備中', init: 'DINOv2を初期化中', embed: 'DINOv2画像特徴を計算中' })[phase] || '照合中'; }
   function status(text) { $('status').textContent = text; }
-  function error(text = '') { $('error').textContent = text; $('error').hidden = !text; }
+  function error(failure = '', stage = 'page') {
+    const detail = failure && typeof failure === 'object' ? failure : null;
+    const text = detail ? `${detail.stage || stage} · ${detail.name || 'Error'}: ${detail.message || String(failure)}` : String(failure);
+    $('error').textContent = text; $('error').hidden = !text;
+    $('error-details').hidden = !detail;
+    $('error-stack').textContent = detail ? `${text}\n\n${detail.stack || '元のスタック情報はありません。'}` : '';
+  }
   function selectedIDs() { return [...state.selected].filter(id => state.catalog.some(model => model.modelId === id)); }
   function featureMethod() { return $('feature-method').value === 'dinov2' ? 'dinov2' : 'histogram'; }
   function inferenceBackend() { return $('inference-backend').value === 'webgpu' ? 'webgpu' : 'wasm'; }
@@ -168,7 +179,22 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     try { if (state.capture && $('scene-kind').value === 'field') gameplayROI(); } catch (failure) { return failure.message; }
     return '';
   }
-  function ready() { if (state.clearingCache) return false; const count = selectedIDs().length; return !!state.romFile && !!state.capture && !!state.roi && count > 0 && count <= LIMITS.models && !configurationIssue(); }
+  function recognitionIssue() {
+    if (!state.romFile) return '先にNDSファイルを選択してください。';
+    if (!state.capture) return state.sourceReady && state.sourceKind === 'video' ? '動画の位置を合わせて「フリーズして範囲を選ぶ」を押してください。' : '動画または画像を選択し、画像を固定してください。';
+    if (!state.roi) return '固定画像上で敵を囲むか、数値を入力して「範囲を適用」を押してください。領域候補を作った場合は、候補ボタンを1つ選んでください。';
+    const count = selectedIDs().length;
+    if (!count) return state.catalog.length ? '比較するモデル候補を1〜4種類選択してください。' : 'NDSのモデル一覧がありません。「NDSを再読込」または別のNDSファイルを選択してください。';
+    if (count > LIMITS.models) return '比較するモデル候補を4種類以内に減らしてください。';
+    return configurationIssue();
+  }
+  function pendingIssue() {
+    if (state.clearingCache) return '保存した姿勢特徴を消去中です。完了までお待ちください。';
+    if (state.loading) return 'NDSを読み込んでいます。完了までお待ちください。';
+    if (state.busy) return '処理中です。完了を待つか「中止」を押してください。';
+    return '';
+  }
+  function ready() { return !state.clearingCache && !recognitionIssue(); }
   function controls() {
     $('freeze').disabled = !state.sourceReady;
     $('play-pause').disabled = !state.sourceReady || state.sourceKind !== 'video';
@@ -176,6 +202,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     $('redraw-roi').disabled = !state.capture;
     $('roi-fields').disabled = !state.capture;
     $('start').disabled = !ready() || state.busy || state.loading || observer.running;
+    $('recognition-requirements').textContent = pendingIssue() || (observer.running ? '動画の自動観測中です。固定画像を照合するには「自動観測を停止」を押してください。' : recognitionIssue()) || 'この切り抜きで照合できます。開始すると選択したモデルと比較します。';
     const canReloadROM = !!state.romFile && !state.loading && !state.busy && !state.catalog.length;
     $('restart').disabled = !(ready() || canReloadROM) || (state.loading && !state.busy);
     $('restart').textContent = canReloadROM ? 'NDSを再読込' : '最初から再照合';
@@ -197,7 +224,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     const videoIssue = videoObservationIssue();
     $('start-video-observation').disabled = !!videoIssue || state.busy || state.loading || state.clearingCache || observer.running || state.observationStarting;
     $('stop-video-observation').disabled = !observer.running && !state.observationStarting;
-    if (!observer.running) $('video-observation-requirements').textContent = videoIssue || '準備できました。開始すると動画を再生し、位置候補と各時刻の切り抜き順位を自動で観測します。';
+    if (!observer.running) $('video-observation-requirements').textContent = pendingIssue() || (state.observationStarting ? '動画の再生開始を待っています。停止するには「自動観測を停止」を押してください。' : videoIssue) || '準備できました。開始すると動画を再生し、位置候補と各時刻の切り抜き順位を自動で観測します。';
   }
   function videoObservationStamp(mediaTime, basis = 'video.currentTime (approximate)') {
     const frame = { width: video.videoWidth, height: video.videoHeight };
@@ -207,27 +234,46 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
       featureMethod: featureMethod(), inferenceBackend: inferenceBackend(), sceneContext: { kind: $('scene-kind').value === 'field' ? 'field' : 'unspecified', gameplayROI: game, excludeCenter: !!$('exclude-center').checked, maskNormalized: { ...CENTER_MASK } } };
   }
   function videoObservationIssue() {
-    if (document.hidden) return '非表示のタブでは自動観測を開始できません。';
-    if (state.disposed) return 'ページを読み直してください。';
-    if (!$('enable-roi-proposals').checked) return '上のshrine-blue-v1実験を有効にしてください。';
-    if (!state.sourceReady || state.sourceKind !== 'video') return '再生できる動画を選択してください。画像入力は固定画像の照合を使えます。';
-    if (!state.romFile) return 'NDSを読み込んでください。';
-    if (featureMethod() !== 'dinov2' || $('variant').value !== '_f' || $('preset').value !== 'quick') return 'DINOv2・フィールドモデル（_f）・クイックを選択してください。';
-    const ids = selectedIDs(); if (ids.length !== 4 || !DEFAULT_MODELS.every(id => ids.includes(id))) return '初期の4モデルを選択してください。';
-    try {
-      const stamp = videoObservationStamp(video.currentTime), frame = stamp.sourceFrame, scene = stamp.sceneContext, g = scene.gameplayROI;
-      if (!frame.width || !frame.height || frame.width > 4096 || frame.height > 4096 || frame.width * frame.height > VIDEO_OBSERVER_LIMITS.maxSourcePixels) return '自動観測の元動画は合計2,097,152画素以下（1920×1080対応）にしてください。';
-      if (scene.kind !== 'field' || !scene.excludeCenter) return 'フィールドを明示し、中央除外を有効にしてください。';
-      if (g.w * 3 !== g.h * 4 || g.w > 1024 || g.h > 1024) return 'ゲーム範囲は正確な4:3、各辺1024px以下にしてください。';
-    } catch (failure) { return failure.message; }
-    return '';
+    const issues = [];
+    if (document.hidden) issues.push('非表示のタブでは自動観測を開始できません。');
+    if (state.disposed) issues.push('ページを読み直してください。');
+    if (!$('enable-roi-proposals').checked) issues.push('shrine-blue-v1の領域候補を有効にしてください。');
+    if (!state.sourceReady || state.sourceKind !== 'video') issues.push('再生できる動画を選択してください。画像入力は固定画像の照合を使えます。');
+    if (!state.romFile) issues.push('NDSを読み込んでください。');
+    if (featureMethod() !== 'dinov2') issues.push('画像の比較方法をDINOv2にしてください。');
+    if ($('variant').value !== '_f') issues.push('モデルの種類をフィールドモデル（_f）にしてください。');
+    if ($('preset').value !== 'quick') issues.push('姿勢の探索をクイックにしてください。');
+    const ids = selectedIDs(); if (ids.length !== 4 || !DEFAULT_MODELS.every(id => ids.includes(id))) issues.push('初期の4モデルを選択してください。');
+    if ($('scene-kind').value !== 'field') issues.push('場面をフィールドと明示指定してください。');
+    if (!$('exclude-center').checked) issues.push('フィールド中央の除外を有効にしてください。');
+    if (state.sourceReady && state.sourceKind === 'video') try {
+      const frame = { width: video.videoWidth, height: video.videoHeight };
+      if (!frame.width || !frame.height || frame.width > 4096 || frame.height > 4096 || frame.width * frame.height > VIDEO_OBSERVER_LIMITS.maxSourcePixels) issues.push('自動観測の元動画は合計2,097,152画素以下（1920×1080対応）にしてください。');
+      const g = videoObservationStamp(video.currentTime).sceneContext.gameplayROI;
+      if (g.w * 3 !== g.h * 4 || g.w > 1024 || g.h > 1024) issues.push('ゲーム範囲は正確な4:3、各辺1024px以下にしてください。');
+    } catch (failure) { issues.push(failure.message); }
+    return issues.join(' ');
+  }
+  // This explicit action describes its assumptions in the UI. It never plays,
+  // downloads or starts inference, and uses the normal configuration cancellation.
+  function applyShrineVideoPreset() {
+    invalidate('', { clearProposalSet: true }); error();
+    $('enable-roi-proposals').checked = true;
+    $('scene-kind').value = 'field'; $('gameplay-layout').value = 'obs-right-upper'; $('exclude-center').checked = true;
+    $('feature-method').value = 'dinov2'; $('variant').value = '_f'; $('preset').value = 'quick';
+    state.selected = new Set(DEFAULT_MODELS);
+    renderCatalog(); paint(); metadata(); controls();
+    status('ふういんのほこら・OBS右上用の設定を適用しました。ゲーム画面の範囲と、開始ボタンの下に残る条件を確認してください。開始は別操作です。');
   }
   async function prepareObservation(config) {
     const { signal, id } = config, epoch = config.captureStamp.romEpoch;
+    observer.progress({ id, romEpoch: epoch, phase: 'rom-load', message: 'NDSを確認中' });
     await ensureLoaded(); if (signal.aborted) throw abortError();
-    if (config.inferenceBackend === 'webgpu') await probeWebGPU({ signal }); if (signal.aborted) throw abortError();
+    if (config.inferenceBackend === 'webgpu') { observer.progress({ id, romEpoch: epoch, phase: 'webgpu-probe', message: 'WebGPUの対応を確認中' }); await probeWebGPU({ signal }); } if (signal.aborted) throw abortError();
+    observer.progress({ id, romEpoch: epoch, phase: 'asset-preparation', message: '公開AIファイルを準備中' });
     await ensureInferenceAssets({ backend: config.inferenceBackend, signal, onProgress: p => observer.progress({ ...p, id, romEpoch: epoch }) });
     if (signal.aborted) throw abortError();
+    observer.progress({ id, romEpoch: epoch, phase: 'pose-preparation', message: '64姿勢を準備中' });
     const message = await client.prepare({ type: 'prepare', id, romEpoch: epoch, modelIds: config.modelIds, variant: config.variant, preset: config.preset, featureMethod: 'dinov2', inferenceBackend: config.inferenceBackend });
     if (signal.aborted) throw abortError();
     if (!message.result?.prepared) throw new Error('姿勢特徴を準備できませんでした。');
@@ -270,7 +316,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
           observer.sample({ width, height, rgba: observationCaptureCtx.getImageData(0, 0, width, height).data }, stamp);
         }
         updateObservationAges();
-      } catch (failure) { observer.stop(`error: ${failure.message}`); }
+      } catch (failure) { observer.stop(`error: ${failure.message}`, { name: failure.name, message: failure.message, stack: failure.stack, stage: failure.stage || 'video-frame' }); }
       queueObservationFrame();
     };
     token.id = token.native ? video.requestVideoFrameCallback(callback) : (window.setTimeout || globalThis.setTimeout)(callback, 250);
@@ -297,14 +343,14 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
       state.observationRecords = []; $('video-observations').replaceChildren(); cancelObservationFrame();
       observer.start({ captureStamp: videoObservationStamp(video.currentTime), modelIds: [...DEFAULT_MODELS], variant: '_f', preset: 'quick', inferenceBackend: inferenceBackend(), oversizedWarmSplit: true, denseSupplement: !!$('video-observation-dense').checked });
       queueObservationFrame(); controls();
-    } catch (failure) { if (intent === observationStartGeneration) { error(failure.message); stopVideoObservation('start-failed'); } }
+    } catch (failure) { if (intent === observationStartGeneration) { error(failure, 'video-start'); stopVideoObservation('start-failed'); } }
     finally { if (intent === observationStartGeneration) { state.observationStarting = false; controls(); } }
   }
   function videoObservationState(info) {
     if (!info.running) { observationStartGeneration++; state.observationStarting = false; cancelObservationFrame(); $('video-observation-view').hidden = true; $('video-position-age').textContent = '現在の位置候補は停止・未観測です。過去の切り抜き記録は現在位置に貼り付けません。'; }
     const s = info.stats || {};
     $('video-observation-status').textContent = info.running ? `${info.phase === 'preparing' ? '64姿勢を準備中（動画フレームは最新の1枚だけ保持）' : '自動観測中'} · CPU ${s.sampledFrames || 0}枚 / 照合 ${s.classificationsCompleted || 0}件 / 補助 ${s.supplementsStarted || 0}回` : `自動観測を停止しました（${info.phase}）。順位は観測した過去の切り抜きにだけ対応します。`;
-    if (String(info.phase).startsWith('error:')) error(info.phase.slice(7));
+    if (String(info.phase).startsWith('error:')) error(info.error || info.phase.slice(7), 'video-observation');
     if (info.running) queueObservationAge();
     updateObservationAges(); controls();
   }
@@ -375,14 +421,15 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     const id = nextID(), epoch = state.romEpoch, captureStamp = cloneCaptureStamp(currentStamp()), backend = captureStamp.inferenceBackend;
     const current = structuredClone({ ...sourceSet, captureStamp }); delete current.trackingFrame;
     // The private frozen canvas owns these bytes; overlays and live video are never sampled.
-    let image;
+    let image, failureStage = 'crop-capture';
     gate.begin(id, epoch, captureStamp); state.busy = true; state.denseBusy = true; state.denseStatus = 'DINO補助を準備中です。下の中止ボタンで止められます。'; controls();
     const preparation = new AbortController(); state.assetAbort = preparation; const started = performance.now();
     const fresh = () => !preparation.signal.aborted && gate.accepts({ id, romEpoch: epoch }) && state.proposalResult === sourceSet && stampEquals(captureStamp, currentStamp());
     try {
       image = { width: frozen.width, height: frozen.height, rgba: frozenCtx.getImageData(0, 0, frozen.width, frozen.height).data };
-      await ensureLoaded(); if (!fresh()) return;
-      if (backend === 'webgpu') await probeWebGPU({ signal: preparation.signal }); if (!fresh()) return;
+      failureStage = 'rom-load'; await ensureLoaded(); if (!fresh()) return;
+      if (backend === 'webgpu') { failureStage = 'webgpu-probe'; await probeWebGPU({ signal: preparation.signal }); } if (!fresh()) return;
+      failureStage = 'asset-preparation';
       await ensureInferenceAssets({ backend, signal: preparation.signal, onProgress: progress => {
         if (!fresh()) return;
         const total = progress.total ?? progress.totalBytes, done = progress.done ?? progress.loaded ?? progress.loadedBytes;
@@ -390,6 +437,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
         status(progress.message || phaseName(progress.phase));
       } });
       if (!fresh()) return;
+      failureStage = 'dense-supplement';
       const message = await client.supplement({ type: 'supplement', id, romEpoch: epoch, captureStamp, current, image, modelIds: [...DEFAULT_MODELS], variant: '_f', preset: 'quick', featureMethod: 'dinov2', inferenceBackend: backend });
       if (!fresh()) return;
       if (!gate.accepts(message)) throw new Error('固定画像情報が一致しない補助候補を破棄しました。');
@@ -409,7 +457,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
       if (!fresh()) return;
       state.busy = false; state.denseBusy = false; state.denseStatus = 'DINO補助を完了できませんでした。CPU候補は保持しています。';
       client.terminate(); state.loadPromise = null; state.loading = false;
-      if (failure.name !== 'AbortError') error(failure.message);
+      if (failure.name !== 'AbortError') error(failure, failureStage);
       controls();
     } finally {
       if (state.assetAbort === preparation) state.assetAbort = null;
@@ -466,7 +514,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
       $('proposal-status').textContent = valid.length ? `${valid.length}候補 · CPU領域探索 ${milliseconds}（分類時間は別）。候補を1つ選んでから照合してください。枠は未確認です。${omittedNote}` : `領域候補は0件でした（CPU領域探索 ${milliseconds}）。敵がいない証拠ではありません。手動で範囲を指定できます。`;
       status('固定した画像だけの領域候補を表示しました。分類はまだ行っていません。');
     } catch (failure) {
-      clearProposals('領域候補を作れませんでした。手動の範囲指定は使えます。'); error(failure.message); paint(); controls();
+      clearProposals('領域候補を作れませんでした。手動の範囲指定は使えます。'); error(failure); paint(); controls();
     }
   }
   function selectProposal(proposalId, sourceSet = state.proposalResult) {
@@ -653,7 +701,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
       if (epoch !== state.romEpoch) return;
       status('NDSの準備ができました。画像を固定して、敵の範囲を選択してください。');
       if (state.sourceReady && state.sourceKind === 'image') freeze();
-    } catch (failure) { if (failure.name !== 'AbortError' && epoch === state.romEpoch) { error(failure.message); status('NDSを読み込めませんでした。別のファイルを選択して再試行してください。'); } }
+    } catch (failure) { if (failure.name !== 'AbortError' && epoch === state.romEpoch) { error(failure, 'rom-load'); status('NDSを読み込めませんでした。別のファイルを選択して再試行してください。'); } }
     controls();
   }
   function releaseSource() {
@@ -748,16 +796,17 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     const r = captureStamp.enemyROI; const crop = { width: r.w, height: r.h, rgba: frozenCtx.getImageData(r.x, r.y, r.w, r.h).data };
     gate.begin(id, epoch, captureStamp); state.busy = true; controls(); $('progress').removeAttribute('value');
     status(client.loadedRomEpoch === epoch ? '選択したモデルを照合中です。' : 'NDSを再読込しています。中止後の再開時は最初から準備します。');
-    let preparation = null, assetPreparationMs = 0, assetDownloadMs = 0; const downloadStarts = new Map();
+    let preparation = null, assetPreparationMs = 0, assetDownloadMs = 0, failureStage = 'rom-load'; const downloadStarts = new Map();
     try {
       await ensureLoaded();
       if (!gate.accepts({ id, romEpoch: epoch })) return;
       if (method === 'dinov2' && !getFieldExclusion(captureStamp, scene).excluded) {
         preparation = new AbortController(); state.assetAbort = preparation;
         const preparationStarted = performance.now();
-        if (backend === 'webgpu') await probeWebGPU({ signal: preparation.signal });
+        if (backend === 'webgpu') { failureStage = 'webgpu-probe'; await probeWebGPU({ signal: preparation.signal }); }
         if (preparation.signal.aborted || !gate.accepts({ id, romEpoch: epoch })) return;
         status(`DINOv2 ${backend === 'webgpu' ? 'WebGPU/FP16（初回約66.80 MiB）' : 'CPU/WASM・int8（初回約34.75 MiB）'}の公開ファイルを準備しています。`);
+        failureStage = 'asset-preparation';
         await ensureInferenceAssets({ backend, signal: preparation.signal, onProgress: progress => {
           if (preparation.signal.aborted || !gate.accepts({ id, romEpoch: epoch })) return;
           if (progress.phase === 'download' && !downloadStarts.has(progress.assetId)) downloadStarts.set(progress.assetId, performance.now());
@@ -769,6 +818,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
         if (preparation.signal.aborted || !gate.accepts({ id, romEpoch: epoch })) return;
         assetPreparationMs = performance.now() - preparationStarted;
       }
+      failureStage = 'recognize';
       const message = await client.recognize({ type: 'recognize', id, romEpoch: epoch, captureStamp, crop, modelIds, variant, preset, featureMethod: method, inferenceBackend: backend, sceneContext: scene });
       if (!gate.accepts(message)) {
         if (gate.accepts({ id, romEpoch: epoch })) { state.busy = false; error('取得フレーム情報が一致しない結果を破棄しました。再照合してください。'); status('結果は表示していません。'); controls(); }
@@ -779,7 +829,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     } catch (failure) {
       if (!gate.accepts({ id, romEpoch: epoch })) return;
       state.busy = false; $('progress').max = 1; $('progress').value = 0; controls();
-      if (failure.name !== 'AbortError') { if (method === 'dinov2') { client.terminate(); state.loadPromise = null; state.loading = false; } error(failure.message); status(method === 'dinov2' ? 'DINOv2の準備または照合に失敗しました。再試行するか、実行方式で「CPU/WASM」、比較方法で「色ヒストグラム」を明示的に選択できます。方法は自動変更していません。' : '照合を完了できませんでした。候補や探索設定を調整して再試行できます。'); }
+      if (failure.name !== 'AbortError') { if (method === 'dinov2') { client.terminate(); state.loadPromise = null; state.loading = false; } error(failure, failureStage); status(method === 'dinov2' ? 'DINOv2の準備または照合に失敗しました。再試行するか、実行方式で「CPU/WASM」、比較方法で「色ヒストグラム」を明示的に選択できます。方法は自動変更していません。' : '照合を完了できませんでした。候補や探索設定を調整して再試行できます。'); }
     } finally {
       if (state.assetAbort === preparation) state.assetAbort = null;
     }
@@ -838,7 +888,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
   for (const event of ['pause','ended']) video.addEventListener(event, () => stopVideoObservation(event));
   document.addEventListener?.('visibilitychange', () => { if (document.hidden) stopVideoObservation('hidden-page'); controls(); });
   $('redraw-roi').addEventListener('click', () => { state.drawMode = true; $('redraw-roi').textContent = 'ドラッグで新しい範囲を選択'; status('固定した画像上で、新しい範囲をドラッグしてください。'); });
-  $('apply-roi').addEventListener('click', () => { try { error(); setROI(Object.fromEntries(['x', 'y', 'w', 'h'].map(key => [key, Number($(`roi-${key}`).value)]))); } catch (failure) { error(failure.message); } });
+  $('apply-roi').addEventListener('click', () => { try { error(); setROI(Object.fromEntries(['x', 'y', 'w', 'h'].map(key => [key, Number($(`roi-${key}`).value)]))); } catch (failure) { error(failure); } });
   for (const key of ['x', 'y', 'w', 'h']) $(`roi-${key}`).addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); $('apply-roi').click(); } });
   view.addEventListener('pointerdown', pointerDown); view.addEventListener('pointermove', pointerMove); view.addEventListener('pointerup', pointerEnd); view.addEventListener('pointercancel', pointerEnd);
   $('model-filter').addEventListener('input', renderCatalog);
@@ -854,6 +904,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     finally { state.clearingCache = false; controls(); }
   });
   $('enable-roi-proposals').addEventListener('change', () => { invalidate('', { clearProposalSet: true }); error(); paint(); controls(); if ($('enable-roi-proposals').checked) $('proposal-status').textContent = proposalIssue() || '固定画像の領域候補を探せます。分類は候補を選んでから実行します。'; });
+  $('apply-shrine-video-preset').addEventListener('click', applyShrineVideoPreset);
   $('generate-roi-proposals').addEventListener('click', generateProposals);
   $('supplement-roi-proposals').addEventListener('click', supplementProposals);
   $('clear-roi-proposals').addEventListener('click', () => { if (state.denseBusy) invalidate('', { clear: false }); clearProposals('候補の枠を消しました。選択済みの切り抜きは手動で調整できます。'); paint(); controls(); });
@@ -867,7 +918,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     if (!state.romFile || state.loading) return;
     error(); status('保持しているNDSを読み込み直しています。');
     try { await ensureLoaded(); status('NDSの準備ができました。画像を固定して範囲を選択してください。'); }
-    catch (failure) { if (failure.name !== 'AbortError') error(failure.message); }
+    catch (failure) { if (failure.name !== 'AbortError') error(failure); }
     controls();
   });
   $('cancel').addEventListener('click', () => { invalidate('処理を中止しました。再照合すると、NDSを読み直して最初から実行します。', { terminate: true }); $('rom-status').textContent = state.romFile ? `${state.romFile.name} · 再照合時に再読込` : '未選択'; });

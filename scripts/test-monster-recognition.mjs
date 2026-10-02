@@ -13,7 +13,12 @@ for(const frame of [0,1]){const p={...model,pose:'exact-nsbca-stored-frame',anim
 lease=await bank.generate([model],{...options,sessionKey:'test-2'});eq(lease.stats.generatedModels,1);lease.release();
 const controller=new AbortController();controller.abort();await assert.rejects(bank.generate([model],{...options,signal:controller.signal}),e=>e.name==='AbortError');checks++;
 const mid=new AbortController();await assert.rejects(bank.generate([model],{...options,sessionKey:'new',views:[{yaw:0,pitch:0},{yaw:1,pitch:0}],signal:mid.signal,onProgress:p=>{if(p.completedViews===1)mid.abort();}}),e=>e.name==='AbortError');checks++;bank.destroy();renderer.destroy();
-const worker=new Worker(new URL('./monster-recognition-node-worker.mjs',import.meta.url));const reply=new Promise((resolve,reject)=>{worker.once('message',resolve);worker.once('error',reject);});worker.postMessage({type:'load',id:'invalid-rom',romEpoch:1,rom:new ArrayBuffer(512)});const error=await reply;eq(error.type,'error');eq(error.id,'invalid-rom');await worker.terminate();
+const worker=new Worker(new URL('./monster-recognition-node-worker.mjs',import.meta.url));
+const workerReply=message=>new Promise((resolve,reject)=>{const failed=error=>{worker.off('message',received);reject(error);},received=reply=>{worker.off('error',failed);resolve(reply);};worker.once('message',received);worker.once('error',failed);worker.postMessage(message);});
+try{
+ const error=await workerReply({type:'load',id:'invalid-rom',romEpoch:1,rom:new ArrayBuffer(512)});eq(error.type,'error');eq(error.id,'invalid-rom');eq(error.romEpoch,1);eq(error.error.name,'Error');eq(error.error.message,error.message);eq(error.error.message,'日本語版DQ9 (YDQJ) のNDSを選んでください');eq(error.error.stage,'load');ok(error.error.stack.startsWith(`Error: ${error.error.message}`));ok(error.error.stack.includes('monster-recognition-worker.mjs'));eq(Object.keys(error.error).sort(),['message','name','stack','stage']);
+ const unloaded=await workerReply({type:'recognize',id:'unloaded-recognition',romEpoch:2,payload:'not part of diagnostics'});eq(unloaded.type,'error');eq(unloaded.id,'unloaded-recognition');eq(unloaded.romEpoch,2);eq(unloaded.error.stage,'recognize');eq(unloaded.error.name,'Error');eq(unloaded.error.message,unloaded.message);eq(unloaded.error.message,'現在のNDSを読み込み直してください');ok(unloaded.error.stack.includes('monster-recognition-worker.mjs'));ok(!JSON.stringify(unloaded).includes('not part of diagnostics'));
+}finally{await worker.terminate();}
 console.log(JSON.stringify({passed:true,checks,actualNodeWorkerErrorsVerified:true,syntheticOnly:true,recognitionAccuracyValidated:false},null,2));
 // CI entrypoint also exercises the source-only optional inference and cache contracts.
 await import('./test-monster-dinov2.mjs');

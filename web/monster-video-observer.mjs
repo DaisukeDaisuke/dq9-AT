@@ -23,10 +23,10 @@ export class LatestVideoObserver{
   this.stats={sampledFrames:0,classificationsStarted:0,classificationsCompleted:0,supplementsStarted:0,discardedDenseFrames:0,maxActiveJobs:0,maxLatestSnapshots:0};
   this.onState({running:true,phase:'preparing',stats:{...this.stats}});this._pump();
  }
- stop(reason='stopped'){
+ stop(reason='stopped',error=null){
   const wasRunning=this.running,job=this.active;this.generation++;this.running=false;this.active=null;this.latest=null;this.prepared=false;this.tracker.reset();this.attempts?.clear();
   if(job){job.controller.abort();this.cancelActive();}
-  if(wasRunning)this.onState({running:false,phase:reason,stats:{...this.stats}});
+  if(wasRunning)this.onState({running:false,phase:reason,stats:{...this.stats},...(error?{error}:{})});
  }
  shouldSample(pts,wall=this.now()){return this.running&&Number.isFinite(pts)&&pts>=0&&pts>this.lastPTS&&wall-this.lastCPUAt>=VIDEO_OBSERVER_LIMITS.cpuIntervalMs;}
  sample(image,captureStamp,wall=this.now()){
@@ -43,7 +43,7 @@ export class LatestVideoObserver{
   this.onPositions({result:clone(this.latest.result),association:clone(association),image:owned,wallAt:wall});this._pump();return true;
  }
  acceptsProgress(message){const j=this.active;return this.running&&!!j&&j.generation===this.generation&&message.id===j.id&&message.romEpoch===this.config.captureStamp.romEpoch;}
- progress(message){if(this.acceptsProgress(message))this.onProgress(message);}
+ progress(message){if(this.acceptsProgress(message)){if(message.phase)this.active.stage=message.phase;this.onProgress(message);}}
  _job(kind){const job={kind,id:this.nextID(),generation:this.generation,controller:new AbortController()};this.active=job;this.stats.maxActiveJobs=Math.max(this.stats.maxActiveJobs,1);return job;}
  _current(job){return this.running&&this.active===job&&job.generation===this.generation&&!job.controller.signal.aborted;}
  _eligible(snapshot){
@@ -60,7 +60,7 @@ export class LatestVideoObserver{
   if(!this.running||this.active)return;
   if(!this.prepared){
    const job=this._job('prepare');try{await this.prepare({...clone(this.config),id:job.id,signal:job.controller.signal});if(!this._current(job))return;this.prepared=true;this.onState({running:true,phase:'observing',stats:{...this.stats}});}
-   catch(e){if(this._current(job))this.stop(`error: ${e.message}`);}finally{if(this._current(job)){this.active=null;this._pump();}}return;
+   catch(e){if(this._current(job))this.stop(`error: ${e.message}`,{name:e.name||'Error',message:e.message||String(e),stack:e.stack,stage:e.stage||job.stage||job.kind});}finally{if(this._current(job)){this.active=null;this._pump();}}return;
   }
   const snapshot=this.latest;if(!snapshot||this.now()-snapshot.wallAt>500||this.now()<this.nextClassAt)return;
   let candidate=this._eligible(snapshot);
@@ -81,7 +81,7 @@ export class LatestVideoObserver{
    if(!candidate)return;
    if(!this._current(job))return;
    // One logical cycle owns this exact snapshot through an optional coarse pass and one crop.
-   job.kind='classify';job.id=this.nextID();
+   job.kind='classify';job.stage='classify';job.id=this.nextID();
    const request=proposalRecognitionRequest(snapshot.image,{...source,captureStamp:clone(source.captureStamp)},candidate.p.proposalId,{romEpoch:source.captureStamp.romEpoch,modelIds:[...this.config.modelIds],variant:this.config.variant,preset:this.config.preset,featureMethod:'dinov2',inferenceBackend:this.config.inferenceBackend});
    request.type='recognize';request.id=job.id;
    const preview={width:request.crop.width,height:request.crop.height,rgba:request.crop.rgba.slice()};
@@ -92,7 +92,7 @@ export class LatestVideoObserver{
    this.completed++;this.stats.classificationsCompleted++;if(!candidate.dense)this.forceCPU=false;
    this.onObservation({captureStamp:clone(request.captureStamp),roi:clone(request.captureStamp.enemyROI),preview,result:message.result,positionObservedAt:snapshot.wallAt,dispatchedAt,completedAt:this.now(),candidateSource:candidate.dense?'dino-patch':'cpu-component',tentativeTrackId:candidate.dense?null:candidate.p.id,unknown:true,currentPositionCertified:false,enemyIdentityCertified:false,birthCertified:false,ATDrawsCertified:0});
    this.onState({running:true,phase:'observing',stats:{...this.stats}});
-  }catch(e){if(this._current(job))this.stop(`error: ${e.message}`);}
+  }catch(e){if(this._current(job))this.stop(`error: ${e.message}`,{name:e.name||'Error',message:e.message||String(e),stack:e.stack,stage:e.stage||job.stage||job.kind});}
   finally{if(this._current(job)){this.active=null;this._pump();}}
  }
 }

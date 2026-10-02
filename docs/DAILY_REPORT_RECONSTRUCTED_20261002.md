@@ -102,3 +102,11 @@ CPU ROI候補と任意DINO patch補完、opt-inの動画observerは実装済み�
 `faf92a1f5bcbf999de9ecec731fd46666e80f50e` の [CI/deploy](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/36941759381) は成功。新しいcloud Chromeページで、自動生成された360秒/570秒のコンパクトcropを選択し、既存CPU/WASM分類器のz019b順位とunknown維持を確認した。64 pose feature再利用、新規生成0。自然EOFからStart一回で再開、Stop、seek、実験checkbox解除後の古い結果消去も通過した。
 
 静止画確認は色管理metadataを除いた同じRGB入力での比較であり、ブラウザ動画YUV decodeとの画素一致や全動画recallの保証ではない。WebGPU adapterは引き続きこのcloud環境では利用不可。今回の検証で追加の不具合・コード変更はなかった。
+
+## 09:14 JST追記: 認識開始の導線とエラー表示
+
+利用者のスクリーンショットでは、動画/ROMが読み込めていても実験設定、DINO方式、場面などが未指定で開始できなかった。必要条件を一つずつしか表示せず、設定項目も離れていたため分かりにくかった。
+
+明示的な「ほこら・OBS右上」設定の一括適用と、残る不足条件の一括表示を追加した。backendと任意DINO補助の選択は維持し、設定適用だけで再生・ダウンロード・推論しない。通常の切り抜き照合にも不足条件を常時表示する。Worker/observerのエラー名・内容・段階・stackをローカル画面で確認できるようにし、取消や失敗後のcleanupを維持した。
+
+統合aggregateと独立レビューを通過。拡張206件のpage検査にはGPU初期化失敗からCPU明示選択・結果完了までを含む。公開後の新しい導線確認は別途行う。変更前の実cloudブラウザではGPU adapter取得失敗後もStartは有効で、GPU失敗がグレーアウトを継続させる現象は再現していない。

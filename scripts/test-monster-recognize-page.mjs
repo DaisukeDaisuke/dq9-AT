@@ -91,25 +91,25 @@ const win = new Element('window'); const ui = mountRecognitionPage(doc, win, { p
 el('variant').value = '_f'; el('preset').value = 'quick'; el('top-k').value = '4';
 const uiWorkers = []; ui.client.factory = () => { const worker = new MockWorker(); uiWorkers.push(worker); return worker; };
 const catalog = [...DEFAULT_MODELS, 'z999x'].map(modelId => ({ modelId, speciesCandidates: [{ monsterId: 1, nameJa: `名前-${modelId}` }] }));
-check('initial controls block recognition until capture and catalog exist', () => { assert(el('start').disabled); assert(el('cancel').disabled); });
+check('initial controls block recognition until capture and catalog exist', () => { assert(el('start').disabled); assert(el('cancel').disabled); assert.match(el('recognition-requirements').textContent,/NDSファイルを選択/); });
 el('rom-file').files = [file]; let romRead = ui.selectROM(); await settle(); const firstLoad = uiWorkers[0].messages[0].message;
-check('page-generated load ID matches actual Worker string contract', () => { assert.match(firstLoad.id, /^request-\d+$/); assert(!el('cancel').disabled); });
+check('page-generated load ID matches actual Worker string contract', () => { assert.match(firstLoad.id, /^request-\d+$/); assert(!el('cancel').disabled); assert.match(el('recognition-requirements').textContent,/NDSを読み込んでいます/); });
 await el('cancel').click(); await romRead;
 check('cancel initial ROM load leaves an enabled File reread action', () => { assert(uiWorkers[0].terminated); assert(!el('restart').disabled); assert.equal(el('restart').textContent, 'NDSを再読込'); });
 const retry = el('restart').click(); await settle(); const retryLoad = uiWorkers[1].messages[0].message;
 uiWorkers[1].emit({ type: 'loaded', id: retryLoad.id, romEpoch: retryLoad.romEpoch, catalog }); await retry;
-check('reread restores default four candidates', () => { assert.equal(ui.state.selected.size, 4); assert.equal(el('model-count').textContent, '4 / 4'); });
+check('reread restores default four candidates', () => { assert.equal(ui.state.selected.size, 4); assert.equal(el('model-count').textContent, '4 / 4'); assert.match(el('recognition-requirements').textContent,/動画または画像を選択/); });
 const fifth = el('model-list').children[4].children[0]; fifth.checked = true; await fifth.trigger('change');
 check('fifth model selection is rejected', () => { assert(!fifth.checked); assert.equal(ui.state.selected.size, 4); });
 const video = el('source-video'); Object.assign(video, { videoWidth: 640, videoHeight: 480, currentTime: 1.25, duration: 20, readyState: 4, seeking: false, frameValue: 37 });
 Object.assign(ui.state, { sourceReady: true, sourceKind: 'video', sourceId: 'video-test', sourceEpoch: 2, timelineSegment: 3 }); ui.freeze();
-check('freeze alone does not invent an enemy ROI', () => { assert.equal(ui.state.roi, null); assert(el('start').disabled); });
+check('freeze alone does not invent an enemy ROI', () => { assert.equal(ui.state.roi, null); assert(el('start').disabled); assert.match(el('recognition-requirements').textContent,/固定画像上で敵を囲む/); });
 ui.setROI({ x: 10, y: 20, w: 40, h: 50 });
-check('explicit numeric ROI enables scoring', () => { assert(!el('start').disabled); assert.equal(el('crop-size').textContent, '40 × 50 px · x 10, y 20'); });
+check('explicit numeric ROI enables scoring', () => { assert(!el('start').disabled); assert.equal(el('crop-size').textContent, '40 × 50 px · x 10, y 20'); assert.match(el('recognition-requirements').textContent,/この切り抜きで照合できます/); });
 video.frameValue = 99; video.currentTime = 2; await video.trigger('seeking');
 let scoring = ui.recognize(); await settle(); let scoreRequest = uiWorkers[1].messages.at(-1).message;
 check('request copies the frozen pixels and original timestamp, not moving video', () => { assert.equal(scoreRequest.crop.rgba[0], 37); assert.equal(scoreRequest.captureStamp.videoTime, 1.25); assert.equal(scoreRequest.captureStamp.timelineSegment, 3); assert.equal(ui.state.timelineSegment, 4); });
-check('score request transfers crop and disables duplicate Start', () => { assert.equal(scoreRequest.type, 'recognize'); assert.match(scoreRequest.id, /^request-/); assert(el('start').disabled); assert(!el('cancel').disabled); assert(!el('restart').disabled); });
+check('score request transfers crop and disables duplicate Start', () => { assert.equal(scoreRequest.type, 'recognize'); assert.match(scoreRequest.id, /^request-/); assert.match(el('recognition-requirements').textContent,/処理中/); assert(el('start').disabled); assert(!el('cancel').disabled); assert(!el('restart').disabled); });
 const previousRequest = scoreRequest;
 ui.setROI({ x: 11, y: 20, w: 40, h: 50 }); await scoring;
 check('ROI edit cancels active Worker and clears scoring state', () => { assert(uiWorkers[1].terminated); assert(!ui.state.busy); assert(!el('start').disabled); });
@@ -158,7 +158,7 @@ let dinoJob = await beginScoring(); let dinoRequest = dinoJob.worker.messages.at
 check('image dimensions never assert field context or activate center masking', () => { assert.equal(dinoRequest.featureMethod, 'histogram'); assert.equal(dinoRequest.sceneContext.kind, 'unspecified'); assert.equal(dinoRequest.sceneContext.gameplayROI, null); assert.equal(dinoRequest.sceneContext.excludeCenter, false); assert.equal(preparationCalls.length, 0); });
 emitResult(dinoJob.worker, dinoRequest); await dinoJob.completion;
 el('feature-method').value = 'dinov2'; el('preset').value = 'standard'; await el('feature-method').trigger('change');
-check('DINO standard preset is visibly blocked without silently changing it', () => { assert(el('start').disabled); assert(!el('configuration-error').hidden); assert.equal(el('preset').value, 'standard'); });
+check('DINO standard preset is visibly blocked without silently changing it', () => { assert(el('start').disabled); assert(!el('configuration-error').hidden); assert.equal(el('preset').value, 'standard'); assert.match(el('recognition-requirements').textContent,/DINOv2は単一/); });
 el('preset').value = 'quick'; el('variant').value = 'both'; await el('variant').trigger('change');
 check('DINO both variants is visibly blocked without silently changing it', () => { assert(el('start').disabled); assert.equal(el('variant').value, 'both'); });
 el('variant').value = '_f'; await el('variant').trigger('change');
@@ -230,7 +230,7 @@ let resolveProbe;probeGPU=()=>new Promise(resolve=>{resolveProbe=resolve;});dino
 check('provider change cancels pending GPU capability probe before download',()=>{assert.equal(preparationCalls.length,prepBefore);assert.equal(el('rankings').children.length,0);assert(dinoJob.worker.terminated);});
 probeGPU=async()=>({});let resolveClear;clearLocalFeatures=()=>new Promise(resolve=>{resolveClear=resolve;});
 dinoJob=await beginScoring();dinoRequest=dinoJob.worker.messages.at(-1).message;const pendingClear=el('clear-feature-cache').click();await settle();
-check('clear requested vectors terminates active scoring and blocks restart until complete',()=>{assert(dinoJob.worker.terminated);assert(ui.state.clearingCache);assert(el('start').disabled);assert(el('clear-feature-cache').disabled);});resolveClear();await pendingClear;await dinoJob.completion;
+check('clear requested vectors terminates active scoring and blocks restart until complete',()=>{assert(dinoJob.worker.terminated);assert(ui.state.clearingCache);assert(el('start').disabled);assert(el('clear-feature-cache').disabled);assert.match(el('recognition-requirements').textContent,/姿勢特徴を消去中/);});resolveClear();await pendingClear;await dinoJob.completion;
 check('clear reports local feature removal without deleting public dependencies',()=>{assert(!ui.state.clearingCache);assert.match(el('status').textContent,/公開AIファイルのキャッシュは保持/);assert(!el('start').disabled);});
 clearLocalFeatures=async()=>{throw Error('cache unavailable');};await el('clear-feature-cache').click();check('cache clear failure is visible and does not claim success',()=>{assert.match(el('error').textContent,/cache unavailable/);assert(!el('clear-feature-cache').disabled);});
 
@@ -355,7 +355,7 @@ const autoCount=()=>uiWorkers.reduce((n,w)=>n+w.messages.filter(m=>['prepare','r
 async function fireFrame(ms,value=111){observerClock=ms;video.currentTime=ms/1000;video.frameValue=value;const next=frameCallbacks.entries().next().value;assert(next,'one video callback expected');frameCallbacks.delete(next[0]);next[1](ms,{mediaTime:ms/1000});await settle();}
 async function preparedWorker(){await settle();const worker=uiWorkers.at(-1);let req=worker.messages.at(-1).message;if(req.type==='load'){worker.emit({type:'loaded',id:req.id,romEpoch:req.romEpoch,catalog});await settle();req=worker.messages.at(-1).message;}assert.equal(req.type,'prepare');return{worker,req};}
 let nAuto=autoCount();await ui.startVideoObservation();let auto=await preparedWorker();
-check('automatic loop starts only explicitly and requests real pose preparation with no crop',()=>{assert.equal(autoCount(),nAuto+1);assert(!Object.hasOwn(auto.req,'crop'));assert(!Object.hasOwn(auto.req,'image'));assert(ui.observer.running);assert(video.paused===false);assert(el('start-video-observation').disabled);assert(!el('stop-video-observation').disabled);assert.equal(frameCallbacks.size,1);});
+check('automatic loop starts only explicitly and requests real pose preparation with no crop',()=>{assert.equal(autoCount(),nAuto+1);assert(!Object.hasOwn(auto.req,'crop'));assert(!Object.hasOwn(auto.req,'image'));assert(ui.observer.running);assert(video.paused===false);assert(el('start-video-observation').disabled);assert(!el('stop-video-observation').disabled);assert.equal(frameCallbacks.size,1);assert.match(el('recognition-requirements').textContent,/動画の自動観測中/);});
 for(let i=0;i<5;i++)await fireFrame(i*250,111+i);check('CPU observations progress during cold preparation without a query queue',()=>{assert.equal(ui.observer.stats.sampledFrames,5);assert.equal(auto.worker.messages.at(-1).message.type,'prepare');assert(!el('video-observation-view').hidden);assert.equal(frameCallbacks.size,1);});
 auto.worker.emit({type:'result',id:auto.req.id,romEpoch:30,result:{prepared:true,timings:{templateCacheHits:64}}});await settle();let automaticRequest=auto.worker.messages.at(-1).message;
 check('prepared loop dispatches newest frozen crop through existing classifier',()=>{assert.equal(automaticRequest.type,'recognize');assert.equal(automaticRequest.crop.rgba[0],115);assert.equal(automaticRequest.captureStamp.videoTime,1);assert.equal(automaticRequest.captureStamp.timestampBasis,'requestVideoFrameCallback.mediaTime');assert.equal(automaticRequest.inferenceBackend,'wasm');});
@@ -472,5 +472,58 @@ check('explicit shrine restart preserves the same bank key inputs',()=>{for(cons
 await el('stop-video-observation').click();el('scene-kind').value='unspecified';await el('scene-kind').trigger('change');const offSceneCalls=proposalCalls.length,offSceneJobs=autoCount();await ui.generateProposals();await ui.startVideoObservation();
 check('unknown scene remains blocked even with the shrine checkbox enabled',()=>{assert.equal(proposalCalls.length,offSceneCalls);assert.equal(autoCount(),offSceneJobs);assert(!ui.observer.running);});
 check('UI states the warm shrine assumption and extra background/classification cost',()=>{assert.match(html,/青い床と暖色の体/);assert.match(html,/灰色のメタル系や他のマップ/);assert.match(html,/背景候補と分類コスト/);});
+// Reproduce the reported ROM + OBS video, but still-disabled Video Start journey.
+delete video.frameRGBA;Object.assign(video,{videoWidth:1920,videoHeight:1080,paused:true,seeking:false,ended:false,currentTime:0,readyState:4});
+Object.assign(ui.state,{sourceReady:true,sourceKind:'video',sourceId:'reported-disabled-start',sourceEpoch:ui.state.sourceEpoch+1,romFile:file,catalog});
+el('enable-roi-proposals').checked=true;el('scene-kind').value='unspecified';el('gameplay-layout').value='whole';el('exclude-center').checked=false;el('feature-method').value='histogram';el('variant').value='_f';el('preset').value='quick';el('video-observation-dense').checked=true;el('inference-backend').value='webgpu';ui.state.selected=new Set(DEFAULT_MODELS);ui.freeze();
+const reportedMissing=el('video-observation-requirements').textContent;
+check('reported checkbox-on state shows every remaining blocker together',()=>{assert(el('start-video-observation').disabled);for(const term of [/DINOv2/,/場面をフィールド/,/中央の除外/,/4:3/])assert.match(reportedMissing,term);assert(!el('apply-shrine-video-preset').hidden);});
+el('variant').value='both';el('preset').value='standard';ui.state.selected=new Set(['z999x']);await el('variant').trigger('change');
+check('variant, preset and model blockers are also reported together',()=>{for(const term of [/フィールドモデル/,/クイック/,/初期の4モデル/])assert.match(el('video-observation-requirements').textContent,term);});
+const jobsBeforePreset=autoCount(),assetsBeforePreset=preparationCalls.length;await el('apply-shrine-video-preset').click();
+check('one explicit OBS-shrine preset makes the loaded screenshot journey ready',()=>{assert(!el('start-video-observation').disabled);assert(el('enable-roi-proposals').checked);assert.equal(el('scene-kind').value,'field');assert.equal(el('gameplay-layout').value,'obs-right-upper');assert(el('exclude-center').checked);assert.equal(el('feature-method').value,'dinov2');assert.equal(el('variant').value,'_f');assert.equal(el('preset').value,'quick');assert.deepEqual([...ui.state.selected],[...DEFAULT_MODELS]);assert.match(el('video-observation-requirements').textContent,/準備できました/);});
+check('preset preserves backend and optional DINO choice without playback or inference',()=>{assert.equal(el('inference-backend').value,'webgpu');assert(el('video-observation-dense').checked);assert(video.paused);assert(!ui.observer.running);assert.equal(autoCount(),jobsBeforePreset);assert.equal(preparationCalls.length,assetsBeforePreset);assert.equal(frameCallbacks.size,0);});
+check('missing crop explanation survives preset and method changes',()=>{assert(el('start').disabled);assert.match(el('recognition-requirements').textContent,/候補ボタンを1つ選んで/);});
+await el('feature-method').trigger('change');check('general settings status cannot replace the persistent crop prerequisite',()=>{assert.match(el('status').textContent,/設定を変更/);assert.match(el('recognition-requirements').textContent,/固定画像上で敵を囲む/);});
+// The preset resets/cancels old work through the normal configuration path.
+el('inference-backend').value='wasm';el('video-observation-dense').checked=false;await ui.startVideoObservation();auto=await preparedWorker();const beforeRepeat=autoCount(),repeatOld=auto;
+await el('apply-shrine-video-preset').click();repeatOld.worker.emit({type:'result',id:repeatOld.req.id,romEpoch:ui.state.romEpoch,result:{prepared:true}});await settle();
+check('repeated preset cancels preparation and rejects late completion without restarting',()=>{assert(repeatOld.worker.terminated);assert(!ui.observer.running);assert.equal(ui.observer.active,null);assert.equal(frameCallbacks.size,0);assert.equal(autoCount(),beforeRepeat);assert.equal(ui.state.observationRecords.length,0);assert.equal(el('inference-backend').value,'wasm');assert(!el('video-observation-dense').checked);assert(!el('start-video-observation').disabled);});
+Object.assign(video,{videoWidth:4096,videoHeight:3072});await el('apply-shrine-video-preset').click();
+check('preset cannot bypass the real video allocation and gameplay-size limits',()=>{assert(el('start-video-observation').disabled);assert.match(el('video-observation-requirements').textContent,/2,097,152/);assert.match(el('video-observation-requirements').textContent,/1024px/);assert(!ui.observer.running);});
+Object.assign(video,{videoWidth:1920,videoHeight:500});await el('apply-shrine-video-preset').click();
+check('preset exposes an out-of-bounds OBS panel instead of enabling Start',()=>{assert(el('start-video-observation').disabled);assert.match(el('video-observation-requirements').textContent,/はみ出/);});
+Object.assign(video,{videoWidth:1920,videoHeight:1080});ui.state.sourceKind='image';await el('apply-shrine-video-preset').click();
+check('preset cannot make an image input a video',()=>{assert(el('start-video-observation').disabled);assert.match(el('video-observation-requirements').textContent,/再生できる動画/);});
+ui.state.sourceKind='video';ui.state.capture=null;ui.state.roi=null;await el('feature-method').trigger('change');
+check('loaded video without a capture gives the exact Freeze action for ordinary recognition',()=>{assert(el('start').disabled);assert.match(el('recognition-requirements').textContent,/フリーズして範囲を選ぶ/);});
+ui.freeze();ui.setROI({x:1000,y:150,w:60,h:80});ui.state.selected=new Set();await el('feature-method').trigger('change');
+check('no model selection has a persistent actionable reason',()=>{assert(el('start').disabled);assert.match(el('recognition-requirements').textContent,/1〜4種類選択/);});
+ui.state.selected=new Set(catalog.map(m=>m.modelId));await el('feature-method').trigger('change');
+check('excess model selection reports the existing four-model cap',()=>{assert(el('start').disabled);assert.match(el('recognition-requirements').textContent,/4種類以内/);});
+ui.state.catalog=[];await el('feature-method').trigger('change');
+check('missing ROM catalog points to the existing reread recovery action',()=>{assert(el('start').disabled);assert.match(el('recognition-requirements').textContent,/NDSを再読込/);});
+check('preset assumptions and unchanged start action are explicit in HTML',()=>{assert.match(html,/OBS左右配置の右上DS画面で録画した動画用/);assert.match(html,/AIの実行方式は変えません/);assert.match(html,/DINO補助は任意/);assert.match(html,/id="start"[^>]*aria-describedby="recognition-requirements"/);assert.match(html,/id="start-video-observation"[^>]*aria-describedby="video-observation-requirements"/);});
+// Original error data survives the real client boundary and every cleanup path.
+const diagnosticWorker=new MockWorker(),diagnosticClient=new RecognitionWorkerClient({factory:()=>diagnosticWorker});
+const diagnosticPromise=diagnosticClient.prepare({type:'prepare',id:'diagnostic',romEpoch:99});
+const diagnosticFailure={name:'TypeError',message:'fixture ORT initialization failed',stack:'TypeError: fixture ORT initialization failed\n    at fixtureRuntime:7',stage:'webgpu-init'};
+diagnosticWorker.emit({type:'error',id:'other',romEpoch:99,message:'stale',error:diagnosticFailure});
+check('structured error still requires the current request identity',()=>assert.equal(diagnosticClient.pending.size,1));
+diagnosticWorker.emit({type:'error',id:'diagnostic',romEpoch:99,message:diagnosticFailure.message,error:diagnosticFailure});
+let receivedDiagnostic;try{await diagnosticPromise}catch(e){receivedDiagnostic=e}
+check('Worker error preserves original name, message, stack and stage',()=>{assert(receivedDiagnostic instanceof Error);for(const k of ['name','message','stack','stage'])assert.equal(receivedDiagnostic[k],diagnosticFailure[k]);});diagnosticClient.terminate();
+ui.state.catalog=catalog;ui.state.selected=new Set(DEFAULT_MODELS);ui.state.sourceKind='video';Object.assign(video,{videoWidth:1920,videoHeight:1080,paused:true,seeking:false,ended:false});await el('apply-shrine-video-preset').click();el('inference-backend').value='webgpu';await el('inference-backend').trigger('change');
+const probeFailure=Object.assign(new TypeError('fixture adapter request rejected'),{stack:'TypeError: fixture adapter request rejected\n    at requestAdapter:11'});probeGPU=async()=>{throw probeFailure};
+await ui.startVideoObservation();await settle();let rejectionWorker=uiWorkers.at(-1),rejectionRequest=rejectionWorker.messages.at(-1).message;if(rejectionRequest.type==='load'){rejectionWorker.emit({type:'loaded',id:rejectionRequest.id,romEpoch:rejectionRequest.romEpoch,catalog});await settle();}
+check('video GPU-probe rejection exposes the original failure and releases all busy flags',()=>{assert.match(el('error').textContent,/webgpu-probe.*TypeError: fixture adapter request rejected/);assert.equal(el('error-stack').textContent.includes(probeFailure.stack),true);assert(!el('error-details').hidden);assert(!ui.state.busy);assert(!ui.state.loading);assert(!ui.state.observationStarting);assert(!ui.observer.running);assert(!el('start-video-observation').disabled);assert.equal(el('inference-backend').value,'webgpu');assert.equal(frameCallbacks.size,0);});
+el('inference-backend').value='wasm';await el('inference-backend').trigger('change');check('explicit CPU selection remains restartable after a video GPU failure',()=>assert(!el('start-video-observation').disabled));
+// Worker-side session initialization rejection has the same visible detail and cleanup.
+probeGPU=async()=>({});el('inference-backend').value='webgpu';await el('inference-backend').trigger('change');await ui.startVideoObservation();auto=await preparedWorker();auto.worker.emit({type:'error',id:auto.req.id,romEpoch:ui.state.romEpoch,message:diagnosticFailure.message,error:diagnosticFailure});await settle();
+check('video Worker init rejection retains stack/stage and permits explicit retry',()=>{assert.match(el('error').textContent,/webgpu-init.*TypeError: fixture ORT initialization failed/);assert(el('error-stack').textContent.includes(diagnosticFailure.stack));assert(!ui.state.busy&&!ui.state.loading&&!ui.state.observationStarting&&!ui.observer.running);assert(!el('start-video-observation').disabled);assert.equal(el('inference-backend').value,'webgpu');});
+// The manual crop path reports the original probe stage as well.
+ui.freeze();ui.setROI({x:1000,y:150,w:60,h:80});probeGPU=async()=>{throw probeFailure};dinoJob=await beginScoring();await dinoJob.completion;
+check('manual GPU failure exposes original detail while leaving explicit retry usable',()=>{assert.match(el('error').textContent,/webgpu-probe.*TypeError/);assert(el('error-stack').textContent.includes(probeFailure.stack));assert(!ui.state.busy&&!ui.state.loading);assert(!el('start').disabled);assert.equal(el('inference-backend').value,'webgpu');});
+el('inference-backend').value='wasm';await el('inference-backend').trigger('change');check('manual explicit CPU choice enables Start without a fallback inference',()=>{assert(!el('start').disabled);assert(!ui.state.busy);});
 await win.trigger('pagehide');
 console.log(`\n${passed} UI and lifecycle checks passed (Node DOM harness; no browser launched).`);
