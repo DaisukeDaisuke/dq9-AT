@@ -213,3 +213,12 @@ fresh1990の解析では、元の4方向profileにtransfer objectがqueueされ�
 非公開の既存ツール保存先へ45のtext-onlyファイルを通常pushし、remoteのcommitと全blobの一致を確認した。既存231ファイルは変更していない。
 
 今回のバックアップ検査はsource-onlyのbyte/hash、UTF-8、query JSON、秘密情報pattern、Node／Python／shell構文まで。報告済みの11,291 primitive checks、15,324照合、198 sampled comparisons、8組のfull-RAM一致などを今回再実行したとはしない。ROM／SAV／RAM／画像／動画／抽出資産、raw event・query responseは保存対象から除外した。
+
+
+## 13:09 JST追記: 認識監査の独立再現と解析ツール保存
+
+Pro2完全ZIPの全33 memberのhashと13フレームPNGの一致を確認し、既存CPU候補抽出の13frame×中央除外ON/OFF＝26条件を再実行した。proposals／excluded／coverageが元の結果と全件一致。別途、完全動画から取得した10frame×ON/OFF＝20条件、component core診断2件、後段engineの拒否2件も保存済み結果と一致した。後段は中央重複ROIをDINO初期化前に拒否し、getDino呼出しは0回だった。候補生成だけの変更では複数段の中央guardを解消できない。
+
+完全1ninn.mkvは330181795 bytes／SHA256 e9d3d37c62500d4a170eb38cca92361b66a9cfc0a61b91db1ef1174260a0c019。先頭324927488 bytesのSHA256はPro2記載のd5238b3e28fcca51970da5c3b32ada2c650a4a76093cfc825879759a7646876cと一致し、Pro2入力は5254307 bytes短いprefixと確認した。一方、実PTS125.846／125.896秒の操作画面cropは完全動画とbyte一致しており、この局所的な候補消失の診断は維持できる。全動画解析や新モデルの認識精度を証明する結果ではない。
+
+3報告の和集合は基準・派生・補助・将来学習を含む40比較単位で、40個の完成検出器とは数えない。3本のWork用指示を作成・提供した段階であり、Workでの実行完了とはしない。製品の認識実装は変更せず、再現script・入力hash・派生結果・復元手順の23 text-onlyファイルを既存の非公開ツール保存先へ通常pushし、remoteの全blob一致と既存276ファイルの保持を確認した。ROM／SAV／RAM／動画／PNG／RGBA／抽出資産／私有download URLは含めない。
