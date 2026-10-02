@@ -1,0 +1,226 @@
+{
+  "engine": "low31",
+  "startedAt": "2026-10-02T01:27:54.911Z",
+  "endedAt": "2026-10-02T01:28:03.387Z",
+  "elapsedMs": 8474.523652,
+  "inspectionsPerSecond": 253404643.86965168,
+  "timingScope": "one actual complete serial adapter run in its own Node process; includes clone/hash/instantiate/packing, progress JSONL writes, yields and bounded samples; no timing extrapolation",
+  "workload": {
+    "id": "sparse2-fixed",
+    "n": 2,
+    "kind": "sparse",
+    "gaps": [
+      1,
+      1
+    ]
+  },
+  "maskSHA256": [
+    "5b7c1857308ca94ce38dde57604f0b64e40e25978f57dd28932b8a6d502d1b30",
+    "df80a189fd86472f2f9d5a9cc237c5e2e16e90a02b3cd8af96f32e0aa81e770b"
+  ],
+  "domain": {
+    "kind": "intervals",
+    "intervals": [
+      {
+        "first": 0,
+        "last": 2147483647
+      }
+    ],
+    "provenance": "complete synthetic low31 output-equivalence cycle"
+  },
+  "budget": {
+    "maxInspectedStates": 2147483648,
+    "maxWallTimeMs": 3600000,
+    "chunkStates": 1000000
+  },
+  "materializationCap": null,
+  "low31BuiltInPreviewLimit": 16,
+  "coverage": {
+    "inspected": "2147483648",
+    "completedKernelChunks": 2148,
+    "fullChunks": 2147,
+    "lastChunkSize": 483648,
+    "emittedCheckpoints": 2151,
+    "advancingCheckpoints": 2148,
+    "checkpointFile": "low31-checkpoints.jsonl"
+  },
+  "found": "159739990",
+  "memory": {
+    "scope": "isolated engine process; OS maxRSS is process lifetime peak, sampled RSS at adapter checkpoints; includes JS/runtime and small preliminary WASM memory-size inspection instance",
+    "rssBefore": 43909120,
+    "rssAfter": 51908608,
+    "sampledPeakRSS": 51908608,
+    "maxRssKiB": 50692,
+    "wasmLinearMemoryBytes": 262144
+  },
+  "hashesUnchanged": true,
+  "hashes": {
+    "scripts/benchmark-at-search.mjs": "ab99ebfce11bda464fd2341ee6398d453b0cb96e0cde3e76c4b84076b84f0126",
+    "web/at-identify-engine.mjs": "7fdfd0add5f397c7af20dc981fee3774d6b54985a18cf6684f25bfaaec421ad7",
+    "web/at-identify-index-engine.mjs": "6f4bf4b68f98e8cdffcac587a53f78d68febaa5bfc8cd5e6a5cedc5b9307fca1",
+    "wasm/at_identify.c": "f0d1c330d7a927b80789adf81f79a88152b6d886685844218ad647f38056f1d0",
+    "wasm/at_identify_stream.c": "4431f8f64df30111980d2f3f32497dbf8c9ec1f03882e7b981ab1ab72ac68f41",
+    "web/wasm/at_identify.wasm": "a0279c9bd1c810af75640d3c7bba8ab5a65993c55c3dad53df9dc52cc23edb99",
+    "web/wasm/at_identify_stream.wasm": "fe39118a209b516d55456ded498a2dfc627cf473d248c29dd176e5316a9ca955",
+    "scripts/test-at-search-benchmark.mjs": "2158c24e0adfdb2eb9e61fef51a0e63a54f355736c6aad537610f79b709b1bc1",
+    "docs/AT_SEARCH_BENCHMARK_20261002.md": "deddd219eb95504774a569da85b180824a4f5d87fa4cd0ddeb7b786515c74e81",
+    "docs/benchmarks/AT_SEARCH_BENCHMARK_20261002.json": "38f053976aee8141951918dc12264587b7fdd8b82090a32bd511cb74890768fc"
+  },
+  "result": {
+    "schema": "bounded-at-identification-v1",
+    "sequence": 2151,
+    "status": "complete",
+    "branches": [
+      {
+        "branchId": "sparse2-fixed",
+        "status": "complete",
+        "eventBoundaryId": "e1",
+        "candidateClassesFound": "159739990",
+        "sampleClasses": [
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          33,
+          34,
+          35
+        ],
+        "sampleFullStateLifts": [
+          [
+            15,
+            2147483663
+          ],
+          [
+            16,
+            2147483664
+          ],
+          [
+            17,
+            2147483665
+          ],
+          [
+            18,
+            2147483666
+          ],
+          [
+            19,
+            2147483667
+          ],
+          [
+            20,
+            2147483668
+          ],
+          [
+            23,
+            2147483671
+          ],
+          [
+            24,
+            2147483672
+          ],
+          [
+            25,
+            2147483673
+          ],
+          [
+            26,
+            2147483674
+          ],
+          [
+            27,
+            2147483675
+          ],
+          [
+            28,
+            2147483676
+          ],
+          [
+            29,
+            2147483677
+          ],
+          [
+            33,
+            2147483681
+          ],
+          [
+            34,
+            2147483682
+          ],
+          [
+            35,
+            2147483683
+          ]
+        ],
+        "sampleLimit": 16,
+        "samplesTruncated": true,
+        "searchCompleteWithinDomain": true,
+        "eventStateOnly": true,
+        "eventToObservationPropagationPerformed": false,
+        "searchedIntervals": [
+          {
+            "first": 0,
+            "last": 2147483647
+          }
+        ],
+        "unsearchedIntervals": [],
+        "outsidePriorPossible": false,
+        "assumptions": [
+          "Synthetic arithmetic workload; no video or native evidence"
+        ],
+        "association": null,
+        "sightingEventBindings": {},
+        "observationEdges": [],
+        "eventEvidence": [
+          {
+            "id": "e0",
+            "stateBoundary": "immediately-after-draw",
+            "exactPredicate": true
+          },
+          {
+            "id": "e1",
+            "stateBoundary": "immediately-after-draw",
+            "exactPredicate": true
+          }
+        ],
+        "priority": null,
+        "oneEventClassWithinDomain": false,
+        "globallyUnique": false,
+        "currentVideoStateRecovered": false,
+        "predicateExact": true
+      }
+    ],
+    "domain": {
+      "kind": "intervals",
+      "intervals": [
+        {
+          "first": 0,
+          "last": 2147483647
+        }
+      ],
+      "provenance": "complete synthetic low31 output-equivalence cycle"
+    },
+    "inspectedStates": "2147483648",
+    "origin": null,
+    "sightings": [],
+    "associationAlternatives": [],
+    "coverage": null,
+    "coverageVerified": false,
+    "branchCountsSummed": false,
+    "globallyUnique": false,
+    "currentVideoStateRecovered": false,
+    "unexcludedAlternativeBranchIds": [
+      "sparse2-fixed"
+    ],
+    "budgetScope": "multi-event state inspection; analytical single-event intersections do not inspect each state",
+    "kernelSHA256": "a0279c9bd1c810af75640d3c7bba8ab5a65993c55c3dad53df9dc52cc23edb99"
+  }
+}

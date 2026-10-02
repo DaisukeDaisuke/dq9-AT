@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {createHash} from 'node:crypto';
+import {experiment,WORKLOADS,bigState,oracleAccept} from './benchmark-at-search.mjs';
+import {pathToFileURL} from 'node:url';
+import {resolve} from 'node:path';
+assert(process.argv[2], 'usage: node scripts/test-at-full-cycle.mjs RESULT_DIRECTORY');
+const out=pathToFileURL(resolve(process.argv[2])+'/');
+const get=p=>readFileSync(new URL(p,out),'utf8'),r=JSON.parse(get('./full-scan-results.json')),branch=experiment(WORKLOADS.find(w=>w.id==='sparse2-fixed')).branches[0];
+assert.equal(r.runs.length,2);assert.equal(r.countEquality,true);assert.equal(r.runs[0].found,r.runs[1].found);
+for(const x of r.runs){const c=x.result,b=c.branches[0],points=get(x.coverage.checkpointFile).trim().split('\n').map(JSON.parse);assert.equal(points.length,x.coverage.emittedCheckpoints);assert.equal(points.at(-1).status,'complete');assert.equal(points.at(-1).found,x.found);assert.equal(points.at(-1).inspected,'2147483648');assert.equal(x.coverage.completedKernelChunks,2148);assert.equal(x.coverage.lastChunkSize,483648);let last=0n,hits=0n,advances=0;for(const p of points){let n=BigInt(p.inspected),h=BigInt(p.found);assert(n>=last);assert(h>=hits);assert(h<=n);assert(n===2147483648n||n%1000000n===0n);if(n>last)advances++;last=n;hits=h;}assert.equal(advances,x.coverage.advancingCheckpoints);assert.equal(c.status,'complete');assert.equal(b.searchCompleteWithinDomain,true);assert.equal(c.currentVideoStateRecovered,false);if(x.engine==='low31'){assert.deepEqual(b.searchedIntervals,[{first:0,last:2147483647}]);assert.deepEqual(b.unsearchedIntervals,[]);for(const s of b.sampleClasses)assert(oracleAccept(s,branch));assert.equal(b.sampleFullStateLifts.length,16);for(const [lo,hi]of b.sampleFullStateLifts){assert.equal(hi-lo,2147483648);assert(oracleAccept(hi,branch));}}else{assert.deepEqual(b.searchedIndexIntervals,[{first:'2',last:'2147483649'}]);assert.deepEqual(b.unsearchedIndexIntervals,[]);const m=b.candidateMaterialization;assert.equal(m.materializedCount,7);assert.equal(m.candidateExportCompleteWithinDeclaredDomain,false);for(let i=0;i<7;i++){const at=BigInt(m.baseTerminalIndex)+BigInt(m.indexOffsets[i]);assert.equal(bigState(r.seed,at),m.states32[i]);assert(oracleAccept(m.states32[i],branch,Number(at-1n)));}}}
+for(const [p,h]of Object.entries(r.frozenHashes))assert.equal(createHash('sha256').update(readFileSync(new URL('../'+p,import.meta.url))).digest('hex'),h,p);
+assert.equal(createHash('sha256').update(readFileSync(new URL('../'+r.runner.path,import.meta.url))).digest('hex'),r.runner.sha256);
+console.log(JSON.stringify({passed:true,completeDomains:2,inspectionsPerDomain:'2147483648',equalFound:r.found,checkpointFilesChecked:true,retainedSamplesMatchIndependentOracle:true,frozenFilesUnchanged:true}));

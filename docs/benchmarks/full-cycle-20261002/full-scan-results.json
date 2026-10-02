@@ -1,0 +1,622 @@
+{
+  "runner": {
+    "path": "scripts/benchmark-at-full-cycle.mjs",
+    "sha256": "b39c29883de56fe296cc9db06db57dfe5b67be8e0b14171f56315fb7e485c82c"
+  },
+  "schema": "dq9-synthetic-complete-low31-cycle-scan-v1",
+  "createdAt": "2026-10-02T01:28:13.118Z",
+  "scope": "one synthetic sparse2-fixed workload; genuine complete output-equivalence cycle scans with unchanged engines; no video/native/current-AT identification and no extrapolation to other gaps",
+  "environment": {
+    "node": "v24.19.0",
+    "v8": "13.6.233.17-node.51",
+    "platform": "linux",
+    "release": "6.18.44",
+    "arch": "x64",
+    "cpu": "AMD EPYC 9V74 80-Core Processor",
+    "logicalCpuCount": 9,
+    "concurrency": "serial isolated Node child processes; shared-machine load uncontrolled"
+  },
+  "seed": 305419896,
+  "chunk": 1000000,
+  "materializationCap": 7,
+  "countEquality": true,
+  "found": "159739990",
+  "interpretation": {
+    "low31": "2147483648 output-equivalence classes; each accepted class has two uint32 lifts",
+    "index": "2147483648 terminal indices from 2 through 2147483649 under supplied synthetic seed; each index selects one uint32 state. This is not the full 2^32-state cycle or proof of an unknown absolute index.",
+    "predecessor": "gap exactly 1; first terminal index 2 leaves previous event at index 1; one warmup draw",
+    "equality": "The full-period low31 LCG traverses every low31 class once, so the same two event masks and fixed one-call gap have equal complete counts regardless of numeric-state versus temporal traversal order."
+  },
+  "frozenHashes": {
+    "scripts/benchmark-at-search.mjs": "ab99ebfce11bda464fd2341ee6398d453b0cb96e0cde3e76c4b84076b84f0126",
+    "web/at-identify-engine.mjs": "7fdfd0add5f397c7af20dc981fee3774d6b54985a18cf6684f25bfaaec421ad7",
+    "web/at-identify-index-engine.mjs": "6f4bf4b68f98e8cdffcac587a53f78d68febaa5bfc8cd5e6a5cedc5b9307fca1",
+    "wasm/at_identify.c": "f0d1c330d7a927b80789adf81f79a88152b6d886685844218ad647f38056f1d0",
+    "wasm/at_identify_stream.c": "4431f8f64df30111980d2f3f32497dbf8c9ec1f03882e7b981ab1ab72ac68f41",
+    "web/wasm/at_identify.wasm": "a0279c9bd1c810af75640d3c7bba8ab5a65993c55c3dad53df9dc52cc23edb99",
+    "web/wasm/at_identify_stream.wasm": "fe39118a209b516d55456ded498a2dfc627cf473d248c29dd176e5316a9ca955",
+    "scripts/test-at-search-benchmark.mjs": "2158c24e0adfdb2eb9e61fef51a0e63a54f355736c6aad537610f79b709b1bc1",
+    "docs/AT_SEARCH_BENCHMARK_20261002.md": "deddd219eb95504774a569da85b180824a4f5d87fa4cd0ddeb7b786515c74e81",
+    "docs/benchmarks/AT_SEARCH_BENCHMARK_20261002.json": "38f053976aee8141951918dc12264587b7fdd8b82090a32bd511cb74890768fc"
+  },
+  "hashesUnchanged": true,
+  "runs": [
+    {
+      "engine": "low31",
+      "startedAt": "2026-10-02T01:27:54.911Z",
+      "endedAt": "2026-10-02T01:28:03.387Z",
+      "elapsedMs": 8474.523652,
+      "inspectionsPerSecond": 253404643.86965168,
+      "timingScope": "one actual complete serial adapter run in its own Node process; includes clone/hash/instantiate/packing, progress JSONL writes, yields and bounded samples; no timing extrapolation",
+      "workload": {
+        "id": "sparse2-fixed",
+        "n": 2,
+        "kind": "sparse",
+        "gaps": [
+          1,
+          1
+        ]
+      },
+      "maskSHA256": [
+        "5b7c1857308ca94ce38dde57604f0b64e40e25978f57dd28932b8a6d502d1b30",
+        "df80a189fd86472f2f9d5a9cc237c5e2e16e90a02b3cd8af96f32e0aa81e770b"
+      ],
+      "domain": {
+        "kind": "intervals",
+        "intervals": [
+          {
+            "first": 0,
+            "last": 2147483647
+          }
+        ],
+        "provenance": "complete synthetic low31 output-equivalence cycle"
+      },
+      "budget": {
+        "maxInspectedStates": 2147483648,
+        "maxWallTimeMs": 3600000,
+        "chunkStates": 1000000
+      },
+      "materializationCap": null,
+      "low31BuiltInPreviewLimit": 16,
+      "coverage": {
+        "inspected": "2147483648",
+        "completedKernelChunks": 2148,
+        "fullChunks": 2147,
+        "lastChunkSize": 483648,
+        "emittedCheckpoints": 2151,
+        "advancingCheckpoints": 2148,
+        "checkpointFile": "low31-checkpoints.jsonl"
+      },
+      "found": "159739990",
+      "memory": {
+        "scope": "isolated engine process; OS maxRSS is process lifetime peak, sampled RSS at adapter checkpoints; includes JS/runtime and small preliminary WASM memory-size inspection instance",
+        "rssBefore": 43909120,
+        "rssAfter": 51908608,
+        "sampledPeakRSS": 51908608,
+        "maxRssKiB": 50692,
+        "wasmLinearMemoryBytes": 262144
+      },
+      "hashesUnchanged": true,
+      "hashes": {
+        "scripts/benchmark-at-search.mjs": "ab99ebfce11bda464fd2341ee6398d453b0cb96e0cde3e76c4b84076b84f0126",
+        "web/at-identify-engine.mjs": "7fdfd0add5f397c7af20dc981fee3774d6b54985a18cf6684f25bfaaec421ad7",
+        "web/at-identify-index-engine.mjs": "6f4bf4b68f98e8cdffcac587a53f78d68febaa5bfc8cd5e6a5cedc5b9307fca1",
+        "wasm/at_identify.c": "f0d1c330d7a927b80789adf81f79a88152b6d886685844218ad647f38056f1d0",
+        "wasm/at_identify_stream.c": "4431f8f64df30111980d2f3f32497dbf8c9ec1f03882e7b981ab1ab72ac68f41",
+        "web/wasm/at_identify.wasm": "a0279c9bd1c810af75640d3c7bba8ab5a65993c55c3dad53df9dc52cc23edb99",
+        "web/wasm/at_identify_stream.wasm": "fe39118a209b516d55456ded498a2dfc627cf473d248c29dd176e5316a9ca955",
+        "scripts/test-at-search-benchmark.mjs": "2158c24e0adfdb2eb9e61fef51a0e63a54f355736c6aad537610f79b709b1bc1",
+        "docs/AT_SEARCH_BENCHMARK_20261002.md": "deddd219eb95504774a569da85b180824a4f5d87fa4cd0ddeb7b786515c74e81",
+        "docs/benchmarks/AT_SEARCH_BENCHMARK_20261002.json": "38f053976aee8141951918dc12264587b7fdd8b82090a32bd511cb74890768fc"
+      },
+      "result": {
+        "schema": "bounded-at-identification-v1",
+        "sequence": 2151,
+        "status": "complete",
+        "branches": [
+          {
+            "branchId": "sparse2-fixed",
+            "status": "complete",
+            "eventBoundaryId": "e1",
+            "candidateClassesFound": "159739990",
+            "sampleClasses": [
+              15,
+              16,
+              17,
+              18,
+              19,
+              20,
+              23,
+              24,
+              25,
+              26,
+              27,
+              28,
+              29,
+              33,
+              34,
+              35
+            ],
+            "sampleFullStateLifts": [
+              [
+                15,
+                2147483663
+              ],
+              [
+                16,
+                2147483664
+              ],
+              [
+                17,
+                2147483665
+              ],
+              [
+                18,
+                2147483666
+              ],
+              [
+                19,
+                2147483667
+              ],
+              [
+                20,
+                2147483668
+              ],
+              [
+                23,
+                2147483671
+              ],
+              [
+                24,
+                2147483672
+              ],
+              [
+                25,
+                2147483673
+              ],
+              [
+                26,
+                2147483674
+              ],
+              [
+                27,
+                2147483675
+              ],
+              [
+                28,
+                2147483676
+              ],
+              [
+                29,
+                2147483677
+              ],
+              [
+                33,
+                2147483681
+              ],
+              [
+                34,
+                2147483682
+              ],
+              [
+                35,
+                2147483683
+              ]
+            ],
+            "sampleLimit": 16,
+            "samplesTruncated": true,
+            "searchCompleteWithinDomain": true,
+            "eventStateOnly": true,
+            "eventToObservationPropagationPerformed": false,
+            "searchedIntervals": [
+              {
+                "first": 0,
+                "last": 2147483647
+              }
+            ],
+            "unsearchedIntervals": [],
+            "outsidePriorPossible": false,
+            "assumptions": [
+              "Synthetic arithmetic workload; no video or native evidence"
+            ],
+            "association": null,
+            "sightingEventBindings": {},
+            "observationEdges": [],
+            "eventEvidence": [
+              {
+                "id": "e0",
+                "stateBoundary": "immediately-after-draw",
+                "exactPredicate": true
+              },
+              {
+                "id": "e1",
+                "stateBoundary": "immediately-after-draw",
+                "exactPredicate": true
+              }
+            ],
+            "priority": null,
+            "oneEventClassWithinDomain": false,
+            "globallyUnique": false,
+            "currentVideoStateRecovered": false,
+            "predicateExact": true
+          }
+        ],
+        "domain": {
+          "kind": "intervals",
+          "intervals": [
+            {
+              "first": 0,
+              "last": 2147483647
+            }
+          ],
+          "provenance": "complete synthetic low31 output-equivalence cycle"
+        },
+        "inspectedStates": "2147483648",
+        "origin": null,
+        "sightings": [],
+        "associationAlternatives": [],
+        "coverage": null,
+        "coverageVerified": false,
+        "branchCountsSummed": false,
+        "globallyUnique": false,
+        "currentVideoStateRecovered": false,
+        "unexcludedAlternativeBranchIds": [
+          "sparse2-fixed"
+        ],
+        "budgetScope": "multi-event state inspection; analytical single-event intersections do not inspect each state",
+        "kernelSHA256": "a0279c9bd1c810af75640d3c7bba8ab5a65993c55c3dad53df9dc52cc23edb99"
+      }
+    },
+    {
+      "engine": "index",
+      "startedAt": "2026-10-02T01:28:03.458Z",
+      "endedAt": "2026-10-02T01:28:13.110Z",
+      "elapsedMs": 9650.932616,
+      "inspectionsPerSecond": 222515660.76005435,
+      "timingScope": "one actual complete serial adapter run in its own Node process; includes clone/hash/instantiate/packing, progress JSONL writes, yields and bounded samples; no timing extrapolation",
+      "workload": {
+        "id": "sparse2-fixed",
+        "n": 2,
+        "kind": "sparse",
+        "gaps": [
+          1,
+          1
+        ]
+      },
+      "maskSHA256": [
+        "5b7c1857308ca94ce38dde57604f0b64e40e25978f57dd28932b8a6d502d1b30",
+        "df80a189fd86472f2f9d5a9cc237c5e2e16e90a02b3cd8af96f32e0aa81e770b"
+      ],
+      "domain": {
+        "kind": "known-origin-terminal-indices",
+        "origin": {
+          "kind": "initial-state-before-draw-1",
+          "initialSeed": 305419896,
+          "provenance": "synthetic seed; not game-origin evidence"
+        },
+        "first": "2",
+        "last": "2147483649",
+        "predecessorPolicy": "post-boot-events-only",
+        "provenance": "one complete synthetic low31 output-equivalence cycle; previous event index at least 1"
+      },
+      "budget": {
+        "maxInspectedIndices": 2147483648,
+        "maxWallTimeMs": 3600000,
+        "chunkIndices": 1000000
+      },
+      "materializationCap": 7,
+      "low31BuiltInPreviewLimit": null,
+      "coverage": {
+        "inspected": "2147483648",
+        "completedKernelChunks": 2148,
+        "fullChunks": 2147,
+        "lastChunkSize": 483648,
+        "emittedCheckpoints": 96,
+        "advancingCheckpoints": 95,
+        "checkpointFile": "index-checkpoints.jsonl"
+      },
+      "found": "159739990",
+      "memory": {
+        "scope": "isolated engine process; OS maxRSS is process lifetime peak, sampled RSS at adapter checkpoints; includes JS/runtime and small preliminary WASM memory-size inspection instance",
+        "rssBefore": 43909120,
+        "rssAfter": 50352128,
+        "sampledPeakRSS": 50221056,
+        "maxRssKiB": 49536,
+        "wasmLinearMemoryBytes": 524288
+      },
+      "hashesUnchanged": true,
+      "hashes": {
+        "scripts/benchmark-at-search.mjs": "ab99ebfce11bda464fd2341ee6398d453b0cb96e0cde3e76c4b84076b84f0126",
+        "web/at-identify-engine.mjs": "7fdfd0add5f397c7af20dc981fee3774d6b54985a18cf6684f25bfaaec421ad7",
+        "web/at-identify-index-engine.mjs": "6f4bf4b68f98e8cdffcac587a53f78d68febaa5bfc8cd5e6a5cedc5b9307fca1",
+        "wasm/at_identify.c": "f0d1c330d7a927b80789adf81f79a88152b6d886685844218ad647f38056f1d0",
+        "wasm/at_identify_stream.c": "4431f8f64df30111980d2f3f32497dbf8c9ec1f03882e7b981ab1ab72ac68f41",
+        "web/wasm/at_identify.wasm": "a0279c9bd1c810af75640d3c7bba8ab5a65993c55c3dad53df9dc52cc23edb99",
+        "web/wasm/at_identify_stream.wasm": "fe39118a209b516d55456ded498a2dfc627cf473d248c29dd176e5316a9ca955",
+        "scripts/test-at-search-benchmark.mjs": "2158c24e0adfdb2eb9e61fef51a0e63a54f355736c6aad537610f79b709b1bc1",
+        "docs/AT_SEARCH_BENCHMARK_20261002.md": "deddd219eb95504774a569da85b180824a4f5d87fa4cd0ddeb7b786515c74e81",
+        "docs/benchmarks/AT_SEARCH_BENCHMARK_20261002.json": "38f053976aee8141951918dc12264587b7fdd8b82090a32bd511cb74890768fc"
+      },
+      "result": {
+        "schema": "bounded-at-terminal-index-identification-v1",
+        "sequence": 96,
+        "status": "complete",
+        "coordinateSystem": "absolute-terminal-draw-index-from-supplied-origin",
+        "domain": {
+          "kind": "known-origin-terminal-indices",
+          "origin": {
+            "kind": "initial-state-before-draw-1",
+            "initialSeed": 305419896,
+            "provenance": "synthetic seed; not game-origin evidence"
+          },
+          "first": "2",
+          "last": "2147483649",
+          "predecessorPolicy": "post-boot-events-only",
+          "provenance": "one complete synthetic low31 output-equivalence cycle; previous event index at least 1"
+        },
+        "origin": {
+          "kind": "initial-state-before-draw-1",
+          "initialSeed": 305419896,
+          "provenance": "synthetic seed; not game-origin evidence"
+        },
+        "originValidatedFromGame": false,
+        "domainLength": "2147483648",
+        "inspectedIndices": "2147483648",
+        "warmupInspections": "1",
+        "periods": {
+          "fullStateDraws": "4294967296",
+          "outputClassDraws": "2147483648",
+          "domainLengthAtMostOneOutputCycle": true
+        },
+        "branches": [
+          {
+            "branchId": "sparse2-fixed",
+            "status": "complete",
+            "eventBoundaryId": "e1",
+            "sampleLimit": 16,
+            "samplesTruncated": true,
+            "searchCompleteWithinDomain": true,
+            "eventStateOnly": true,
+            "eventToObservationPropagationPerformed": false,
+            "outsidePriorPossible": true,
+            "assumptions": [
+              "Synthetic arithmetic workload; no video or native evidence"
+            ],
+            "association": null,
+            "sightingEventBindings": {},
+            "observationEdges": [],
+            "eventEvidence": [
+              {
+                "id": "e0",
+                "stateBoundary": "immediately-after-draw",
+                "exactPredicate": true
+              },
+              {
+                "id": "e1",
+                "stateBoundary": "immediately-after-draw",
+                "exactPredicate": true
+              }
+            ],
+            "priority": null,
+            "globallyUnique": false,
+            "currentVideoStateRecovered": false,
+            "predicateExact": true,
+            "coordinateSystem": "absolute-terminal-draw-index-from-supplied-origin",
+            "candidateIndicesFound": "159739990",
+            "sampleCandidates": [
+              {
+                "terminalIndex": "17",
+                "state32": 3764940993,
+                "low31Class": 1617457345,
+                "outputEquivalentState32": 1617457345,
+                "outputEquivalentIndexModuloFullCycle": "2147483665",
+                "sameIndexHasOneStateUnderSuppliedSeed": true,
+                "absoluteIndexProven": false
+              },
+              {
+                "terminalIndex": "32",
+                "state32": 1490841816,
+                "low31Class": 1490841816,
+                "outputEquivalentState32": 3638325464,
+                "outputEquivalentIndexModuloFullCycle": "2147483680",
+                "sameIndexHasOneStateUnderSuppliedSeed": true,
+                "absoluteIndexProven": false
+              },
+              {
+                "terminalIndex": "42",
+                "state32": 2682399470,
+                "low31Class": 534915822,
+                "outputEquivalentState32": 534915822,
+                "outputEquivalentIndexModuloFullCycle": "2147483690",
+                "sameIndexHasOneStateUnderSuppliedSeed": true,
+                "absoluteIndexProven": false
+              },
+              {
+                "terminalIndex": "80",
+                "state32": 230023784,
+                "low31Class": 230023784,
+                "outputEquivalentState32": 2377507432,
+                "outputEquivalentIndexModuloFullCycle": "2147483728",
+                "sameIndexHasOneStateUnderSuppliedSeed": true,
+                "absoluteIndexProven": false
+              },
+              {
+                "terminalIndex": "98",
+                "state32": 4034789846,
+                "low31Class": 1887306198,
+                "outputEquivalentState32": 1887306198,
+                "outputEquivalentIndexModuloFullCycle": "2147483746",
+                "sameIndexHasOneStateUnderSuppliedSeed": true,
+                "absoluteIndexProven": false
+              },
+              {
+                "terminalIndex": "102",
+                "state32": 1353737570,
+                "low31Class": 1353737570,
+                "outputEquivalentState32": 3501221218,
+                "outputEquivalentIndexModuloFullCycle": "2147483750",
+                "sameIndexHasOneStateUnderSuppliedSeed": true,
+                "absoluteIndexProven": false
+              },
+              {
+                "terminalIndex": "104",
+                "state32": 1966514096,
+                "low31Class": 1966514096,
+                "outputEquivalentState32": 4113997744,
+                "outputEquivalentIndexModuloFullCycle": "2147483752",
+                "sameIndexHasOneStateUnderSuppliedSeed": true,
+                "absoluteIndexProven": false
+              },
+              {
+                "terminalIndex": "117",
+                "state32": 3948931741,
+                "low31Class": 1801448093,
+                "outputEquivalentState32": 1801448093,
+                "outputEquivalentIndexModuloFullCycle": "2147483765",
+                "sameIndexHasOneStateUnderSuppliedSeed": true,
+                "absoluteIndexProven": false
+              },
+              {
+                "terminalIndex": "129",
+                "state32": 3628932305,
+                "low31Class": 1481448657,
+                "outputEquivalentState32": 1481448657,
+                "outputEquivalentIndexModuloFullCycle": "2147483777",
+                "sameIndexHasOneStateUnderSuppliedSeed": true,
+                "absoluteIndexProven": false
+              },
+              {
+                "terminalIndex": "157",
+                "state32": 310582581,
+                "low31Class": 310582581,
+                "outputEquivalentState32": 2458066229,
+                "outputEquivalentIndexModuloFullCycle": "2147483805",
+                "sameIndexHasOneStateUnderSuppliedSeed": true,
+                "absoluteIndexProven": false
+              },
+              {
+                "terminalIndex": "161",
+                "state32": 299194289,
+                "low31Class": 299194289,
+                "outputEquivalentState32": 2446677937,
+                "outputEquivalentIndexModuloFullCycle": "2147483809",
+                "sameIndexHasOneStateUnderSuppliedSeed": true,
+                "absoluteIndexProven": false
+              },
+              {
+                "terminalIndex": "162",
+                "state32": 1551135894,
+                "low31Class": 1551135894,
+                "outputEquivalentState32": 3698619542,
+                "outputEquivalentIndexModuloFullCycle": "2147483810",
+                "sameIndexHasOneStateUnderSuppliedSeed": true,
+                "absoluteIndexProven": false
+              },
+              {
+                "terminalIndex": "176",
+                "state32": 3197004168,
+                "low31Class": 1049520520,
+                "outputEquivalentState32": 1049520520,
+                "outputEquivalentIndexModuloFullCycle": "2147483824",
+                "sameIndexHasOneStateUnderSuppliedSeed": true,
+                "absoluteIndexProven": false
+              },
+              {
+                "terminalIndex": "178",
+                "state32": 2144415558,
+                "low31Class": 2144415558,
+                "outputEquivalentState32": 4291899206,
+                "outputEquivalentIndexModuloFullCycle": "2147483826",
+                "sameIndexHasOneStateUnderSuppliedSeed": true,
+                "absoluteIndexProven": false
+              },
+              {
+                "terminalIndex": "182",
+                "state32": 1231092178,
+                "low31Class": 1231092178,
+                "outputEquivalentState32": 3378575826,
+                "outputEquivalentIndexModuloFullCycle": "2147483830",
+                "sameIndexHasOneStateUnderSuppliedSeed": true,
+                "absoluteIndexProven": false
+              },
+              {
+                "terminalIndex": "184",
+                "state32": 2110710176,
+                "low31Class": 2110710176,
+                "outputEquivalentState32": 4258193824,
+                "outputEquivalentIndexModuloFullCycle": "2147483832",
+                "sameIndexHasOneStateUnderSuppliedSeed": true,
+                "absoluteIndexProven": false
+              }
+            ],
+            "searchedIndexIntervals": [
+              {
+                "first": "2",
+                "last": "2147483649"
+              }
+            ],
+            "unsearchedIndexIntervals": [],
+            "oneCandidateIndexWithinDomain": false,
+            "absoluteIndexProven": false,
+            "indexCorrespondenceConditionalOnSuppliedSeed": true,
+            "predecessorPolicy": "post-boot-events-only",
+            "warmupDraws": 1,
+            "firstAllowedPredecessorEventIndex": "1",
+            "candidateMaterialization": {
+              "format": "uint32-relative-index-offsets-and-full-states",
+              "baseTerminalIndex": "2",
+              "materializedCount": 7,
+              "indexOffsets": [
+                15,
+                30,
+                40,
+                78,
+                96,
+                100,
+                102
+              ],
+              "states32": [
+                3764940993,
+                1490841816,
+                2682399470,
+                230023784,
+                4034789846,
+                1353737570,
+                1966514096
+              ],
+              "sharedRequestLimit": 7,
+              "allFoundCandidatesMaterialized": false,
+              "candidateExportCompleteWithinDeclaredDomain": false,
+              "truncated": true
+            },
+            "warmupIndexInterval": {
+              "first": "1",
+              "last": "1"
+            }
+          }
+        ],
+        "materializationBudget": {
+          "maxCandidatesTotal": 7
+        },
+        "materializedCandidateRecordsTotal": 7,
+        "sightings": [],
+        "associationAlternatives": [],
+        "coverage": null,
+        "coverageVerified": false,
+        "branchCountsSummed": false,
+        "unexcludedAlternativeBranchIds": [
+          "sparse2-fixed"
+        ],
+        "globallyUnique": false,
+        "absoluteIndexProven": false,
+        "currentVideoStateRecovered": false,
+        "eventToObservationPropagationPerformed": false,
+        "kernelReviewStatus": "independently accepted research kernel",
+        "adapterReviewStatus": "independently accepted local adapter",
+        "progressIntervalMs": 100,
+        "budgetScope": "terminal-index inspections across branches; at most256 predecessor draws per searched branch are tracked separately; wall time checked between chunks",
+        "kernelSHA256": "fe39118a209b516d55456ded498a2dfc627cf473d248c29dd176e5316a9ca955"
+      }
+    }
+  ]
+}
