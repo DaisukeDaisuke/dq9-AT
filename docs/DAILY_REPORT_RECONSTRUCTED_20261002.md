@@ -385,3 +385,23 @@ Work6のheadless移植指示書は提供済みversion2へ更新し、private che
 source座標の丸めで人工的なHUD重複が生じ、敵候補を失う限定不具合の診断patchは、synthetic回帰を改善した一方、凍結検証入力では背景候補も増やした。そのため本番の検出精度改善として採用せず、source-onlyのpatch／報告／凍結条件だけをprivate recoveryへ保存する。今回の公開変更には含めない。
 
 定期保存では提供済みWork7指示書、未採用診断の6ファイル、追加ファイル台帳の参照を更新する。台帳の既存版を保持し、ROM／SAV／DST／RAM／動画／画像／抽出ゲーム資産／秘密情報は追加しない。Work4本番統合、Work5最終受入、Work6移植実装は別途未完了のまま。
+
+## 18:18 JST追記: Work4の固定カメラ斜め移動だけを統合
+
+公開e4738a5を基準に、Work4のうちcameraYaw=0を固定する斜め4方向のsource branchだけを統合する。明示したUpLeft／UpRight／DownLeft／DownRightについて、原ROMの同時押しreader、direction byte、table、target writerを結び、既存のordinary keyboard gateとROM-bound angle guardを維持する。変更はcreator／hero motion、関連回帰2本、説明文の5ファイル。Work3のsourceArm9 exportとAT source binding、認識、地図UI、build／CI、C／WASM sourceは変更しない。
+
+最終統合stageは通常aggregate44 Node scriptsが09:13:23–09:13:44 UTCにexit0。一時objectの保存先だけを隔離した同じpipelineで検査した。keyboard portable548 checks、元ROM557、origin268、元ROMを使うAT source695が成功。新規検査には斜め4方向のXZ符号、外側の未解決branch、非zero／unknown cameraYaw、不変宣言の欠落、future camera、L/R表現の拒否を含む。公開用5ファイルはこの検証済みmanifestとbyte一致し、適用後のkeyboard548／origin268も再実行した。
+
+既存fresh1990の30 phase／2 drawとconnected1200の149 phase／134 drawは、結果全体と入力非変異が変更前と一致。承認済みfresh1990起点と到達clockに各方向のscheduleを与える現在のfactoryを凍結し、提出済み固定camera報告との8経路／2,224 assertions比較も一致した。計240 pre／232 post、16 draw、各routeのtimer1019／seed0xa46fab4fとcreator前unresolvedを保持する。これは保存済み報告との数値統合回帰で、新しいnative captureではない。
+
+### 対応しない範囲と未解決
+
+斜め＋L/Rカメラ回転、camera-relative一般移動、任意map、world／body全体、creator後継続は未対応。ほこらUpRight+Rの最初のX差127は未解決のままで、writerや原因を断定しない。後続差は増えうる。提出された全native profile、off/on RAM／hash、runtime／controls、凍結projection、builder／verifierの不足も解消していない。全native parityやobserver非干渉を独立再現済みとはしない。[対応契約と検証範囲](F06_KEYBOARD_ORIGIN.md)を参照。
+
+### 地図機能の範囲を訂正
+
+先に公開した座標viewerは、map IDを選んで対応する地図と代表点を見る順引きの診断機能だった。利用者が必要としている「画面上のおおよその点から家／建物のmap ID候補を逆引きする」機能はまだ完成していない。逆引きの実装を別stageで進めており、今回の斜め移動releaseには含めない。
+
+直前のexport欄CSSは、[e4738a5のCI／deploy](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/36987703136)が09:05:59 UTCにsuccess。公開root／map-recognize両ページで2列配置、出口action／説明の全幅、縦潰れ・横はみ出し・ページ末尾への押し出し解消を確認した。download完了と保存内容の検証は引き続き未完了。
+
+BOX検出の修正担当は外部Work7のまま。未採用の丸め診断patchや追加BOX実験をこのreleaseへ混ぜない。ROM／SAV／DST／RAM／動画／画像／抽出ゲーム資産／秘密情報／生成WASMはcommitしない。公開commit固有のCI／deployはこの追記後に確認し、実施済みのローカル回帰と分けて扱う。

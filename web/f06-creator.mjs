@@ -45,16 +45,32 @@ export function sourceArm9(input){
 }
 export function sourceF06KeyboardAngles(rom){
  const a=sourceArm9(rom),table=a.u32(0x02037f50);
- // JP ordinary cardinal readers, their branch-to-direction-byte mapping, and
- // the ROM table are bound together. No headings are taken from native futures.
+ // JP ordinary readers, simultaneous-key branch order and table are bound
+ // together. No headings are taken from native futures or interpolated.
  const rows=[['Up',0x02012134,0x40,0x02037c70,0xebff692f,8],['Down',0x02012148,0x80,0x02037c8c,0xebff692d,9],['Left',0x0201210c,0x20,0x02037ca8,0xebff6917,10],['Right',0x02012120,0x10,0x02037cc4,0xebff6915,11]];
  for(const [,reader,mask,call,bl,code] of rows){
   need([0xe1d000b0,0xe3100000|mask,0x13a00001,0x03a00000,0xe12fff1e].every((word,i)=>a.u32(reader+i*4)===(word>>>0)),'Unsupported keyboard reader source');
   need(a.u32(call)===bl&&a.u32(call+4)===0xe3500000&&a.u32(call+8)===(0x13a00000|code)&&a.u32(call+12)===0x15c40244,'Unsupported cardinal direction-byte source');
  }
+ // Each pair tests its first reader, skips the second when released, then
+ // stores code12..15 and jumps over the cardinal branches on a true pair.
+ const pairs=[['UpLeft',0x02037bb8,0x02037bc0,0xebff695b,0x02037bd0,0xebff694d,12,0x1a00003b],['UpRight',0x02037be8,0x02037bec,0xebff6950,0x02037bfc,0xebff6947,13,0x1a000030],['DownLeft',0x02037c14,0x02037c18,0xebff694a,0x02037c28,0xebff6937,14,0x1a000025],['DownRight',0x02037c40,0x02037c44,0xebff693f,0x02037c54,0xebff6931,15,0x1a00001a]];
+ need(a.u32(0x02037f48)===0x02114ad0&&a.u32(0x02037bbc)===0xe3a08000,'Unsupported ordinary input-state binding');
+ const inputLiteral=pc=>(0xe59f0000|(0x02037f48-pc-8))>>>0;
+ for(const [,literal,call,bl,second,secondBL,code,jump] of pairs){
+  need(a.u32(literal)===inputLiteral(literal)&&[bl,0xe3500000,0x0a000006].every((word,i)=>a.u32(call+i*4)===word),'Unsupported diagonal first-reader/skip source');
+  need(a.u32(second-4)===inputLiteral(second-4)&&[secondBL,0xe3500000,0x13a00000|code,0x15c40244,0x13a08001,jump].every((word,i)=>a.u32(second+i*4)===(word>>>0)),'Unsupported diagonal direction-byte source');
+ }
+ // directionByte8..15 indexes the table after subtracting8; the result plus
+ // source camera yaw is wrapped, then passed to the target-angle writer.
+ need([0xe5d42244,0xe59f113c,0xe1a00006,0xe2422008,0xe7916102,0xebffd94f,0xe0860000,0xebffe30f].every((word,i)=>a.u32(0x02037e08+i*4)===word)&&a.u32(0x02037ee0)===0xe1a00004&&a.u32(0x02037ee4)===0xe1a01006&&a.u32(0x02037ee8)===0xebffed1f,'Unsupported keyboard table/target writer source');
+ need(a.u32(0x02037ba0)===0xebff60dc&&a.u32(0x0200ff18)===0xe59003b0&&a.u32(0x0200ff1c)===0xe12fff1e&&a.u32(0x0202e360)===0xe5900070&&a.u32(0x0202e364)===0xe12fff1e,'Unsupported source camera-yaw read');
+ need([0xe92d4010,0xe1a04000,0xe5d400be,0xe3500004,0x13500003,0x1a000002].every((word,i)=>a.u32(0x0203336c+i*4)===word)&&[0xe1a00001,0xebfff5b3,0xe1c40abe].every((word,i)=>a.u32(0x02033390+i*4)===word),'Unsupported ordinary target-angle store');
  const Up=a.u32(table)|0,Down=a.u32(table+4)|0,Left=a.u32(table+8)|0,Right=a.u32(table+12)|0;
  need(Up===12868&&Down===0&&Left===19302&&Right===6434,'Unsupported ordinary cardinal direction table');
- return {Down,Right,Up,Left};
+ const UpLeft=a.u32(table+16)|0,UpRight=a.u32(table+20)|0,DownLeft=a.u32(table+24)|0,DownRight=a.u32(table+28)|0;
+ need(UpLeft===16085&&UpRight===9651&&DownLeft===22519&&DownRight===3217,'Unsupported ordinary diagonal direction table');
+ return {Down,Right,Up,Left,UpLeft,UpRight,DownLeft,DownRight};
 }
 export function sourceCreatorMode(rom){const a=sourceArm9(rom),selector=a.u8(a.u32(0x0203394c)+5*13),flags=a.u32(a.u32(0x02033808)+selector*4),name=a.text(a.u32(a.u32(0x0203381c)+selector*4));need(selector>0&&selector<12&&flags===1&&name==='appear'&&a.u32(0x02035e08)===0xfffffe01,'Unsupported creator mode5/config selector');return{mode:5,c0:0,selector,name,flags,componentTag:{knownMask:0x1ff,value:1},runtimeAnimationObject:'null-or-owned-unresolved'};}
 export function decodeCreatorConfig(bytes){
