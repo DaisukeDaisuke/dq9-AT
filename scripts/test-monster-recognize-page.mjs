@@ -72,7 +72,7 @@ class Element {
   hasPointerCapture(id) { return this.pointer === id; }
   releasePointerCapture() { this.pointer = null; }
   getContext() {
-    if (!this.context) this.context = { snapshot: 0, clearRect() {}, save() {}, restore() {}, fillRect() {}, strokeRect() {}, fillText() {}, putImageData() {}, drawImage(source) { this.snapshot = source.frameValue ?? source.context?.snapshot ?? 0; this.pixels = source.frameRGBA ?? source.context?.pixels; this.pixelWidth = source.videoWidth ?? source.context?.pixelWidth; }, getImageData(x, y, width, height) { const data = new Uint8ClampedArray(width * height * 4).fill(this.snapshot); if (this.pixels) for (let row = 0; row < height; row++) data.set(this.pixels.subarray(((y + row) * this.pixelWidth + x) * 4, ((y + row) * this.pixelWidth + x + width) * 4), row * width * 4); return { data }; }, createImageData(width, height) { return { data: new Uint8ClampedArray(width * height * 4) }; } };
+    if (!this.context) this.context = { snapshot: 0, clearRect() {}, save() {}, restore() {}, fillRect() {}, strokeRect(...rect) { (this.boxes ??= []).push(rect); }, fillText() {}, putImageData(pixels) { this.paintedPixels = pixels.data.slice(); this.boxes = []; }, drawImage(source) { this.snapshot = source.frameValue ?? source.context?.snapshot ?? 0; this.pixels = source.frameRGBA ?? source.context?.pixels; this.pixelWidth = source.videoWidth ?? source.context?.pixelWidth; }, getImageData(x, y, width, height) { const data = new Uint8ClampedArray(width * height * 4).fill(this.snapshot); if (this.pixels) for (let row = 0; row < height; row++) data.set(this.pixels.subarray(((y + row) * this.pixelWidth + x) * 4, ((y + row) * this.pixelWidth + x + width) * 4), row * width * 4); return { data }; }, createImageData(width, height) { return { data: new Uint8ClampedArray(width * height * 4) }; } };
     return this.context;
   }
   pause() { this.paused = true; }
@@ -364,6 +364,19 @@ check('slow classification leaves current boxes updating with one pending worker
 emitResult(auto.worker,automaticRequest);await settle();
 check('automatic result appears only in its own aged crop record, never manual or new-box rankings',()=>{assert.equal(el('video-observations').children.length,1);assert.equal(ui.state.observationRecords[0].captureStamp.videoTime,1);assert.match(ui.state.observationRecords[0].ageElement.textContent,/撮影から2.5秒/);assert.match(ui.state.observationRecords[0].ageElement.textContent,/引継ぎはしません/);assert.equal(ui.observer.latest.result.captureStamp.videoTime,3.5);assert(ui.observer.latest.result.proposals.every(p=>!p.rankings));assert.equal(ui.observer.stats.classificationsCompleted,1);});
 check('next automatic request reads current pixels after slow inference',()=>{const req=auto.worker.messages.at(-1).message;assert.equal(req.type,'recognize');assert.equal(req.captureStamp.videoTime,3.5);assert.equal(req.crop.rgba[0],125);});
+// A later native media position must never be combined with the last observed boxes.
+const beforeHold = ui.observer.latest, beforeHoldJob = auto.worker.messages.at(-1).message, holdWorker = auto.worker;
+video.currentTime = 3.777; video.frameValue = 201;
+await el('pause-video-observation').click(); await video.trigger('pause');
+const held = ui.observer.held, heldLabel = el('video-position-age').textContent;
+check('explicit pause holds exact observed pixels, boxes and time, not the newer video frame',()=>{assert(video.paused);assert(!ui.observer.running);assert.equal(ui.observer.latest,null);assert.equal(held.image.rgba[0],125);assert.equal(held.result.captureStamp.videoTime,3.5);assert.equal(video.currentTime,3.777);assert.deepEqual(held.result.proposals,beforeHold.result.proposals);assert.equal(el('video-observation-view').context.paintedPixels[0],125);assert.deepEqual(el('video-observation-view').context.boxes,held.result.proposals.map(p=>Object.values(p.roi)));assert(!el('video-observation-view').hidden);assert.match(heldLabel,/固定した観測.*3.500秒/);assert.match(heldLabel,/同一フレーム/);assert.match(heldLabel,/現在の位置・敵の種類は未確認/);assert.equal(frameCallbacks.size,0);assert(holdWorker.terminated);assert.equal(ui.observer.active,null);assert.match(el('start-video-observation').textContent,/再開/);});
+emitResult(holdWorker,beforeHoldJob);holdWorker.emit({type:'progress',id:beforeHoldJob.id,romEpoch:30,message:'late paused work'});await settle();
+check('late inference and progress cannot change the held observation or append old ranks',()=>{assert.strictEqual(ui.observer.held,held);assert.equal(el('video-position-age').textContent,heldLabel);assert.equal(ui.state.observationRecords.length,1);assert(!el('video-observation-status').textContent.includes('late paused work'));});
+const holdCount=autoCount();observerClock=99999;video.frameValue=202;await el('pause-video-observation').click();await video.trigger('pause');
+check('repeat pause retains one snapshot indefinitely without playback, scheduling or a new capture',()=>{assert.strictEqual(ui.observer.held,held);assert.equal(ui.observer.latest,null);assert.equal(autoCount(),holdCount);assert.equal(frameCallbacks.size,0);assert(video.paused);assert(!el('video-observation-view').hidden);assert.equal(el('video-observation-view').context.paintedPixels[0],125);assert.equal(el('video-position-age').textContent,heldLabel);});
+observerClock=4000;await el('start-video-observation').click();auto=await preparedWorker();
+check('explicit observation resume releases the held buffer and starts fresh work only once',()=>{assert(ui.observer.running);assert.equal(ui.observer.held,null);assert.equal(ui.observer.latest,null);assert.equal(frameCallbacks.size,1);assert(!video.paused);assert(el('video-observation-view').hidden);assert.equal(ui.state.observationRecords.length,0);});
+auto.worker.emit({type:'result',id:auto.req.id,romEpoch:30,result:{prepared:true}});await settle();await fireFrame(4000,141);
 const beforeSeekRequest=auto.worker.messages.at(-1).message;await video.trigger('seeking');
 check('seeking cancels callback and active worker, clears prior automatic observations',()=>{assert(!ui.observer.running);assert.equal(frameCallbacks.size,0);assert(auto.worker.terminated);assert.equal(ui.state.observationRecords.length,0);assert(el('video-observation-view').hidden);});
 emitResult(auto.worker,beforeSeekRequest);await settle();check('late automatic response after seek cannot restore observations',()=>assert.equal(el('video-observations').children.length,0));
@@ -386,7 +399,7 @@ for(const interrupt of ['seek','stop','pause','hidden','dense-setting','cancel']
  assert(ui.state.observationStarting);assert(!el('stop-video-observation').disabled);assert(el('start-video-observation').disabled);
  if(interrupt==='seek'){video.currentTime+=10;await video.trigger('seeking');}
  if(interrupt==='stop')await el('stop-video-observation').click();
- if(interrupt==='pause')await video.trigger('pause');
+ if(interrupt==='pause'){video.paused=true;await video.trigger('pause');}
  if(interrupt==='hidden'){doc.hidden=true;await documentEvents.trigger('visibilitychange');}
  if(interrupt==='dense-setting')await el('video-observation-dense').trigger('change');
  if(interrupt==='cancel')await el('cancel').click();
@@ -416,7 +429,7 @@ for(const interrupt of ['stop','hidden','source','seek','duplicate-seeking','pau
  if(interrupt==='source'){el('source-file').files=[];ui.selectSource();}
  if(interrupt==='seek'){video.currentTime=7;await video.trigger('seeking');}
  if(interrupt==='duplicate-seeking')await video.trigger('seeking');
- if(interrupt==='pause')await video.trigger('pause');
+ if(interrupt==='pause'){video.paused=true;await video.trigger('pause');}
  if(interrupt==='error')await video.trigger('error');
  video.seeking=false;video.ended=false;await video.trigger('seeked');await start;await settle();
  check(`pending EOF rewind rejects late seeked after ${interrupt}`,()=>{assert(!ui.observer.running);assert(!ui.state.observationStarting);assert.equal(replayPlayCalls,calls);assert.equal(autoCount(),before);assert.equal(frameCallbacks.size,0);});
@@ -525,5 +538,25 @@ check('video Worker init rejection retains stack/stage and permits explicit retr
 ui.freeze();ui.setROI({x:1000,y:150,w:60,h:80});probeGPU=async()=>{throw probeFailure};dinoJob=await beginScoring();await dinoJob.completion;
 check('manual GPU failure exposes original detail while leaving explicit retry usable',()=>{assert.match(el('error').textContent,/webgpu-probe.*TypeError/);assert(el('error-stack').textContent.includes(probeFailure.stack));assert(!ui.state.busy&&!ui.state.loading);assert(!el('start').disabled);assert.equal(el('inference-backend').value,'webgpu');});
 el('inference-backend').value='wasm';await el('inference-backend').trigger('change');check('manual explicit CPU choice enables Start without a fallback inference',()=>{assert(!el('start').disabled);assert(!ui.state.busy);});
+// Hold/reset journeys use the actual observer and real draw calls through this DOM harness.
+Object.assign(ui.state,{sourceReady:true,sourceKind:'video',sourceId:'hold-reset',sourceEpoch:ui.state.sourceEpoch+1,romFile:file,catalog,selected:new Set(DEFAULT_MODELS)});
+Object.assign(video,{videoWidth:640,videoHeight:480,readyState:4,seeking:false,ended:false,paused:true});
+el('enable-roi-proposals').checked=true;el('scene-kind').value='field';el('exclude-center').checked=true;el('gameplay-layout').value='whole';el('feature-method').value='dinov2';el('inference-backend').value='wasm';el('variant').value='_f';el('preset').value='quick';el('video-observation-dense').checked=false;prepareInference=async()=>({});
+ui.observer.propose=(image,captureStamp)=>({...defaultProposalFactory(image,captureStamp),trackingFrame:{}});
+for(const reset of ['seek','configuration','source','rom','native-play','stop']){
+ Object.assign(ui.state,{sourceReady:true,sourceKind:'video',sourceId:`hold-${reset}`,romFile:file,catalog,selected:new Set(DEFAULT_MODELS)});
+ await ui.startVideoObservation();auto=await preparedWorker();await fireFrame(15000,177);
+ video.paused=true;await video.trigger('pause');const resetHeld=ui.observer.held;
+ check(`native pause before ${reset} retains preview even during preparation`,()=>{assert(resetHeld);assert(!ui.observer.running);assert(!el('video-observation-view').hidden);assert.equal(resetHeld.image.rgba[0],177);assert.equal(frameCallbacks.size,0);});
+ if(reset==='seek'){video.currentTime=16;await video.trigger('seeking');}
+ if(reset==='configuration')await el('inference-backend').trigger('change');
+ if(reset==='source'){el('source-file').files=[];ui.selectSource();}
+ if(reset==='rom'){el('rom-file').files=[];await ui.selectROM();}
+ if(reset==='native-play'){video.paused=false;await video.trigger('play');}
+ if(reset==='stop')await el('stop-video-observation').click();
+ check(`${reset} clears held provenance and pixels without restarting observation`,()=>{assert.equal(ui.observer.held,null);assert.equal(ui.observer.latest,null);assert(!ui.observer.running);assert.equal(frameCallbacks.size,0);assert(el('video-observation-view').hidden);assert.equal(el('video-observation-view').width,0);assert(!el('video-position-age').textContent.includes('固定した観測'));});
+}
+await ui.startVideoObservation();auto=await preparedWorker();await el('pause-video-observation').click();
+check('pause before first observation stops media without fabricating a frame',()=>{assert(video.paused);assert.equal(ui.observer.held,null);assert.equal(ui.observer.latest,null);assert(!ui.observer.running);assert.equal(frameCallbacks.size,0);assert.match(el('video-observation-status').textContent,/まだありません/);});
 await win.trigger('pagehide');
 console.log(`\n${passed} UI and lifecycle checks passed (Node DOM harness; no browser launched).`);

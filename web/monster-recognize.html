@@ -61,7 +61,8 @@
           <label class="check-label"><input id="video-observation-dense" type="checkbox">DINO補助も使う（3秒以上空け、照合の間に最大1回。背景候補・処理時間も増えます）</label>
           <p id="shrine-video-preset-note" class="muted">ふういんのほこらを、OBS左右配置の右上DS画面で録画した動画用です。下のボタンで領域候補・フィールド・右上4:3・中央除外・DINOv2・_f・クイック・初期4モデルをまとめて設定します。AIの実行方式は変えません。DINO補助は任意です。別の場面・配置にはこの設定を使わないでください。</p>
           <p><button id="apply-shrine-video-preset" type="button" aria-describedby="shrine-video-preset-note">ふういんのほこら・OBS右上の設定を適用</button></p>
-          <div class="proposal-actions"><button id="start-video-observation" type="button" aria-describedby="video-observation-requirements" disabled>観測を開始して再生</button><button id="stop-video-observation" type="button" disabled>自動観測を停止</button></div>
+          <div class="proposal-actions"><button id="start-video-observation" type="button" aria-describedby="video-observation-requirements" disabled>観測を開始して再生</button><button id="pause-video-observation" type="button" disabled>枠と時刻を保持して一時停止</button><button id="stop-video-observation" type="button" disabled>自動観測を停止</button></div>
+          <p class="muted">「枠と時刻を保持して一時停止」は、最後に観測した画像・枠・時刻をセットで1枚固定し、動画と照合を止めます。動画の一時停止操作でも保持します。再開・シーク・入力や設定の変更で固定を解除します。</p>
           <p id="video-observation-requirements" class="muted"></p>
           <p id="video-observation-status" role="status" aria-live="polite">停止中。開始を押すまで自動の観測・照合は行いません。</p>
           <canvas id="video-observation-view" hidden aria-label="最新に観測した位置候補。すべて未確認"></canvas>

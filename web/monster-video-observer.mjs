@@ -4,6 +4,7 @@ import {proposeEnemyROIs,EnemyProposalTracker,proposalRecognitionRequest} from '
 import {validateRGBA} from './monster-roi-descriptor.mjs';
 export const VIDEO_OBSERVER_LIMITS=Object.freeze({cpuIntervalMs:250,classifyIntervalMs:500,trackRefreshMs:5000,denseIntervalMs:3000,denseMaxFrameAgeMs:1500,maxSourcePixels:2097152,maxProposals:8,maxAttemptRecords:32});
 const need=(v,m)=>{if(!v)throw Error(m);},clone=v=>structuredClone(v);
+const freezeMetadata=v=>{if(v&&typeof v==='object'){for(const child of Object.values(v))freezeMetadata(child);Object.freeze(v);}return v;};
 function canonical(v){if(Array.isArray(v))return v.map(canonical);if(v&&typeof v==='object')return Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])]));return v;}
 const key=v=>JSON.stringify(canonical(v));
 const sourceKey=s=>key(Object.fromEntries(['sourceId','sourceEpoch','timelineSegment','romEpoch','sourceFrame','featureMethod','inferenceBackend','sceneContext'].map(k=>[k,s?.[k]??null])));
@@ -12,7 +13,7 @@ export class LatestVideoObserver{
  constructor({prepare,classify,supplement,cancelActive=()=>{},onPositions=()=>{},onObservation=()=>{},onState=()=>{},onProgress=()=>{},now=()=>performance.now(),nextID,propose=proposeEnemyROIs,tracker=new EnemyProposalTracker()}={}){
   need(typeof prepare==='function'&&typeof classify==='function','Preparation and classifier adapters required');
   Object.assign(this,{prepare,classify,supplement,cancelActive,onPositions,onObservation,onState,onProgress,now,propose,tracker});
-  this.sequence=0;this.nextID=nextID??(()=>`video-observation-${++this.sequence}`);this.generation=0;this.running=false;this.active=null;this.latest=null;
+  this.sequence=0;this.nextID=nextID??(()=>`video-observation-${++this.sequence}`);this.generation=0;this.running=false;this.active=null;this.latest=null;this.held=null;
  }
  start(config){
   this.stop('restart');need(config?.captureStamp?.featureMethod==='dinov2','Video observations require DINO');
@@ -23,10 +24,19 @@ export class LatestVideoObserver{
   this.stats={sampledFrames:0,classificationsStarted:0,classificationsCompleted:0,supplementsStarted:0,discardedDenseFrames:0,maxActiveJobs:0,maxLatestSnapshots:0};
   this.onState({running:true,phase:'preparing',stats:{...this.stats}});this._pump();
  }
- stop(reason='stopped',error=null){
-  const wasRunning=this.running,job=this.active;this.generation++;this.running=false;this.active=null;this.latest=null;this.prepared=false;this.tracker.reset();this.attempts?.clear();
+ pause(reason='paused'){
+  if(this.held)return this.held;
+  // Move the latest owned pixels, not the now-newer media frame, into one held
+  // observation. Metadata is detached/frozen; these pixels are render-only and
+  // never transferred to a Worker. No history of full-frame buffers is kept.
+  const latest=this.latest;
+  const held=latest?Object.freeze({image:Object.freeze({...latest.image}),result:freezeMetadata(clone(latest.result)),association:freezeMetadata(clone(latest.association)),wallAt:latest.wallAt}):null;
+  this.stop(reason,null,held);return this.held;
+ }
+ stop(reason='stopped',error=null,held=null){
+  const wasRunning=this.running,hadHeld=!!this.held,job=this.active;this.generation++;this.running=false;this.active=null;this.latest=null;this.held=held;this.prepared=false;this.tracker.reset();this.attempts?.clear();
   if(job){job.controller.abort();this.cancelActive();}
-  if(wasRunning)this.onState({running:false,phase:reason,stats:{...this.stats},...(error?{error}:{})});
+  if(wasRunning||hadHeld)this.onState({running:false,held:!!this.held,phase:reason,stats:{...this.stats},...(error?{error}:{})});
  }
  shouldSample(pts,wall=this.now()){return this.running&&Number.isFinite(pts)&&pts>=0&&pts>this.lastPTS&&wall-this.lastCPUAt>=VIDEO_OBSERVER_LIMITS.cpuIntervalMs;}
  sample(image,captureStamp,wall=this.now()){

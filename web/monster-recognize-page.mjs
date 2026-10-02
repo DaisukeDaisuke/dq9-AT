@@ -223,8 +223,10 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     $('dense-proposal-note').textContent = state.denseStatus || denseProblem || '任意の補助です。64姿勢を準備・再利用し、固定画像を1回だけ処理します。追加候補にも背景が含まれ、選んだ後の分類時間が別途かかります。';
     const videoIssue = videoObservationIssue();
     $('start-video-observation').disabled = !!videoIssue || state.busy || state.loading || state.clearingCache || observer.running || state.observationStarting;
-    $('stop-video-observation').disabled = !observer.running && !state.observationStarting;
-    if (!observer.running) $('video-observation-requirements').textContent = pendingIssue() || (state.observationStarting ? '動画の再生開始を待っています。停止するには「自動観測を停止」を押してください。' : videoIssue) || '準備できました。開始すると動画を再生し、位置候補と各時刻の切り抜き順位を自動で観測します。';
+    $('pause-video-observation').disabled = !observer.running && !state.observationStarting;
+    $('stop-video-observation').disabled = !observer.running && !state.observationStarting && !observer.held;
+    $('start-video-observation').textContent = observer.held ? '自動観測を再開して再生' : '観測を開始して再生';
+    if (!observer.running) $('video-observation-requirements').textContent = pendingIssue() || (state.observationStarting ? '動画の再生開始を待っています。停止するには「自動観測を停止」を押してください。' : videoIssue) || (observer.held ? '観測フレーム・枠・時刻を固定中です。「自動観測を再開して再生」で続けます。' : '準備できました。開始すると動画を再生し、位置候補と各時刻の切り抜き順位を自動で観測します。');
   }
   function videoObservationStamp(mediaTime, basis = 'video.currentTime (approximate)') {
     const frame = { width: video.videoWidth, height: video.videoHeight };
@@ -288,6 +290,12 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
   function stopVideoObservation(reason) {
     observationStartGeneration++; state.observationStarting = false; observationRewind?.finish(false); observer.stop(reason); cancelObservationFrame(); controls();
   }
+  function pauseVideoObservation(reason = 'user-pause') {
+    observationStartGeneration++; state.observationStarting = false; observationRewind?.finish(false);
+    observer.pause(reason); cancelObservationFrame(); video.pause(); updateVideoTime();
+    if (!observer.held) $('video-observation-status').textContent = '動画と自動観測を一時停止しました。保持できる観測フレームはまだありません。';
+    updateObservationAges(); controls();
+  }
   function queueObservationAge() {
     if (!observer.running || observationAgeTimer) return;
     const token = { generation: observationGeneration, id: null }; observationAgeTimer = token;
@@ -303,7 +311,8 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     const callback = (_now, metadata) => {
       if (observationCallback !== token || generation !== observationGeneration || !observer.running) return;
       observationCallback = null;
-      if (video.paused || video.ended || document.hidden || video.seeking) { stopVideoObservation('paused-or-hidden'); return; }
+      if (video.paused && !video.seeking && !document.hidden) { pauseVideoObservation('media-pause'); return; }
+      if (video.ended || document.hidden || video.seeking) { stopVideoObservation('ended-or-hidden-or-seeking'); return; }
       try {
         const pts = Number.isFinite(metadata?.mediaTime) ? metadata.mediaTime : video.currentTime;
         if (video.readyState >= 2 && observer.shouldSample(pts)) {
@@ -347,15 +356,20 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     finally { if (intent === observationStartGeneration) { state.observationStarting = false; controls(); } }
   }
   function videoObservationState(info) {
-    if (!info.running) { observationStartGeneration++; state.observationStarting = false; cancelObservationFrame(); $('video-observation-view').hidden = true; $('video-position-age').textContent = '現在の位置候補は停止・未観測です。過去の切り抜き記録は現在位置に貼り付けません。'; }
+    if (!info.running) {
+      observationStartGeneration++; state.observationStarting = false; cancelObservationFrame();
+      if (observer.held) renderVideoPositions(observer.held);
+      else { const canvas = $('video-observation-view'); canvas.hidden = true; canvas.width = canvas.height = 0; $('video-position-age').textContent = '現在の位置候補は停止・未観測です。過去の切り抜き記録は現在位置に貼り付けません。'; }
+    }
     const s = info.stats || {};
-    $('video-observation-status').textContent = info.running ? `${info.phase === 'preparing' ? '64姿勢を準備中（動画フレームは最新の1枚だけ保持）' : '自動観測中'} · CPU ${s.sampledFrames || 0}枚 / 照合 ${s.classificationsCompleted || 0}件 / 補助 ${s.supplementsStarted || 0}回` : `自動観測を停止しました（${info.phase}）。順位は観測した過去の切り抜きにだけ対応します。`;
+    $('video-observation-status').textContent = info.running ? `${info.phase === 'preparing' ? '64姿勢を準備中（動画フレームは最新の1枚だけ保持）' : '自動観測中'} · CPU ${s.sampledFrames || 0}枚 / 照合 ${s.classificationsCompleted || 0}件 / 補助 ${s.supplementsStarted || 0}回` : observer.held ? '動画と自動観測を一時停止中 · 枠付きの観測フレームを1枚固定しています。再開は明示操作です。' : `自動観測を停止しました（${info.phase}）。順位は観測した過去の切り抜きにだけ対応します。`;
     if (String(info.phase).startsWith('error:')) error(info.error || info.phase.slice(7), 'video-observation');
     if (info.running) queueObservationAge();
     updateObservationAges(); controls();
   }
   function renderVideoPositions({ image, result, association }) {
     const canvas = $('video-observation-view'), ctx = canvas.getContext('2d');
+    canvas.setAttribute('aria-label', observer.held ? '一時停止して保持した過去の観測フレームと未確認の枠' : '最新に観測した位置候補。すべて未確認');
     if (canvas.width !== image.width) canvas.width = image.width; if (canvas.height !== image.height) canvas.height = image.height;
     const pixels = ctx.createImageData(image.width, image.height); pixels.data.set(image.rgba); ctx.putImageData(pixels, 0, 0); canvas.hidden = false;
     const scale = Math.max(1, image.width / 640); ctx.save(); ctx.strokeStyle = '#ffc878'; ctx.fillStyle = '#ffc878'; ctx.lineWidth = 2 * scale; ctx.font = `${14 * scale}px system-ui`;
@@ -383,7 +397,11 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
   }
   function updateObservationAges() {
     const now = observer?.now?.() ?? performance.now();
-    if (observer.running && observer.latest) {
+    if (observer.held) {
+      const held = observer.held, stamp = held.result.captureStamp;
+      $('video-observation-view').hidden = false;
+      $('video-position-age').textContent = `固定した観測 · 動画 ${stamp.videoTime.toFixed(3)}秒 · 観測 #${stamp.frameSerial} · ${held.result.proposals.length}/8枠 · ${stamp.timestampBasis === 'requestVideoFrameCallback.mediaTime' ? '表示フレームの時刻' : '再生時刻の概算'}。この画像・枠・時刻は同一フレームの記録です。停止した再生位置とは異なる場合があります。現在の位置・敵の種類は未確認です。`;
+    } else if (observer.running && observer.latest) {
       const latest = observer.latest, age = Math.max(0,(now-latest.wallAt)/1000), stale = age > 1;
       $('video-observation-view').hidden = stale;
       $('video-position-age').textContent = `位置候補 ${latest.result.proposals.length}/8枠 · 動画 ${latest.result.captureStamp.videoTime.toFixed(3)}秒 · 撮影から${age.toFixed(1)}秒（実時間） · ${stale ? '古い位置のため枠を非表示・現在は未観測' : 'すべて未確認'}。不在や消滅の証拠ではありません。`;
@@ -870,7 +888,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     $('coverage-section').hidden = false;
   }
   $('rom-file').addEventListener('change', selectROM); $('source-file').addEventListener('change', selectSource); $('freeze').addEventListener('click', freeze);
-  $('play-pause').addEventListener('click', async () => { if (!video.paused) video.pause(); else try { await video.play(); } catch (failure) { error(`動画を再生できません: ${failure.message}`); } });
+  $('play-pause').addEventListener('click', async () => { if (!video.paused) { if (observer.running || state.observationStarting) pauseVideoObservation(); else video.pause(); } else try { await video.play(); } catch (failure) { error(`動画を再生できません: ${failure.message}`); } });
   $('video-seek').addEventListener('input', () => { if (Number.isFinite(video.duration)) video.currentTime = Number($('video-seek').value); });
   for (const event of ['timeupdate', 'durationchange', 'play', 'pause', 'loadedmetadata']) video.addEventListener(event, updateVideoTime);
   video.addEventListener('seeking', () => {
@@ -885,7 +903,9 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
     else stopVideoObservation('seek-interrupted');
   });
   video.addEventListener('error', () => stopVideoObservation('video-error'));
-  for (const event of ['pause','ended']) video.addEventListener(event, () => stopVideoObservation(event));
+  video.addEventListener('pause', () => { if (video.paused && (observer.running || state.observationStarting)) pauseVideoObservation('media-pause'); });
+  video.addEventListener('play', () => { if (!video.paused && observer.held) stopVideoObservation('play-without-observation'); });
+  video.addEventListener('ended', () => stopVideoObservation('ended'));
   document.addEventListener?.('visibilitychange', () => { if (document.hidden) stopVideoObservation('hidden-page'); controls(); });
   $('redraw-roi').addEventListener('click', () => { state.drawMode = true; $('redraw-roi').textContent = 'ドラッグで新しい範囲を選択'; status('固定した画像上で、新しい範囲をドラッグしてください。'); });
   $('apply-roi').addEventListener('click', () => { try { error(); setROI(Object.fromEntries(['x', 'y', 'w', 'h'].map(key => [key, Number($(`roi-${key}`).value)]))); } catch (failure) { error(failure); } });
@@ -909,6 +929,7 @@ export function mountRecognitionPage(document, window, { ensureInferenceAssets =
   $('supplement-roi-proposals').addEventListener('click', supplementProposals);
   $('clear-roi-proposals').addEventListener('click', () => { if (state.denseBusy) invalidate('', { clear: false }); clearProposals('候補の枠を消しました。選択済みの切り抜きは手動で調整できます。'); paint(); controls(); });
   $('start-video-observation').addEventListener('click', startVideoObservation);
+  $('pause-video-observation').addEventListener('click', () => pauseVideoObservation());
   $('stop-video-observation').addEventListener('click', () => stopVideoObservation('user-stop'));
   $('video-observation-dense').addEventListener('change', () => { stopVideoObservation('supplement-setting-change'); controls(); });
   $('top-k').addEventListener('change', renderResults);
