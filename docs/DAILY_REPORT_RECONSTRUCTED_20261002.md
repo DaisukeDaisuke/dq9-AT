@@ -254,3 +254,14 @@ original1990／map20006／通常offline／scene再入場なしの範囲では、
 04:55 UTC分のsource-only checkpointを非公開toolsの既存mainへ通常fast-forwardで保存し、22 text filesの全blob一致と既存335 filesの保持を確認した。復元手順・manifestを含み、未完のcontroller-writersは除外した。元probeに埋め込まれていた12 bytesのROM命令列は保存せず、手元の入力から読み出してhash確認する派生scriptに置き換え、その差分をmanifestに明記した。今回のbackupで元のnative実験を再実行したとはしない。ROM／SAV／DST／RAM／動画／画像／抽出資産／raw response／byte dump／私有link／秘密情報は同梱していない。
 
 別途、公開creator版9df2f2bdac1347945e50405d4c04665556501262を実cloudブラウザで確認した。4方向のcreator結果、旧creatorなしpacketの停止、reset・再初期化・新fileでの消去、paired schema不足／誤入力／不正JSON／heap・descriptor serial aliasの拒否と復帰、未対応bodyの明示拒否、ROM解放時の状態消去を通過した。4方向とも30 scheduler段階、AT2／seed0xa46fab4f／timer0／species88／slot112／serial2でcreator return後に停止し、application由来のerrorはなかった。これは実ページの条件付きfactory/UI確認である。配信moduleへの直接アクセスはERR_BLOCKED_BY_CLIENTとなり、配信byteの独立照合と通信監査は未実施。body継続・全world・live現在状態の完成を意味しない。この追記では公開runtimeを変更せず、13:50 JSTのWork依頼・深夜単騎方針もそのまま維持する。
+
+
+## 14:32 JST追記: Work2監査の独立再現と未接続bodyの復元保存
+
+Work2の提出済み採用527ケースは、固定commit `4d174d2a57990817881b01d485ae6d2358737840` に対する独立再実行ですべて再現した。現行runnerが生成する追加2ケースもpassし、採用合計529件、fail0件だった。別枠の実時計補助2試験では、実際の計算が進んだあとでも正のack前に取消すと、返る探索済み数・候補数が0のままで、workerの終了も確認した。参照器selftestは3,111 checks。これは有界条件での照合であり、全入力のno-false-negative証明、hard real-timeの予算保証、実ブラウザ／download、自然spawnやROM実行の新規保証ではない。明示された模擬時計の論理試験を実時計の性能測定へ混ぜず、coverage tagや終了検査などのreport／harness制約も残す。
+
+初回bodyのdraftは未接続・未受入で、`sourceBound:false` のまま復元用に保存した。重要な訂正として、host側のtouch releaseだけではgame側release byteが0に保たれるとは言えない。ARM7 queue-full時のinvalid sample fallbackとcontact／releaseの相関を残し、game側のrelease consumerとcandidate保存条件を引き続き調べる。creator後のbodyが完成したとはせず、追加scheduler tickやfuture body継続を許可しない。
+
+05:25 UTC分のチェックポイントは、凍結済み30ソース／証跡ファイル、allowlist2、復元・検査文書4の計36 text filesを既存の非公開tools mainへ通常fast-forwardで保存し、remote commit・全新規blob・既存357 filesの保持を確認した。backup時の確認はhash／UTF-8／JSON／8構文検査と独立source-only検査で、上記の監査やnative実験をbackup処理で再実行したという意味ではない。ROM／SAV／DST／RAM／動画／画像／抽出資産／raw source dump／私有download URL／秘密情報は同梱していない。公開変更はこの日報追記だけで、runtimeは変更しない。
+
+斜め4方向を本人が起動する外部Work4へ依頼する指示書も準備・提供した。まだ実装完了ではなく、私有復元情報を含む指示書本体は公開リポジトリへ追加しない。13:50 JSTに記録したWorkの起動担当と深夜単騎の方針は維持する。
