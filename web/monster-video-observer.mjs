@@ -68,10 +68,11 @@ export class LatestVideoObserver{
    eligible.push({p,i,last,waitingSince:this.waiting.get(i),turn:(i-this.cursor+ps.length)%ps.length});
   }
   const priority=p=>Number.isFinite(p.priority)?p.priority:0;
-  // First visits follow visible regions 1 then 2. After one eight-candidate
-  // budget of CPU selections, the oldest waiting slot gets a turn before heads.
+  // Eligible visible regions 1/2 always precede lower slots. Waiting age
+  // only breaks ties within a tier; it must never preempt the visible heads.
   const overdue=c=>this.cpuSelections-c.waitingSince>=VIDEO_OBSERVER_LIMITS.maxProposals;
-  eligible.sort((a,b)=>Number(overdue(b))-Number(overdue(a))
+  eligible.sort((a,b)=>Number(b.i<2)-Number(a.i<2)
+   ||Number(overdue(b))-Number(overdue(a))
    ||(overdue(a)?a.waitingSince-b.waitingSince:0)
    ||a.last-b.last||(a.last===-Infinity&&b.last===-Infinity?Math.min(a.i,2)-Math.min(b.i,2)||priority(b.p)-priority(a.p):0)||a.turn-b.turn);
   return eligible[0]??null;
