@@ -351,3 +351,17 @@ NDS／モデル一覧を読み込まない合成入力の検査なので、自�
 callstack移植の対象は現在のheadless実装である。ブラウザー向けの古い指示案を置き換える修正版が完成したため、既存Node API／非停止observerの接続先を明記した指示書をprivate checkpointへ保存する。移植実装そのものは未完了。既存BMMP座標の索引化・可視化も新しい隔離stageで着手したところで、実装完了・公開済みとはしない。
 
 今回の公開変更はこの日報追記だけ。稼働sourceと配信内容は変更しない。private再開用checkpointはsource／監査／進捗の明示allowlistだけを保存し、ROM・SAV・DST・RAM・動画・抽出ゲーム資産・秘密情報・Work5 private ZIPを含めない。`dqix-functions`は新しい確定注釈の差分がなく、`7eaf0f13cb0d93425722afc6120ce1c2c1eed19b`を維持する。変更中のstageを完成物として固定せず、重複・空commitを作らない。
+
+## 17:45 JST追記: 既存BMMP座標の索引化と地図表示
+
+既存のBMMP座標groupを再利用し、map IDごとの表示先を保持する端末内索引と、地図上の固定表示点を追加した。地図ブラウザーとマップ認識の参照表示で、「配置」から元の画像候補と固定表示先を選び、固定表示点のON／OFF、座標対応JSON／CSV保存を行える。複数表示先を一つに潰さず、既存の画像認識候補records[].candidatesは変更しない。索引作成に失敗した場合も元の地図候補による表示を継続する。
+
+ローカルROMから得る関係は1,267件（固定表示888、物理X/Z379）、493 map ID。明示groupのない380 IDは未解決として残る。これは屋内数や通行可能地点数ではない。固定表示点は建物等の代表点であり、室内NPC／プレイヤー位置やdoor triggerではない。物理X/Zのgroupには別途観測した座標がない限り点を置かない。
+
+画像寸法とcrop原点は、実ROMの全283 descriptorで既存WASM合成器と一致した。ただし世界座標から画像pixelへの較正は独立実測しておらず、画面とexportに未校正・暫定値を表示し、transformVerified／runtimeContextVerifiedをfalseのまま保持する。範囲外の点を画像内へ丸めず、座標情報が不完全ならunknownを残す。現在位置同定、室内外actor変換、経路案内、AT下限の証明として使わない。[仕様と制限](mining/MAP_COORDINATE_INDEX.md)を参照。
+
+現行公開sourceに対する変更はsource／UI／tests／仕様の10ファイル。最新日報を保持した隔離stageでClang／LLD19.1.7の通常aggregateを08:43:25–08:43:47 UTCに実行しexit0。並行buildのobject衝突を避けるため実行時のobject保存先だけを隔離し、公開するbuild scriptは承認済みsourceと完全一致させた。既存42本のNode検査をすべて維持し、新規2本を加えた44本が通過した。
+
+最終stageで元ROMをローカル入力した座標索引4,505 checks（全283 descriptorの合成寸法／原点比較を含む）、panel30件、既存marker67件、実Worker経由の出口UI37件が通過した。画素・抽出座標一覧・ROMはcommitせず、公開sourceから利用者の端末内で生成する。実ブラウザーでの見た目と操作のQAはこの追記時点では未実施で、公開後に別途行う。
+
+Work6のheadless移植指示書は提供済みversion2へ更新し、private checkpointの対応文書とmanifestも置き換える。元ROM／開始Stateは検証用の参照とhashだけを記載し、本体を保存しない。Work6実装、Work4本番統合、Work5最終受入が完了したという更新ではない。

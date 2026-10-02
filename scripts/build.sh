@@ -63,6 +63,10 @@ node scripts/test-coordinate-range-ui.mjs
 # A fixed house display anchor cannot become a physical chunk estimate.
 node scripts/test-map-marker-coordinate.mjs
 
+# ROM-local map display coordinates and reference overlays.
+node scripts/test-map-coordinate-index.mjs
+node scripts/test-map-coordinate-panel.mjs
+
 # Static exit facts and explicit local mining action; no private inputs.
 node scripts/test-map-exits.mjs
 node scripts/test-map-exits-ui.mjs

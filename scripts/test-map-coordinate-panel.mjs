@@ -1,0 +1,20 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs/promises';
+let checks=0;const eq=(a,b)=>{assert.deepEqual(a,b);checks++},ok=x=>{assert(x);checks++};
+const elements=new Map(),listeners=new Map(),downloads=[];
+const el=id=>{if(!elements.has(id))elements.set(id,{id,disabled:true,checked:true,textContent:'',click(){downloads.push(this.download)}});return elements.get(id)};
+globalThis.document={getElementById:el,createElement:()=>({click(){downloads.push(this.download)}})};globalThis.window={addEventListener:(type,fn)=>listeners.set(type,fn),dispatchEvent:e=>listeners.get(e.type)?.(e)};globalThis.CustomEvent=class{constructor(type,options={}){this.type=type;this.detail=options.detail}};
+const {paintCoordinateAnchor}=await import('../web/map-coordinate-panel.mjs');
+const fire=(type,detail)=>window.dispatchEvent(new CustomEvent(type,{detail}));
+const d={path:'town.bmmp',archive:'a',originTile:[-12,-16],worldToMapScale:4,groupOrder:'source-order-prepended',layers:[{id:0,path:'a.obg'}],placements:[{layerId:0,tileX:0,tileY:0}],groups:[{kind:'map-id-list',mapIds:[100],callOffset:16},{kind:'coordinate-map-id-list',mapIds:[103],x:5.1,z:19.92,callOffset:24}]};
+const m={records:[{mapId:100,candidates:[]},{mapId:103,candidates:[]}],descriptors:[d],assets:[{path:'a.obg',archive:'a',info:{width:200,height:248}}]};
+eq(el('export-coordinates').disabled,true);fire('dq9-rom-metadata',m);eq(el('export-coordinates').disabled,false);fire('dq9-map-image',{mapId:103,descriptor:'town.bmmp'});ok(el('coordinate-info').textContent.includes('116.399'));ok(el('coordinate-info').textContent.includes('室内の人物位置には変換できません'));eq(el('coordinate-overlay').disabled,false);
+const calls=[],ctx=new Proxy({},{get:(o,k)=>o[k]??((...args)=>calls.push([k,...args])),set:(o,k,v)=>(o[k]=v,true)});
+paintCoordinateAnchor(ctx,{width:200,height:248},103,'town.bmmp');eq(calls.filter(x=>x[0]==='arc').length,1);eq(calls.find(x=>x[0]==='arc').slice(1,3),[116.3994140625,207.6796875]);const count=calls.length;
+paintCoordinateAnchor(ctx,{width:201,height:248},103,'town.bmmp');eq(calls.length,count);el('coordinate-overlay').checked=false;paintCoordinateAnchor(ctx,{width:200,height:248},103,'town.bmmp');eq(calls.length,count);el('coordinate-overlay').checked=true;
+fire('dq9-map-image',{mapId:100,descriptor:'town.bmmp'});eq(el('coordinate-overlay').disabled,true);ok(el('coordinate-info').textContent.includes('物理X/Z'));paintCoordinateAnchor(ctx,{width:200,height:248},100,'town.bmmp');eq(calls.length,count);
+fire('dq9-map-image',null);ok(el('coordinate-info').textContent.includes('map IDを選択'));fire('dq9-rom-release');eq(el('export-coordinates').disabled,true);paintCoordinateAnchor(ctx,{width:200,height:248},103,'town.bmmp');eq(calls.length,count);fire('dq9-rom-metadata',m);eq(el('export-coordinates').disabled,false);
+fire('dq9-rom-metadata',{...m,descriptors:[{...d,groups:[{mapIds:[0]}]}]});eq(el('export-coordinates').disabled,true);ok(el('coordinate-info').textContent.includes('座標対応を作成できません'));fire('dq9-rom-metadata',m);eq(el('export-coordinates').disabled,false);
+for(const file of ['index.html','map-recognize.html']){const html=await fs.readFile(new URL('../web/'+file,import.meta.url),'utf8');for(const id of ['coordinate-info','coordinate-overlay','export-coordinates','export-coordinates-csv'])eq((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1);}
+const app=await fs.readFile(new URL('../web/app.mjs',import.meta.url),'utf8');ok(app.includes('coordinateDisplayOptions(metadata,r)'));ok(app.includes('paintMap();'));ok(app.includes("dq9-coordinate-overlay-change"));
+console.log(JSON.stringify({passed:true,checks,scope:'Actual panel module, fixed/physical rendering guards, toggle, mismatched image, release/reload and both existing-page markup'}));
