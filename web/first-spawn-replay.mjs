@@ -1,3 +1,4 @@
+import {bindF06CreatorOrigin} from './f06-creator.mjs';
 // Browser composition of existing guarded source models. Optional continuation
 // carries only internally created actors under explicit phase/runtime inputs.
 import {prepareMapTransitions,advanceMapTransition} from './map-transition.mjs';
@@ -118,6 +119,7 @@ export function createFirstSpawnReplay({project,rom,kernel,fieldKernel,atKernel,
  }
  context.graph=graph;
  if(continueNewborn){const env=runtime.continuation.environment;check(env.managerMapId===runtime.mapId&&env.selectedHero?.pointer===hero.pointer&&env.selectedHero?.mapId===runtime.mapId&&!Object.hasOwn(env,'identity')&&!Object.hasOwn(env,'typedMonsterLookup')&&!Object.hasOwn(env,'terrain'),'walking環境と選択hero/ROM terrainを混同できません');}
+ bindF06CreatorOrigin(f06Continuation?.creator,context);
  return new FirstSpawnReplay({kernel,fieldKernel,atKernel,trig:preferredNodeTrigFromRom(rom),context,parties,hero,graph,steps,rows,distributions,field,group,seed,timer:runtime.initialTimer,runtimeNodeFlags:copy(runtime.runtimeNodeFlags),continueNewborn,mapTransitions,f06Continuation,environment:continueNewborn?copy(runtime.continuation.environment):null});
 }
 

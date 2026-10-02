@@ -79,7 +79,7 @@
 </section>
 <section class="experiment">
 <details id="first-spawn-section"><summary>条件付き自然生成：軌跡から派生actorの移動まで</summary>
-<p>map7402・初期12枠が登録済み未使用・単一eligible party・外部ATなしの条件に限定します。座標はpre-spawn時点の有効XYZと実向きです。映像マーカーからphase・向き・操作キーを自動推定しません。到達済み移動phaseを含む軌跡では7401→7400のloaderまでseedを継続します。初期pickup状態と3回目の到達phaseがある場合はF06のpickup初期化まで継続し、移動先world・timer・現在座標は未確定のまま停止します。v4軌跡に到達済みpickup更新・F06 clock列がある場合は、初期状態からpickupのATなしとtimerを導出します。追加の明示条件からsource-carried hero poseを計算した場合は「conditional hero」と表示します。これは条件付き計算であり、実測hero入力・現在映像の観測値ではありません。観測/ライブ現在座標は未確定です。条件が不足すればgeometry手前で停止し、creator未解決時のspecies選択は新しいactorの生成を意味しません。ROM配置要求のYも接地後の現在Yではありません。</p>
+<p>map7402・初期12枠が登録済み未使用・単一eligible party・外部ATなしの条件に限定します。座標はpre-spawn時点の有効XYZと実向きです。映像マーカーからphase・向き・操作キーを自動推定しません。到達済み移動phaseを含む軌跡では7401→7400のloaderまでseedを継続します。初期pickup状態と3回目の到達phaseがある場合はF06のpickup初期化まで継続し、移動先world・timer・現在座標は未確定のまま停止します。v4軌跡に到達済みpickup更新・F06 clock列がある場合は、初期状態からpickupのATなしとtimerを導出します。追加の明示条件からsource-carried hero poseを計算した場合は「conditional hero」と表示します。これは条件付き計算であり、実測hero入力・現在映像の観測値ではありません。観測/ライブ現在座標は未確定です。条件が不足すればgeometry手前で停止し、creator未解決時のspecies選択は新しいactorの生成を意味しません。追加のsource creator条件を入力した場合だけ「conditional birth」を別表示し、creator/scheduler return直後・同pass hero/body前で停止します。これは観測/ライブ個体の確定ではありません。ROM配置要求のYも接地後の現在Yではありません。</p>
 <p id="spawn-replay-inputs">初期runtimeと軌跡が未入力です。</p>
 <label>初期runtime JSON（8MiB以下）<input id="spawn-replay-runtime" type="file" accept=".json,application/json" disabled></label>
 <label>pre-spawn軌跡 JSON（1MiB以下）<input id="spawn-replay-trajectory" type="file" accept=".json,application/json" disabled></label>

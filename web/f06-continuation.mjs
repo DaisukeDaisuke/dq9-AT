@@ -1,3 +1,4 @@
+import {prepareF06Creator,projectF06Creator} from './f06-creator.mjs';
 // Source-bound, explicit-clock continuation of the already reached F06 load.
 // Updater writes are disjoint from the existing actor/spawn model. Its bounded
 // zero-AT projection is checked before composition, never assumed from a seed.
@@ -11,8 +12,8 @@ const dense=a=>Array.isArray(a)&&Array.from({length:a.length},(_,i)=>Object.hasO
 const exact=(o,keys)=>o&&typeof o==='object'&&!Array.isArray(o)&&Object.keys(o).length===keys.length&&keys.every(k=>Object.hasOwn(o,k));
 const need=(p,m)=>{if(!p)throw Error(m);};
 export function prepareF06Continuation(project,initial,trajectory,transitions,firstWorldFrame,{rom}={}){
- const withMotion=Object.hasOwn(initial??{},'heroMotion');need(withMotion===Object.hasOwn(trajectory??{},'heroMotion'),'Motion runtime/control packets must be supplied together');
- need(exact(initial,['initialSourceFrame','cursor','accumulatorBits','groupWords','conditions',...(withMotion?['heroMotion']:[])]),'Initial recurring pickup packet required');
+ const withCreator=Object.hasOwn(initial??{},'creator'),withMotion=Object.hasOwn(initial??{},'heroMotion');need(!withCreator||withMotion,'F06 creator requires source-carried motion');need(withMotion===Object.hasOwn(trajectory??{},'heroMotion'),'Motion runtime/control packets must be supplied together');
+ need(exact(initial,['initialSourceFrame','cursor','accumulatorBits','groupWords','conditions',...(withMotion?['heroMotion']:[]),...(withCreator?['creator']:[])]),'Initial recurring pickup packet required');
  need(uint(initial.initialSourceFrame)&&initial.initialSourceFrame<firstWorldFrame,'Initial updater frame must precede the first world phase');
  const names=['ordinaryOfflineUpdates','noOtherPickupWordWriters','motionCannotMutateATInputs','ordinaryF06LoaderComplete','noOtherDestinationAT','completeOrderedUpdaterStream','completeOrderedDestinationTicks','noOtherDestinationFieldWrites','noOtherDestinationPoolWrites'];
  need(exact(initial.conditions,names)&&names.every(k=>initial.conditions[k]===true),'Destination/updater runtime conditions unresolved');
@@ -37,7 +38,8 @@ export function prepareF06Continuation(project,initial,trajectory,transitions,fi
  // really survive this carried updater prefix. No future snapshot is substituted.
  for(const [group,word] of Object.entries(transitions.context.pickup.stateWords))need(atPickup.words[group]===word,'Derived pickup word differs before materialization');
  const motion=withMotion?prepareF06HeroMotion({project,rom,packet:initial.heroMotion,stream:trajectory.heroMotion,transitions,ticks,initialSourceFrame:initial.initialSourceFrame}):null;
- return {motion,ticks,updates,initial:{cursor:initial.cursor,accumulatorBits:initial.accumulatorBits,words:{...initial.groupWords}},atPickup:structuredClone(atPickup),finalState:state,scope:'Explicit reached clocks; recurring pickup AT/countdown only',worldResolved:false};
+ const creator=withCreator?prepareF06Creator(project,rom,initial.creator,initial.initialSourceFrame):null;
+ return {creator,motion,ticks,updates,initial:{cursor:initial.cursor,accumulatorBits:initial.accumulatorBits,words:{...initial.groupWords}},atPickup:structuredClone(atPickup),finalState:state,scope:'Explicit reached clocks; recurring pickup AT/countdown only',worldResolved:false};
 }
 export function advanceF06Continuation(session){
  if(session.stopped)return false;
@@ -73,6 +75,14 @@ export function advanceF06Continuation(session){
      }
     }
     result=session.scheduler.step(original,input,motion.distributions);row.tableId=result.tableId??null;row.monsterId=result.monsterId??null;row.creationResolved=false;
+    if(!result.resolved&&result.reason==='creation-result-unknown'&&plan.creator){
+     const creation=projectF06Creator(session,{mapId:20006,species:result.monsterId,tableId:result.tableId,nodeId:row.selectedNodeId,candidateXYZ:row.candidateXYZ,routeFlags:0});
+     if(!creation.resolved)return finish(false,creation.reason);need(creation.atConsumed===0,'Unexpected creator AT');const prefix=result;
+     result=session.scheduler.step(original,{...input,creationResult:creation.result},motion.distributions);need(result.resolved&&result.consumed===prefix.consumed&&JSON.stringify(result.events)===JSON.stringify(prefix.events),'Creator refinement changed selection draws');
+     row.creationResolved=true;row.worldStepResolved=false;row.creatorReturn=creation.result;row.conditionalCreator=true;
+     if(creation.created){session.destinationBirth={...structuredClone(creation.actor),kind:'conditional-source-created',sourceFrame:t.sourceFrame};session.destinationCreation=creation;row.birth=structuredClone(session.destinationBirth);}
+     finish(true,'F06 creator/scheduler returnまでを条件付き導出。同pass hero/body前で停止');session.status=creation.created?'created-boundary':'rejected-boundary';row.status=session.status;session.stopped=true;return false;
+    }
     if(!result.resolved)return finish(false,result.reason==='creation-result-unknown'?'条件付きposeからtable/weighted ATまで導出。F06 creator資源・template bindingが未確定のため生成前で停止':result.reason);
    }
    if(result.resolved){

@@ -123,3 +123,11 @@ CPU ROI候補と任意DINO patch補完、opt-inの動画observerは実装済み�
 「枠と時刻を保持して一時停止」を追加した。動画が観測時刻より進んでいても、最新の観測画素・候補枠・時刻の組を1枚保持し、動画と推論を止める。遅い推論結果は保持内容を変更しない。通常の動画pauseも同じ保持経路を使い、再開・seek・ROM/source/config変更では解除する。通常Stopは従来通り消去する。
 
 217 page/lifecycle、34 observer、実buffer転送の独立検査と統合aggregateが通過。デプロイ後の実canvas確認は別途行う。認識ノイズの除去や敵種の確定を追加する変更ではない。
+
+## 09:46 JST追記: 条件付きcreator returnへの接続
+
+元の1200-frame状態・ROM・記録された制御から、149 phases、134 calls、seed0xa46fab4f、scheduler timer0までを接続した。species88/slot112/serial2、XYZ[-30665,9434,-91287]、scale226など31項目を非停止観測のreturn値と照合した。独立レビュー、root統合build、ROMを使った149 checksが通過。
+
+allocation/ownership条件が不明なら従来の134 calls/timer1019で止まり、optional packetなしも従来と同一。生成物は条件付きで、live inventoryや同pass後続hero/bodyには接続していない。Yaw0は元snapshotに無かったDTCMを別の一致起点replayで補った入力で、継続中の不変性は明示仮定のまま。
+
+private再現helperに一度、後時点のpool pointerを入力へコピーする不備があった。元heapから導出するよう修正し、後時点値は比較専用にしたうえでnative255チェックを再実行した。公開10ファイルのhashはレビュー中に変わっていない。デプロイ後のブラウザ確認は別途行う。

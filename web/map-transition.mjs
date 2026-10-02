@@ -1,3 +1,4 @@
+import {canCarryF06PoolStorage} from './f06-creator.mjs';
 // Bounded ordinary shrine transitions, using ROM resources and explicit reached phases.
 import {decodePickupRows,projectPickupMaterialization} from './pickup-materialization.mjs';
 import {parseCalls,decodeMapRecords} from './vendor/call-stream.mjs';
@@ -140,8 +141,9 @@ export function advanceMapTransition(session){
   }else if(e.phase==='pool-initialization'){
    check(session.pendingTransition?.phase==='placed-initializing','pool before placement');check(!session.context.fields.some(f=>f.mapId===targetMapId),'cached destination group is outside this reached fresh-pool branch');const f=session.context.fields.find(f=>(f.flags&4)===0);check(f&&f.index===0,'measured first free field0 required');
    Object.assign(f,{mapId:targetMapId,flags:(f.flags&3)|4,creationCounter:0,active:0});session.field=f;
-   for(let n=0;n<12;n++){const slot=session.context.inventory.slots.find(s=>s.slot===112+n);Object.assign(slot,{registryKnown:true,pointer:e.allocationPointer+n*0x198,headerFlags:35,monsterIdRaw:65535,actorFlags:5,tableId:0,nativeSerial:0,nativeSlot:slot.slot});delete slot.e0Byte;delete slot.xyz;delete slot.generationId;delete slot.nodeIndex;delete slot.mapId;}
-   session.pendingTransition.phase='pool-initialized';row.reason='到達済み成功allocationから12個のreset/free slotを再登録。残留byteは未知';
+   const carryPool=canCarryF06PoolStorage(session.f06Continuation?.creator,session.context.controllerPointer,e.allocationPointer);if(session.f06Continuation?.creator)row.poolE0Carry=carryPool?'conditional-same-storage-non-fill':'unknown';
+   for(let n=0;n<12;n++){const slot=session.context.inventory.slots.find(s=>s.slot===112+n);Object.assign(slot,{registryKnown:true,pointer:e.allocationPointer+n*0x198,headerFlags:35,monsterIdRaw:65535,actorFlags:5,tableId:0,nativeSerial:0,nativeSlot:slot.slot});if(!carryPool)delete slot.e0Byte;delete slot.xyz;delete slot.generationId;delete slot.nodeIndex;delete slot.mapId;}
+   session.pendingTransition.phase='pool-initialized';row.reason=carryPool?'同一storage/non-fill条件でe0を保持し、12個のreset/free slotを再登録':'到達済み成功allocationから12個のreset/free slotを再登録。残留byteは未知';
   }else if(e.phase==='pickup-materialization'){
    check(targetMapId===20006&&session.pendingTransition?.phase==='pool-initialized','pickup loop before destination pool');
    // New F06 templates/resources already load in this interval. Their live
