@@ -1,0 +1,3035 @@
+{
+  "schema": "dq9-synthetic-at-search-benchmark-v1",
+  "createdAt": "2026-10-02T01:20:48.426Z",
+  "scope": "bounded synthetic Node/WASM only; no native/video identification, no full-domain extrapolation",
+  "environment": {
+    "node": "v24.19.0",
+    "v8": "13.6.233.17-node.51",
+    "platform": "linux",
+    "release": "6.18.44",
+    "arch": "x64",
+    "cpu": "AMD EPYC 9V74 80-Core Processor",
+    "logicalCpuCount": 9,
+    "loadAverage": [
+      0.04,
+      0.18,
+      0.3
+    ],
+    "concurrency": "serial benchmark trials; external shared-machine load uncontrolled"
+  },
+  "config": {
+    "count": 4194304,
+    "repeats": 3,
+    "chunk": 65536,
+    "materializationCap": 7,
+    "seed": 305419896,
+    "low31First": 301989888,
+    "indexFirst": "4294967280"
+  },
+  "kernelHashes": {
+    "low31": "a0279c9bd1c810af75640d3c7bba8ab5a65993c55c3dad53df9dc52cc23edb99",
+    "index": "fe39118a209b516d55456ded498a2dfc627cf473d248c29dd176e5316a9ca955"
+  },
+  "sourceHashes": {
+    "scripts/benchmark-at-search.mjs": "ab99ebfce11bda464fd2341ee6398d453b0cb96e0cde3e76c4b84076b84f0126",
+    "web/at-identify-engine.mjs": "7fdfd0add5f397c7af20dc981fee3774d6b54985a18cf6684f25bfaaec421ad7",
+    "web/at-identify-index-engine.mjs": "6f4bf4b68f98e8cdffcac587a53f78d68febaa5bfc8cd5e6a5cedc5b9307fca1",
+    "wasm/at_identify.c": "f0d1c330d7a927b80789adf81f79a88152b6d886685844218ad647f38056f1d0",
+    "wasm/at_identify_stream.c": "4431f8f64df30111980d2f3f32497dbf8c9ec1f03882e7b981ab1ab72ac68f41"
+  },
+  "validation": [
+    {
+      "engine": "low31",
+      "workload": "dense2-fixed",
+      "kind": "independent BigInt full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "257",
+      "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+      "searched": [
+        {
+          "first": 301989888,
+          "last": 301990144
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": null,
+      "materializationTruncated": null,
+      "exportComplete": null,
+      "warmupInspections": null,
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "low31",
+      "workload": "sparse2-fixed",
+      "kind": "independent BigInt full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "0",
+      "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+      "searched": [
+        {
+          "first": 301989888,
+          "last": 301990144
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 0,
+      "materialized": null,
+      "materializationTruncated": null,
+      "exportComplete": null,
+      "warmupInspections": null,
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "low31",
+      "workload": "medium8-wide",
+      "kind": "independent BigInt full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "0",
+      "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+      "searched": [
+        {
+          "first": 301989888,
+          "last": 301990144
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 0,
+      "materialized": null,
+      "materializationTruncated": null,
+      "exportComplete": null,
+      "warmupInspections": null,
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "low31",
+      "workload": "sparse8-mixed",
+      "kind": "independent BigInt full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "0",
+      "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+      "searched": [
+        {
+          "first": 301989888,
+          "last": 301990144
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 0,
+      "materialized": null,
+      "materializationTruncated": null,
+      "exportComplete": null,
+      "warmupInspections": null,
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "low31",
+      "workload": "dense32-fixed",
+      "kind": "independent BigInt full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "257",
+      "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+      "searched": [
+        {
+          "first": 301989888,
+          "last": 301990144
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": null,
+      "materializationTruncated": null,
+      "exportComplete": null,
+      "warmupInspections": null,
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "low31",
+      "workload": "zero8-wide",
+      "kind": "independent BigInt full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "0",
+      "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+      "searched": [
+        {
+          "first": 301989888,
+          "last": 301990144
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 0,
+      "materialized": null,
+      "materializationTruncated": null,
+      "exportComplete": null,
+      "warmupInspections": null,
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "low31",
+      "workload": "medium8-fixed",
+      "kind": "independent BigInt full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "0",
+      "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+      "searched": [
+        {
+          "first": 301989888,
+          "last": 301990144
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 0,
+      "materialized": null,
+      "materializationTruncated": null,
+      "exportComplete": null,
+      "warmupInspections": null,
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "index",
+      "workload": "dense2-fixed",
+      "kind": "independent BigInt full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "256",
+      "countUnit": "indices under supplied synthetic origin; one state each",
+      "searched": [
+        {
+          "first": "1",
+          "last": "257"
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": 256,
+      "materializationTruncated": false,
+      "exportComplete": true,
+      "warmupInspections": "0",
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "index",
+      "workload": "sparse2-fixed",
+      "kind": "independent BigInt full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "22",
+      "countUnit": "indices under supplied synthetic origin; one state each",
+      "searched": [
+        {
+          "first": "1",
+          "last": "257"
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": 22,
+      "materializationTruncated": false,
+      "exportComplete": true,
+      "warmupInspections": "0",
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "index",
+      "workload": "medium8-wide",
+      "kind": "independent BigInt full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "194",
+      "countUnit": "indices under supplied synthetic origin; one state each",
+      "searched": [
+        {
+          "first": "1",
+          "last": "257"
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": 194,
+      "materializationTruncated": false,
+      "exportComplete": true,
+      "warmupInspections": "0",
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "index",
+      "workload": "sparse8-mixed",
+      "kind": "independent BigInt full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "19",
+      "countUnit": "indices under supplied synthetic origin; one state each",
+      "searched": [
+        {
+          "first": "1",
+          "last": "257"
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": 19,
+      "materializationTruncated": false,
+      "exportComplete": true,
+      "warmupInspections": "0",
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "index",
+      "workload": "dense32-fixed",
+      "kind": "independent BigInt full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "226",
+      "countUnit": "indices under supplied synthetic origin; one state each",
+      "searched": [
+        {
+          "first": "1",
+          "last": "257"
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": 226,
+      "materializationTruncated": false,
+      "exportComplete": true,
+      "warmupInspections": "0",
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "index",
+      "workload": "zero8-wide",
+      "kind": "independent BigInt full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "0",
+      "countUnit": "indices under supplied synthetic origin; one state each",
+      "searched": [
+        {
+          "first": "1",
+          "last": "257"
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 0,
+      "materialized": 0,
+      "materializationTruncated": false,
+      "exportComplete": true,
+      "warmupInspections": "0",
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "index",
+      "workload": "medium8-fixed",
+      "kind": "independent BigInt full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "12",
+      "countUnit": "indices under supplied synthetic origin; one state each",
+      "searched": [
+        {
+          "first": "1",
+          "last": "257"
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 12,
+      "materialized": 12,
+      "materializationTruncated": false,
+      "exportComplete": true,
+      "warmupInspections": "0",
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "low31",
+      "workload": "sparse2-fixed",
+      "kind": "planted nonzero sparse-chain full candidate-set oracle",
+      "plantedTarget": "302055536",
+      "plantedState32": 302055536,
+      "maskSHA256": [
+        "5b7c1857308ca94ce38dde57604f0b64e40e25978f57dd28932b8a6d502d1b30",
+        "df80a189fd86472f2f9d5a9cc237c5e2e16e90a02b3cd8af96f32e0aa81e770b"
+      ],
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "62",
+      "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+      "searched": [
+        {
+          "first": 302055408,
+          "last": 302055664
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": null,
+      "materializationTruncated": null,
+      "exportComplete": null,
+      "warmupInspections": null,
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "low31",
+      "workload": "sparse8-mixed",
+      "kind": "planted nonzero sparse-chain full candidate-set oracle",
+      "plantedTarget": "302055536",
+      "plantedState32": 302055536,
+      "maskSHA256": [
+        "5b7c1857308ca94ce38dde57604f0b64e40e25978f57dd28932b8a6d502d1b30",
+        "5702718522fa4a45e21c83bb3e6cd0d704c5705da552ecaeeaf1ebeafd95be12",
+        "ee0eb4c75d5f53751cd8fd62849846ed5ebf84277c557dcb6ee8a54bb8eefb96",
+        "d10b0b49f69bb911a9a228e480e83ef164cf105b76c779d24493d3214ca228cc",
+        "8edd9651a30f8bab73727299d304d630eb54205a960c364cdf10a8deb5bbbaf3",
+        "c6ed4020b70c3f13187b520b998d2be8772b1f752090bc5804639d04f65af31c",
+        "c3fcde8d12c600ff96e9325ce9da31696e6c6aab950d01b570a886e14d843fec",
+        "8fa6f05bda103eed0d102576c88ea6d86927eda3289a6159f5847bc449f07ba1"
+      ],
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "66",
+      "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+      "searched": [
+        {
+          "first": 302055408,
+          "last": 302055664
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": null,
+      "materializationTruncated": null,
+      "exportComplete": null,
+      "warmupInspections": null,
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "index",
+      "workload": "sparse2-fixed",
+      "kind": "planted nonzero sparse-chain full candidate-set oracle",
+      "plantedTarget": "1128",
+      "plantedState32": 1972267952,
+      "maskSHA256": [
+        "9c67a71c3aa858d5f036c9523056d6f4a85ee9e7f2ca57a8966b6fc769982e72",
+        "df80a189fd86472f2f9d5a9cc237c5e2e16e90a02b3cd8af96f32e0aa81e770b"
+      ],
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "22",
+      "countUnit": "indices under supplied synthetic origin; one state each",
+      "searched": [
+        {
+          "first": "1000",
+          "last": "1256"
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": 22,
+      "materializationTruncated": false,
+      "exportComplete": true,
+      "warmupInspections": "1",
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "index",
+      "workload": "sparse8-mixed",
+      "kind": "planted nonzero sparse-chain full candidate-set oracle",
+      "plantedTarget": "1128",
+      "plantedState32": 1972267952,
+      "maskSHA256": [
+        "5b7c1857308ca94ce38dde57604f0b64e40e25978f57dd28932b8a6d502d1b30",
+        "3305bc9e8f96f2167574b66c3b24774b8e2a3993ed8f984a51ef43d30b0de243",
+        "db2735328ec06b61741905ca93d6d6ab4a3204a8818222f4340d7e78fb447815",
+        "8c93a79a0624fd4a6b900b59edb7988b2f67634cb26eb20577c4181a8f135fc5",
+        "56a6425e4e1dd127001b2e9de115214584168a3ae680dae43b5e77e9b162f112",
+        "4a1ad11e1e0cb0cf935583fed662627b6fa2b6a3c617af575d7352e14fb048c5",
+        "40b3f07d237c3546b74a37b2bc5be07eb2defeb24480a0f2ce0beba858fb8c59",
+        "da9277af3414c52c6f98797a39ba4a8e3c8918aa51780e9cd699fb22685f7398"
+      ],
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "16",
+      "countUnit": "indices under supplied synthetic origin; one state each",
+      "searched": [
+        {
+          "first": "1000",
+          "last": "1256"
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": 16,
+      "materializationTruncated": false,
+      "exportComplete": true,
+      "warmupInspections": "39",
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "low31",
+      "workload": "sparse2-fixed",
+      "kind": "numeric boundary full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "76",
+      "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+      "searched": [
+        {
+          "first": 0,
+          "last": 256
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": null,
+      "materializationTruncated": null,
+      "exportComplete": null,
+      "warmupInspections": null,
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "low31",
+      "workload": "medium8-wide",
+      "kind": "numeric boundary full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "257",
+      "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+      "searched": [
+        {
+          "first": 0,
+          "last": 256
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": null,
+      "materializationTruncated": null,
+      "exportComplete": null,
+      "warmupInspections": null,
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "low31",
+      "workload": "sparse8-mixed",
+      "kind": "numeric boundary full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "0",
+      "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+      "searched": [
+        {
+          "first": 0,
+          "last": 256
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 0,
+      "materialized": null,
+      "materializationTruncated": null,
+      "exportComplete": null,
+      "warmupInspections": null,
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "low31",
+      "workload": "sparse2-fixed",
+      "kind": "numeric boundary full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "62",
+      "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+      "searched": [
+        {
+          "first": 302055408,
+          "last": 302055664
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": null,
+      "materializationTruncated": null,
+      "exportComplete": null,
+      "warmupInspections": null,
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "low31",
+      "workload": "medium8-wide",
+      "kind": "numeric boundary full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "241",
+      "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+      "searched": [
+        {
+          "first": 302055408,
+          "last": 302055664
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": null,
+      "materializationTruncated": null,
+      "exportComplete": null,
+      "warmupInspections": null,
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "low31",
+      "workload": "sparse8-mixed",
+      "kind": "numeric boundary full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "0",
+      "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+      "searched": [
+        {
+          "first": 302055408,
+          "last": 302055664
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 0,
+      "materialized": null,
+      "materializationTruncated": null,
+      "exportComplete": null,
+      "warmupInspections": null,
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "low31",
+      "workload": "sparse2-fixed",
+      "kind": "numeric boundary full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "61",
+      "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+      "searched": [
+        {
+          "first": 2147483391,
+          "last": 2147483647
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": null,
+      "materializationTruncated": null,
+      "exportComplete": null,
+      "warmupInspections": null,
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "low31",
+      "workload": "medium8-wide",
+      "kind": "numeric boundary full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "257",
+      "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+      "searched": [
+        {
+          "first": 2147483391,
+          "last": 2147483647
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": null,
+      "materializationTruncated": null,
+      "exportComplete": null,
+      "warmupInspections": null,
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "low31",
+      "workload": "sparse8-mixed",
+      "kind": "numeric boundary full candidate-set oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "72",
+      "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+      "searched": [
+        {
+          "first": 2147483391,
+          "last": 2147483647
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": null,
+      "materializationTruncated": null,
+      "exportComplete": null,
+      "warmupInspections": null,
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "index",
+      "kind": "period/uint64 boundary oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "199",
+      "countUnit": "indices under supplied synthetic origin; one state each",
+      "searched": [
+        {
+          "first": "2147483630",
+          "last": "2147483886"
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": 199,
+      "materializationTruncated": false,
+      "exportComplete": true,
+      "warmupInspections": "112",
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "index",
+      "kind": "period/uint64 boundary oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "200",
+      "countUnit": "indices under supplied synthetic origin; one state each",
+      "searched": [
+        {
+          "first": "4294967280",
+          "last": "4294967536"
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": 200,
+      "materializationTruncated": false,
+      "exportComplete": true,
+      "warmupInspections": "112",
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "index",
+      "kind": "period/uint64 boundary oracle",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "207",
+      "countUnit": "indices under supplied synthetic origin; one state each",
+      "searched": [
+        {
+          "first": "18446744073709551358",
+          "last": "18446744073709551614"
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": 207,
+      "materializationTruncated": false,
+      "exportComplete": true,
+      "warmupInspections": "112",
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "low31",
+      "kind": "partial chunk and exact budget tail",
+      "status": "budget-stopped",
+      "inspected": "130",
+      "candidates": "130",
+      "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+      "searched": [
+        {
+          "first": 301989888,
+          "last": 301990017
+        }
+      ],
+      "unsearched": [
+        {
+          "first": 301990018,
+          "last": 301990144
+        }
+      ],
+      "searchCompleteWithinDomain": false,
+      "previewCount": 16,
+      "materialized": null,
+      "materializationTruncated": null,
+      "exportComplete": null,
+      "warmupInspections": null,
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "index",
+      "kind": "partial chunk and exact budget tail",
+      "status": "budget-stopped",
+      "inspected": "130",
+      "candidates": "130",
+      "countUnit": "indices under supplied synthetic origin; one state each",
+      "searched": [
+        {
+          "first": "4294967280",
+          "last": "4294967409"
+        }
+      ],
+      "unsearched": [
+        {
+          "first": "4294967410",
+          "last": "4294967536"
+        }
+      ],
+      "searchCompleteWithinDomain": false,
+      "previewCount": 16,
+      "materialized": 7,
+      "materializationTruncated": true,
+      "exportComplete": false,
+      "warmupInspections": "1",
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "index",
+      "kind": "count versus retained cap 0",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "257",
+      "countUnit": "indices under supplied synthetic origin; one state each",
+      "searched": [
+        {
+          "first": "4294967280",
+          "last": "4294967536"
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": 0,
+      "materializationTruncated": true,
+      "exportComplete": false,
+      "warmupInspections": "1",
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "index",
+      "kind": "count versus retained cap 7",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "257",
+      "countUnit": "indices under supplied synthetic origin; one state each",
+      "searched": [
+        {
+          "first": "4294967280",
+          "last": "4294967536"
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": 7,
+      "materializationTruncated": true,
+      "exportComplete": false,
+      "warmupInspections": "1",
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "index",
+      "kind": "count versus retained cap 1000",
+      "status": "complete",
+      "inspected": "257",
+      "candidates": "257",
+      "countUnit": "indices under supplied synthetic origin; one state each",
+      "searched": [
+        {
+          "first": "4294967280",
+          "last": "4294967536"
+        }
+      ],
+      "unsearched": [],
+      "searchCompleteWithinDomain": true,
+      "previewCount": 16,
+      "materialized": 257,
+      "materializationTruncated": false,
+      "exportComplete": true,
+      "warmupInspections": "1",
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "low31",
+      "kind": "actual Worker cancel at nonzero acknowledged chunk; internal unacknowledged work excluded",
+      "elapsedMs": 71.43792100000007,
+      "cancelResolutionMs": 0.49989400000004025,
+      "status": "cancelled",
+      "inspected": "65536",
+      "candidates": "65536",
+      "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+      "searched": [
+        {
+          "first": 0,
+          "last": 65535
+        }
+      ],
+      "unsearched": [
+        {
+          "first": 65536,
+          "last": 2147483647
+        }
+      ],
+      "searchCompleteWithinDomain": false,
+      "previewCount": 16,
+      "materialized": null,
+      "materializationTruncated": null,
+      "exportComplete": null,
+      "warmupInspections": null,
+      "currentVideoStateRecovered": false
+    },
+    {
+      "engine": "index",
+      "kind": "actual Worker cancel at nonzero acknowledged chunk; internal unacknowledged work excluded",
+      "elapsedMs": 160.658191,
+      "cancelResolutionMs": 0.3707319999999754,
+      "status": "cancelled",
+      "inspected": "6029312",
+      "candidates": "4385542",
+      "countUnit": "indices under supplied synthetic origin; one state each",
+      "searched": [
+        {
+          "first": "1",
+          "last": "6029312"
+        }
+      ],
+      "unsearched": [
+        {
+          "first": "6029313",
+          "last": "2147483648"
+        }
+      ],
+      "searchCompleteWithinDomain": false,
+      "previewCount": 16,
+      "materialized": 7,
+      "materializationTruncated": true,
+      "exportComplete": false,
+      "warmupInspections": "0",
+      "currentVideoStateRecovered": false
+    }
+  ],
+  "workloads": [
+    {
+      "engine": "low31",
+      "recipe": {
+        "id": "dense2-fixed",
+        "n": 2,
+        "kind": "all",
+        "gaps": [
+          1,
+          1
+        ]
+      },
+      "requestSHA256": "24e3bb0c1efea5db3ae5238de1793f4569ed795683fe0f4c557d3e3ac8c142d5",
+      "domain": {
+        "kind": "intervals",
+        "intervals": [
+          {
+            "first": 301989888,
+            "last": 306184191
+          }
+        ],
+        "provenance": "synthetic bounded benchmark prior"
+      },
+      "budget": {
+        "maxInspectedStates": 4194304,
+        "maxWallTimeMs": 120000,
+        "chunkStates": 65536
+      },
+      "maskSHA256": [
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0"
+      ],
+      "timingScope": "adapter includes cloning/hash/instantiate/packing/chunk yields/materialization; raw kernel excludes setup, Worker transfer and serialization; fresh instances with warmed engine, not process-cold",
+      "trials": [
+        {
+          "iteration": 0,
+          "adapterMs": 105.03708099999994,
+          "adapterInspectionsPerSecond": 39931650.423529975,
+          "serializationMs": 0.1550409999999829,
+          "serializedBytes": 2047,
+          "instantiateMs": 0.7271630000000187,
+          "setupMs": 1.5682150000000092,
+          "kernelMs": 33.29237699999999,
+          "kernelInspectionsPerSecond": 125983915.17673855,
+          "found": "4194304",
+          "wasmLinearMemoryBytes": 262144,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "4194304",
+          "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+          "searched": [
+            {
+              "first": 301989888,
+              "last": 306184191
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": null,
+          "materializationTruncated": null,
+          "exportComplete": null,
+          "warmupInspections": null,
+          "currentVideoStateRecovered": false,
+          "rssAfter": 100761600
+        },
+        {
+          "iteration": 1,
+          "adapterMs": 104.07542899999999,
+          "adapterInspectionsPerSecond": 40300616.96887169,
+          "serializationMs": 0.04881300000010924,
+          "serializedBytes": 2047,
+          "instantiateMs": 0.2734769999999571,
+          "setupMs": 0.21996699999999691,
+          "kernelMs": 30.94397499999991,
+          "kernelInspectionsPerSecond": 135545093.99648923,
+          "found": "4194304",
+          "wasmLinearMemoryBytes": 262144,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "4194304",
+          "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+          "searched": [
+            {
+              "first": 301989888,
+              "last": 306184191
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": null,
+          "materializationTruncated": null,
+          "exportComplete": null,
+          "warmupInspections": null,
+          "currentVideoStateRecovered": false,
+          "rssAfter": 101154816
+        },
+        {
+          "iteration": 2,
+          "adapterMs": 103.59623099999999,
+          "adapterInspectionsPerSecond": 40487032.7763179,
+          "serializationMs": 0.05508200000008401,
+          "serializedBytes": 2047,
+          "instantiateMs": 0.33337699999992765,
+          "setupMs": 0.17637300000001233,
+          "kernelMs": 35.446380999999974,
+          "kernelInspectionsPerSecond": 118328130.5925139,
+          "found": "4194304",
+          "wasmLinearMemoryBytes": 262144,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "4194304",
+          "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+          "searched": [
+            {
+              "first": 301989888,
+              "last": 306184191
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": null,
+          "materializationTruncated": null,
+          "exportComplete": null,
+          "warmupInspections": null,
+          "currentVideoStateRecovered": false,
+          "rssAfter": 101548032
+        }
+      ],
+      "summary": {
+        "adapterMsMedian": 104.07542899999999,
+        "adapterMsRange": [
+          103.59623099999999,
+          105.03708099999994
+        ],
+        "adapterThroughputMedian": 40300616.96887169,
+        "kernelThroughputMedian": 125983915.17673855
+      }
+    },
+    {
+      "engine": "low31",
+      "recipe": {
+        "id": "sparse2-fixed",
+        "n": 2,
+        "kind": "sparse",
+        "gaps": [
+          1,
+          1
+        ]
+      },
+      "requestSHA256": "d011d61c6c0e6676c954b129819c1eca7c73e87986b99f6962ed02e215c249c3",
+      "domain": {
+        "kind": "intervals",
+        "intervals": [
+          {
+            "first": 301989888,
+            "last": 306184191
+          }
+        ],
+        "provenance": "synthetic bounded benchmark prior"
+      },
+      "budget": {
+        "maxInspectedStates": 4194304,
+        "maxWallTimeMs": 120000,
+        "chunkStates": 65536
+      },
+      "maskSHA256": [
+        "5b7c1857308ca94ce38dde57604f0b64e40e25978f57dd28932b8a6d502d1b30",
+        "df80a189fd86472f2f9d5a9cc237c5e2e16e90a02b3cd8af96f32e0aa81e770b"
+      ],
+      "timingScope": "adapter includes cloning/hash/instantiate/packing/chunk yields/materialization; raw kernel excludes setup, Worker transfer and serialization; fresh instances with warmed engine, not process-cold",
+      "trials": [
+        {
+          "iteration": 0,
+          "adapterMs": 85.62407499999995,
+          "adapterInspectionsPerSecond": 48985101.44489155,
+          "serializationMs": 0.04151200000001154,
+          "serializedBytes": 2048,
+          "instantiateMs": 0.3456949999999779,
+          "setupMs": 0.11528200000020661,
+          "kernelMs": 11.62573099999986,
+          "kernelInspectionsPerSecond": 360777657.76621276,
+          "found": "303816",
+          "wasmLinearMemoryBytes": 262144,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "303816",
+          "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+          "searched": [
+            {
+              "first": 301989888,
+              "last": 306184191
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": null,
+          "materializationTruncated": null,
+          "exportComplete": null,
+          "warmupInspections": null,
+          "currentVideoStateRecovered": false,
+          "rssAfter": 103043072
+        },
+        {
+          "iteration": 1,
+          "adapterMs": 83.74902799999995,
+          "adapterInspectionsPerSecond": 50081823.03918802,
+          "serializationMs": 0.03364000000010492,
+          "serializedBytes": 2048,
+          "instantiateMs": 0.26025700000013785,
+          "setupMs": 0.11532199999987824,
+          "kernelMs": 11.589355999999952,
+          "kernelInspectionsPerSecond": 361910014.6720851,
+          "found": "303816",
+          "wasmLinearMemoryBytes": 262144,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "303816",
+          "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+          "searched": [
+            {
+              "first": 301989888,
+              "last": 306184191
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": null,
+          "materializationTruncated": null,
+          "exportComplete": null,
+          "warmupInspections": null,
+          "currentVideoStateRecovered": false,
+          "rssAfter": 103436288
+        },
+        {
+          "iteration": 2,
+          "adapterMs": 85.42695600000002,
+          "adapterInspectionsPerSecond": 49098132.44428374,
+          "serializationMs": 0.03812700000003133,
+          "serializedBytes": 2048,
+          "instantiateMs": 0.3265359999998054,
+          "setupMs": 0.11686499999996158,
+          "kernelMs": 11.495406000000003,
+          "kernelInspectionsPerSecond": 364867843.7281814,
+          "found": "303816",
+          "wasmLinearMemoryBytes": 262144,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "303816",
+          "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+          "searched": [
+            {
+              "first": 301989888,
+              "last": 306184191
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": null,
+          "materializationTruncated": null,
+          "exportComplete": null,
+          "warmupInspections": null,
+          "currentVideoStateRecovered": false,
+          "rssAfter": 103538688
+        }
+      ],
+      "summary": {
+        "adapterMsMedian": 85.42695600000002,
+        "adapterMsRange": [
+          83.74902799999995,
+          85.62407499999995
+        ],
+        "adapterThroughputMedian": 49098132.44428374,
+        "kernelThroughputMedian": 361910014.6720851
+      }
+    },
+    {
+      "engine": "low31",
+      "recipe": {
+        "id": "medium8-wide",
+        "n": 8,
+        "kind": "medium",
+        "gaps": [
+          1,
+          16
+        ]
+      },
+      "requestSHA256": "1e3b1c280aab9914f039fc6b73c39d74b2b94b24fc554d0c7c879bb59ef643ab",
+      "domain": {
+        "kind": "intervals",
+        "intervals": [
+          {
+            "first": 301989888,
+            "last": 306184191
+          }
+        ],
+        "provenance": "synthetic bounded benchmark prior"
+      },
+      "budget": {
+        "maxInspectedStates": 4194304,
+        "maxWallTimeMs": 120000,
+        "chunkStates": 65536
+      },
+      "maskSHA256": [
+        "2cb9bf6a20f1734eaeaed2b3e68f272d111f994f3b8e443cdd415ecef2217a8d",
+        "a2bd907bc668648e16a499b47be1eec01a6fdec435e374990a88571b2318e379",
+        "331f716b8040be6ebdaf32b61ddb465c518d19a57537ed72ef55693835c0c794",
+        "3ef37b1f4e2bac11efbf14bf60ccaa94a93c763ea573ba20e96f7dd3b0f9d859",
+        "c23cc7c10016a81950e7bbed842af953ed4ac1b88ac2ec91c5782618104a521d",
+        "b66eb879c15bd0e016ee2311fbcd1cab8bd4d78c46dd59a6ec41cd4eab362043",
+        "846e682a0666b77bdf7aad86335011983d661c1bbcecee37a402ee2452ed307b",
+        "0e4ee459583b9dde5807afe125a40a74b8fe84432185ebe0add984cea8b13081"
+      ],
+      "timingScope": "adapter includes cloning/hash/instantiate/packing/chunk yields/materialization; raw kernel excludes setup, Worker transfer and serialization; fresh instances with warmed engine, not process-cold",
+      "trials": [
+        {
+          "iteration": 0,
+          "adapterMs": 320.40919099999996,
+          "adapterInspectionsPerSecond": 13090460.941240603,
+          "serializationMs": 0.08921300000019983,
+          "serializedBytes": 2497,
+          "instantiateMs": 0.3234909999998763,
+          "setupMs": 1.8511160000000473,
+          "kernelMs": 249.0668619999999,
+          "kernelInspectionsPerSecond": 16840072.446088802,
+          "found": "3014656",
+          "wasmLinearMemoryBytes": 262144,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "3014656",
+          "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+          "searched": [
+            {
+              "first": 301989888,
+              "last": 306184191
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": null,
+          "materializationTruncated": null,
+          "exportComplete": null,
+          "warmupInspections": null,
+          "currentVideoStateRecovered": false,
+          "rssAfter": 100737024
+        },
+        {
+          "iteration": 1,
+          "adapterMs": 328.26129200000014,
+          "adapterInspectionsPerSecond": 12777333.490785133,
+          "serializationMs": 0.061952000000019325,
+          "serializedBytes": 2497,
+          "instantiateMs": 0.35822300000018004,
+          "setupMs": 0.44219799999973475,
+          "kernelMs": 243.31406500000003,
+          "kernelInspectionsPerSecond": 17238230.76154681,
+          "found": "3014656",
+          "wasmLinearMemoryBytes": 262144,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "3014656",
+          "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+          "searched": [
+            {
+              "first": 301989888,
+              "last": 306184191
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": null,
+          "materializationTruncated": null,
+          "exportComplete": null,
+          "warmupInspections": null,
+          "currentVideoStateRecovered": false,
+          "rssAfter": 100999168
+        },
+        {
+          "iteration": 2,
+          "adapterMs": 316.1805439999998,
+          "adapterInspectionsPerSecond": 13265534.769906659,
+          "serializationMs": 0.06716000000005806,
+          "serializedBytes": 2497,
+          "instantiateMs": 0.302361000000019,
+          "setupMs": 0.4492579999996451,
+          "kernelMs": 245.66116999999986,
+          "kernelInspectionsPerSecond": 17073532.62218853,
+          "found": "3014656",
+          "wasmLinearMemoryBytes": 262144,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "3014656",
+          "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+          "searched": [
+            {
+              "first": 301989888,
+              "last": 306184191
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": null,
+          "materializationTruncated": null,
+          "exportComplete": null,
+          "warmupInspections": null,
+          "currentVideoStateRecovered": false,
+          "rssAfter": 101392384
+        }
+      ],
+      "summary": {
+        "adapterMsMedian": 320.40919099999996,
+        "adapterMsRange": [
+          316.1805439999998,
+          328.26129200000014
+        ],
+        "adapterThroughputMedian": 13090460.941240603,
+        "kernelThroughputMedian": 17073532.62218853
+      }
+    },
+    {
+      "engine": "low31",
+      "recipe": {
+        "id": "sparse8-mixed",
+        "n": 8,
+        "kind": "sparse",
+        "gaps": [
+          1,
+          8
+        ],
+        "mixed": true
+      },
+      "requestSHA256": "a7718d6d5bc2089285b4d6616e926765dcdb4825d8b6c24e33c8d2ee647b44ef",
+      "domain": {
+        "kind": "intervals",
+        "intervals": [
+          {
+            "first": 301989888,
+            "last": 306184191
+          }
+        ],
+        "provenance": "synthetic bounded benchmark prior"
+      },
+      "budget": {
+        "maxInspectedStates": 4194304,
+        "maxWallTimeMs": 120000,
+        "chunkStates": 65536
+      },
+      "maskSHA256": [
+        "5b7c1857308ca94ce38dde57604f0b64e40e25978f57dd28932b8a6d502d1b30",
+        "df80a189fd86472f2f9d5a9cc237c5e2e16e90a02b3cd8af96f32e0aa81e770b",
+        "ee0eb4c75d5f53751cd8fd62849846ed5ebf84277c557dcb6ee8a54bb8eefb96",
+        "a776333583056cc1d4b8ce60a19c1a1abf6bf742e2f2c3c88c337ef24f437092",
+        "8edd9651a30f8bab73727299d304d630eb54205a960c364cdf10a8deb5bbbaf3",
+        "c6ed4020b70c3f13187b520b998d2be8772b1f752090bc5804639d04f65af31c",
+        "c3fcde8d12c600ff96e9325ce9da31696e6c6aab950d01b570a886e14d843fec",
+        "da9277af3414c52c6f98797a39ba4a8e3c8918aa51780e9cd699fb22685f7398"
+      ],
+      "timingScope": "adapter includes cloning/hash/instantiate/packing/chunk yields/materialization; raw kernel excludes setup, Worker transfer and serialization; fresh instances with warmed engine, not process-cold",
+      "trials": [
+        {
+          "iteration": 0,
+          "adapterMs": 223.1437679999999,
+          "adapterInspectionsPerSecond": 18796420.07299976,
+          "serializationMs": 0.06225200000017139,
+          "serializedBytes": 2498,
+          "instantiateMs": 0.32706699999971534,
+          "setupMs": 0.28612599999996746,
+          "kernelMs": 147.32268399999975,
+          "kernelInspectionsPerSecond": 28470184.5372299,
+          "found": "292827",
+          "wasmLinearMemoryBytes": 262144,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "292827",
+          "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+          "searched": [
+            {
+              "first": 301989888,
+              "last": 306184191
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": null,
+          "materializationTruncated": null,
+          "exportComplete": null,
+          "warmupInspections": null,
+          "currentVideoStateRecovered": false,
+          "rssAfter": 102146048
+        },
+        {
+          "iteration": 1,
+          "adapterMs": 223.30391099999997,
+          "adapterInspectionsPerSecond": 18782940.169820853,
+          "serializationMs": 0.06465600000046834,
+          "serializedBytes": 2498,
+          "instantiateMs": 0.33633499999996275,
+          "setupMs": 0.30705699999998615,
+          "kernelMs": 151.62596199999962,
+          "kernelInspectionsPerSecond": 27662175.689938974,
+          "found": "292827",
+          "wasmLinearMemoryBytes": 262144,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "292827",
+          "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+          "searched": [
+            {
+              "first": 301989888,
+              "last": 306184191
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": null,
+          "materializationTruncated": null,
+          "exportComplete": null,
+          "warmupInspections": null,
+          "currentVideoStateRecovered": false,
+          "rssAfter": 102408192
+        },
+        {
+          "iteration": 2,
+          "adapterMs": 231.44877300000007,
+          "adapterInspectionsPerSecond": 18121953.92368746,
+          "serializationMs": 0.07933800000046176,
+          "serializedBytes": 2498,
+          "instantiateMs": 0.3333070000007865,
+          "setupMs": 1.1465470000002824,
+          "kernelMs": 148.01681800000006,
+          "kernelInspectionsPerSecond": 28336671.850356888,
+          "found": "292827",
+          "wasmLinearMemoryBytes": 262144,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "292827",
+          "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+          "searched": [
+            {
+              "first": 301989888,
+              "last": 306184191
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": null,
+          "materializationTruncated": null,
+          "exportComplete": null,
+          "warmupInspections": null,
+          "currentVideoStateRecovered": false,
+          "rssAfter": 100835328
+        }
+      ],
+      "summary": {
+        "adapterMsMedian": 223.30391099999997,
+        "adapterMsRange": [
+          223.1437679999999,
+          231.44877300000007
+        ],
+        "adapterThroughputMedian": 18782940.169820853,
+        "kernelThroughputMedian": 28336671.850356888
+      }
+    },
+    {
+      "engine": "low31",
+      "recipe": {
+        "id": "dense32-fixed",
+        "n": 32,
+        "kind": "all",
+        "gaps": [
+          1,
+          1
+        ]
+      },
+      "requestSHA256": "6ffc68bef704e305f4500ea4601bb6ad376a031f4c0c843fd0c4f933a694eab7",
+      "domain": {
+        "kind": "intervals",
+        "intervals": [
+          {
+            "first": 301989888,
+            "last": 306184191
+          }
+        ],
+        "provenance": "synthetic bounded benchmark prior"
+      },
+      "budget": {
+        "maxInspectedStates": 4194304,
+        "maxWallTimeMs": 120000,
+        "chunkStates": 65536
+      },
+      "maskSHA256": [
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0"
+      ],
+      "timingScope": "adapter includes cloning/hash/instantiate/packing/chunk yields/materialization; raw kernel excludes setup, Worker transfer and serialization; fresh instances with warmed engine, not process-cold",
+      "trials": [
+        {
+          "iteration": 0,
+          "adapterMs": 735.4472539999997,
+          "adapterInspectionsPerSecond": 5703065.688515035,
+          "serializationMs": 0.09810599999946135,
+          "serializedBytes": 4322,
+          "instantiateMs": 0.4193139999997584,
+          "setupMs": 3.111351999999897,
+          "kernelMs": 641.5166509999999,
+          "kernelInspectionsPerSecond": 6538106.210434125,
+          "found": "4194304",
+          "wasmLinearMemoryBytes": 262144,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "4194304",
+          "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+          "searched": [
+            {
+              "first": 301989888,
+              "last": 306184191
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": null,
+          "materializationTruncated": null,
+          "exportComplete": null,
+          "warmupInspections": null,
+          "currentVideoStateRecovered": false,
+          "rssAfter": 100974592
+        },
+        {
+          "iteration": 1,
+          "adapterMs": 776.8525769999997,
+          "adapterInspectionsPerSecond": 5399099.036521574,
+          "serializationMs": 0.07970800000020972,
+          "serializedBytes": 4322,
+          "instantiateMs": 0.33459899999979825,
+          "setupMs": 1.9517359999999826,
+          "kernelMs": 634.3372010000003,
+          "kernelInspectionsPerSecond": 6612104.718733024,
+          "found": "4194304",
+          "wasmLinearMemoryBytes": 262144,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "4194304",
+          "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+          "searched": [
+            {
+              "first": 301989888,
+              "last": 306184191
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": null,
+          "materializationTruncated": null,
+          "exportComplete": null,
+          "warmupInspections": null,
+          "currentVideoStateRecovered": false,
+          "rssAfter": 101367808
+        },
+        {
+          "iteration": 2,
+          "adapterMs": 758.4381220000005,
+          "adapterInspectionsPerSecond": 5530186.152747207,
+          "serializationMs": 0.07730499999888707,
+          "serializedBytes": 4322,
+          "instantiateMs": 0.3135070000007545,
+          "setupMs": 2.2042860000001383,
+          "kernelMs": 648.6378120000008,
+          "kernelInspectionsPerSecond": 6466326.696353612,
+          "found": "4194304",
+          "wasmLinearMemoryBytes": 262144,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "4194304",
+          "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+          "searched": [
+            {
+              "first": 301989888,
+              "last": 306184191
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": null,
+          "materializationTruncated": null,
+          "exportComplete": null,
+          "warmupInspections": null,
+          "currentVideoStateRecovered": false,
+          "rssAfter": 102416384
+        }
+      ],
+      "summary": {
+        "adapterMsMedian": 758.4381220000005,
+        "adapterMsRange": [
+          735.4472539999997,
+          776.8525769999997
+        ],
+        "adapterThroughputMedian": 5530186.152747207,
+        "kernelThroughputMedian": 6538106.210434125
+      }
+    },
+    {
+      "engine": "low31",
+      "recipe": {
+        "id": "zero8-wide",
+        "n": 8,
+        "kind": "zero",
+        "gaps": [
+          1,
+          16
+        ]
+      },
+      "requestSHA256": "1b2a47549689c1d68f9e011ec26500362e4ece84b4375915967e3925be252774",
+      "domain": {
+        "kind": "intervals",
+        "intervals": [
+          {
+            "first": 301989888,
+            "last": 306184191
+          }
+        ],
+        "provenance": "synthetic bounded benchmark prior"
+      },
+      "budget": {
+        "maxInspectedStates": 4194304,
+        "maxWallTimeMs": 120000,
+        "chunkStates": 65536
+      },
+      "maskSHA256": [
+        "c35020473aed1b4642cd726cad727b63fff2824ad68cedd7ffb73c7cbd890479",
+        "c35020473aed1b4642cd726cad727b63fff2824ad68cedd7ffb73c7cbd890479",
+        "c35020473aed1b4642cd726cad727b63fff2824ad68cedd7ffb73c7cbd890479",
+        "c35020473aed1b4642cd726cad727b63fff2824ad68cedd7ffb73c7cbd890479",
+        "c35020473aed1b4642cd726cad727b63fff2824ad68cedd7ffb73c7cbd890479",
+        "c35020473aed1b4642cd726cad727b63fff2824ad68cedd7ffb73c7cbd890479",
+        "c35020473aed1b4642cd726cad727b63fff2824ad68cedd7ffb73c7cbd890479",
+        "c35020473aed1b4642cd726cad727b63fff2824ad68cedd7ffb73c7cbd890479"
+      ],
+      "timingScope": "adapter includes cloning/hash/instantiate/packing/chunk yields/materialization; raw kernel excludes setup, Worker transfer and serialization; fresh instances with warmed engine, not process-cold",
+      "trials": [
+        {
+          "iteration": 0,
+          "adapterMs": 78.83377599999949,
+          "adapterInspectionsPerSecond": 53204403.14821438,
+          "serializationMs": 0.030886000000464264,
+          "serializedBytes": 1962,
+          "instantiateMs": 0.3368269999991753,
+          "setupMs": 1.0871809999989637,
+          "kernelMs": 4.728929999999309,
+          "kernelInspectionsPerSecond": 886945672.6998736,
+          "found": "0",
+          "wasmLinearMemoryBytes": 262144,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "0",
+          "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+          "searched": [
+            {
+              "first": 301989888,
+              "last": 306184191
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 0,
+          "materialized": null,
+          "materializationTruncated": null,
+          "exportComplete": null,
+          "warmupInspections": null,
+          "currentVideoStateRecovered": false,
+          "rssAfter": 117776384
+        },
+        {
+          "iteration": 1,
+          "adapterMs": 78.17131299999892,
+          "adapterInspectionsPerSecond": 53655284.0042492,
+          "serializationMs": 0.02586900000096648,
+          "serializedBytes": 1962,
+          "instantiateMs": 0.3035519999993994,
+          "setupMs": 0.21833600000172737,
+          "kernelMs": 4.738774999999805,
+          "kernelInspectionsPerSecond": 885103006.578741,
+          "found": "0",
+          "wasmLinearMemoryBytes": 262144,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "0",
+          "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+          "searched": [
+            {
+              "first": 301989888,
+              "last": 306184191
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 0,
+          "materialized": null,
+          "materializationTruncated": null,
+          "exportComplete": null,
+          "warmupInspections": null,
+          "currentVideoStateRecovered": false,
+          "rssAfter": 118169600
+        },
+        {
+          "iteration": 2,
+          "adapterMs": 78.0762109999996,
+          "adapterInspectionsPerSecond": 53720639.696514234,
+          "serializationMs": 0.02731099999982689,
+          "serializedBytes": 1962,
+          "instantiateMs": 0.48167799999828276,
+          "setupMs": 0.2161919999998645,
+          "kernelMs": 4.82271000000037,
+          "kernelInspectionsPerSecond": 869698571.9646584,
+          "found": "0",
+          "wasmLinearMemoryBytes": 262144,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "0",
+          "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+          "searched": [
+            {
+              "first": 301989888,
+              "last": 306184191
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 0,
+          "materialized": null,
+          "materializationTruncated": null,
+          "exportComplete": null,
+          "warmupInspections": null,
+          "currentVideoStateRecovered": false,
+          "rssAfter": 118562816
+        }
+      ],
+      "summary": {
+        "adapterMsMedian": 78.17131299999892,
+        "adapterMsRange": [
+          78.0762109999996,
+          78.83377599999949
+        ],
+        "adapterThroughputMedian": 53655284.0042492,
+        "kernelThroughputMedian": 885103006.578741
+      }
+    },
+    {
+      "engine": "low31",
+      "recipe": {
+        "id": "medium8-fixed",
+        "n": 8,
+        "kind": "medium",
+        "gaps": [
+          1,
+          1
+        ]
+      },
+      "requestSHA256": "52aba28cdb089badaa1904c3ea0b8eea878dbb63984983753a5f38db12a38f2d",
+      "domain": {
+        "kind": "intervals",
+        "intervals": [
+          {
+            "first": 301989888,
+            "last": 306184191
+          }
+        ],
+        "provenance": "synthetic bounded benchmark prior"
+      },
+      "budget": {
+        "maxInspectedStates": 4194304,
+        "maxWallTimeMs": 120000,
+        "chunkStates": 65536
+      },
+      "maskSHA256": [
+        "2cb9bf6a20f1734eaeaed2b3e68f272d111f994f3b8e443cdd415ecef2217a8d",
+        "a2bd907bc668648e16a499b47be1eec01a6fdec435e374990a88571b2318e379",
+        "331f716b8040be6ebdaf32b61ddb465c518d19a57537ed72ef55693835c0c794",
+        "3ef37b1f4e2bac11efbf14bf60ccaa94a93c763ea573ba20e96f7dd3b0f9d859",
+        "c23cc7c10016a81950e7bbed842af953ed4ac1b88ac2ec91c5782618104a521d",
+        "b66eb879c15bd0e016ee2311fbcd1cab8bd4d78c46dd59a6ec41cd4eab362043",
+        "846e682a0666b77bdf7aad86335011983d661c1bbcecee37a402ee2452ed307b",
+        "0e4ee459583b9dde5807afe125a40a74b8fe84432185ebe0add984cea8b13081"
+      ],
+      "timingScope": "adapter includes cloning/hash/instantiate/packing/chunk yields/materialization; raw kernel excludes setup, Worker transfer and serialization; fresh instances with warmed engine, not process-cold",
+      "trials": [
+        {
+          "iteration": 0,
+          "adapterMs": 170.86749899999995,
+          "adapterInspectionsPerSecond": 24547114.135497477,
+          "serializationMs": 0.09024399999907473,
+          "serializedBytes": 2498,
+          "instantiateMs": 0.3045529999999417,
+          "setupMs": 0.48144699999829754,
+          "kernelMs": 90.61531600000126,
+          "kernelInspectionsPerSecond": 46286921.297056906,
+          "found": "324158",
+          "wasmLinearMemoryBytes": 262144,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "324158",
+          "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+          "searched": [
+            {
+              "first": 301989888,
+              "last": 306184191
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": null,
+          "materializationTruncated": null,
+          "exportComplete": null,
+          "warmupInspections": null,
+          "currentVideoStateRecovered": false,
+          "rssAfter": 123482112
+        },
+        {
+          "iteration": 1,
+          "adapterMs": 164.5608599999996,
+          "adapterInspectionsPerSecond": 25487859.02066877,
+          "serializationMs": 0.060129999999844586,
+          "serializedBytes": 2498,
+          "instantiateMs": 0.32907999999952153,
+          "setupMs": 0.43367599999874074,
+          "kernelMs": 91.0105939999994,
+          "kernelInspectionsPerSecond": 46085887.53964212,
+          "found": "324158",
+          "wasmLinearMemoryBytes": 262144,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "324158",
+          "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+          "searched": [
+            {
+              "first": 301989888,
+              "last": 306184191
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": null,
+          "materializationTruncated": null,
+          "exportComplete": null,
+          "warmupInspections": null,
+          "currentVideoStateRecovered": false,
+          "rssAfter": 123744256
+        },
+        {
+          "iteration": 2,
+          "adapterMs": 164.07168199999978,
+          "adapterInspectionsPerSecond": 25563850.805162136,
+          "serializationMs": 0.06003000000055181,
+          "serializedBytes": 2498,
+          "instantiateMs": 0.33680199999980687,
+          "setupMs": 0.42696500000056403,
+          "kernelMs": 90.1253459999989,
+          "kernelInspectionsPerSecond": 46538561.97123561,
+          "found": "324158",
+          "wasmLinearMemoryBytes": 262144,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "324158",
+          "countUnit": "low31 output-equivalence classes; two uint32 lifts each",
+          "searched": [
+            {
+              "first": 301989888,
+              "last": 306184191
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": null,
+          "materializationTruncated": null,
+          "exportComplete": null,
+          "warmupInspections": null,
+          "currentVideoStateRecovered": false,
+          "rssAfter": 124137472
+        }
+      ],
+      "summary": {
+        "adapterMsMedian": 164.5608599999996,
+        "adapterMsRange": [
+          164.07168199999978,
+          170.86749899999995
+        ],
+        "adapterThroughputMedian": 25487859.02066877,
+        "kernelThroughputMedian": 46286921.297056906
+      }
+    },
+    {
+      "engine": "index",
+      "recipe": {
+        "id": "dense2-fixed",
+        "n": 2,
+        "kind": "all",
+        "gaps": [
+          1,
+          1
+        ]
+      },
+      "requestSHA256": "936b15c1e691dce0387ee9c1065e08cec986ace4eec34e1d378376bf977e14d8",
+      "domain": {
+        "kind": "known-origin-terminal-indices",
+        "origin": {
+          "kind": "initial-state-before-draw-1",
+          "initialSeed": 305419896,
+          "provenance": "synthetic seed"
+        },
+        "first": "4294967280",
+        "last": "4299161583",
+        "predecessorPolicy": "post-boot-events-only",
+        "provenance": "synthetic bounded benchmark prior"
+      },
+      "budget": {
+        "maxInspectedIndices": 4194304,
+        "maxWallTimeMs": 120000,
+        "chunkIndices": 65536
+      },
+      "maskSHA256": [
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0"
+      ],
+      "timingScope": "adapter includes cloning/hash/instantiate/packing/chunk yields/materialization; raw kernel excludes setup, Worker transfer and serialization; fresh instances with warmed engine, not process-cold",
+      "trials": [
+        {
+          "iteration": 0,
+          "adapterMs": 19.602468000000954,
+          "adapterInspectionsPerSecond": 213968159.51949498,
+          "serializationMs": 0.0821719999985362,
+          "serializedBytes": 6905,
+          "instantiateMs": 0.25349699999969744,
+          "setupMs": 0.27405800000087766,
+          "kernelMs": 16.247472000000926,
+          "kernelInspectionsPerSecond": 258151175.76443654,
+          "found": "4194304",
+          "wasmLinearMemoryBytes": 524288,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "4194304",
+          "countUnit": "indices under supplied synthetic origin; one state each",
+          "searched": [
+            {
+              "first": "4294967280",
+              "last": "4299161583"
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": 7,
+          "materializationTruncated": true,
+          "exportComplete": false,
+          "warmupInspections": "1",
+          "currentVideoStateRecovered": false,
+          "rssAfter": 134049792
+        },
+        {
+          "iteration": 1,
+          "adapterMs": 17.337916000000405,
+          "adapterInspectionsPerSecond": 241915118.2875671,
+          "serializationMs": 0.07409000000006927,
+          "serializedBytes": 6905,
+          "instantiateMs": 0.2396470000003319,
+          "setupMs": 0.18833100000119884,
+          "kernelMs": 15.779114999999365,
+          "kernelInspectionsPerSecond": 265813640.37211016,
+          "found": "4194304",
+          "wasmLinearMemoryBytes": 524288,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "4194304",
+          "countUnit": "indices under supplied synthetic origin; one state each",
+          "searched": [
+            {
+              "first": "4294967280",
+              "last": "4299161583"
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": 7,
+          "materializationTruncated": true,
+          "exportComplete": false,
+          "warmupInspections": "1",
+          "currentVideoStateRecovered": false,
+          "rssAfter": 134311936
+        },
+        {
+          "iteration": 2,
+          "adapterMs": 18.353127999998833,
+          "adapterInspectionsPerSecond": 228533468.5182965,
+          "serializationMs": 0.06568800000059127,
+          "serializedBytes": 6905,
+          "instantiateMs": 0.21910600000046543,
+          "setupMs": 0.1876590000010765,
+          "kernelMs": 16.216166999998677,
+          "kernelInspectionsPerSecond": 258649531.66801637,
+          "found": "4194304",
+          "wasmLinearMemoryBytes": 524288,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "4194304",
+          "countUnit": "indices under supplied synthetic origin; one state each",
+          "searched": [
+            {
+              "first": "4294967280",
+              "last": "4299161583"
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": 7,
+          "materializationTruncated": true,
+          "exportComplete": false,
+          "warmupInspections": "1",
+          "currentVideoStateRecovered": false,
+          "rssAfter": 131551232
+        }
+      ],
+      "summary": {
+        "adapterMsMedian": 18.353127999998833,
+        "adapterMsRange": [
+          17.337916000000405,
+          19.602468000000954
+        ],
+        "adapterThroughputMedian": 228533468.5182965,
+        "kernelThroughputMedian": 258649531.66801637
+      }
+    },
+    {
+      "engine": "index",
+      "recipe": {
+        "id": "sparse2-fixed",
+        "n": 2,
+        "kind": "sparse",
+        "gaps": [
+          1,
+          1
+        ]
+      },
+      "requestSHA256": "e56db007045374111d10685843fc33bd0847597dde817f7c61e1940aebccf1f0",
+      "domain": {
+        "kind": "known-origin-terminal-indices",
+        "origin": {
+          "kind": "initial-state-before-draw-1",
+          "initialSeed": 305419896,
+          "provenance": "synthetic seed"
+        },
+        "first": "4294967280",
+        "last": "4299161583",
+        "predecessorPolicy": "post-boot-events-only",
+        "provenance": "synthetic bounded benchmark prior"
+      },
+      "budget": {
+        "maxInspectedIndices": 4194304,
+        "maxWallTimeMs": 120000,
+        "chunkIndices": 65536
+      },
+      "maskSHA256": [
+        "5b7c1857308ca94ce38dde57604f0b64e40e25978f57dd28932b8a6d502d1b30",
+        "df80a189fd86472f2f9d5a9cc237c5e2e16e90a02b3cd8af96f32e0aa81e770b"
+      ],
+      "timingScope": "adapter includes cloning/hash/instantiate/packing/chunk yields/materialization; raw kernel excludes setup, Worker transfer and serialization; fresh instances with warmed engine, not process-cold",
+      "trials": [
+        {
+          "iteration": 0,
+          "adapterMs": 18.926281000000017,
+          "adapterInspectionsPerSecond": 221612687.66959533,
+          "serializationMs": 0.07481100000040897,
+          "serializedBytes": 6919,
+          "instantiateMs": 0.2412689999982831,
+          "setupMs": 0.1253869999982271,
+          "kernelMs": 18.171817999998893,
+          "kernelInspectionsPerSecond": 230813669.82655537,
+          "found": "312237",
+          "wasmLinearMemoryBytes": 524288,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "312237",
+          "countUnit": "indices under supplied synthetic origin; one state each",
+          "searched": [
+            {
+              "first": "4294967280",
+              "last": "4299161583"
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": 7,
+          "materializationTruncated": true,
+          "exportComplete": false,
+          "warmupInspections": "1",
+          "currentVideoStateRecovered": false,
+          "rssAfter": 134959104
+        },
+        {
+          "iteration": 1,
+          "adapterMs": 18.79964199999995,
+          "adapterInspectionsPerSecond": 223105525.0945742,
+          "serializationMs": 0.07806700000037381,
+          "serializedBytes": 6919,
+          "instantiateMs": 0.26376300000083575,
+          "setupMs": 0.13260799999989104,
+          "kernelMs": 18.145559000000503,
+          "kernelInspectionsPerSecond": 231147687.4313921,
+          "found": "312237",
+          "wasmLinearMemoryBytes": 524288,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "312237",
+          "countUnit": "indices under supplied synthetic origin; one state each",
+          "searched": [
+            {
+              "first": "4294967280",
+              "last": "4299161583"
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": 7,
+          "materializationTruncated": true,
+          "exportComplete": false,
+          "warmupInspections": "1",
+          "currentVideoStateRecovered": false,
+          "rssAfter": 135221248
+        },
+        {
+          "iteration": 2,
+          "adapterMs": 20.012939000000188,
+          "adapterInspectionsPerSecond": 209579612.46971077,
+          "serializationMs": 0.06770099999994272,
+          "serializedBytes": 6919,
+          "instantiateMs": 0.2445640000005369,
+          "setupMs": 0.14134099999864702,
+          "kernelMs": 18.441940000000614,
+          "kernelInspectionsPerSecond": 227432905.64874738,
+          "found": "312237",
+          "wasmLinearMemoryBytes": 524288,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "312237",
+          "countUnit": "indices under supplied synthetic origin; one state each",
+          "searched": [
+            {
+              "first": "4294967280",
+              "last": "4299161583"
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": 7,
+          "materializationTruncated": true,
+          "exportComplete": false,
+          "warmupInspections": "1",
+          "currentVideoStateRecovered": false,
+          "rssAfter": 135614464
+        }
+      ],
+      "summary": {
+        "adapterMsMedian": 18.926281000000017,
+        "adapterMsRange": [
+          18.79964199999995,
+          20.012939000000188
+        ],
+        "adapterThroughputMedian": 221612687.66959533,
+        "kernelThroughputMedian": 230813669.82655537
+      }
+    },
+    {
+      "engine": "index",
+      "recipe": {
+        "id": "medium8-wide",
+        "n": 8,
+        "kind": "medium",
+        "gaps": [
+          1,
+          16
+        ]
+      },
+      "requestSHA256": "2cfae08d3aeee0202497099ded78adb3130f7a83f0ba8648d660af2995f7195c",
+      "domain": {
+        "kind": "known-origin-terminal-indices",
+        "origin": {
+          "kind": "initial-state-before-draw-1",
+          "initialSeed": 305419896,
+          "provenance": "synthetic seed"
+        },
+        "first": "4294967280",
+        "last": "4299161583",
+        "predecessorPolicy": "post-boot-events-only",
+        "provenance": "synthetic bounded benchmark prior"
+      },
+      "budget": {
+        "maxInspectedIndices": 4194304,
+        "maxWallTimeMs": 120000,
+        "chunkIndices": 65536
+      },
+      "maskSHA256": [
+        "2cb9bf6a20f1734eaeaed2b3e68f272d111f994f3b8e443cdd415ecef2217a8d",
+        "a2bd907bc668648e16a499b47be1eec01a6fdec435e374990a88571b2318e379",
+        "331f716b8040be6ebdaf32b61ddb465c518d19a57537ed72ef55693835c0c794",
+        "3ef37b1f4e2bac11efbf14bf60ccaa94a93c763ea573ba20e96f7dd3b0f9d859",
+        "c23cc7c10016a81950e7bbed842af953ed4ac1b88ac2ec91c5782618104a521d",
+        "b66eb879c15bd0e016ee2311fbcd1cab8bd4d78c46dd59a6ec41cd4eab362043",
+        "846e682a0666b77bdf7aad86335011983d661c1bbcecee37a402ee2452ed307b",
+        "0e4ee459583b9dde5807afe125a40a74b8fe84432185ebe0add984cea8b13081"
+      ],
+      "timingScope": "adapter includes cloning/hash/instantiate/packing/chunk yields/materialization; raw kernel excludes setup, Worker transfer and serialization; fresh instances with warmed engine, not process-cold",
+      "trials": [
+        {
+          "iteration": 0,
+          "adapterMs": 63.63434099999904,
+          "adapterInspectionsPerSecond": 65912586.41305114,
+          "serializationMs": 0.1174140000002808,
+          "serializedBytes": 7361,
+          "instantiateMs": 0.31083200000102806,
+          "setupMs": 0.5575000000008004,
+          "kernelMs": 59.84252600000036,
+          "kernelInspectionsPerSecond": 70089019.97218457,
+          "found": "3051376",
+          "wasmLinearMemoryBytes": 524288,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "3051376",
+          "countUnit": "indices under supplied synthetic origin; one state each",
+          "searched": [
+            {
+              "first": "4294967280",
+              "last": "4299161583"
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": 7,
+          "materializationTruncated": true,
+          "exportComplete": false,
+          "warmupInspections": "112",
+          "currentVideoStateRecovered": false,
+          "rssAfter": 138297344
+        },
+        {
+          "iteration": 1,
+          "adapterMs": 64.2394320000003,
+          "adapterInspectionsPerSecond": 65291735.456191145,
+          "serializationMs": 0.10107000000061817,
+          "serializedBytes": 7361,
+          "instantiateMs": 0.5326129999994009,
+          "setupMs": 0.45390600000064296,
+          "kernelMs": 66.65021200000047,
+          "kernelInspectionsPerSecond": 62930092.40540707,
+          "found": "3051376",
+          "wasmLinearMemoryBytes": 524288,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "3051376",
+          "countUnit": "indices under supplied synthetic origin; one state each",
+          "searched": [
+            {
+              "first": "4294967280",
+              "last": "4299161583"
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": 7,
+          "materializationTruncated": true,
+          "exportComplete": false,
+          "warmupInspections": "112",
+          "currentVideoStateRecovered": false,
+          "rssAfter": 138690560
+        },
+        {
+          "iteration": 2,
+          "adapterMs": 63.74368400000094,
+          "adapterInspectionsPerSecond": 65799522.97705194,
+          "serializationMs": 0.10289399999965099,
+          "serializedBytes": 7361,
+          "instantiateMs": 0.30407299999933457,
+          "setupMs": 0.47747099999833154,
+          "kernelMs": 62.936461999999665,
+          "kernelInspectionsPerSecond": 66643466.54885084,
+          "found": "3051376",
+          "wasmLinearMemoryBytes": 524288,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "3051376",
+          "countUnit": "indices under supplied synthetic origin; one state each",
+          "searched": [
+            {
+              "first": "4294967280",
+              "last": "4299161583"
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": 7,
+          "materializationTruncated": true,
+          "exportComplete": false,
+          "warmupInspections": "112",
+          "currentVideoStateRecovered": false,
+          "rssAfter": 138952704
+        }
+      ],
+      "summary": {
+        "adapterMsMedian": 63.74368400000094,
+        "adapterMsRange": [
+          63.63434099999904,
+          64.2394320000003
+        ],
+        "adapterThroughputMedian": 65799522.97705194,
+        "kernelThroughputMedian": 66643466.54885084
+      }
+    },
+    {
+      "engine": "index",
+      "recipe": {
+        "id": "sparse8-mixed",
+        "n": 8,
+        "kind": "sparse",
+        "gaps": [
+          1,
+          8
+        ],
+        "mixed": true
+      },
+      "requestSHA256": "59b591bbe51a6a1672d103933449de8c61584eb7c1807ca342c07ecb41e35683",
+      "domain": {
+        "kind": "known-origin-terminal-indices",
+        "origin": {
+          "kind": "initial-state-before-draw-1",
+          "initialSeed": 305419896,
+          "provenance": "synthetic seed"
+        },
+        "first": "4294967280",
+        "last": "4299161583",
+        "predecessorPolicy": "post-boot-events-only",
+        "provenance": "synthetic bounded benchmark prior"
+      },
+      "budget": {
+        "maxInspectedIndices": 4194304,
+        "maxWallTimeMs": 120000,
+        "chunkIndices": 65536
+      },
+      "maskSHA256": [
+        "5b7c1857308ca94ce38dde57604f0b64e40e25978f57dd28932b8a6d502d1b30",
+        "df80a189fd86472f2f9d5a9cc237c5e2e16e90a02b3cd8af96f32e0aa81e770b",
+        "ee0eb4c75d5f53751cd8fd62849846ed5ebf84277c557dcb6ee8a54bb8eefb96",
+        "a776333583056cc1d4b8ce60a19c1a1abf6bf742e2f2c3c88c337ef24f437092",
+        "8edd9651a30f8bab73727299d304d630eb54205a960c364cdf10a8deb5bbbaf3",
+        "c6ed4020b70c3f13187b520b998d2be8772b1f752090bc5804639d04f65af31c",
+        "c3fcde8d12c600ff96e9325ce9da31696e6c6aab950d01b570a886e14d843fec",
+        "da9277af3414c52c6f98797a39ba4a8e3c8918aa51780e9cd699fb22685f7398"
+      ],
+      "timingScope": "adapter includes cloning/hash/instantiate/packing/chunk yields/materialization; raw kernel excludes setup, Worker transfer and serialization; fresh instances with warmed engine, not process-cold",
+      "trials": [
+        {
+          "iteration": 0,
+          "adapterMs": 117.64373100000012,
+          "adapterInspectionsPerSecond": 35652592.48705735,
+          "serializationMs": 0.10441499999978987,
+          "serializedBytes": 7362,
+          "instantiateMs": 0.3187739999993937,
+          "setupMs": 0.3012689999995928,
+          "kernelMs": 118.85079799999949,
+          "kernelInspectionsPerSecond": 35290499.26951284,
+          "found": "301494",
+          "wasmLinearMemoryBytes": 524288,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "301494",
+          "countUnit": "indices under supplied synthetic origin; one state each",
+          "searched": [
+            {
+              "first": "4294967280",
+              "last": "4299161583"
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": 7,
+          "materializationTruncated": true,
+          "exportComplete": false,
+          "warmupInspections": "39",
+          "currentVideoStateRecovered": false,
+          "rssAfter": 148652032
+        },
+        {
+          "iteration": 1,
+          "adapterMs": 128.29294800000025,
+          "adapterInspectionsPerSecond": 32693176.557140086,
+          "serializationMs": 0.10905199999979232,
+          "serializedBytes": 7362,
+          "instantiateMs": 0.39363699999921664,
+          "setupMs": 0.30582500000127766,
+          "kernelMs": 118.28439500000059,
+          "kernelInspectionsPerSecond": 35459487.28063393,
+          "found": "301494",
+          "wasmLinearMemoryBytes": 524288,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "301494",
+          "countUnit": "indices under supplied synthetic origin; one state each",
+          "searched": [
+            {
+              "first": "4294967280",
+              "last": "4299161583"
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": 7,
+          "materializationTruncated": true,
+          "exportComplete": false,
+          "warmupInspections": "39",
+          "currentVideoStateRecovered": false,
+          "rssAfter": 147894272
+        },
+        {
+          "iteration": 2,
+          "adapterMs": 124.4565050000001,
+          "adapterInspectionsPerSecond": 33700962.43663596,
+          "serializationMs": 0.10506700000041747,
+          "serializedBytes": 7362,
+          "instantiateMs": 0.3439119999984541,
+          "setupMs": 0.34836899999936577,
+          "kernelMs": 120.57063999999991,
+          "kernelInspectionsPerSecond": 34787109.034172855,
+          "found": "301494",
+          "wasmLinearMemoryBytes": 524288,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "301494",
+          "countUnit": "indices under supplied synthetic origin; one state each",
+          "searched": [
+            {
+              "first": "4294967280",
+              "last": "4299161583"
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": 7,
+          "materializationTruncated": true,
+          "exportComplete": false,
+          "warmupInspections": "39",
+          "currentVideoStateRecovered": false,
+          "rssAfter": 148156416
+        }
+      ],
+      "summary": {
+        "adapterMsMedian": 124.4565050000001,
+        "adapterMsRange": [
+          117.64373100000012,
+          128.29294800000025
+        ],
+        "adapterThroughputMedian": 33700962.43663596,
+        "kernelThroughputMedian": 35290499.26951284
+      }
+    },
+    {
+      "engine": "index",
+      "recipe": {
+        "id": "dense32-fixed",
+        "n": 32,
+        "kind": "all",
+        "gaps": [
+          1,
+          1
+        ]
+      },
+      "requestSHA256": "51fe8214c37dac515f47a67b258d1667fecf670c2a68c05279da2ae4a8d14c3e",
+      "domain": {
+        "kind": "known-origin-terminal-indices",
+        "origin": {
+          "kind": "initial-state-before-draw-1",
+          "initialSeed": 305419896,
+          "provenance": "synthetic seed"
+        },
+        "first": "4294967280",
+        "last": "4299161583",
+        "predecessorPolicy": "post-boot-events-only",
+        "provenance": "synthetic bounded benchmark prior"
+      },
+      "budget": {
+        "maxInspectedIndices": 4194304,
+        "maxWallTimeMs": 120000,
+        "chunkIndices": 65536
+      },
+      "maskSHA256": [
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0",
+        "bfa5a24faa8ddf576edcc46f4f05e2459ee4a383b8dc14ff7dba0056b9c59ed0"
+      ],
+      "timingScope": "adapter includes cloning/hash/instantiate/packing/chunk yields/materialization; raw kernel excludes setup, Worker transfer and serialization; fresh instances with warmed engine, not process-cold",
+      "trials": [
+        {
+          "iteration": 0,
+          "adapterMs": 39.165797999999995,
+          "adapterInspectionsPerSecond": 107090987.90735735,
+          "serializationMs": 0.10580700000173238,
+          "serializedBytes": 9182,
+          "instantiateMs": 0.2938979999998992,
+          "setupMs": 3.1465449999996054,
+          "kernelMs": 18.34718900000007,
+          "kernelInspectionsPerSecond": 228607444.98789343,
+          "found": "4194304",
+          "wasmLinearMemoryBytes": 524288,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "4194304",
+          "countUnit": "indices under supplied synthetic origin; one state each",
+          "searched": [
+            {
+              "first": "4294967280",
+              "last": "4299161583"
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": 7,
+          "materializationTruncated": true,
+          "exportComplete": false,
+          "warmupInspections": "31",
+          "currentVideoStateRecovered": false,
+          "rssAfter": 155475968
+        },
+        {
+          "iteration": 1,
+          "adapterMs": 26.21222999999918,
+          "adapterInspectionsPerSecond": 160013245.72537825,
+          "serializationMs": 0.10606800000095973,
+          "serializedBytes": 9182,
+          "instantiateMs": 0.2451149999997142,
+          "setupMs": 2.0155809999996563,
+          "kernelMs": 16.186821999999665,
+          "kernelInspectionsPerSecond": 259118435.97218072,
+          "found": "4194304",
+          "wasmLinearMemoryBytes": 524288,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "4194304",
+          "countUnit": "indices under supplied synthetic origin; one state each",
+          "searched": [
+            {
+              "first": "4294967280",
+              "last": "4299161583"
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": 7,
+          "materializationTruncated": true,
+          "exportComplete": false,
+          "warmupInspections": "31",
+          "currentVideoStateRecovered": false,
+          "rssAfter": 143761408
+        },
+        {
+          "iteration": 2,
+          "adapterMs": 23.818316000000777,
+          "adapterInspectionsPerSecond": 176095740.7736073,
+          "serializationMs": 0.08933300000171585,
+          "serializedBytes": 9182,
+          "instantiateMs": 0.22244099999988975,
+          "setupMs": 1.9575949999998556,
+          "kernelMs": 16.641568999999436,
+          "kernelInspectionsPerSecond": 252037773.60176447,
+          "found": "4194304",
+          "wasmLinearMemoryBytes": 524288,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "4194304",
+          "countUnit": "indices under supplied synthetic origin; one state each",
+          "searched": [
+            {
+              "first": "4294967280",
+              "last": "4299161583"
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": 7,
+          "materializationTruncated": true,
+          "exportComplete": false,
+          "warmupInspections": "31",
+          "currentVideoStateRecovered": false,
+          "rssAfter": 149397504
+        }
+      ],
+      "summary": {
+        "adapterMsMedian": 26.21222999999918,
+        "adapterMsRange": [
+          23.818316000000777,
+          39.165797999999995
+        ],
+        "adapterThroughputMedian": 160013245.72537825,
+        "kernelThroughputMedian": 252037773.60176447
+      }
+    },
+    {
+      "engine": "index",
+      "recipe": {
+        "id": "zero8-wide",
+        "n": 8,
+        "kind": "zero",
+        "gaps": [
+          1,
+          16
+        ]
+      },
+      "requestSHA256": "5231656a3d28f1d0525e6ad85eb225b693a0b0df21244620b6004b536b10f78c",
+      "domain": {
+        "kind": "known-origin-terminal-indices",
+        "origin": {
+          "kind": "initial-state-before-draw-1",
+          "initialSeed": 305419896,
+          "provenance": "synthetic seed"
+        },
+        "first": "4294967280",
+        "last": "4299161583",
+        "predecessorPolicy": "post-boot-events-only",
+        "provenance": "synthetic bounded benchmark prior"
+      },
+      "budget": {
+        "maxInspectedIndices": 4194304,
+        "maxWallTimeMs": 120000,
+        "chunkIndices": 65536
+      },
+      "maskSHA256": [
+        "c35020473aed1b4642cd726cad727b63fff2824ad68cedd7ffb73c7cbd890479",
+        "c35020473aed1b4642cd726cad727b63fff2824ad68cedd7ffb73c7cbd890479",
+        "c35020473aed1b4642cd726cad727b63fff2824ad68cedd7ffb73c7cbd890479",
+        "c35020473aed1b4642cd726cad727b63fff2824ad68cedd7ffb73c7cbd890479",
+        "c35020473aed1b4642cd726cad727b63fff2824ad68cedd7ffb73c7cbd890479",
+        "c35020473aed1b4642cd726cad727b63fff2824ad68cedd7ffb73c7cbd890479",
+        "c35020473aed1b4642cd726cad727b63fff2824ad68cedd7ffb73c7cbd890479",
+        "c35020473aed1b4642cd726cad727b63fff2824ad68cedd7ffb73c7cbd890479"
+      ],
+      "timingScope": "adapter includes cloning/hash/instantiate/packing/chunk yields/materialization; raw kernel excludes setup, Worker transfer and serialization; fresh instances with warmed engine, not process-cold",
+      "trials": [
+        {
+          "iteration": 0,
+          "adapterMs": 51.76197400000092,
+          "adapterInspectionsPerSecond": 81030603.66283414,
+          "serializationMs": 0.07210699999995995,
+          "serializedBytes": 3473,
+          "instantiateMs": 0.27054300000054354,
+          "setupMs": 0.9567750000005617,
+          "kernelMs": 49.08209299999908,
+          "kernelInspectionsPerSecond": 85454872.51328257,
+          "found": "0",
+          "wasmLinearMemoryBytes": 524288,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "0",
+          "countUnit": "indices under supplied synthetic origin; one state each",
+          "searched": [
+            {
+              "first": "4294967280",
+              "last": "4299161583"
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 0,
+          "materialized": 0,
+          "materializationTruncated": false,
+          "exportComplete": true,
+          "warmupInspections": "112",
+          "currentVideoStateRecovered": false,
+          "rssAfter": 154546176
+        },
+        {
+          "iteration": 1,
+          "adapterMs": 53.42090400000052,
+          "adapterInspectionsPerSecond": 78514283.47225197,
+          "serializationMs": 0.08098099999915576,
+          "serializedBytes": 3473,
+          "instantiateMs": 0.3329360000007,
+          "setupMs": 0.6516599999995378,
+          "kernelMs": 48.58299000000079,
+          "kernelInspectionsPerSecond": 86332767.909096,
+          "found": "0",
+          "wasmLinearMemoryBytes": 524288,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "0",
+          "countUnit": "indices under supplied synthetic origin; one state each",
+          "searched": [
+            {
+              "first": "4294967280",
+              "last": "4299161583"
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 0,
+          "materialized": 0,
+          "materializationTruncated": false,
+          "exportComplete": true,
+          "warmupInspections": "112",
+          "currentVideoStateRecovered": false,
+          "rssAfter": 154808320
+        },
+        {
+          "iteration": 2,
+          "adapterMs": 50.34584499999983,
+          "adapterInspectionsPerSecond": 83309834.20776857,
+          "serializationMs": 0.07322899999962829,
+          "serializedBytes": 3473,
+          "instantiateMs": 0.2761109999992186,
+          "setupMs": 0.23709299999973155,
+          "kernelMs": 47.609010000000126,
+          "kernelInspectionsPerSecond": 88098954.37859324,
+          "found": "0",
+          "wasmLinearMemoryBytes": 524288,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "0",
+          "countUnit": "indices under supplied synthetic origin; one state each",
+          "searched": [
+            {
+              "first": "4294967280",
+              "last": "4299161583"
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 0,
+          "materialized": 0,
+          "materializationTruncated": false,
+          "exportComplete": true,
+          "warmupInspections": "112",
+          "currentVideoStateRecovered": false,
+          "rssAfter": 155201536
+        }
+      ],
+      "summary": {
+        "adapterMsMedian": 51.76197400000092,
+        "adapterMsRange": [
+          50.34584499999983,
+          53.42090400000052
+        ],
+        "adapterThroughputMedian": 81030603.66283414,
+        "kernelThroughputMedian": 86332767.909096
+      }
+    },
+    {
+      "engine": "index",
+      "recipe": {
+        "id": "medium8-fixed",
+        "n": 8,
+        "kind": "medium",
+        "gaps": [
+          1,
+          1
+        ]
+      },
+      "requestSHA256": "a5d2ddcd706c5c718d2ff595c69302287d9eb71f2652ce90e547fdb26e3e66a2",
+      "domain": {
+        "kind": "known-origin-terminal-indices",
+        "origin": {
+          "kind": "initial-state-before-draw-1",
+          "initialSeed": 305419896,
+          "provenance": "synthetic seed"
+        },
+        "first": "4294967280",
+        "last": "4299161583",
+        "predecessorPolicy": "post-boot-events-only",
+        "provenance": "synthetic bounded benchmark prior"
+      },
+      "budget": {
+        "maxInspectedIndices": 4194304,
+        "maxWallTimeMs": 120000,
+        "chunkIndices": 65536
+      },
+      "maskSHA256": [
+        "2cb9bf6a20f1734eaeaed2b3e68f272d111f994f3b8e443cdd415ecef2217a8d",
+        "a2bd907bc668648e16a499b47be1eec01a6fdec435e374990a88571b2318e379",
+        "331f716b8040be6ebdaf32b61ddb465c518d19a57537ed72ef55693835c0c794",
+        "3ef37b1f4e2bac11efbf14bf60ccaa94a93c763ea573ba20e96f7dd3b0f9d859",
+        "c23cc7c10016a81950e7bbed842af953ed4ac1b88ac2ec91c5782618104a521d",
+        "b66eb879c15bd0e016ee2311fbcd1cab8bd4d78c46dd59a6ec41cd4eab362043",
+        "846e682a0666b77bdf7aad86335011983d661c1bbcecee37a402ee2452ed307b",
+        "0e4ee459583b9dde5807afe125a40a74b8fe84432185ebe0add984cea8b13081"
+      ],
+      "timingScope": "adapter includes cloning/hash/instantiate/packing/chunk yields/materialization; raw kernel excludes setup, Worker transfer and serialization; fresh instances with warmed engine, not process-cold",
+      "trials": [
+        {
+          "iteration": 0,
+          "adapterMs": 21.239074999999502,
+          "adapterInspectionsPerSecond": 197480539.9952728,
+          "serializationMs": 0.0785570000007283,
+          "serializedBytes": 7378,
+          "instantiateMs": 0.20279200000004494,
+          "setupMs": 0.46132700000089244,
+          "kernelMs": 18.65027000000009,
+          "kernelInspectionsPerSecond": 224892401.0215391,
+          "found": "328584",
+          "wasmLinearMemoryBytes": 524288,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "328584",
+          "countUnit": "indices under supplied synthetic origin; one state each",
+          "searched": [
+            {
+              "first": "4294967280",
+              "last": "4299161583"
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": 7,
+          "materializationTruncated": true,
+          "exportComplete": false,
+          "warmupInspections": "7",
+          "currentVideoStateRecovered": false,
+          "rssAfter": 158085120
+        },
+        {
+          "iteration": 1,
+          "adapterMs": 20.461065999999846,
+          "adapterInspectionsPerSecond": 204989515.20903316,
+          "serializationMs": 0.10764000000017404,
+          "serializedBytes": 7378,
+          "instantiateMs": 0.1857959999997547,
+          "setupMs": 0.4613970000009431,
+          "kernelMs": 30.70028199999979,
+          "kernelInspectionsPerSecond": 136621025.17494884,
+          "found": "328584",
+          "wasmLinearMemoryBytes": 524288,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "328584",
+          "countUnit": "indices under supplied synthetic origin; one state each",
+          "searched": [
+            {
+              "first": "4294967280",
+              "last": "4299161583"
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": 7,
+          "materializationTruncated": true,
+          "exportComplete": false,
+          "warmupInspections": "7",
+          "currentVideoStateRecovered": false,
+          "rssAfter": 158347264
+        },
+        {
+          "iteration": 2,
+          "adapterMs": 23.04265999999916,
+          "adapterInspectionsPerSecond": 182023429.586695,
+          "serializationMs": 0.08156100000087463,
+          "serializedBytes": 7378,
+          "instantiateMs": 0.23057300000073155,
+          "setupMs": 0.44510300000001735,
+          "kernelMs": 19.345445999999356,
+          "kernelInspectionsPerSecond": 216810922.83941862,
+          "found": "328584",
+          "wasmLinearMemoryBytes": 524288,
+          "status": "complete",
+          "inspected": "4194304",
+          "candidates": "328584",
+          "countUnit": "indices under supplied synthetic origin; one state each",
+          "searched": [
+            {
+              "first": "4294967280",
+              "last": "4299161583"
+            }
+          ],
+          "unsearched": [],
+          "searchCompleteWithinDomain": true,
+          "previewCount": 16,
+          "materialized": 7,
+          "materializationTruncated": true,
+          "exportComplete": false,
+          "warmupInspections": "7",
+          "currentVideoStateRecovered": false,
+          "rssAfter": 158609408
+        }
+      ],
+      "summary": {
+        "adapterMsMedian": 21.239074999999502,
+        "adapterMsRange": [
+          20.461065999999846,
+          23.04265999999916
+        ],
+        "adapterThroughputMedian": 197480539.9952728,
+        "kernelThroughputMedian": 216810922.83941862
+      }
+    }
+  ],
+  "memory": {
+    "scope": "process rss samples/maxRSS include validation and JS; not isolated workload peak, no browser measurement",
+    "rssBefore": 106119168,
+    "rssAfter": 157605888,
+    "maxRssKiB": 156172
+  }
+}

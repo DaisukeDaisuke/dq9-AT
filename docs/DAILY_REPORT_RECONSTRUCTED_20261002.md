@@ -140,3 +140,10 @@ private再現helperに一度、後時点のpool pointerを入力へコピーす�
 - [AT特定・総当たり要件](AT_IDENTIFICATION_SEARCH_REQUIREMENTS.md)を追加。未知seedのlow31全域、既知originからのindex範囲、bit31の2状態、イベント後から映像現在までの未知消費、hard除外とsoft順位を定義。既存探索の回帰を再実行した。全域性能測定と映像由来の現在AT特定は未完了
 - 既存creator release `3a49749acb3d77ddcdcc71cea657a51aeb2f61cf` の[CI/deploy](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/36947907324)成功を確認。cloud Chromeでlow31/既知originの合成例、reset、候補保存上限の表示、first-spawn入力不足時の無効化を確認。private creator fixtureのブラウザ実行とは別
 - 今回の枠修正は公開後の実ブラウザ確認をこれから行う
+
+## 10:27 JST追記: 認識修正の本番確認とAT探索の性能測定
+
+- `fbc499c2858772b2e6054b3d87b019ae97fc0845` の[CI/deploy](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/36949693816)が成功。cloud Chromeで実ROM312モデル、既存動画clip、CPU/WASM推論を使い、表示2枠／内部8候補、取得時番号・時刻・ROI、保持pause、resume、seek消去を確認。識別精度やWebGPU速度の保証とは別
+- [有界AT探索ベンチマーク](AT_SEARCH_BENCHMARK_20261002.md)と再現runnerを追加。既存engine/kernelは無変更で、14 workloadを各4,194,304件×3反復。37件の独立BigInt oracle・planted真値・境界・中止・保存上限検証、既存47/634テスト、独立レビューと統合先のrunner smokeが通過
+- low31とindexのdomain・計数単位を区別し、同じ8 masksのgap幅拡大によるコスト増加を計測。全域所要時間への外挿、映像の現在AT確定、ブラウザ速度の実績とはしない
+- 1ninnの2分5秒付近でみいらおとこを見逃すという追加報告。実映像の抽出・選択・分類の境界を確認中で、原因未確定。方式選択の調査に向けた依頼文も用意した
