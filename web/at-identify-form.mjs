@@ -6,12 +6,12 @@ function ids(value,label){const s=String(value??'').trim();if(!s)return [];const
 export const syntheticExample=()=>({synthetic:true,ordered:true,rows:[{label:'合成例 A',tables:'30',species:'31',gapMode:'unknown',gapMin:'',gapMax:'',gapProvenance:''},{label:'合成例 B',tables:'30',species:'31',gapMode:'range',gapMin:'1',gapMax:'3',gapProvenance:'動作確認用の合成仮定。映像の証拠ではない'}],domainMode:'interval',domainFirst:'0',domainLast:'65535',domainProvenance:'動作確認用の合成範囲',maxStates:'100000',maxMs:'2000',chunkStates:'4096'});
 export function buildFormRequest(form,tables){
  need(Array.isArray(form.rows)&&form.rows.length>=1&&form.rows.length<=8,'観測は1〜8行で入力してください');
- const sightings=[],events=[],edges=[],bindings={},observationEdges=[];
+ const sightings=[],events=[],edges=[],bindings=Object.create(null),observationEdges=[];
  for(let i=0;i<form.rows.length;i++){
-  const row=form.rows[i],sid=`s${i+1}`,eid=`event${i+1}`;
+  const row=form.rows[i],sid=row.sightingId??`s${i+1}`,eid=row.eventId??`event${i+1}`;
   const tableIds=ids(row.tables,`観測${i+1}の表ID`),species=ids(row.species,`観測${i+1}の種ID`);
-  sightings.push({id:sid,label:String(row.label??'').slice(0,160),source:form.synthetic?'synthetic':'manual-entry',birthCertified:false});
-  events.push({id:eid,operation:'weighted-species',stateBoundary:'immediately-after-draw',tableSpeciesAlternatives:tableIds.flatMap(tableId=>species.map(monsterId=>({tableId,monsterId}))),evidence:{status:form.synthetic?'synthetic-test-only':'unverified-user-hypothesis',sightingId:sid}});
+  sightings.push({id:sid,label:String(row.label??'').slice(0,160),source:row.sourceObservation?'imported-observation':form.synthetic?'synthetic':'manual-entry',birthCertified:false,...(row.sourceObservation?{sourceObservation:structuredClone(row.sourceObservation)}:{})});
+  events.push({id:eid,operation:'weighted-species',stateBoundary:'immediately-after-draw',tableSpeciesAlternatives:tableIds.flatMap(tableId=>species.map(monsterId=>({tableId,monsterId}))),evidence:{status:form.synthetic?'synthetic-test-only':'unverified-user-hypothesis',sightingId:sid,...(row.sourceObservation?{sourceObservation:structuredClone(row.sourceObservation),interpretation:'Imported source record retained separately from the editable table/species hypothesis; naturalConfirmed is not promoted to proof'}:{})}});
   bindings[sid]=eid;
   observationEdges.push({from:eid,toSighting:sid,callsAfterEvent:{min:'0',max:null},provenance:'抽選から目視までの消費数は未確定'});
   if(i&&form.ordered){
@@ -20,7 +20,7 @@ export function buildFormRequest(form,tables){
    if(row.gapMode==='range'){
     const min=number(row.gapMin,`観測${i+1}までの最小消費`,1,Number.MAX_SAFE_INTEGER),max=number(row.gapMax,`観測${i+1}までの最大消費`,1,Number.MAX_SAFE_INTEGER);need(max>=min,'最大消費は最小消費以上にしてください');provenance=String(row.gapProvenance??'').trim();need(provenance,'有限の消費間隔には根拠・仮定を記入してください');gap={min:String(min),max:String(max)};
    }
-   edges.push({from:`event${i}`,to:eid,callsBetweenPostStates:gap,provenance});
+   edges.push({from:events[i-1].id,to:eid,callsBetweenPostStates:gap,provenance});
   }
  }
  const alternatives=[{id:'unresolved-association',description:'既存個体・再出現・同一個体の再観測。出生と観測の対応が不明'},{id:'unresolved-label-origin',description:'種の誤認、表の不足、別の生成経路など。網羅性未保証'}];

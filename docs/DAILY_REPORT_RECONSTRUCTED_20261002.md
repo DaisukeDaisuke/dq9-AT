@@ -473,3 +473,13 @@ Work5の条件付きNPC予測、Work6のheadless更新、屋内逆引きの限�
 Work8から開始報告を受領し、指定した通信文書の取得・hash確認と、初回指示を読み受領確認したことを照合した。報告時点ではROM／SAV／runtime復元、退出入力の確定、native比較、実装・回帰は未実施。開始と通信確認を実装完了として扱わない。既存観測から候補探索への接続も隔離環境で実装中で、未確定のsourceは今回保存しない。
 
 今回の確定差分はこの日報追記のみ。前日日報のarchive本体、通信本文・routing state、進行中source、ゲーム入力・抽出資産はリポジトリへ追加しない。private tool資産と解析注釈に新しい確定差分はなく、重複commitを作らない。
+
+## 20:43 JST追記: 記録した観測を既存の候補探索へ引き渡す
+
+AT追跡画面の「記録した観測から候補を絞る」から、同じタブの既存identifierへ保存snapshotを渡す接続を追加した。保存済みsession JSONからも1〜8件の観測を選べる。外部既知seed、観測ID、table／monster候補、mapや観測元、未知のconsumerを保持し、元の追跡sessionと証明台帳は書き換えない。
+
+過去の探索窓、保存lowerBound／conditionalBound、時刻、観測後に追記したboot prefixを、その観測のindex上限・下限へ流用しない。通常の入力でgapや最終indexが不明なら条件不足のまま残す。利用者が根拠付きの有界仮説を明示した場合に既存solverへ渡せる接続であり、実動画の現在ATを自動特定する実装ではない。結果も仮定した最後の抽選時点を表し、観測時点から現在までの未知消費は残る。
+
+変更はadapter、既存form／page／AT panel／HTMLと既存page回帰の6ファイルに限定。最新日報を保持した統合stageで既存aggregate49 Node commandsがexit0。low31 page83 assertions、known-origin page171 assertionsを含み、引渡し、file読込、選択、重複拒否、条件不足、遅延読込、clear／retry、取消・再開、元session不変を確認した。探索engine／Worker、AT core、WASM、build定義、Work7／8の内部実装は変更していない。
+
+合成の保存形式sessionに明示した合成index1〜100000の仮説では、観測2件の20,964候補が3件で14,148候補になった。一方、未知gapのままなら未解決・走査0・候補数不明を維持する。この数値はnative sessionや実動画での同定成功ではない。公開後の実ブラウザー操作は未確認で、配信後に別途行う。ゲーム入力、native生成データ、画像・動画、生成binaryはcommitしない。

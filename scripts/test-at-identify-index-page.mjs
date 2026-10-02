@@ -7,6 +7,9 @@ import {mountIdentificationPage} from '../web/at-identify-page.mjs';
 import {startIdentification} from '../web/at-identify.mjs';
 import {startIndexIdentification} from '../web/at-identify-index.mjs';
 import {buildIndexModeFormRequest} from '../web/at-identify-index-form.mjs';
+import {ATKernel,ATSession} from '../web/at-core.mjs';
+import {ARand} from '../web/vendor/arand-reference.mjs';
+import {sessionObservationsToForm,readSessionObservations,storeSessionIdentification,SESSION_IDENTIFICATION_KEY} from '../web/at-session-identification.mjs';
 import {stateAtTerminalIndex} from '../web/at-identify-index-engine.mjs';
 let assertions=0,indexWorkers=0,legacyWorkers=0;
 const check=(v,m)=>{assert(v,m);assertions++;};
@@ -52,4 +55,43 @@ const loading=submit();$('cancel').click();await loading;check($('status').textC
 // Returning to the old mode continues to use the untouched legacy engine and renderer.
 mode('low31');$('example').click();await submit();check(ui.getResult().schema==='bounded-at-identification-v1');check(legacyWorkers===2);check(textTree($('results')).includes('32bit候補 2'));check(!textTree($('results')).includes('candidateMaterialization'));
 for(const path of ['at-identify-index.mjs','at-identify-index-worker.mjs','wasm/at_identify_stream.wasm'])check(new URL('./'+path,'https://example.invalid/dq9-AT/at-identify.html').pathname==='/dq9-AT/'+path);
-console.log(JSON.stringify({passed:true,assertions,indexWorkers,legacyWorkers,scope:'real Node Workers and minimal DOM; not browser visual/download completion',checks:['mode isolation','explicit seed/provenance and uint64 range','no index0 or overwide range','unknown and single-event unresolved','actual state per index','output alias at another index','index-only coverage','capped candidate handoff','export JSON arrays and truncation','immutable input','budget','cancel loading/search','restart','hash/fetch failures','legacy return','subdirectory paths']},null,2));
+// Read-only session handoff through the same page, form and real Worker. This
+// saved-format fixture is generated with ATSession; it is not a native capture.
+const kernel=new ATKernel((await WebAssembly.instantiate(await readFile(new URL('../web/wasm/map_render.wasm',import.meta.url)),{})).instance);
+const live=new ATSession('0x12345678',kernel);live.setMap({mapId:7402,source:'synthetic UI fixture'});
+for(const id of ['human:A','human:B','human:C'])live.observeMonster({id,tableIds:[30],monsterId:31,source:'synthetic arithmetic fixture; not a native sighting',naturalConfirmed:true},tables,100);
+live.noteUnresolvedConsumption({id:'unknown:gap',consumer:'NPC-movement',source:'synthetic UI fixture'});
+live.observeMonster({id:'human:D',tableIds:[30,65535],monsterId:31,source:'synthetic alternative-table fixture'},tables,100);
+let seed=0x12345678n;const updates=Array.from({length:100},(_,i)=>{const before=seed,[after,random]=ARand(seed);seed=after;return{sequence:String(i+1),before:String(before),after:String(after),random:String(random)};});
+live.ingestBootTrace({origin:'boot-known-initial',initialSeed:0x12345678,startPosition:'0',source:'synthetic arithmetic prefix recorded AFTER the observations',updates});
+const saved=JSON.parse(JSON.stringify(live.snapshot())),unchanged=JSON.stringify(live.snapshot());
+check(ATSession.restore(saved,kernel,tables).snapshot().lowerBound==='100');
+const imported=sessionObservationsToForm(saved,['human:C','human:A','human:B']);
+check(imported.rows.map(r=>r.sightingId).join(',')==='human:A,human:B,human:C','preserve recorded order, not selection argument order');
+check(imported.firstIndex===''&&imported.lastIndex==='','a later prefix is never an earlier observation floor');
+check(imported.rows.every(r=>r.gapMode==='unknown'&&r.gapMax===''));check(imported.sessionContext.consumerUncertainty.some(e=>e.id==='unknown:gap'));
+check(imported.sessionContext.savedLowerBound==='100'&&!imported.sessionContext.savedBoundsUsedAsIndexLimits);
+check(sessionObservationsToForm(saved,['human:D']).rows[0].tables==='30, 65535');
+for(const ids of [['human:A','human:A'],['missing'],[]]){assert.throws(()=>sessionObservationsToForm(saved,ids));assertions++;}
+const duplicate=structuredClone(saved);duplicate.events.push(duplicate.events.find(e=>e.id==='human:A'));assert.throws(()=>readSessionObservations(duplicate));assertions++;
+assert.throws(()=>readSessionObservations({...saved,origin:'paused-state-not-boot'}));assertions++;
+const memory=new Map(),storage={setItem:(k,v)=>memory.set(k,v),getItem:k=>memory.get(k)??null};storeSessionIdentification(saved,storage);check(JSON.parse(storage.getItem(SESSION_IDENTIFICATION_KEY)).initialSeed===saved.initialSeed);
+const sessionUI=mountIdentificationPage({document:doc,fetchImpl,startSearch,startIndexSearch,storage,locationSearch:'?session=handoff'});await sessionUI.ready;
+check(sessionUI.getSessionChoices().length===4);check(!$('session-use').disabled);check($('session-status').textContent.includes('100'));
+sessionUI.getSessionChoices()[3].box.checked=false;$('session-use').click();check(sessionUI.snapshot().rows.length===3);check(sessionUI.snapshot().initialSeed==='0x12345678');check(sessionUI.snapshot().firstIndex==='');check(sessionUI.getRows()[0].sourceMetadata.sourceObservation.event.id==='human:A');
+await submit();check($('status').textContent.includes('canonical decimal'),'missing domain is explicit, not silently supplied');
+$('first-index').value='1';$('last-index').value='100000';$('index-provenance').value='Synthetic demonstration range only; no measured finite upper bound';$('max-ms').value='10000';
+await submit();check(sessionUI.getResult().branches[0].status==='unresolved');check(sessionUI.getResult().inspectedIndices==='0');check(sessionUI.getResult().branches[0].candidateIndicesFound===null);
+for(const r of sessionUI.getRows().slice(1)){r.gapMode.value='range';r.gapMin.value='1';r.gapMax.value='3';r.gapProvenance.value='Synthetic narrowing hypothesis only; no native gap evidence';}
+await submit();const narrowed=sessionUI.getResult();check(narrowed.status==='complete');check(narrowed.branches[0].candidateIndicesFound!=='0');check(BigInt(narrowed.branches[0].candidateIndicesFound)<100000n);check(!narrowed.currentVideoStateRecovered);check(narrowed.branches[0].eventBoundaryId==='weighted:human:C');
+check(narrowed.branches[0].sightingEventBindings['human:B']==='weighted:human:B');check(narrowed.sightings[0].sourceObservation.event.source.includes('synthetic'));check(narrowed.inputForm.sessionContext.consumerUncertainty.some(e=>e.id==='unknown:gap'));
+const threeCount=BigInt(narrowed.branches[0].candidateIndicesFound);
+sessionUI.getRows()[0].box.children[0].children[1].click();await submit();const twoCount=BigInt(sessionUI.getResult().branches[0].candidateIndicesFound);check(threeCount<twoCount,'adding a third selected observation narrows the same declared terminal-index domain');check(sessionUI.getResult().inputForm.sessionContext.selectedObservationIds.join(',')==='human:B,human:C');check(sessionUI.getResult().inputForm.sessionContext.importedObservationIds.length===3);
+$('max-states').value='1000';await submit();check(sessionUI.getResult().status==='budget-stopped');check(sessionUI.getResult().branches[0].unsearchedIndexIntervals.length>0);check(!sessionUI.getResult().branches[0].candidateMaterialization.candidateExportCompleteWithinDeclaredDomain);
+// Malformed / racing file reads cannot replace newer input or a running search.
+$('session-file').files=[{text:async()=>'{'}];await $('session-file').onchange();check($('session-status').textContent.includes('読込失敗'));check(sessionUI.snapshot().rows.length===2);
+let finishRead;$('session-file').files=[{text:()=>new Promise(r=>finishRead=r)}];const staleRead=$('session-file').onchange();$('clear').click();finishRead(JSON.stringify(saved));await staleRead;check(sessionUI.getSessionChoices().length===0);check(sessionUI.snapshot().sessionContext===undefined);check($('session-use').disabled);
+$('session-file').files=[{text:async()=>JSON.stringify(saved)}];await $('session-file').onchange();check(sessionUI.getSessionChoices().length===4);$('session-use').click();check(sessionUI.snapshot().rows.length===4);check(sessionUI.snapshot().rows[3].sourceObservation.event.tableIds.includes(65535));
+$('clear').click();check(sessionUI.getResult()===null&&$('export').disabled);check(JSON.stringify(live.snapshot())===unchanged,'all import/search/result paths leave the live session and proved prefix byte-for-byte unchanged');check(JSON.parse(storage.getItem(SESSION_IDENTIFICATION_KEY)).lowerBound==='100');
+const sessionDemo={fixture:'synthetic saved-format ATSession, not native data',domain:'1..100000',twoObservations:String(twoCount),threeObservations:String(threeCount),unknownGapStatus:'unresolved',lateBootPrefix:'100, not used as past index floor',liveSessionUnchanged:true};
+console.log(JSON.stringify({passed:true,assertions,indexWorkers,legacyWorkers,sessionDemo,scope:'real Node Workers and minimal DOM; not browser visual/download completion',checks:['mode isolation','explicit seed/provenance and uint64 range','no index0 or overwide range','unknown and single-event unresolved','actual state per index','output alias at another index','index-only coverage','capped candidate handoff','export JSON arrays and truncation','immutable input','budget','cancel loading/search','restart','hash/fetch failures','legacy return','subdirectory paths']},null,2));
