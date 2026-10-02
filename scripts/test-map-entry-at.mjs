@@ -45,7 +45,17 @@ test('main panel restores a local session through the production Worker without 
  const previous=Object.fromEntries(Object.keys(globals).map(k=>[k,Object.getOwnPropertyDescriptor(globalThis,k)]));
  try{
   for(const [k,v]of Object.entries(globals))Object.defineProperty(globalThis,k,{value:v,writable:true,configurable:true});
-  await import('../web/at-panel.mjs');
+  const {eventLogPreview}=await import('../web/at-panel.mjs');
+  const rawRows=Array.from({length:20000},(_,i)=>({sequence:i,payload:'x'.repeat(100)}));
+  const heavy={kind:'npc-continuation-observation',id:'large-native',evidence:{events:rawRows},comparison:{orderedConsumptionMatches:true,firstDifference:{field:'controllerFlags',expected:0,actual:1}}};
+  const preview=eventLogPreview([heavy]);assert(preview.length<4096);assert.match(preview,/20000/);assert.match(preview,/controllerFlags/);assert(!preview.includes('payload'));assert.equal(heavy.evidence.events,rawRows);
+  const smallEvent={kind:'monster-observation',id:'visible-id',monsterId:31,tableIds:[30]};assert.match(eventLogPreview([smallEvent]),/visible-id/);
+  if(process.env.WORK8_SESSION_FIXTURE){
+   const bytes=await fs.readFile(process.env.WORK8_SESSION_FIXTURE,'utf8'),actual=JSON.parse(bytes),before=JSON.stringify(actual);
+   const start=performance.now(),rendered=eventLogPreview(actual.events),elapsedMs=performance.now()-start;
+   assert(rendered.length<65536);assert.match(rendered,/controllerFlags/);assert.equal(JSON.stringify(actual),before);
+   console.log(JSON.stringify({fixtureBytes:Buffer.byteLength(bytes),previewBytes:Buffer.byteLength(rendered),previewElapsedMs:elapsedMs,fullEvidenceUnchanged:true}));
+  }
   const o=origin(),session=new ATSession(o.seed,kernel,{origin:'known-local-checkpoint',epoch:o.epoch});session.setMap({mapId:108});session.setMap({mapId:100},packet());const saved=JSON.parse(JSON.stringify(session.snapshot()));
   const input=nodes.get('at-restore');input.files=[{text:async()=>JSON.stringify(saved)}];await input.onchange();
   assert.match(nodes.get('at-state').textContent,/既知局所checkpoint起点（起動証明なし）/);assert.doesNotMatch(nodes.get('at-state').textContent,/ · 起動起点/);

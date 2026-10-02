@@ -518,3 +518,12 @@ private headless toolには、ユーザー提供Luaの座標配置を参照す�
 保存済み実測証拠の再比較では入場27 pairsの303 checksは差0。NPC6 pairsの30,100 checksは終端controller flagの差1を保持し、厳密比較は予定どおりexit1で全状態一致とはしない。順序付き消費の一致と未知の状態境界を区別し、JSON restore／再送／改竄・重なり拒否、Work5の保存projection4／0／4を確認した。今回の統合検証は保存証拠の再計算で、新native captureではない。
 
 loader・heap・geometry等の条件、controller外部flag setter、kind2等、青宝箱のphysical identity／開封、未知suffix、boot全履歴は未解決。公開後の実ブラウザーrestore表示・ダウンロードはこの時点では未確認。ROM／SAV／State／RAM／動画／抽出資産／private evidenceは公開sourceに含めない。
+
+
+## 2026-10-02 14:14 UTC: 大きい追跡証拠の表示を要約へ修正
+
+公開Work8の実保存session（31,623,295 bytes）を通常の復元操作で読み、局所起点・証明下限0・条件付き33・未知5件と重複復元時の不変を確認した。一方、証拠ログを展開した後にブラウザー操作がタイムアウトし、通常reloadで回復した。全文をDOMに置いていたため、最新40イベントでも大きいnative evidenceを表示していた。
+
+at-panelの表示だけを、イベント種別・件数・境界・hash・最初の差分などを取り出した要約にした。raw trace/source/比較列と保存・restore・Workerは変更していない。実sessionのプレビューは6,475 bytes、Node単発の作成時間0.379 ms、元sessionのJSONは不変。これはブラウザー性能測定ではない。既存12件と追加した同じテスト内の大きいログ確認、既存aggregate50コマンドが成功。修正後の公開ブラウザーでの展開は次に確認する。
+
+夜間の短期優先は実動画での物体認識比較・修正と、Work8資料に基づくAT再現の不足確認。Work9は準備のみ・未開始のまま。Work7の未採用版を認識改善済みとして配信していない。
