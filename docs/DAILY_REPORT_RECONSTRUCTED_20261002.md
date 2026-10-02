@@ -449,3 +449,15 @@ Work4の[CI／deploy](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/3698
 Work6はエミュレータtool側の変更であり、ATアプリの置換ではない。失敗時lifecycle、遅延prologue、IRQ境界、最外frame returnのlane誤接続を修正後、30/30回帰、native hook9件、実CPUfixture9件、元ROMのOFF／OFF／ON各600frameのCPU／RAM／最終画像一致、drop0を再確認した。修正版はprivate tool repoのcanonical sourceと新しいversioned runtime cacheへ通常pushし、38 textファイルと779,274 Bのraw gzip runtime archiveをremoteからbyte一致で確認した。元cacheと元lockをrollback用に保持し、以前のLibrary ZIPが修正後runtimeを含むとは扱わない。
 
 ARM9の推定stack／unknown rootという限界は残る。今回の約19.1%のstep時間増加は限定実行の測定であり、全ゲーム・全Stateやcycle単位の中立性を証明しない。緊急保存した旧UNFINISHED版は履歴として保持する。今回のWork5公開にWork6 sourceや未採用BOX修正を混ぜない。
+
+## 19:57 JST追記: Work5の公開ブラウザー確認完了
+
+Work5公開commit `4cc785a1d9a77c0051b385a70f6dea80ade5b004` の[CI／deploy](https://github.com/DaisukeDaisuke/dq9-AT/actions/runs/36995329064)は10:25:55 UTCにsuccess。配信後、新規cloudブラウザーの[公開ATページ](https://daisukedaisuke.github.io/dq9-AT/)で、通常のファイル選択から実際の開始状態・clock・ROM抽出JSONを入力して確認した。19:01追記のWork5「ブラウザー確認待ち」は、以下の確認範囲で解消した。
+
+武器屋／道具屋／武器屋vectorの3ケースは各300 tickを完了し、条件付きdrawは4／0／4。武器屋2ケースのseedは951441153→3358057021、道具屋は1536043482のままだった。各結果の「証明済み下限への加算0・追跡セッションは変更なし」と、画面上の既存sessionのseed、証明済み下限、観測仮定下限、event件数が変化しないことを確認した。保存済みprojectionとの全field比較やsession全体のbyte不変検査は前節のNode検査であり、ブラウザー側では表示を確認した範囲に限定する。
+
+完了後のorigin差替えで旧結果が消え保存が無効になること、clocks.jsonをoriginとして選ぶと入力種別エラーになり正しいoriginへ戻すと4 drawへ復帰すること、クリアで全入力・結果を除去し実行／保存を無効にすることが通過した。desktop表示に重なり・欠けはなかった。処理中の入力差替え、session永続化内容のbyte比較、JSON構文破損はこの実ブラウザー確認では独立再試験していない。
+
+結果保存はクリックまで確認したが、確認ツールのdownload待ちがtimeoutし、保存先・ファイル内容を取得できなかったため、ダウンロード完了は未検証のまま残す。検証入力、画素、画像、動画、抽出table、生ログは公開しない。[本番予測器の契約](NPC_AT_CONTINUATION.md)、[実Worker回帰](../scripts/test-npc-at-replay.mjs)、[panel制御回帰](../scripts/test-npc-replay-panel.mjs)と、上記の実UI検査を区別する。
+
+地図逆引き2例の実UI確認と修正済みheadless toolのremote一致確認は19:01追記に記録済みで、今回再実行・再公開していない。今回の更新はこの日報だけ。Work8のmap-entry実装やclient起動・通信成立を、この確認から完了と推定しない。
