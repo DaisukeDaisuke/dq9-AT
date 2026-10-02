@@ -1,0 +1,14 @@
+{
+  "candidate": "v5 source-integrated existing CLS verification",
+  "adopted": false,
+  "scope": "H5 now regression; all runtime proposals from image and ROM bank, no GT input",
+  "gate": {
+    "score": 0.45,
+    "margin": 0.05,
+    "source": "Existing Work1 B0 D1 gate, unchanged"
+  },
+  "source_hashes": {
+    "monster-local-proposals-v5-candidate.mjs": "edc77f80b0ea1e133d5bf23250c04ff4c9ea54d63c43135d0ab60144259270fb",
+    "monster-recognition-engine-v5-candidate.mjs": "2a57c7f3cf6111f34929a68ede47cae0ff088a4572c225d5b5af2967d9320732"
+  }
+}

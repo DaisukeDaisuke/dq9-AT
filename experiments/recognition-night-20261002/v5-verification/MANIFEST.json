@@ -1,0 +1,26 @@
+{
+  "V5_BROWSER_CHECKS.json": {
+    "bytes": 2398,
+    "sha256": "cdce8d0fd96263fc9cd8e14686e6d0bcb15d4776ec7466416f92d2061e64c0be"
+  },
+  "V5_PIPELINE_PARITY.json": {
+    "bytes": 1109,
+    "sha256": "1034454487d7a7372a3be70c45931a4c5610b4042ed3ea2b5942b1af87612029"
+  },
+  "V5_CLS_REFERENCE_PARITY.json": {
+    "bytes": 3904,
+    "sha256": "050cc99ced95decec7f235671c3f4b3ac0e1d0132dc87d9275b1d755d559b879"
+  },
+  "CALIBRATION_V5_CANDIDATE.json": {
+    "bytes": 549,
+    "sha256": "4359e68316f5dc19afd4af680f92cba01c32fb7ec19d9c59fa8c12d6fbdefed3"
+  },
+  "prepare-v5-source-bank.mjs": {
+    "bytes": 3314,
+    "sha256": "d12cefdd36506836bafb02a914233074cb7f3a149ea3e46920e98f022896a994"
+  },
+  "evaluate-h5-v5.mjs": {
+    "bytes": 2691,
+    "sha256": "19defccf5d35de07b2b916721b8dc441404c7c8e894254f128ac52ba2e5f65e1"
+  }
+}

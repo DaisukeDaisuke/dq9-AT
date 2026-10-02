@@ -1,0 +1,59 @@
+{
+  "created": "2026-10-02T15:08:00Z",
+  "ROM_reference_count": 64,
+  "all_CLS_vectors_exactly_equal": true,
+  "actual_pipeline_matches_posthoc_gate": [
+    {
+      "frame_id": "h5-01",
+      "same_boxes": true
+    },
+    {
+      "frame_id": "h5-02",
+      "same_boxes": true
+    },
+    {
+      "frame_id": "h5-03",
+      "same_boxes": true
+    },
+    {
+      "frame_id": "h5-04",
+      "same_boxes": true
+    },
+    {
+      "frame_id": "h5-05",
+      "same_boxes": true
+    },
+    {
+      "frame_id": "h5-06",
+      "same_boxes": true
+    },
+    {
+      "frame_id": "h5-07",
+      "same_boxes": true
+    },
+    {
+      "frame_id": "h5-08",
+      "same_boxes": true
+    },
+    {
+      "frame_id": "h5-09",
+      "same_boxes": true
+    },
+    {
+      "frame_id": "h5-10",
+      "same_boxes": true
+    },
+    {
+      "frame_id": "h5-11",
+      "same_boxes": true
+    },
+    {
+      "frame_id": "h5-12",
+      "same_boxes": true
+    }
+  ],
+  "known_regression": true,
+  "browser_pending": true,
+  "isolated_page_commit": "dec48115452c90afb676dc8f36666f956561c991",
+  "previous_production_blobs_unchanged": 430
+}

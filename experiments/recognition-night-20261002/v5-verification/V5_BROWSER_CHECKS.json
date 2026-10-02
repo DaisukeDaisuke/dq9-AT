@@ -1,0 +1,81 @@
+{
+  "page": "https://daisukedaisuke.github.io/dq9-AT/experiments/recognition-v5/monster-recognize.html",
+  "commit": "dec48115452c90afb676dc8f36666f956561c991",
+  "provider_selected": "CPU/WASM int8",
+  "ROM_loaded_models": 312,
+  "records": [
+    {
+      "frame": "h5-03",
+      "source_size": [
+        960,
+        720
+      ],
+      "displayed_boxes": [],
+      "reported_detector_ms": 2029.1,
+      "error": "",
+      "scope": "Observed source contains player, no labeled enemy; V3 old false box is absent."
+    },
+    {
+      "frame": "h5-04",
+      "source_size": [
+        960,
+        720
+      ],
+      "displayed_boxes": [
+        [
+          626,
+          15,
+          139,
+          229
+        ]
+      ],
+      "reported_detector_ms": 2340.1,
+      "error": "",
+      "scope": "Visible clay enemy retained, screenshot saved. Browser box differs by around1nativepixel from offline output; do not claim exact coordinate parity."
+    },
+    {
+      "frame": "holdout-v1-570",
+      "displayed_boxes": [
+        [
+          791,
+          266,
+          98,
+          113
+        ]
+      ],
+      "reported_detector_ms": 2317.8,
+      "scope": "Visible main body recovered; scythe/outer body incomplete. Offline IoU0.514; not full-body completion."
+    },
+    {
+      "frame": "holdout-v1-430",
+      "displayed_boxes": [],
+      "reported_detector_ms": 2711.7,
+      "scope": "Known real enemy remains missed."
+    },
+    {
+      "frame": "h5-03-after-label-fix",
+      "displayed_boxes": [],
+      "reported_detector_ms": 2043.6,
+      "coverage": "ROM1 checked,0kept,1inconclusive; correct labels observed",
+      "source_commit": "4b60cafe14597a8bfe149735e5c0279131564d11"
+    }
+  ],
+  "labels_bug": "Fixed3files, remote readbacks equal, CI37025829613success, actual counts/text verified",
+  "adopted": false,
+  "continuous_video": {
+    "video": "1ninn.mkv",
+    "actual_start": 542.19753,
+    "actual_pause": 578.378719,
+    "held_frame_time": 574.279,
+    "held_observation_serial": 121,
+    "held_box_count": 0,
+    "paused": true,
+    "error": "",
+    "scope": "Start/continuous observation/pause+held frame behavior verified, not clip-level precision/recall."
+  },
+  "download_log": {
+    "attempt": "2026-10-02T15:27UTC",
+    "tool_error": "Timed out after15000ms waiting for download",
+    "result": "unverified; not diagnosed as app download failure; no repeat loop"
+  }
+}
