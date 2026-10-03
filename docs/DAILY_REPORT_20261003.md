@@ -149,3 +149,12 @@ private source backup: 2c0e3c64494355f4c53fd32fff8447b772b86831。局所生デ�
 - 復元したアプリのbuild成功。既存契約チェック268件pass。祠39モデルのstatic geometry再実行成功。ブラウザ表示・画素一致・全マップ描画完成の受入は未実施。
 - BB/BBYの通常分岐に限定したGX packet builderを隔離保存。native model-view読戻しと前回packet templateを明示入力とし、未対応inverse/callback/suppressed条件を拒否する。現時点は静的解析由来とidentity入力のsmokeのみで、native動的比較・描画接続は未検証。既存のBB/BBY未対応判定は解除していない。
 - 復元指示書のURL置換用ソースは固定版と現行版を分離して取得中。新しいLibrary登録と索引・スケジュール参照更新は未完了。ROM/動画/RAM/抽出資産はGitへ含めていない。
+
+
+## 20:15 JST — 床候補のnative計算を限定再現
+
+- 復元索引の外部URL9箇所をLibraryソース控えへ置換。掲載先は第7節、古いclone前提も訂正したversion7へ更新し、復旧スケジュールも同じ版・size/SHAを参照する。固定基準と必須ROM8part/動画18partは維持。
+- ROM内だけで資産を読む隔離描画診断ページを追加し、CI/deploy成功。明示指定のtexture/materialを接続したが、dotクラウドブラウザのWebGL2初期化が失敗。理由の表示と操作無効化まで画面で確認。ブラウザ描画成功・画素一致とは扱わない。
+- col2のnative loader/candidate consumerを調査し、全1350 AMDJ/AMBLにある1178ファイルのheader・28byte record・cell index範囲を読み出せた。これは構造確認であり、床高や描画成功の件数ではない。recordは3頂点とnormalで、4頂点と仮定しない。
+- 元ほこらStateから自然に到達した線分/三角形、線分/平面、床候補選択を停止型観測で取得し、JSの整数計算と照合。実際の候補1件で選択index0・交点[0,653,65536]が一致。順位評価のY=656を最終交点Yへ代用すると3FXずれるため、nativeの最終平面計算を保持した。同じ入力の別実行であり、全map・複数候補・非干渉の証明へ拡大しない。
+- 02018d5cは元Stateの1frame観測で未到達。この失敗を保存し、到達した別の下位関数と混同しない。field/gridからの候補生成、instance座標変換、上下に重なる床の選択、mapクリックへの自動高さ接続は未完。

@@ -26,8 +26,8 @@
   },
   {
     "path": "README.md",
-    "bytes": 4667,
-    "sha256": "a017ee178ccafdfec85d9abb339940097e64f80c475c076f7c6d0abb7f8a6d75"
+    "bytes": 5527,
+    "sha256": "9f1c86d4808107694068babdb5aaa2b04d8e127932a7c7477f350270ad83372b"
   },
   {
     "path": "replay-col2.mjs",
@@ -161,8 +161,13 @@
   },
   {
     "path": "web/native-col2.mjs",
-    "bytes": 2394,
-    "sha256": "11606d316f9c3b328f74404e223f66d18b10ece14b35a852fca7cefd52e6b36f"
+    "bytes": 2503,
+    "sha256": "5f0bd0a5bde3b549b700001e0f3bc14078150b89cc8263371ad27e597d301d5c"
+  },
+  {
+    "path": "web/native-floor-candidate.mjs",
+    "bytes": 3070,
+    "sha256": "bb342022a12ce4579e67021640a6977a2a3cda8434b84f1ab02d862914512072"
   },
   {
     "path": "web/preview.mjs",

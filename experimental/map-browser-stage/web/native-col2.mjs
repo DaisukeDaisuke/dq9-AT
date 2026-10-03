@@ -11,8 +11,8 @@ export function readNativeCol2(bytes){
  const columns=u(0x1c),rows=u(0x20),cells=columns*rows+Math.floor(rows/2);
  if(!Number.isSafeInteger(cells)||cells>offsets[2]-offsets[1]||cells*2>offsets[3]-offsets[2])throw Error('COL2 cell tables too short');
  const count=recordBytes/28,records=Array.from({length:count},(_,index)=>{
-  const at=offsets[0]+index*28;
-  return {index,sourceOffset:at,tripletsQuantized:Array.from({length:4},(_,v)=>Array.from({length:3},(_,k)=>d.getInt16(at+v*6+k*2,true))),packedBoundsIndices:[d.getUint8(at+24),d.getUint8(at+25),d.getUint8(at+26)],rawFlags:d.getUint8(at+27),surfaceAttribute:d.getUint8(at+27)>>>1};
+  const at=offsets[0]+index*28,triplets=Array.from({length:4},(_,v)=>Array.from({length:3},(_,k)=>d.getInt16(at+v*6+k*2,true)));
+  return {index,sourceOffset:at,tripletsQuantized:triplets,verticesQuantized:triplets.slice(0,3),normalFx:triplets[3],packedBoundsIndices:[d.getUint8(at+24),d.getUint8(at+25),d.getUint8(at+26)],rawFlags:d.getUint8(at+27),surfaceAttribute:d.getUint8(at+27)>>>1};
  });
  const grid=Array.from({length:cells},(_,index)=>{
   const n=d.getUint8(offsets[1]+index),start=d.getUint16(offsets[2]+index*2,true),at=offsets[3]+start*2;
@@ -20,5 +20,5 @@ export function readNativeCol2(bytes){
   const indices=Array.from({length:n},(_,k)=>d.getUint16(at+k*2,true));if(indices.some(i=>i>=count))throw Error('COL2 polygon index out of bounds');return {index,start,indices};
  });
  const bounds={min:Array.from({length:3},(_,i)=>d.getInt16(8+i*2,true)),max:Array.from({length:3},(_,i)=>d.getInt16(14+i*2,true))};
- return {version,shift,columns,rows,cells,bounds,records,grid,offsets,version3ExtraBytes:bytes.length-offsets[4],scope:'Native structural records and grid references only. Four copied quantized triplets per record; geometric roles and native scale/instance transform still require consumer verification. Height, ray intersection, walkability and visible rendering not implemented.'};
+ return {version,shift,columns,rows,cells,bounds,records,grid,offsets,version3ExtraBytes:bytes.length-offsets[4],scope:'Native structural records and grid references only. 02030cc0/02030df4 consume three vertices plus a normal; only vertices receive instance scale. Native field selection/instance transform still require verification. Height, ray intersection, walkability and visible rendering not implemented.'};
 }
