@@ -105,3 +105,15 @@ Work11の提出実行sandbox053559をhashで特定してレビュー。source/ev
 新しい本線はROMに基づくマップ全体の互換描画。3名が共通ボードでアドレス・関数・小問を分担する指示書を提供済み。ブラウザ可能な担当は解析に加えSites描画調査も担当可能、使えない担当は解析に専念。統合・受入はorchestra。ふういんのほこらの霧を比較条件に残す。事前データの手埋めではなくROM/stateから再生成できるスクリプトを成果とする。担当の代理起動はしていない。
 
 private source backup: 2c0e3c64494355f4c53fd32fff8447b772b86831。局所生データは既存Library成果のversion2へ更新し、原ROM/動画/抽出資産をGitへ含めていない。
+
+
+## 16:38 JST — マップ互換描画の独立再現と全ROMの形式母数
+
+- 対象は全マップ。ふういんのほこら元ステートは最初の動的照合条件であり、全体の終了条件ではない。
+- カメラr1: 元ステートを再抽出し、root自身が原ROM/供給observerでGX送信入口を96回再捕捉。透視48packetのeye・projection16word・view12wordが提出実装の再計算と全一致した。停止BP観測であり、スケジュール同等性・画素一致・全マップの証明にはしない。
+- 配置r1: 原ROMからcall-streamを再生成、原ステートのnative RAMを新規採取。44モデル/配置・親/参照とworld位置/scale/yaw44件が一致。6frameのdraw consumerをoff2/on1で再実行し、両CPU/scene/instance/IO/image/final RAMの比較一致、339event・drop0・drain非進行。44entryから34draw callへ進む範囲を再現。描画関数の呼出し数を画素可視数にはしない。
+- 上記2件の再計算コードは提出実装を使用。ROM trig/literalのGhidra queryは提出物を照合利用しており、別アルゴリズム実装や全静的解析の独立再実施とは区別する。
+- 霧: 保存済み抽出スクリプトをrootの原ROM/stateで再実行し、提出の元状態fog JSON全体と一致。write-onlyな密度表のIO readback全0を実際の霧密度にしない。設定元・全map差・pixel適用は引き続き未完。
+- 全ROM形式母数: maplist1010record/872fieldCode。実在する全1350 AMBL/AMDJを走査し1422 BMBl/BMDJ streamの構文を取得、archive/member構文エラー0。これは描画成功数ではない。共有ats資源、大文字小文字差、O00a/O00b等を単純な同名ファイル規則から外れるものとして保持し、未解決pathを不存在mapと断定しない。
+- 委員から全4328モデル/36632shapeと省略引数/SBC終端対応の追加成果が提出されているが、その新しい版のroot受入はまだ。r1検証済み範囲へ合算しない。
+- 本番描画への統合、node/skin/SBC変換、texture/material、fog/effect、可視条件と画素比較は残作業。原ROM/state/RAM/動画/抽出ゲーム資産はGitへ追加していない。
