@@ -128,3 +128,14 @@ private source backup: 2c0e3c64494355f4c53fd32fff8447b772b86831。局所生デ�
 - 隔離WebGL診断ページを作成しsyntax確認。クラウドブラウザのlocal preview接続はERR_BLOCKED_BY_CLIENTで遮断され、ブラウザ表示・画素一致は未確認。ページを完成したビューアとして公開していない。
 - 全マップという目的を維持。床Yと既存2Dmapクリック接続、runtime可視性、特殊モデル、texture/global material、fog、native clip/rasterが残る。公開本番の認識器は変更していない。
 - 復元索引version5とLLVM Library manifestを非公開dots-toolsへ通常バックアップし、remote本文一致を確認した。原ROM/動画/RAM/抽出資産はGitへ含めない。
+
+
+## 18:21 JST — 霧の提出実体を分離受入、カメラ入口の再照合
+
+- B local9945という未採番の最終成果を確認。新UUIDでもseq1/2の手元とLibraryの異文が報告されており、B3本文とは帰属を自動統合しない。原因・作者・正本は未確定。成果ZIPそのもののSHA/CRCとsource26/private74全payloadを照合して受け入れた。
+- rootが原ROMから504bats/正常3528fog命令を再生成。503構造変換、315継承可能、188未指定拒否、1異常命令を再現。静的件数を描画可能map数にはしない。
+- 原ステート12frameのoff/off/onをrootが新規採取。392byteのROM生成fog構造が39採取点すべて一致。CPU/context/RAM/IO/image比較一致、12event/drop0、drain非進行。初期化済みstateの継続であり自然map entryの証明ではない。
+- 整数fogを固定core切出しC++と再比較し、LUT14,417,920byteと色混合36,896ケースが一致。RGBA6665/depth24/受理済みfragmentのfog maskを要求する接続入口を追加。WebGLの正規化深度をそのまま代用しない。全scene画素一致は未完。
+- C r6のplayer→camera入口をrootの既存native採取へ再照合。target/eye96件、透視P/V48件一致。新規96frameの実験とは数えない。
+- 既存マップメタデータを再利用するクリック座標→希望player位置→camera接続を追加。元の祠位置への逆変換でeye一致。高さYと現在camera条件は明示入力で、床高自動導出・ブラウザ操作試験・実際の移動は未実施。
+- 静的adapterを全669AMDJ/755配置streamへ適用し、5651配置のうち3691静的instanceを組み立て、1960件を未対応として保持。内訳はcol2系1297、BBY444、BB107、flag0x10系112。これは描画数でも互換完成数でもなく、次の未対応箇所を切り分ける実行結果。現在BB/BBYのnative計算接続を調査中。
