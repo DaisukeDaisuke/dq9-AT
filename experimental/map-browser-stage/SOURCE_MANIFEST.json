@@ -81,13 +81,23 @@
   },
   {
     "path": "web/index.html",
-    "bytes": 1838,
-    "sha256": "41bd4df26723180fb24a55fe98c433f7a8801781cbdc322a6165eefb0b1c28b7"
+    "bytes": 2315,
+    "sha256": "e85244fd5a5a4ec423ba80c98f08323cc5523e9050efad91ec3045b5d5976a71"
   },
   {
     "path": "web/map-click-camera.mjs",
     "bytes": 1161,
     "sha256": "a2ec886b951f9671b658d685466f14d9ec0d03c48159b7b2ca2911242724b219"
+  },
+  {
+    "path": "web/minimap-pac.mjs",
+    "bytes": 2129,
+    "sha256": "ff11e9af78e62fdf68a94d88215bb022a5cd1a53580fc0d8d40c3d44e1d1db5e"
+  },
+  {
+    "path": "web/minimap-preview.mjs",
+    "bytes": 5430,
+    "sha256": "89ef579f28054b194836597249b6a351100862c7b1be6dc5402c4008146858b4"
   },
   {
     "path": "web/native/camera-from-player.mjs",
@@ -186,8 +196,8 @@
   },
   {
     "path": "web/preview.mjs",
-    "bytes": 7383,
-    "sha256": "b1ea376e9b4c520bc3f9521b999c353c83df5edfc5c247e69143d967cf9b4836"
+    "bytes": 9744,
+    "sha256": "185935ebd241cd5147e224174ac40f53b7f86f6ddb8251415e30fae8ce6dfa0a"
   },
   {
     "path": "web/rom-arm9.mjs",
@@ -218,6 +228,11 @@
     "path": "web/vendor/call-stream.mjs",
     "bytes": 2797,
     "sha256": "b20a5b6d0ab441435c3c89ead73ff196b28f1be5375b099d956b80945eb579c4"
+  },
+  {
+    "path": "web/vendor/gp2.js",
+    "bytes": 12408,
+    "sha256": "4ba1fc04425c9a5ef3f1bd924e9ce9b01dd7ec48eedfd9b8458c8747e7045aa5"
   },
   {
     "path": "web/vendor/narc-source.js",

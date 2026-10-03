@@ -1,3 +1,5 @@
+import{MapRenderer,minimapProjectFromRom}from'./minimap-preview.mjs';
+import{cameraForMapClick}from'./map-click-camera.mjs';
 import {rasterizePreviewPackets} from './cpu-preview.mjs';
 import {openMapRom} from './static-scene.mjs';
 import {prepareDrawPackets} from './draw-packets.mjs';
@@ -33,3 +35,21 @@ $('archive').onchange=guard(selectArchive);$('load').onclick=guard(()=>{let text
  if(textureBytes){const materialGlobals=JSON.parse($('material').value);for(const k of ['diffuseAmbient','specularEmission','polygonAttribute'])if(!Number.isInteger(materialGlobals[k])||materialGlobals[k]<0||materialGlobals[k]>0xffffffff)throw Error('Explicit unsigned native material global required: '+k);
  const mb=project.sdk.read(0x020e934c,32),md=new DataView(mb.buffer,mb.byteOffset,mb.byteLength),masks=Array.from({length:8},(_,i)=>md.getUint32(i*4,true));packets=prepareDrawPackets(scene,{materialGlobals,masks});}
  if(!packets)upload();return render();});$('draw').onclick=guard(render);
+
+let minimapImage=null;
+$('mapload').onclick=guard(async()=>{
+ if(!project||!scene||scene.archiveName!=='D04M02.amdj'||scene.streamName!=='D04M0200.bmdj')throw Error('クリック表示の現在の確認対象はD04M02の明示配置です。他マップとの自動対応は未検証です。');
+ const wasmResponse=await fetch('../wasm/map_render.wasm');if(!wasmResponse.ok)throw Error('Existing minimap renderer unavailable');
+ const {instance}=await WebAssembly.instantiate(await wasmResponse.arrayBuffer(),{}),renderer=new MapRenderer(instance);
+ minimapImage=renderer.compose(minimapProjectFromRom(project.nfs),'D04M02.bmmp');
+ const canvas=$('minimap');canvas.width=minimapImage.width;canvas.height=minimapImage.height;canvas.getContext('2d').putImageData(new ImageData(minimapImage.rgba,minimapImage.width,minimapImage.height),0,0);
+ $('mapstatus').textContent=JSON.stringify({descriptor:minimapImage.descriptor.path,width:minimapImage.width,height:minimapImage.height,originPixel:minimapImage.originPixel,worldToMapScale:minimapImage.descriptor.worldToMapScale,scope:'Requested preview only; explicit camera Y is retained.'});
+});
+$('minimap').onclick=event=>guard(async()=>{
+ if(!minimapImage||!scene||scene.archiveName!=='D04M02.amdj'||scene.streamName!=='D04M0200.bmdj')throw Error('Load the confirmed minimap/scene pair first');
+ const canvas=$('minimap'),rect=canvas.getBoundingClientRect(),imageX=(event.clientX-rect.left)*canvas.width/rect.width,imageY=(event.clientY-rect.top)*canvas.height/rect.height;
+ if(imageX<0||imageY<0||imageX>=canvas.width||imageY>=canvas.height)throw Error('Click outside composed map');
+ const cameraState=JSON.parse($('camera').value),table=project.sdk.read(0x020e955c,16384),d=new DataView(table.buffer,table.byteOffset,table.byteLength);
+ const request=cameraForMapClick({imageX,imageY,originPixel:minimapImage.originPixel,worldToMapScale:minimapImage.descriptor.worldToMapScale,playerYFx:cameraState.playerPositionFx[1],cameraState},i=>[d.getInt16(i*4,true),d.getInt16(i*4+2,true)]);
+ $('camera').value=JSON.stringify({...cameraState,playerPositionFx:request.requestedPlayerPositionFx});$('mapstatus').textContent=JSON.stringify({imageX,imageY,...request},null,2);await render();
+}) ();
