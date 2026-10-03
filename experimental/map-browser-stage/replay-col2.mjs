@@ -1,0 +1,8 @@
+import{Narc}from'./web/vendor/narc-source.js';import{Compression,BufferReader}from'./web/vendor/nitro-fs.mjs';import fs from'node:fs/promises';import{createHash}from'node:crypto';import{openMapRom}from'./web/static-scene.mjs';import{readNativeCol2}from'./web/native-col2.mjs';
+const [romPath,out]=process.argv.slice(2);if(!out)throw Error('Usage: ROM private-output');const rom=await fs.readFile(romPath);if(createHash('sha256').update(rom).digest('hex')!=='3c9d809eb8e446b0da6a9b383c7a6c5146001636038384aa49cb1a2e367546d7')throw Error('ROM mismatch');const p=openMapRom(rom),results=[];
+const archives=p.nfs.readDir('data/map').files.filter(n=>/\.(amdj|ambl)$/i.test(n));
+function members(name){const z=Narc.load(new Uint8Array(p.nfs.readFile('data/map/'+name)));return z.files.map((b,i)=>[z.fnt.getFilenameOf(i),b[0]===0x10?new Uint8Array(Compression.decompress(new BufferReader(b.buffer,b.byteOffset,b.length))):b]);}
+for(const archive of archives)for(const [name,bytes]of members(archive))if(name.toLowerCase().endsWith('.col2')){
+ try{const c=readNativeCol2(bytes);results.push({archive,name,size:bytes.length,status:'structural',version:c.version,shift:c.shift,records:c.records.length,cells:c.cells,references:c.grid.reduce((s,r)=>s+r.indices.length,0)});}catch(e){results.push({archive,name,size:bytes.length,status:'unsupported',reason:e.message});}
+}
+await fs.writeFile(out,JSON.stringify({scope:'Structural all-archive COL2 inventory, not ground-height/native collision or render acceptance',results},null,2)+'\n');console.log(JSON.stringify({archives:archives.length,files:results.length,structural:results.filter(x=>x.status==='structural').length,unsupported:results.filter(x=>x.status!=='structural').length}));
