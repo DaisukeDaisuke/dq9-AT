@@ -27,3 +27,11 @@ On all33 fixed D1/D2/H4/H2/Lasdan frames using the original geometry, both banks
 Downstream CLS ranks the fixed GT model first for the three automatic H4 body crops within the four selected models, with both opaque and image-derived alpha variants. These scores are uncalibrated. The body-part reference winner must not be interpreted as species identity:430's spatial winner differs from its downstream CLS winner. Diagnostic appearance-component unions were not adopted as box expansions or counted as detection improvements.
 
 A separate fixed temporal block is being evaluated with the source/bank/rules frozen. No production integration or recognition completion is claimed.
+
+## Temporal follow-up: background path rejected, 07:25 JST
+
+The fixed30-frame temporal1190 block did not confirm the background method. With the same actual NodeWASM provider and original64 bank, originalV2 obtains9/22 enemy-box matches and0 false positives at IoU0.5; coherent-first ordering alone obtains10/22 and0 false positives. The10 unavailable background frames contain5 enemy boxes and were not scored as negatives.
+
+On the identical20 available frames/17 enemy boxes, originalV2 obtains7 matches/0 false positives, coherent-first original geometry8/0, and the dual-background path3/6. The background path is therefore rejected for general use. The earlier H4 result remains a known-case result, not evidence that it generalizes. No thresholds were retuned after this failure. Visual review of the first two added false boxes places them on a torch/wall and tablet edge; a party-ID error was not established.
+
+Offline input replay into the unchanged existing tracker keeps all identity/birth/AT flags uncertified. Both original/coherent paths reset on11 camera-registration failures and produce no tentative continuations on this sparse block. No live250ms scheduler, real-time speed or native actor identity claim follows from this replay.
