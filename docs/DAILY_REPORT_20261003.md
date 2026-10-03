@@ -58,3 +58,18 @@
 旧executeSegmentsの到達後余計な入力は、保存済み反例で8→3frames停止に修正を確認。既存17制御試験もpass。native入力前距離停止および現在PC breakpointによる停止機構は追加frame0（実遭遇試験とは区別）。
 
 一般的な壁回避、動く敵を含む全条件の無遭遇保証、厳密座標2件（tolerance0.035）の到達、AT consumer接続は未達／未検証のまま。別goal・tolerance0.2の成功で置き換えない。提出担当は停止し、追加試験と必要な修正はorchestraが引き継ぐ。全体完成認定はしていない。
+
+
+## 13:37 JST 移動中のAT実測を既存replayで照合
+
+元ふういんのほこらState・保存済み73frame移動列について、安全停止付きの基準側を各frame先に実行し、遭遇/seed setter停止がない場合だけobserver側を同じ1frame進めた。計測中75回すべてのmain RAM・ARM9/ARM7 register・field状態が一致。停止型breakpointとobserverを同一sessionで併用する制約は変更していない。
+
+18回のUpdateATと18回のATRandInt実returnを72eventで捕捉し、欠落0・seed chain一致。既存replayObservedTraceとWASMで18/18、差0、最終seed0xcff55723。17回のtable選択wrapperと1回のweighted種選択wrapperを観測した。新しい敵候補はframe64で観測。生成entry自体は今回未捕捉なので、空の生成entry配列を「生成0」と解釈しない。
+
+これは局所の実測replayであり、未来の出現・scheduler到達を自律予測した結果ではない。起動下限加算0。映像からの自動観測接続は未完了。
+
+## 13:32 JST Work10開始と依存の最小解消
+
+ユーザー開始のWork10 client1を受信。ROM・全5動画・既存成果は取得/hash照合済み。Python3.13と提供runtimeのPython3.12 ABI差が障害となったため、既取得libonnxruntime.so.1.23.2用の公式C APIヘッダ2点だけをLibraryで提供した。orchestra側ではC API23取得成功、担当側の推論確認/ackは未確認。
+
+指示書はLibrary IDから直接取得する方式。入力の不要な再梱包・分割は中止した。認識方式は限定せず、ブラウザを使わず調査・隔離比較・ZIP提出を依頼している。本番反映や認識精度改善の完了とは区別する。
