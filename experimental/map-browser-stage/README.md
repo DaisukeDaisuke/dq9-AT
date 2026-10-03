@@ -79,3 +79,10 @@ integration. Native pixel/fog parity, material globals for each scene, visibilit
 mode1, animated/special models and generalized instance transforms remain open.
 Node measurements are complete for this change; new browser interaction remains
 separate from the earlier D04M02 browser click acceptance.
+
+The observed outdoor camera has areaBlendMask=4. The ordinary player-follow
+contract correctly rejects it; do not clear that guard. An explicit
+nativeAppliedMatrices snapshot (eyeFx[3], view4x3Fx[12], projectionFx[16]) may
+instead be rendered through explicit-camera-input.mjs. Such a snapshot is static:
+map clicks are rejected until complete supported player-follow state is supplied.
+This renders the actually applied view without inventing a resolved blend state.

@@ -26,8 +26,8 @@
   },
   {
     "path": "README.md",
-    "bytes": 10645,
-    "sha256": "ff65a34c13597aa2a90cc1de2a305fabdbd2e5f03bb5ecb48e678d5d103e9f66"
+    "bytes": 11114,
+    "sha256": "479332c5a820b6e759ea53eb4fce962110300559a0bc56fb57b0816c1703874e"
   },
   {
     "path": "map-preview-bindings.mjs",
@@ -90,14 +90,19 @@
     "sha256": "7505716b73e20b81c153bd1457b085957699fd56a82a3c6b08af30640a48f757"
   },
   {
+    "path": "web/explicit-camera-input.mjs",
+    "bytes": 881,
+    "sha256": "c825b7e7f1d8451c5aea8861acaac6981b6aa35e24f03bdf26790d9c83bca9f5"
+  },
+  {
     "path": "web/fog-frame.mjs",
     "bytes": 1957,
     "sha256": "01f36cf452148bc20093ecc872973aab04ccc9711013f6a447292fc6ca87fefe"
   },
   {
     "path": "web/index.html",
-    "bytes": 2491,
-    "sha256": "ba4e95d56f140c01473edd9575964867bc99a57f390ef315166304c84ad6a284"
+    "bytes": 2631,
+    "sha256": "52d151c6e7308de303bb2ad25339815b633f810f88767875997fd37c01b13f60"
   },
   {
     "path": "web/map-billboard-callback.mjs",
@@ -226,8 +231,8 @@
   },
   {
     "path": "web/preview.mjs",
-    "bytes": 10442,
-    "sha256": "dd1a51da691baa2743b48ea0b91df7f875c40fbbc28e4e24f3b2730d2e9630c1"
+    "bytes": 10623,
+    "sha256": "2071ec446391c5eb701fe26398e6341389f2cd66458b3a7a7a3be69bbccc3730"
   },
   {
     "path": "web/rom-arm9.mjs",

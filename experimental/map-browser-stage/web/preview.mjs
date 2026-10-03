@@ -7,7 +7,7 @@ import {prepareDrawPackets} from './draw-packets.mjs';
 import {createTexturePreview} from './texture-preview.mjs';
 import {Compression,BufferReader} from './vendor/nitro-fs.mjs';
 import {Narc} from './vendor/narc-source.js';
-import {cameraFromPlayerFx} from './native/camera-from-player.mjs';
+import {cameraFromExplicitInput} from './explicit-camera-input.mjs';
 const $=id=>document.getElementById(id);let project=null,scene=null,renderInputs=null;
 const gl=$('view').getContext('webgl2'),cpuContext=gl?null:$('view').getContext('2d');if(!gl&&!cpuContext){$('status').textContent='停止: 描画contextを初期化できません。';throw Error('Rendering context unavailable');}
 function shader(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s;}
@@ -18,7 +18,7 @@ vbo=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,vbo);for(const [name,offset]
 }
 let vertexCount=0,packets=null,texturePreview=null;
 function upload(){if(!gl)throw Error('CPU経路では明示したtexture resourceとnative material globalsが必要です。');gl.bindVertexArray(null);gl.bindBuffer(gl.ARRAY_BUFFER,vbo);const vertices=[];for(const obj of scene.instances)for(const draw of obj.draws)for(const i of draw.indices){const v=draw.vertices[i];if(v.color555===null)throw Error('Unresolved vertex color');vertices.push(...v.position,...[0,5,10].map(k=>(v.color555>>k&31)/31));}gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(vertices),gl.STATIC_DRAW);vertexCount=vertices.length/6;}
-async function render(){if(!project||!scene)return;const cfg=JSON.parse($('camera').value),table=project.sdk.read(0x020e955c,16384),d=new DataView(table.buffer,table.byteOffset,table.byteLength);const c=cameraFromPlayerFx(cfg,i=>[d.getInt16(i*4,true),d.getInt16(i*4+2,true)]),v=c.view4x3Fx,p=c.projectionFx;
+async function render(){if(!project||!scene)return;const cfg=JSON.parse($('camera').value),table=project.sdk.read(0x020e955c,16384),d=new DataView(table.buffer,table.byteOffset,table.byteLength);const c=cameraFromExplicitInput(cfg,i=>[d.getInt16(i*4,true),d.getInt16(i*4+2,true)]),v=c.view4x3Fx,p=c.projectionFx;
  let V=[v[0],v[1],v[2],0,v[3],v[4],v[5],0,v[6],v[7],v[8],0,v[9],v[10],v[11],4096].map(x=>x/4096);
  let activeScene=scene,activePackets=packets;if(renderInputs?.profile){activeScene=cameraMapScene(project,scene,renderInputs.textureBytes,V.map(x=>Math.round(x*4096)),{profile:renderInputs.profile});activePackets=prepareDrawPackets(activeScene,renderInputs);V=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];}
  let textureResult=null;
@@ -51,7 +51,7 @@ $('minimap').onclick=event=>guard(async()=>{
  if(!minimapImage||!scene||minimapPair!==scene.archiveName+'::'+scene.streamName)throw Error('Load the confirmed minimap/scene pair first');
  const canvas=$('minimap'),rect=canvas.getBoundingClientRect(),imageX=(event.clientX-rect.left)*canvas.width/rect.width,imageY=(event.clientY-rect.top)*canvas.height/rect.height;
  if(imageX<0||imageY<0||imageX>=canvas.width||imageY>=canvas.height)throw Error('Click outside composed map');
- const cameraState=JSON.parse($('camera').value),table=project.sdk.read(0x020e955c,16384),d=new DataView(table.buffer,table.byteOffset,table.byteLength);
+ const cameraState=JSON.parse($('camera').value);if(cameraState.nativeAppliedMatrices)throw Error('適用済み行列のsnapshot表示です。クリック追従には未補完の通常camera状態が必要です。');const table=project.sdk.read(0x020e955c,16384),d=new DataView(table.buffer,table.byteOffset,table.byteLength);
  const request=cameraForMapClick({imageX,imageY,originPixel:minimapImage.originPixel,worldToMapScale:minimapImage.descriptor.worldToMapScale,playerYFx:cameraState.playerPositionFx[1],cameraState},i=>[d.getInt16(i*4,true),d.getInt16(i*4+2,true)]);
  $('camera').value=JSON.stringify({...cameraState,playerPositionFx:request.requestedPlayerPositionFx});$('mapstatus').textContent=JSON.stringify({imageX,imageY,...request},null,2);await render();
 }) ();
