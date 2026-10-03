@@ -631,3 +631,13 @@ V5では観測準備中に入力を動画から画像へ変更し、自動観測
 Work8で残ったNPC7/slot9/controller0236fdb8のflag差は、原入力のpost-frame2105で初めて0→1。書込みPC02040b5c、呼出し元overlay_d_17:021a5ad4を捕捉し、別の非停止観測でも274回のentry/store/returnと終端2651/map100/seed1926876651を確認した。全4722eventsのdrop0、対象1122eventsを保持。元のfull-RAM OFF/ON照合を追加したわけではない。
 
 近接判定はradius6144に対し、X距離6419では不成立、次の更新でX5633/Z6062となり成立する。実比較レジスタ6点と分岐が一致。外部近接setterの帰属は進んだが、将来のplayer/controller位置をsource側で生成する条件は残る。観測flagをframe固定で注入したり、不一致項目を比較から除外しない。条件付き33・BOOT0は維持。自作比較leafと集約結果をexperiments/npc-controller-proximity-20261003/へ保存。私的checkpointはversion8で生観測と失敗を保持。
+
+
+## 2026-10-03 01:45 UTC — map112宝箱/NPCの条件付き接続
+
+- 実SAV・通常入力でmap100→map112へ移動。トリガー前frame3350の実RAMから原始値を取得し、宝箱9回＋NPC初期化2回を投影。11回すべての順序、各前後seed、乱数戻り値、呼出元が保存済みネイティブ実測と一致。終端seed1280952554。
+- kind4抽選後に開封済みフラグ処理がflags72→64へ変更するwriterを捕捉。開封済みを理由に先行AT抽選を省かない。
+- 新処理は明示version2。旧version1と既存C01保存レシピの挙動を維持。旧5seed比較と既存map-entry12チェックが通過。
+- 実ROM由来map112レシピをATSessionへ条件付き11回として接続し、JSON保存→復元が完全一致。偽造boundは拒否。起動下限は0のまま。
+- 実測の限界：先行逐次OFF/ONペアは開始時からRAM不一致で失敗を保持。別の同時進行ペアでは開始/終端RAM一致、61イベント欠落0。全frame非干渉・seed setter監視を満たした完全観測証明ではない。物理青宝箱同定・全世界再現・起動証明は未達。
+- 実装は隔離段階。認識V6の回帰悪化は引き続き不採用。生RAM/ROM/SAV/ゲーム抽出物はGitへ含めない。
