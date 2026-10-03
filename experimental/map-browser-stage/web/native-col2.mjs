@@ -20,5 +20,5 @@ export function readNativeCol2(bytes){
   const indices=Array.from({length:n},(_,k)=>d.getUint16(at+k*2,true));if(indices.some(i=>i>=count))throw Error('COL2 polygon index out of bounds');return {index,start,indices};
  });
  const bounds={min:Array.from({length:3},(_,i)=>d.getInt16(8+i*2,true)),max:Array.from({length:3},(_,i)=>d.getInt16(14+i*2,true))};
- return {version,shift,columns,rows,cells,bounds,records,grid,offsets,version3ExtraBytes:bytes.length-offsets[4],scope:'Native structural records and grid references only. 02030cc0/02030df4 consume three vertices plus a normal; only vertices receive instance scale. Native field selection/instance transform still require verification. Height, ray intersection, walkability and visible rendering not implemented.'};
+ return {version,shift,columns,rows,cells,gridSpan:d.getInt16(0x18,true),bounds,records,grid,offsets,version3ExtraBytes:bytes.length-offsets[4],scope:'Native structural records and grid references only. 02030cc0/02030df4 consume three vertices plus a normal; only vertices receive instance scale. Native field selection/instance transform still require verification. Height, ray intersection, walkability and visible rendering not implemented.'};
 }

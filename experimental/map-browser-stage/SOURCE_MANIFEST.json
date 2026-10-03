@@ -26,8 +26,13 @@
   },
   {
     "path": "README.md",
-    "bytes": 5527,
-    "sha256": "9f1c86d4808107694068babdb5aaa2b04d8e127932a7c7477f350270ad83372b"
+    "bytes": 6377,
+    "sha256": "e703d7cd02d0ae85d9ad5c48299355ed6a28bf28ddf4c40ec6435847bf56e0e7"
+  },
+  {
+    "path": "render-cpu-preview.mjs",
+    "bytes": 3540,
+    "sha256": "bb883e7ff7c0f34d1df7254ad9e69111ccfb8962282a18e5cd023ade15bc2d29"
   },
   {
     "path": "replay-col2.mjs",
@@ -60,6 +65,11 @@
     "sha256": "ff6fce5ce6f09f15361a1ec583c11e6d62c438e87003ee03a07997ae3b4ce019"
   },
   {
+    "path": "web/cpu-preview.mjs",
+    "bytes": 4345,
+    "sha256": "65de2e0067404d87232606f52ae15472c8a046da42a292d5af6e703792bf7e85"
+  },
+  {
     "path": "web/draw-packets.mjs",
     "bytes": 2108,
     "sha256": "7505716b73e20b81c153bd1457b085957699fd56a82a3c6b08af30640a48f757"
@@ -71,8 +81,8 @@
   },
   {
     "path": "web/index.html",
-    "bytes": 1646,
-    "sha256": "72cb179d95f03771aa68aeae56646423795c85c0e89f2867c7c20f5bf963097a"
+    "bytes": 1821,
+    "sha256": "61c16897e025d7bcb64ea100f9f77fe66e853be30f45846bb8bb85b3a4cd0082"
   },
   {
     "path": "web/map-click-camera.mjs",
@@ -160,9 +170,14 @@
     "sha256": "2f6e15d8867e071d3c2935b7bea22d2d6ea9668ee41432df4be879f6cd93a135"
   },
   {
+    "path": "web/native-col2-candidates.mjs",
+    "bytes": 3237,
+    "sha256": "5f27f74b096985635f1dde1f2c79a87c297d65cdb56fabc1293c92fec13dfa5b"
+  },
+  {
     "path": "web/native-col2.mjs",
-    "bytes": 2503,
-    "sha256": "5f0bd0a5bde3b549b700001e0f3bc14078150b89cc8263371ad27e597d301d5c"
+    "bytes": 2534,
+    "sha256": "83cc1a9550149f02b121dda0db6d8fe139b0bf3a11d73b1575d981ccd99edcb8"
   },
   {
     "path": "web/native-floor-candidate.mjs",
@@ -171,8 +186,8 @@
   },
   {
     "path": "web/preview.mjs",
-    "bytes": 5719,
-    "sha256": "8bc864478277d6c355720436f7e77093fc1f1eb784f248cb503e40e4d0ec4818"
+    "bytes": 6206,
+    "sha256": "c963dc86e66c8411fcb75be5bd77c44d013d17c3ede475b187568cd03d77ce1f"
   },
   {
     "path": "web/rom-arm9.mjs",
