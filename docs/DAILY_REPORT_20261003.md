@@ -117,3 +117,14 @@ private source backup: 2c0e3c64494355f4c53fd32fff8447b772b86831。局所生デ�
 - 全ROM形式母数: maplist1010record/872fieldCode。実在する全1350 AMBL/AMDJを走査し1422 BMBl/BMDJ streamの構文を取得、archive/member構文エラー0。これは描画成功数ではない。共有ats資源、大文字小文字差、O00a/O00b等を単純な同名ファイル規則から外れるものとして保持し、未解決pathを不存在mapと断定しない。
 - 委員から全4328モデル/36632shapeと省略引数/SBC終端対応の追加成果が提出されているが、その新しい版のroot受入はまだ。r1検証済み範囲へ合算しない。
 - 本番描画への統合、node/skin/SBC変換、texture/material、fog/effect、可視条件と画素比較は残作業。原ROM/state/RAM/動画/抽出ゲーム資産はGitへ追加していない。
+
+
+## 17:54 JST — 最終解析成果の受領と描画接続の実装開始
+
+- A r5、C r6が最終成果を提出し担当終了。rootがZIPのSHA/CRCとmanifest（A source96/private232、C source98/private655）の全size/SHAを照合した。これは内容全機能の動的受入ではない。
+- ROMからARM9 SDK初期化データを読むbrowser-compatible JSを追加。trig/pivot/material maskの3範囲が元state RAMの値と一致。ゲーム資産や定数表はソースへ埋め込まない。
+- 隔離したdefault node/SBC matrix/shape/colorの接続を実装。祠archive39 NSBMDの構文処理を実行、44配置のうち39 static instanceを組み立てた。残る5 special modelは未対応として保持。浮動小数の合成行列はnative幾何一致未検証。
+- texture/paletteをauthor指定16byte名で接続し、325 materialで取得、2件は未解決を保持。再現CLIで出力再一致。palette indexや名前補完は使わない。texture接続はまだWeb shaderへ未結線。
+- 隔離WebGL診断ページを作成しsyntax確認。クラウドブラウザのlocal preview接続はERR_BLOCKED_BY_CLIENTで遮断され、ブラウザ表示・画素一致は未確認。ページを完成したビューアとして公開していない。
+- 全マップという目的を維持。床Yと既存2Dmapクリック接続、runtime可視性、特殊モデル、texture/global material、fog、native clip/rasterが残る。公開本番の認識器は変更していない。
+- 復元索引version5とLLVM Library manifestを非公開dots-toolsへ通常バックアップし、remote本文一致を確認した。原ROM/動画/RAM/抽出資産はGitへ含めない。
