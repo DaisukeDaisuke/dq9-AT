@@ -180,9 +180,19 @@
     "sha256": "66347cbf58ed027cf1212bc359db22d0357596dffbf6e5041905a5587c434602"
   },
   {
+    "path": "web/native-archive-request.mjs",
+    "bytes": 2522,
+    "sha256": "099a466f56c325d90de429692e49d379317053122443b4d8803c77a7e488b43d"
+  },
+  {
     "path": "web/native-billboard.mjs",
     "bytes": 2496,
     "sha256": "2f6e15d8867e071d3c2935b7bea22d2d6ea9668ee41432df4be879f6cd93a135"
+  },
+  {
+    "path": "web/native-bmbl-chunks.mjs",
+    "bytes": 1989,
+    "sha256": "45826620c225f68dbf0c9ce1a54c133a9f97fa09a9296441765b689ffa7fac19"
   },
   {
     "path": "web/native-col2-candidates.mjs",
