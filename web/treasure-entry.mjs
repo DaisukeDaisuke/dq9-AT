@@ -51,12 +51,13 @@ export function decodeTreasureWeights(bytes,memberName){
  if(declaredRows!==rows.length)throw Error('Treasure row count differs from source declaration');
  return {memberName,declaredRows,rows,unknownOpcodes};
 }
-export function readTreasureSource(nitro,memberName){
+export function readTreasureSource(nitro,memberName,{randomPassVersion=1}={}){
+ if(![1,2].includes(randomPassVersion))throw Error('Unsupported treasure random-pass version');
  if(typeof memberName!=='string'||!/^[A-Za-z0-9_]+\.bin$/.test(memberName)||memberName.startsWith('rand'))throw Error('An explicit map treasure member is required');
  const archive=Narc.load(new Uint8Array(nitro.readFile(TREASURE_ARCHIVE)));
  const read=name=>{const id=archive.fnt.getIdOf(name);if(id<0)throw Error(`Treasure member absent: ${name}`);return expanded(archive.files[id]);};
  const map=decodeTreasureEntries(read(memberName),memberName),tbox=decodeTreasureWeights(read('randTBox.bin'),'randTBox.bin'),ttt=decodeTreasureWeights(read('randTTT.bin'),'randTTT.bin');
- return {format:'dq9-treasure-entry-source',version:1,archive:TREASURE_ARCHIVE,map,tables:{tbox,ttt},mapBinding:'explicit member; no guessed map-ID binding',origin:'user-loaded-ROM',bootProof:false};
+ return {format:'dq9-treasure-entry-source',version:randomPassVersion,archive:TREASURE_ARCHIVE,map,tables:{tbox,ttt},mapBinding:'explicit member; no guessed map-ID binding',origin:'user-loaded-ROM',bootProof:false};
 }
 export class TreasureEntryKernel {
  constructor(kernel){this.kernel=kernel;}
@@ -65,21 +66,30 @@ export class TreasureEntryKernel {
   const finish=(resolved,reason)=>({format:'dq9-treasure-entry-reached-replay',version:1,resolved,reason,scope:'successful treasure resource load only',conditionalOnSuccessfulLoad:true,position:String(position),seed,consumed:Number(position-start),minimumConsumed:Number(position-start),outputs,frameTimingKnown:false,otherConsumersUnresolved:true,bootProof:false});
   if(loadComplete!==true)return finish(false,'Resource load and complete entry construction have not been established');
   if(source?.format!=='dq9-treasure-entry-source'||source.map.unknownOpcodes.length||source.tables.tbox.unknownOpcodes.length||source.tables.ttt.unknownOpcodes.length)return finish(false,'Unsupported resource commands');
-  // The source shows a randTBox pass before randTTT. A reached kind4 pass has
-  // not been paired here, so never jump over it to return a guessed prefix.
-  if(source.map.entries.some(e=>e.kind===4))return finish(false,'Kind4 randTBox reachability/writers remain unverified');
-  if(source.map.entries.some(e=>![0,1].includes(e.kind)))return finish(false,'Entry kind outside the measured0/1 scope');
-  for(const entry of source.map.entries){
+  // Preserve legacy saved recipes and their unresolved kind4 boundary.
+  if(source.version!==2&&source.map.entries.some(e=>e.kind===4))return finish(false,'Kind4 randTBox reachability/writers remain unverified');
+  if(source.version!==2&&source.map.entries.some(e=>![0,1].includes(e.kind)))return finish(false,'Entry kind outside the measured0/1 scope');
+  // Original0207cb6c executes the kind4 randTBox pass before the randTTT pass.
+  // C01M12 corroborates kinds2/4; kind3 constructor scope stays unresolved here.
+  if(source.map.entries.some(e=>![0,1,2,4].includes(e.kind)))return finish(false,'Entry kind outside the measured0/1/2/4 scope');
+  const ordered=[...source.map.entries.filter(e=>e.kind===4),...source.map.entries.filter(e=>e.kind!==4)];
+  for(const entry of ordered){
    const beforeFlags=Array.isArray(initialFlags)?initialFlags[entry.sourceOrder]:null;
    const known=Number.isInteger(beforeFlags)?0xffff:ownFlagsMask;
    let flags=Number.isInteger(beforeFlags)?((beforeFlags&~ownFlagsMask)|(entry.sourceFlags&ownFlagsMask))&65535:entry.sourceFlags;
    if(entry.kind===0){outputs.push({entryId:entry.entryId,sourceOrder:entry.sourceOrder,consumed:0,value:entry.value,flags,knownFlagsMask:known,reason:'kind0 skips both random passes'});continue;}
-   const eligible=source.tables.ttt.rows.filter(r=>r.selector===entry.value).slice(0,32);
+   const eligible=source.tables[entry.kind===4?'tbox':'ttt'].rows.filter(r=>r.selector===entry.value).slice(0,32);
    let selected=null,random=null,roll=null,residual=null;
    if(eligible.length){const pair=this.kernel.generate(state.seed,position,1);seed=pair[0];random=pair[1];position++;roll=this.kernel.e.at_randint(random,100);residual=roll;for(const row of eligible){residual-=row.weight;if(residual<0){selected=row;break;}}}
    flags=(flags&~12)|((selected?.type??0)&3)<<2;
-   outputs.push({entryId:entry.entryId,sourceOrder:entry.sourceOrder,selector:entry.value,eligibleCount:eligible.length,consumed:eligible.length?1:0,position:String(position),seed,random,roll,residual,selectedSourceOrder:selected?.sourceOrder??null,value:selected?.value??0,flags,knownFlagsMask:known,reason:eligible.length?(selected?'weighted row selected':'weighted roll selected no row'):'no eligible rows; draw-free source branch'});
+   outputs.push({...([2,4].includes(entry.kind)?{kind:entry.kind,table:entry.kind===4?'tbox':'ttt'}:{}),entryId:entry.entryId,sourceOrder:entry.sourceOrder,selector:entry.value,eligibleCount:eligible.length,consumed:eligible.length?1:0,position:String(position),seed,random,roll,residual,selectedSourceOrder:selected?.sourceOrder??null,value:selected?.value??0,flags,knownFlagsMask:known,reason:eligible.length?(selected?'weighted row selected':'weighted roll selected no row'):'no eligible rows; draw-free source branch'});
   }
-  return finish(true,'Measured kind0/1 source records resolved conditional on successful load');
+  return finish(true,source.map.entries.every(e=>[0,1].includes(e.kind))?'Measured kind0/1 source records resolved conditional on successful load':'Kind0/1/2/4 random passes resolved conditional on successful load; later opened-status materialization is separate');
  }
+}
+
+// Later02016248 flag materialization. Opened state does not suppress earlier draws.
+export function materializeTreasureOpenedFlags(pass,source,storyBits){
+ if(pass?.resolved!==true||source?.format!=='dq9-treasure-entry-source'||!storyBits||typeof storyBits!=='object')throw Error('Resolved random pass, source and explicit story bits required');
+ return {...pass,outputs:pass.outputs.map(o=>{const e=source.map.entries.find(e=>e.sourceOrder===o.sourceOrder);if(!e||e.entryId!==o.entryId)throw Error('Treasure source identity mismatch');if(![0,4].includes(e.kind))return {...o};const bit=e.entryId+(e.kind===4?0x79e:0x212);if(!Object.hasOwn(storyBits,bit)||typeof storyBits[bit]!=='boolean')throw Error('Missing treasure opened bit '+bit);return {...o,flags:storyBits[bit]?(o.flags&~12):o.flags,openedStatus:{bit,opened:storyBits[bit],phase:'02016248-after-random-passes',ATDraws:0}};}),materializedOpenedFlags:true,materializationScope:'Only the source opened-status flag leaf; world and physical container identity unresolved'};
 }

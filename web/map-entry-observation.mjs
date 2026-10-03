@@ -34,7 +34,8 @@ export function compareMapEntryObservation(packet,projection,evidence){
   check('NPC.descriptor-order',projection.membership.definitions.map(d=>[d.storedId,d.kind]),w.descriptorOrder);
   const nativeByOrdinal=new Map(w.drawStates.map(x=>[x.ordinal,x]));
   for(const p of projection.draws){const n=nativeByOrdinal.get(p.ordinal);need(n,'Missing observed consumer state');const ctx={ordinal:p.ordinal,consumer:p.consumer};
-   if(p.consumer==='treasure-kind1'){check('treasure.id',p.entryId,n.id,ctx);check('treasure.value',p.output.value,n.value,ctx);check('treasure.flags',p.output.flags&p.output.knownFlagsMask,n.flags&p.output.knownFlagsMask,ctx);}
+   if(['treasure-kind1','treasure-kind2','treasure-kind4'].includes(p.consumer)){
+    if(p.consumer!=='treasure-kind1')need(n.phase==='treasure-random-pass','Kind2/4 witness must precede opened-status materialization');check('treasure.id',p.entryId,n.id,ctx);check('treasure.value',p.output.value,n.value,ctx);check('treasure.flags',p.output.flags&p.output.knownFlagsMask,n.flags&p.output.knownFlagsMask,ctx);}
    else{check('NPC.id',p.npcId,n.id,ctx);check('NPC.kind',p.kind,n.kind,ctx);if(p.threshold!==undefined)check('NPC.threshold',p.threshold,n.threshold,ctx);if(p.actorPhase!==undefined)check('NPC.actorPhase',p.actorPhase,n.actorPhase,ctx);}
   }
   check('end.seed',projection.seedAfter,cs.at(-1).seed);

@@ -14,15 +14,16 @@ const modifiers=new Set([6,8,11,15,18,19,20]);
 const values=c=>{check(c&&dense(c.args)&&c.argumentCount===c.args.length,'Complete placement arguments required');return c.args.map(a=>{check(a&&[0,1,2].includes(a.type)&&uint(a.raw),'Malformed argument');return a.raw|0;});};
 
 export async function readMapEntrySource(rom,{mapId=100}={}){
- check([100,108].includes(mapId),'Entry resource binding outside C01/map100 or108');
+ check([100,108,112].includes(mapId),'Entry resource binding outside C01/map100,108,112');
  const rawNpc=await readNpcMembershipSource(rom,{mapId,archiveCode:'C01'});
  const npc={...rawNpc,place:{...rawNpc.place,parserEndOffset:rawNpc.place.calls.endOffset,calls:[...rawNpc.place.calls]},npc:{...rawNpc.npc,parserEndOffset:rawNpc.npc.calls.endOffset,calls:[...rawNpc.npc.calls]}};
- check(npc.source.fieldCode===(mapId===100?'C01':'C01M08'),'Maplist field-code mismatch');
+ check(npc.source.fieldCode===({100:'C01',108:'C01M08',112:'C01M12'}[mapId]),'Maplist field-code mismatch');
  const nitro=NitroFS.fromRom(rom.buffer.slice(rom.byteOffset,rom.byteOffset+rom.byteLength));
  // C01 is the supported positive treasure load. Absence on108 is deliberately
  // not a global zero-consumption conclusion or a retained-list clear proof.
  let treasure=null,treasureBoundary=null;
  if(mapId===100)treasure=readTreasureSource(nitro,'C01.bin');
+ else if(mapId===112)treasure=readTreasureSource(nitro,'C01M12.bin',{randomPassVersion:2});
  else treasureBoundary='C01M08 treasure load/list-clear path not reconstructed';
  return {schema:'dq9-map-entry-source-v1',romSha256:npc.source.romSHA256,mapId,fieldCode:npc.source.fieldCode,npc,treasure,treasureBoundary,instructionBinding:await bindMapEntryInstructions(rom),
   phaseOrder:['treasure-entry','npc-construction'],sourceScope:'ordinary C01 loader; phase order separately bound by source verifier',bootProof:false};
@@ -105,7 +106,7 @@ export function projectMapEntry(source,origin,kernel){
   check(source.phaseOrder?.join(',')==='treasure-entry,npc-construction','Unsupported source phase order');
   check(source.treasure,'Treasure/list-clear source boundary: '+source.treasureBoundary);
   const tr=new TreasureEntryKernel(kernel).consume({seed,position:0},source.treasure,{loadComplete:true});
-  for(const o of tr.outputs){if(o.consumed){const pair=kernel.generate(seed,0n,1);draws.push({ordinal:draws.length+1,phase:'treasure-entry',consumer:'treasure-kind1',entryPC:0x02003c30,returnPC:0x02003c54,lr:0x02031eb4,before:seed,after:pair[0],random:pair[1],entryId:o.entryId,sourceOrder:o.sourceOrder,output:o});seed=pair[0];}}
+  for(const o of tr.outputs){if(o.consumed){const pair=kernel.generate(seed,0n,1);draws.push({ordinal:draws.length+1,phase:'treasure-entry',consumer:`treasure-kind${o.kind??1}`,entryPC:0x02003c30,returnPC:0x02003c54,lr:0x02031eb4,before:seed,after:pair[0],random:pair[1],entryId:o.entryId,sourceOrder:o.sourceOrder,output:o});seed=pair[0];}}
   phases.push({phase:'treasure-entry',conditionalConsumed:tr.consumed,outputs:tr.outputs,physicalBlueIdentityKnown:false});
   if(!tr.resolved)return finish(false,tr.reason,{phase:'treasure-entry',reason:tr.reason});
   const first=draws.length;

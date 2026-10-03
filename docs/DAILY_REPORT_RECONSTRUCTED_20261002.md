@@ -641,3 +641,7 @@ Work8で残ったNPC7/slot9/controller0236fdb8のflag差は、原入力のpost-f
 - 実ROM由来map112レシピをATSessionへ条件付き11回として接続し、JSON保存→復元が完全一致。偽造boundは拒否。起動下限は0のまま。
 - 実測の限界：先行逐次OFF/ONペアは開始時からRAM不一致で失敗を保持。別の同時進行ペアでは開始/終端RAM一致、61イベント欠落0。全frame非干渉・seed setter監視を満たした完全観測証明ではない。物理青宝箱同定・全世界再現・起動証明は未達。
 - 実装は隔離段階。認識V6の回帰悪化は引き続き不採用。生RAM/ROM/SAV/ゲーム抽出物はGitへ含めない。
+
+### 01:54 UTC — 条件付き接続を実装
+
+map112/C01M12の明示version2を既存source projectionと保存/replayへ接続。kind2/4の観測比較には抽選直後phaseの明示を要求し、開封後flagsを抽選直後と混同しない。旧version1は変更せず、kind3は未対応のまま。既存build.shの50検証コマンド、map-entry12チェック、実ROM由来session roundtripが通過。最初のbuildはPATHにclangがなく失敗し、既存復元済みtoolchainを指定して全体を完了。新しいnative観測証明の成立やBOOT下限の増加を意味しない。
