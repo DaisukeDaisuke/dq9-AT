@@ -5,7 +5,7 @@ import {Compression,BufferReader} from './vendor/nitro-fs.mjs';
 import {Narc} from './vendor/narc-source.js';
 import {cameraFromPlayerFx} from './native/camera-from-player.mjs';
 const $=id=>document.getElementById(id);let project=null,scene=null;
-const gl=$('view').getContext('webgl2');if(!gl)throw Error('WebGL2 unavailable');
+const gl=$('view').getContext('webgl2');if(!gl){$('status').textContent='停止: このブラウザではWebGL2を初期化できません。描画未実施。';for(const id of ['rom','load','draw'])$(id).disabled=true;throw Error('WebGL2 unavailable');}
 function shader(type,src){const s=gl.createShader(type);gl.shaderSource(s,src);gl.compileShader(s);if(!gl.getShaderParameter(s,gl.COMPILE_STATUS))throw Error(gl.getShaderInfoLog(s));return s;}
 const prog=gl.createProgram();gl.attachShader(prog,shader(gl.VERTEX_SHADER,`#version 300 es
 in vec3 position;in vec3 color;uniform mat4 projection;uniform mat4 view;out vec3 vColor;void main(){gl_Position=projection*view*vec4(position,1.0);vColor=color;}`));gl.attachShader(prog,shader(gl.FRAGMENT_SHADER,`#version 300 es
