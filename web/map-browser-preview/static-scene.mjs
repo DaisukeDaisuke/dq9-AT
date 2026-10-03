@@ -18,7 +18,7 @@ export function openMapRom(rom){
    const dot=m.name.lastIndexOf('.'),requestedName=(dot<0?m.name:m.name.slice(0,dot))+'.nsbmd',matches=nativeAsciiNameCandidates([...members.keys()].map(name=>({name})),requestedName);if(matches.length!==1){unsupported.push({id:p.id,model:m.name,reason:'Native ASCII resource match absent or ambiguous'});continue;}const name=matches[0].name,data=members.get(name);
    try{if(!geometry.has(name))geometry.set(name,buildStaticGeometry(data,sdk.read(0x020e936c,36)));const bindings=textureBytes?bindStaticTextures(data,textureBytes):null;const w=world[i],{sin,cos}=trig(w.yaw);instances.push({id:p.id,modelName:name,nativeFlags:p.nativeFlags,world:w,draws:geometry.get(name).draws.map(d=>({...d,textureBinding:bindings?.[d.materialIndex]??null,vertices:d.vertices.map(v=>{const [x,y,z]=v.position.map((v,k)=>v*w.scale[k]/4096);return {...v,position:[(x*cos+z*sin+w.position[0])/4096,y+w.position[1]/4096,(z*cos-x*sin+w.position[2])/4096]};})}))});}catch(e){unsupported.push({id:p.id,model:m.name,reason:e.message});}
   }
-  return {archiveName,streamName,instances,unsupported,placementCount:placements.length,scope:'Static source placement preview only. Runtime visibility/culling/animation/fog absent; texture binding only when explicitly supplied; not whole-map compatibility acceptance.'};
+  return {archiveName,streamName,instances,unsupported,sourceModels:models,sourcePlacements:placements,sourceWorld:world,placementCount:placements.length,scope:'Static source placement preview only. Runtime visibility/culling/animation/fog absent; texture binding only when explicitly supplied; not whole-map compatibility acceptance.'};
  }
  return {archives,archive,scene,sdk,nfs};
 }

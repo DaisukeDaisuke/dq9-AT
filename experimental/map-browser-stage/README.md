@@ -55,3 +55,27 @@ BB/BBY entry probes did not reach either handler in2original-State frames with r
 ## 13:59 UTC outdoor callback and whole-map loader correction
 The maplist modelResource + .bmdj global-name shortcut is not the native chunk selection. Retained353 candidates fell to149 under native archive filtering; this is a rejected shortcut, not new acceptance. BMBL opcode65 defines actual chunk names (F06 usesF06M0000, not its maplist resourceF05M0000).754 definitions across667BMBL streams parse; one original-State defined record matches. Uninitialized padding remains unknown.
 A natural-input route reaches outdoor map7400 without input patches. Actual BBY invokes the map-specific020e48f4 callback and suppresses the default SDK body. map-billboard-callback.mjs mode0 matches native72byte packets for dirty1 and followingdirty0 calls. The caller must supply actual model-view, preserved template and dirtyflag. This is not complete tree geometry integration or mode1 acceptance.
+
+## 15:04 UTC camera-aware outdoor tree path
+An exact live SBC64-byte/model-header256-byte match identified D04M0000.nsbmd,
+node6, shape14 and material d04tre02. Source node transforms plus camera lookAt
+and signed64 dot/shift12 arithmetic reproduce all16 model-view words for native
+nodes6/7/8. ROM callback template plus dirty1→0 produces matching72-byte packets
+for those3 observations. Original floating/truncate first differences are retained.
+The isolated camera-geometry.mjs and camera-map-scene.mjs render the main outdoor
+model's9 BBY nodes. Only3 nodes have native packet comparisons; additional nodes
+remain source-derived. Main-model CPU run:23draws/287triangles, no unsupported
+packets, unmasked native comparison MAE15.8026 including actors/UI/fog differences.
+Adding the two already-supported static instances yields26draws/299triangles.
+D04M02's existing RGBA hash bb120e200cb25b50a597799b04e73357d2d4bbc791a74bb2487f1c4e191c5ebf is unchanged.
+
+Opt-in texture JSON for the observed D04 recipe:
+`{"archive":"D04.ambl","member":"D04M00T1.nsbtx","cameraBillboardProfile":"D04-map-y-mode0"}`.
+Select D04.amdj / D04M0000.bmdj and provide explicit current camera/material inputs.
+The D04 minimap may change requested X/Z while retaining the supplied Y. It does
+not prove walkability or infer height. Other map recipes are not silently enabled.
+All-map support remains the project goal; this is the first bounded tree-render
+integration. Native pixel/fog parity, material globals for each scene, visibility,
+mode1, animated/special models and generalized instance transforms remain open.
+Node measurements are complete for this change; new browser interaction remains
+separate from the earlier D04M02 browser click acceptance.

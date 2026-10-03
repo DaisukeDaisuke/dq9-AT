@@ -26,8 +26,8 @@
   },
   {
     "path": "README.md",
-    "bytes": 8907,
-    "sha256": "704dc82af963c77d5cd964acb868514db83b982030d01dfa837a8057aabf4878"
+    "bytes": 10645,
+    "sha256": "ff65a34c13597aa2a90cc1de2a305fabdbd2e5f03bb5ecb48e678d5d103e9f66"
   },
   {
     "path": "map-preview-bindings.mjs",
@@ -70,6 +70,16 @@
     "sha256": "ff6fce5ce6f09f15361a1ec583c11e6d62c438e87003ee03a07997ae3b4ce019"
   },
   {
+    "path": "web/camera-geometry.mjs",
+    "bytes": 5764,
+    "sha256": "87c36e4ba724cfcf1ac25e663fc52b5f5d6612c77fd16df40afdbee4e784d879"
+  },
+  {
+    "path": "web/camera-map-scene.mjs",
+    "bytes": 2697,
+    "sha256": "40d3ef0a9280e98a71d1d45a353913bef87670645ed76c75d59819db66d004a4"
+  },
+  {
     "path": "web/cpu-preview.mjs",
     "bytes": 4345,
     "sha256": "65de2e0067404d87232606f52ae15472c8a046da42a292d5af6e703792bf7e85"
@@ -86,8 +96,8 @@
   },
   {
     "path": "web/index.html",
-    "bytes": 2315,
-    "sha256": "e85244fd5a5a4ec423ba80c98f08323cc5523e9050efad91ec3045b5d5976a71"
+    "bytes": 2491,
+    "sha256": "ba4e95d56f140c01473edd9575964867bc99a57f390ef315166304c84ad6a284"
   },
   {
     "path": "web/map-billboard-callback.mjs",
@@ -108,6 +118,36 @@
     "path": "web/minimap-preview.mjs",
     "bytes": 5430,
     "sha256": "89ef579f28054b194836597249b6a351100862c7b1be6dc5402c4008146858b4"
+  },
+  {
+    "path": "web/native-archive-request.mjs",
+    "bytes": 2522,
+    "sha256": "099a466f56c325d90de429692e49d379317053122443b4d8803c77a7e488b43d"
+  },
+  {
+    "path": "web/native-billboard.mjs",
+    "bytes": 2496,
+    "sha256": "2f6e15d8867e071d3c2935b7bea22d2d6ea9668ee41432df4be879f6cd93a135"
+  },
+  {
+    "path": "web/native-bmbl-chunks.mjs",
+    "bytes": 1989,
+    "sha256": "45826620c225f68dbf0c9ce1a54c133a9f97fa09a9296441765b689ffa7fac19"
+  },
+  {
+    "path": "web/native-col2-candidates.mjs",
+    "bytes": 3237,
+    "sha256": "5f27f74b096985635f1dde1f2c79a87c297d65cdb56fabc1293c92fec13dfa5b"
+  },
+  {
+    "path": "web/native-col2.mjs",
+    "bytes": 2534,
+    "sha256": "83cc1a9550149f02b121dda0db6d8fe139b0bf3a11d73b1575d981ccd99edcb8"
+  },
+  {
+    "path": "web/native-floor-candidate.mjs",
+    "bytes": 3070,
+    "sha256": "bb342022a12ce4579e67021640a6977a2a3cda8434b84f1ab02d862914512072"
   },
   {
     "path": "web/native/camera-from-player.mjs",
@@ -185,39 +225,9 @@
     "sha256": "66347cbf58ed027cf1212bc359db22d0357596dffbf6e5041905a5587c434602"
   },
   {
-    "path": "web/native-archive-request.mjs",
-    "bytes": 2522,
-    "sha256": "099a466f56c325d90de429692e49d379317053122443b4d8803c77a7e488b43d"
-  },
-  {
-    "path": "web/native-billboard.mjs",
-    "bytes": 2496,
-    "sha256": "2f6e15d8867e071d3c2935b7bea22d2d6ea9668ee41432df4be879f6cd93a135"
-  },
-  {
-    "path": "web/native-bmbl-chunks.mjs",
-    "bytes": 1989,
-    "sha256": "45826620c225f68dbf0c9ce1a54c133a9f97fa09a9296441765b689ffa7fac19"
-  },
-  {
-    "path": "web/native-col2-candidates.mjs",
-    "bytes": 3237,
-    "sha256": "5f27f74b096985635f1dde1f2c79a87c297d65cdb56fabc1293c92fec13dfa5b"
-  },
-  {
-    "path": "web/native-col2.mjs",
-    "bytes": 2534,
-    "sha256": "83cc1a9550149f02b121dda0db6d8fe139b0bf3a11d73b1575d981ccd99edcb8"
-  },
-  {
-    "path": "web/native-floor-candidate.mjs",
-    "bytes": 3070,
-    "sha256": "bb342022a12ce4579e67021640a6977a2a3cda8434b84f1ab02d862914512072"
-  },
-  {
     "path": "web/preview.mjs",
-    "bytes": 9744,
-    "sha256": "185935ebd241cd5147e224174ac40f53b7f86f6ddb8251415e30fae8ce6dfa0a"
+    "bytes": 10442,
+    "sha256": "dd1a51da691baa2743b48ea0b91df7f875c40fbbc28e4e24f3b2730d2e9630c1"
   },
   {
     "path": "web/rom-arm9.mjs",
@@ -231,8 +241,8 @@
   },
   {
     "path": "web/static-scene.mjs",
-    "bytes": 3828,
-    "sha256": "d983724c3d1b39bbea69d85d4df1ae689773a50a7661a12a800b966c22014c7a"
+    "bytes": 3894,
+    "sha256": "2847b4d615282c785c065164da61892ecff3c789c838092fbf8b1ec13f46a2ee"
   },
   {
     "path": "web/texture-binding.mjs",
