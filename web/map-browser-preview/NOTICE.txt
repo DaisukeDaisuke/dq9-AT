@@ -1,0 +1,1 @@
+rom-arm9.mjs contains a JavaScript adaptation of backward ARM9 decompression from NTRGhidra CRT0.java, Pedro Javier Fernandez, commit 9e0674c. Original license: Apache License 2.0. Changes: browser Uint8Array input, explicit range checks and initialized SDK segment reader. No ROM data is included.

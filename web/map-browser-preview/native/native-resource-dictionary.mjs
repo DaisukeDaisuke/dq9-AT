@@ -1,0 +1,5 @@
+export function readNativeDictionary(bytes,base,end=bytes.length){
+ if(!(bytes instanceof Uint8Array))throw new Error('Dictionary Uint8Array required');const d=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength),need=(a,n)=>{if(a<base||a+n>end||a+n>bytes.length)throw new Error('Native dictionary span outside enclosing section');};need(base,8);
+ const count=d.getUint8(base+1),size=d.getUint16(base+2,true),entry=base+d.getUint16(base+6,true);need(base,size);need(entry,4);const stride=d.getUint16(entry,true),names=entry+d.getUint16(entry+2,true);need(entry+4,count*stride);need(names,count*16);
+ const hex=b=>[...b].map(v=>v.toString(16).padStart(2,'0')).join(''),rows=Array.from({length:count},(_,index)=>{const nameBytes=bytes.subarray(names+16*index,names+16*(index+1)),nul=nameBytes.indexOf(0);return {index,entryOffset:entry+4+index*stride,entryBytes:stride,rawEntryHex:hex(bytes.subarray(entry+4+index*stride,entry+4+(index+1)*stride)),nameOffset:names+16*index,nameHex:hex(nameBytes),name:new TextDecoder('shift_jis').decode(nul<0?nameBytes:nameBytes.subarray(0,nul))};});return {base,end,size,count,stride,entryBase:entry,namesBase:names,rows};
+}
