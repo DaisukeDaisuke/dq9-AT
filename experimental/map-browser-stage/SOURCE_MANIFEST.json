@@ -81,8 +81,8 @@
   },
   {
     "path": "web/index.html",
-    "bytes": 1821,
-    "sha256": "61c16897e025d7bcb64ea100f9f77fe66e853be30f45846bb8bb85b3a4cd0082"
+    "bytes": 1838,
+    "sha256": "41bd4df26723180fb24a55fe98c433f7a8801781cbdc322a6165eefb0b1c28b7"
   },
   {
     "path": "web/map-click-camera.mjs",
@@ -186,8 +186,8 @@
   },
   {
     "path": "web/preview.mjs",
-    "bytes": 6651,
-    "sha256": "47dcaf2fa71da326023a177808a9003b6315be3268dd6ac5c3c24ebc0e18e1c7"
+    "bytes": 7383,
+    "sha256": "b1ea376e9b4c520bc3f9521b999c353c83df5edfc5c247e69143d967cf9b4836"
   },
   {
     "path": "web/rom-arm9.mjs",
