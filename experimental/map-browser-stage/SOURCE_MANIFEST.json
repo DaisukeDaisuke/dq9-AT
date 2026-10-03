@@ -26,8 +26,8 @@
   },
   {
     "path": "README.md",
-    "bytes": 8015,
-    "sha256": "4b9f89af5896638ff46ff26e733325922a45af76621d6f30fda230836718727e"
+    "bytes": 8907,
+    "sha256": "704dc82af963c77d5cd964acb868514db83b982030d01dfa837a8057aabf4878"
   },
   {
     "path": "map-preview-bindings.mjs",
@@ -88,6 +88,11 @@
     "path": "web/index.html",
     "bytes": 2315,
     "sha256": "e85244fd5a5a4ec423ba80c98f08323cc5523e9050efad91ec3045b5d5976a71"
+  },
+  {
+    "path": "web/map-billboard-callback.mjs",
+    "bytes": 1801,
+    "sha256": "ed0a2dbd625b35104ffaa9e1130278449e8df851ac139294c2569282645536b9"
   },
   {
     "path": "web/map-click-camera.mjs",

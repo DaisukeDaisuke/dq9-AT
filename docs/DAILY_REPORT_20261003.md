@@ -176,3 +176,13 @@ private source backup: 2c0e3c64494355f4c53fd32fff8447b772b86831。局所生デ�
 - 全マップへの対応付けは既存メタデータを再利用。1010source records中353が静的名称の一意候補、657は未解決/曖昧。候補数を描画完了数にしない。
 - BB/BBY入口は元State2frameの描画ON/OFFで未到達。失敗を保持。
 - 再現ソース・実測・失敗を同じLibrary checkpointのversion2へ保存済み。原ROM・動画・Stateの複製は同梱しない。
+
+
+## 22:59 JST 全マップ資源選択・屋外描画・AT準備
+- 全マップに向け、maplistのmodelResource名へ拡張子を足す仮説をnative読込コードで点検。旧353候補をそのまま採用せず、実際のBMBL opcode65からchunk名を取得する経路へ進めた。元の候補・失敗は保持。
+- 全667BMBL streamの754chunk定義を読めた。これは描画完了数ではない。元Stateの1recordでID/位置/文字列の定義部分がnative一致。未初期化paddingとpointer領域の一致は主張しない。
+- 元Stateから自然入力だけで屋外map7400へ到達し、木がある実画面を取得。ROM/RAM/Stateの書換えなし。bulk stepは最後のframeだけ描画するため、表示確認は別々の1frame描画を使用。黒画面の試行も保存。
+- 屋外の専用billboard callback mode0の72byte packetが実測一致。初回dirty1と後続dirty0の2回でpacket/cache更新一致。標準BBY経路の観測失敗を保持し、専用callbackの再現を別moduleにした。scene全体への接続・mode1・全map/native画素一致は未完。
+- 5動画のlayoutprobeを事前指定10秒で確認。3件で地図表示、1件は戦闘、1件は上画面黒。戦闘/黒画面から地図座標を作らない。同地点の特定にはユーザー指定どおり上画面の地図アキネーターと座標推定を使う。
+- AT総当たり準備：固定index kernelの既存634チェック成功。入力準備/読戻しCLIで、合成4096indexの小範囲のみ実行できた。実動画AT特定や探索resume統合の完成ではない。
+- ソースとツールを通常Git保存し、私的証拠・再現手順は同じLibrary checkpointのv3へ保存。原ROM/動画/State、抽出画像、RAMはGitへ入れない。
