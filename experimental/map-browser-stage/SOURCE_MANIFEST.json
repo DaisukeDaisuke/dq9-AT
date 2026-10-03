@@ -26,8 +26,13 @@
   },
   {
     "path": "README.md",
-    "bytes": 7033,
-    "sha256": "0ebc3ea85d82585de28928e1a0c370011c883fb94525ecfee755d36a74bc7f11"
+    "bytes": 8015,
+    "sha256": "4b9f89af5896638ff46ff26e733325922a45af76621d6f30fda230836718727e"
+  },
+  {
+    "path": "map-preview-bindings.mjs",
+    "bytes": 1368,
+    "sha256": "dbb6d76ba7d55999fd8f2d4692f6acc7724c6e8bf2b9d4b3836acc4a5a9f2bb3"
   },
   {
     "path": "render-cpu-preview.mjs",
@@ -211,8 +216,8 @@
   },
   {
     "path": "web/static-scene.mjs",
-    "bytes": 3789,
-    "sha256": "f93450e0f75314ba986c6e8d2341af43d872dde8920a19df1fef082458058e49"
+    "bytes": 3828,
+    "sha256": "d983724c3d1b39bbea69d85d4df1ae689773a50a7661a12a800b966c22014c7a"
   },
   {
     "path": "web/texture-binding.mjs",

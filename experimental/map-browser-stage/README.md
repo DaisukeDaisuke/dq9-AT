@@ -46,3 +46,8 @@ Native-context COL2 candidate generation returns exact record485 and attribute b
 
 ## 12:11 UTC browser fallback observation
 Cloud-browser ROM selection and explicit original-State camera/material inputs now render the shrine corridor using CPU/Canvas2D. This is a real browser display observation, not WebGL2 recovery. A one-frame headless reference had a white3D region; a separate original-State two-frame reference produced the native3D scene. Frame2 camera inputs match the CPU diagnostic inputs exactly. Native pixel parity still is not accepted: actors/fog/effects and native raster arithmetic remain outside the CPU preview. Dynamic CPU-buffer/Canvas readback SHA reporting is being added for browser-vs-Node wiring verification.
+
+## 12:58 UTC actual minimap click connection
+The original-ROM composed minimap is displayed in the cloud browser. Two actual clicks replayed in Node produce equal requested player position, camera matrices and CPU-generated RGBA. CSS coordinates were preserved as observed, not rounded to a guessed pixel center. This UI connection currently verifies only D04M02; Y remains the explicit1064 input. No automatic floor/actor/AT proof. Canvas readback differs only among translucent pixels in the observed original case:154pixels, maxchannel1, opaque differences0.
+The all-map helper uses existing saved metadata and retains1010 source records including duplicate/zero IDs;353 have unique static source-name placement/minimap candidates and657 remain unresolved/ambiguous. These are not rendered-map counts or proof of native loader/texture/variant selection.
+BB/BBY entry probes did not reach either handler in2original-State frames with renderoff/on; all bounded failures retained.
