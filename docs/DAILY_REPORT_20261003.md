@@ -139,3 +139,13 @@ private source backup: 2c0e3c64494355f4c53fd32fff8447b772b86831。局所生デ�
 - C r6のplayer→camera入口をrootの既存native採取へ再照合。target/eye96件、透視P/V48件一致。新規96frameの実験とは数えない。
 - 既存マップメタデータを再利用するクリック座標→希望player位置→camera接続を追加。元の祠位置への逆変換でeye一致。高さYと現在camera条件は明示入力で、床高自動導出・ブラウザ操作試験・実際の移動は未実施。
 - 静的adapterを全669AMDJ/755配置streamへ適用し、5651配置のうち3691静的instanceを組み立て、1960件を未対応として保持。内訳はcol2系1297、BBY444、BB107、flag0x10系112。これは描画数でも互換完成数でもなく、次の未対応箇所を切り分ける実行結果。現在BB/BBYのnative計算接続を調査中。
+
+
+## 19:27 JST — 環境置換後の復元と再開地点
+
+- 18:47〜18:49 JSTに作業ファイル消失と使用容量減少を確認。直前の公開ソース39ファイルはcommit 15afa62d48eb3bb257ecf30420ebcec860f39322に保存済みで、そこから復元した。旧環境の未保存raw採取結果まで復元したとは扱わない。
+- 正式復元索引version5を全文確認し、ROM8part・動画18part・Ghidra12part・LLVM7package・tools/state/save/NTRの計49入力を新規取得、全size/SHA照合。ROMのgzip、5動画tar、Ghidra ZIPの結合・整合性検査も成功した。
+- 既存Node/Python/JDKを再利用。原ROMと祠stateのロード、およびSAV importをpause/frame0で確認。Ghidra synthetic smokeと原ROMの新規importが成功（12641関数、analysis timeoutなし）。旧注釈済みDBを再現したという意味ではない。
+- 復元したアプリのbuild成功。既存契約チェック268件pass。祠39モデルのstatic geometry再実行成功。ブラウザ表示・画素一致・全マップ描画完成の受入は未実施。
+- BB/BBYの通常分岐に限定したGX packet builderを隔離保存。native model-view読戻しと前回packet templateを明示入力とし、未対応inverse/callback/suppressed条件を拒否する。現時点は静的解析由来とidentity入力のsmokeのみで、native動的比較・描画接続は未検証。既存のBB/BBY未対応判定は解除していない。
+- 復元指示書のURL置換用ソースは固定版と現行版を分離して取得中。新しいLibrary登録と索引・スケジュール参照更新は未完了。ROM/動画/RAM/抽出資産はGitへ含めていない。
