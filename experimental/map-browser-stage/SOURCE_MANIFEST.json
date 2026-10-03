@@ -1,0 +1,192 @@
+[
+  {
+    "path": "CORE_TEXTURE_NOTICE.md",
+    "bytes": 644,
+    "sha256": "0556fbbc8e1af142e983d26f56caf143f5d4448ae513e64fa132203825e89f88"
+  },
+  {
+    "path": "LICENSE-DESMUME-GPL2.txt",
+    "bytes": 18092,
+    "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643"
+  },
+  {
+    "path": "LICENSE-DQ9-AT.txt",
+    "bytes": 1092,
+    "sha256": "51dbd315dc9402975bb8a0ee94bbe357ab48a03df06547d9796bab50b9efdc49"
+  },
+  {
+    "path": "LICENSE-NTRGhidra.txt",
+    "bytes": 11357,
+    "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+  },
+  {
+    "path": "NOTICE.txt",
+    "bytes": 299,
+    "sha256": "e09dad0de8f12ee662b96c57e0a949701387d38be9129e16dcbeb8f6a08c2f60"
+  },
+  {
+    "path": "README.md",
+    "bytes": 3541,
+    "sha256": "ead0c0df98eb21bcdfcf9845a3199d2d9a6ed62a277ffdc50e601a06a1c681e6"
+  },
+  {
+    "path": "replay-draw-packets.mjs",
+    "bytes": 1981,
+    "sha256": "7c1a0ee3c7ce0f677d144269831247b55d14f7be10f4d2829748e8edf9c18c67"
+  },
+  {
+    "path": "replay-map-click.mjs",
+    "bytes": 2467,
+    "sha256": "647d199837ad4712737deb46250d692b31ed7acd9d6d3550829eff35914da913"
+  },
+  {
+    "path": "replay-static-geometry.mjs",
+    "bytes": 1668,
+    "sha256": "4cdb673a6810436cb026c20b24d5e0b4b0b98de9d108e040ec30345c5d8552f4"
+  },
+  {
+    "path": "replay-static-scenes.mjs",
+    "bytes": 1636,
+    "sha256": "06a20ddc297647d2f9c6d033bfa372601e181a9de2a1f9a6d49c0a5720929859"
+  },
+  {
+    "path": "replay-texture-binding.mjs",
+    "bytes": 1580,
+    "sha256": "ff6fce5ce6f09f15361a1ec583c11e6d62c438e87003ee03a07997ae3b4ce019"
+  },
+  {
+    "path": "web/draw-packets.mjs",
+    "bytes": 2108,
+    "sha256": "7505716b73e20b81c153bd1457b085957699fd56a82a3c6b08af30640a48f757"
+  },
+  {
+    "path": "web/fog-frame.mjs",
+    "bytes": 1957,
+    "sha256": "01f36cf452148bc20093ecc872973aab04ccc9711013f6a447292fc6ca87fefe"
+  },
+  {
+    "path": "web/index.html",
+    "bytes": 1210,
+    "sha256": "9276b5a0deb6d3464b24df4dfbbd87713c68a58a8e7b49186ead1b989ddae9a1"
+  },
+  {
+    "path": "web/map-click-camera.mjs",
+    "bytes": 1161,
+    "sha256": "a2ec886b951f9671b658d685466f14d9ec0d03c48159b7b2ca2911242724b219"
+  },
+  {
+    "path": "web/native/camera-from-player.mjs",
+    "bytes": 1803,
+    "sha256": "016b38224df2d3d116e0e17fef35eabb38af7d454b542f962cbf60ede34a9d14"
+  },
+  {
+    "path": "web/native/fog-raster.mjs",
+    "bytes": 3748,
+    "sha256": "7eaa14d52f37ad6dd518bcb6c08d11d99ad5755a31c0570f4a41c714d5aec863"
+  },
+  {
+    "path": "web/native/fog-records.mjs",
+    "bytes": 5726,
+    "sha256": "24f3c11bb835555c673f45e7fadd5be074189725cdb1e6a34c10c01e484a9a53"
+  },
+  {
+    "path": "web/native/map-camera-record.mjs",
+    "bytes": 1178,
+    "sha256": "553c38ecef7ecd9376d082378affe5e8e4cf44061c0d0b7a9f14b92248a85d5c"
+  },
+  {
+    "path": "web/native/native-camera-fx.mjs",
+    "bytes": 3182,
+    "sha256": "6d09169bb82254a884ea9dac35d52b1d867e591d84cf8f534e4308d7f1d5f806"
+  },
+  {
+    "path": "web/native/native-file-name.mjs",
+    "bytes": 599,
+    "sha256": "b2656531559250325dc944ef2f43a7ab34379d39eabc62fbabecbf83f8799eba"
+  },
+  {
+    "path": "web/native/native-map-records.mjs",
+    "bytes": 4784,
+    "sha256": "ab72932d5d0d3fbba146d0a8638253bf68bb0a53b3de82013bee900b10e62119"
+  },
+  {
+    "path": "web/native/native-material.mjs",
+    "bytes": 4425,
+    "sha256": "9de30b5b8d9a0c76e0d702ce916eea42c3052ecbb0a650dbdfe5538c26dcf740"
+  },
+  {
+    "path": "web/native/native-model-info.mjs",
+    "bytes": 2835,
+    "sha256": "f1bc1773870aa1eef70cc18754cfedda931663d40bda70f7fcf6b0f7ad4566c4"
+  },
+  {
+    "path": "web/native/native-node-pose.mjs",
+    "bytes": 5895,
+    "sha256": "dce512534dac92ccf85202f0637e2d56e764f596e1f686f40cf43c23fca6cd71"
+  },
+  {
+    "path": "web/native/native-resource-dictionary.mjs",
+    "bytes": 1167,
+    "sha256": "c619288fb4d0103d0686aaa5f421780aa733f5bfbb6e9ac54b4ce4e464e49ba5"
+  },
+  {
+    "path": "web/native/native-sbc-gx.mjs",
+    "bytes": 6892,
+    "sha256": "f469809822b1110be91899e586113152821903705ce4b5bcee0b20d3ce43b60c"
+  },
+  {
+    "path": "web/native/native-tex0.mjs",
+    "bytes": 3160,
+    "sha256": "2c65bf2b7f67800b3df20c3661cf73ed785219ac6b46e20e5fa2a6639e353764"
+  },
+  {
+    "path": "web/native/native-texture-unpack.mjs",
+    "bytes": 2230,
+    "sha256": "68e4a7c79b514387257e629453820a258f9c7f44118bf54f8e2c0eb28090e7f6"
+  },
+  {
+    "path": "web/native/player-coordinate.mjs",
+    "bytes": 5701,
+    "sha256": "66347cbf58ed027cf1212bc359db22d0357596dffbf6e5041905a5587c434602"
+  },
+  {
+    "path": "web/preview.mjs",
+    "bytes": 3657,
+    "sha256": "eff2e6eead3a0648e02e3d7f8395d8cea2ecae51bd3fae27538872448289d620"
+  },
+  {
+    "path": "web/rom-arm9.mjs",
+    "bytes": 3450,
+    "sha256": "7b42fe60e2f1a9f60fe613be252815d522885c9906501b3a63dc22b222b18ea6"
+  },
+  {
+    "path": "web/static-geometry.mjs",
+    "bytes": 4897,
+    "sha256": "12036edbd9a142e7d336905665d991ca1e8004917fda49ed49003e71e02e1417"
+  },
+  {
+    "path": "web/static-scene.mjs",
+    "bytes": 3789,
+    "sha256": "f93450e0f75314ba986c6e8d2341af43d872dde8920a19df1fef082458058e49"
+  },
+  {
+    "path": "web/texture-binding.mjs",
+    "bytes": 1871,
+    "sha256": "7bf54253307bb302105e362dbb7296b19ff714e37fdc6e94b701bb3826411941"
+  },
+  {
+    "path": "web/vendor/call-stream.mjs",
+    "bytes": 2797,
+    "sha256": "b20a5b6d0ab441435c3c89ead73ff196b28f1be5375b099d956b80945eb579c4"
+  },
+  {
+    "path": "web/vendor/narc-source.js",
+    "bytes": 12170,
+    "sha256": "1636132b0dc99f9941fab757fb747e957ca1db99209c041fe10578f2cfba0082"
+  },
+  {
+    "path": "web/vendor/nitro-fs.mjs",
+    "bytes": 168113,
+    "sha256": "8429b10c5c69b6799ae7c80ec23beb29b569f6dfdd87ef116b64ea274f3f8713"
+  }
+]

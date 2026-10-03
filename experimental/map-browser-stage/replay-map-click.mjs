@@ -1,0 +1,13 @@
+import fs from 'node:fs/promises';import{createHash}from'node:crypto';
+import{readArm9SdkImage}from'./web/rom-arm9.mjs';import{cameraForMapClick}from'./web/map-click-camera.mjs';
+const [romPath,metadataPath,playerReplayPath,prefixPath,out]=process.argv.slice(2);if(!out)throw Error('Usage: original-ROM existing-map-metadata player-camera-replay.json native-prefixes.json private-output');
+const rom=await fs.readFile(romPath);if(createHash('sha256').update(rom).digest('hex')!=='3c9d809eb8e446b0da6a9b383c7a6c5146001636038384aa49cb1a2e367546d7')throw Error('ROM mismatch');
+const metadata=JSON.parse(await fs.readFile(metadataPath,'utf8')),v=JSON.parse(await fs.readFile(playerReplayPath,'utf8')),prefix=JSON.parse(await fs.readFile(prefixPath,'utf8'));
+if(v.stateSha256!=='8faf3a71935f68fd493f5259f93fd6d4185870e9838aef9999c5fc6f6478c0b6'||!v.results.every(r=>r.matrixMatches===r.perspectivePackets))throw Error('Camera replay prerequisite failed');
+const descriptor=metadata.descriptors.find(d=>d.path==='D04M02.bmmp');if(!descriptor)throw Error('Existing shrine descriptor absent');
+const originPixel=descriptor.originTile.map((x,i)=>x*8+Math.min(...descriptor.placements.map(p=>(i?p.tileY:p.tileX)*8))),scale=descriptor.worldToMapScale;
+const camera=Buffer.from(prefix[0].camera.bytes),r=o=>camera.readInt32LE(o),cameraState={...v.player,conditions:v.conditions,yawFx:r(0x70),orbitHeightFx:r(0x74),radiusFx:r(0x78),halfFovFx:r(0x58)};
+const sdk=readArm9SdkImage(rom),table=sdk.read(0x020e955c,16384),td=new DataView(table.buffer,table.byteOffset,table.byteLength),trig=i=>[td.getInt16(i*4,true),td.getInt16(i*4+2,true)];
+const imageX=cameraState.playerPositionFx[0]/4096*scale-originPixel[0],imageY=cameraState.playerPositionFx[2]/4096*scale-originPixel[1];
+const result=cameraForMapClick({imageX,imageY,originPixel,worldToMapScale:scale,playerYFx:cameraState.playerPositionFx[1],cameraState},trig),eye=[r(4),r(8),r(12)],matches=JSON.stringify(result.camera.eyeFx)===JSON.stringify(eye);
+await fs.writeFile(out,JSON.stringify({descriptor:descriptor.path,originPixel,scale,imageX,imageY,cameraState,result,originalEyeMatches:matches,scope:'Existing map transform inverse roundtrip to the original fixed camera. This is not a browser click or floor-height inference.'},null,2)+'\n');console.log(JSON.stringify({imageX,imageY,originPixel,scale,requestedPlayerPositionFx:result.requestedPlayerPositionFx,originalEyeMatches:matches}));if(!matches)process.exitCode=2;
