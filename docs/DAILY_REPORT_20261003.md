@@ -49,3 +49,12 @@
 - 認識V6の位置候補を固定し、最終CLSだけ従来の元解像度へ戻して既知評価を再計算。T320の味方誤枠2→0、T1190 TP13→14だが、D2/H4の見逃しとHの誤枠は残る。元の基準へ回復せず、V6は未採用のまま。閾値・注釈・固定入力を変更していない。
 - スポーン生成後のstatus bit2を調査。元frame1200のpool値F8から、確認したreset/mode5処理だけなら結果候補8/10のどちらもbit2=0となり、比較用native0Aと整合する。未来のanimation objectを入力にせず、この1bitを扱える可能性を絞った段階。全constructor区間の保持と後続animation consumerは未閉鎖。productionの停止guard、起動下限0、追加AT証明0を維持する。
 - private source/再開参照を033d244e044ba150502b32b78f2007a7a8adf573へ通常pushして11ファイル読戻し確認。私的チェックポイントversion11を保存。ゲーム由来raw・通信本文はGitへ含めない。
+
+
+## 12:36 JST Work9 v2の独立再生と引継ぎ
+
+提出sourceの13ファイルhashを照合し、元ROM・ふういんのほこらステート・既存headless runtimeで保存済み遠方入力列を再生した。元/L/Rの3条件は73/73/72移動frames、全frameのXYZと敵観測配列が提出記録と一致。各到達直後pause・キー解除・停止後読取追加frame0。道中新規モンスターも観測（元条件64frame）。同じ成功列のchunk/local・planeXY入口も一致。
+
+旧executeSegmentsの到達後余計な入力は、保存済み反例で8→3frames停止に修正を確認。既存17制御試験もpass。native入力前距離停止および現在PC breakpointによる停止機構は追加frame0（実遭遇試験とは区別）。
+
+一般的な壁回避、動く敵を含む全条件の無遭遇保証、厳密座標2件（tolerance0.035）の到達、AT consumer接続は未達／未検証のまま。別goal・tolerance0.2の成功で置き換えない。提出担当は停止し、追加試験と必要な修正はorchestraが引き継ぐ。全体完成認定はしていない。
