@@ -645,3 +645,8 @@ Work8で残ったNPC7/slot9/controller0236fdb8のflag差は、原入力のpost-f
 ### 01:54 UTC — 条件付き接続を実装
 
 map112/C01M12の明示version2を既存source projectionと保存/replayへ接続。kind2/4の観測比較には抽選直後phaseの明示を要求し、開封後flagsを抽選直後と混同しない。旧version1は変更せず、kind3は未対応のまま。既存build.shの50検証コマンド、map-entry12チェック、実ROM由来session roundtripが通過。最初のbuildはPATHにclangがなく失敗し、既存復元済みtoolchainを指定して全体を完了。新しいnative観測証明の成立やBOOT下限の増加を意味しない。
+
+
+## 日報の追記先変更
+
+2026-10-03 10:59 JST以後の追記は[10月3日の日報](DAILY_REPORT_20261003.md)へ。ここまでの記録は保持する。
