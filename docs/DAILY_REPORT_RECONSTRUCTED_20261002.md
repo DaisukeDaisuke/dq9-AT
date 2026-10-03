@@ -622,3 +622,12 @@ NPC更新の時刻入力を固定33/phase2とみなさず、ROMの生成関数02
 原SAV・同一の元経路でcallback store020129dcを追加観測。開始pending1から180回の+1と67回のproducer入力/clearが一致（753events、drop0、不一致0、entry→clear間の曖昧な割込み0）。将来の呼出し時刻や全writer排除、全状態一致を証明したとはしない。追加off/on対なし、条件付き33とBOOT0を保持し、時計の一致件数を増やすだけの延長は行わない。
 
 V5では観測準備中に入力を動画から画像へ変更し、自動観測停止・過去枠クリア・画像では動画Start無効・遅延結果の復活なしを実Chromeで確認。実測資料と元パス依存を説明した復元READMEは私的checkpoint version6へ保存。4483767 bytes、SHA256 02c3f998b6a0abb153f7b526fba3862d73930c514b22cd2a30a62ec8093f2988。今回も本番追跡や通常の認識方式は変更なし。
+
+
+## 2026-10-03 00:22 UTC — 敵枠回帰とNPC近接writer
+
+認識V6の隔離比較では、細部照合と最終CLSをnative256×192のopaque画像へ揃え、小物体の既存fallbackを使うことで既知H5の敵が1/2から2/2になった。しかし固定回帰でD2/H4/T1190の見逃し増加とH/T320の誤枠増加を確認したため、採用しない。閾値や正解ラベルは変更せず、V5・通常認識は維持。詳細は experiments/recognition-v6-diagnostic/RESULT.md。
+
+Work8で残ったNPC7/slot9/controller0236fdb8のflag差は、原入力のpost-frame2105で初めて0→1。書込みPC02040b5c、呼出し元overlay_d_17:021a5ad4を捕捉し、別の非停止観測でも274回のentry/store/returnと終端2651/map100/seed1926876651を確認した。全4722eventsのdrop0、対象1122eventsを保持。元のfull-RAM OFF/ON照合を追加したわけではない。
+
+近接判定はradius6144に対し、X距離6419では不成立、次の更新でX5633/Z6062となり成立する。実比較レジスタ6点と分岐が一致。外部近接setterの帰属は進んだが、将来のplayer/controller位置をsource側で生成する条件は残る。観測flagをframe固定で注入したり、不一致項目を比較から除外しない。条件付き33・BOOT0は維持。自作比較leafと集約結果をexperiments/npc-controller-proximity-20261003/へ保存。私的checkpointはversion8で生観測と失敗を保持。

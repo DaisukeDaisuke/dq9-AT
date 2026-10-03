@@ -1,0 +1,63 @@
+{
+  "scope": "Source-leaf comparison against observed branch operands, not future position prediction",
+  "rows": [
+    {
+      "completedFrames": 2098,
+      "radius": 6144,
+      "insideActiveRegion": false,
+      "absoluteDeltaX": 7991,
+      "predictedSetterCall": false,
+      "matches": true
+    },
+    {
+      "completedFrames": 2100,
+      "radius": 6144,
+      "insideActiveRegion": false,
+      "absoluteDeltaX": 7205,
+      "predictedSetterCall": false,
+      "matches": true
+    },
+    {
+      "completedFrames": 2102,
+      "radius": 6144,
+      "insideActiveRegion": false,
+      "absoluteDeltaX": 6419,
+      "predictedSetterCall": false,
+      "matches": true
+    },
+    {
+      "completedFrames": 2104,
+      "radius": 6144,
+      "insideActiveRegion": false,
+      "absoluteDeltaX": 5633,
+      "absoluteDeltaZ": 6062,
+      "observedSetterCall": true,
+      "predictedSetterCall": true,
+      "matches": true
+    },
+    {
+      "completedFrames": 2106,
+      "radius": 6144,
+      "insideActiveRegion": false,
+      "absoluteDeltaX": 4847,
+      "absoluteDeltaZ": 6062,
+      "observedSetterCall": true,
+      "predictedSetterCall": true,
+      "matches": true
+    },
+    {
+      "completedFrames": 2108,
+      "radius": 6144,
+      "insideActiveRegion": false,
+      "absoluteDeltaX": 4386,
+      "absoluteDeltaZ": 5997,
+      "observedSetterCall": true,
+      "predictedSetterCall": true,
+      "matches": true
+    }
+  ],
+  "allMatched": true,
+  "bootProof": false,
+  "worldResolved": false,
+  "ATDrawsCertified": 0
+}
