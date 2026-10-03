@@ -15,3 +15,15 @@ At IoU0.5, original frozen V2 produced1/3 enemy matches and0 false positives on 
 The coarse private map tracker initially missed780's alignment. The already-existing bounded dense fallback recovered it with the same score/margin gates; this is not a new map-matching algorithm. Coordinate bounds and marker identity remain unresolved. A separate D1-only local-negative-bank experiment preserved true enemies but did not independently reject the partial-player case; it is not a required dependency of this module.
 
 Raw videos, ROM/State, extracted images and feature tensors are not distributed here. Reproducibility tools and private inputs are kept separately. All-map recognition, the small430s enemy, automatic clean-background availability and video AT identification remain unfinished.
+
+## Selection-order follow-up, 06:48 JST
+
+The remaining430 region was not simply below the numerical threshold. The highest-mean reference failed the unchanged vertical-support gate, hiding lower-scoring references that passed every gate. The analogous coarse selector hid a qualifying570 reference behind a higher-scoring incoherent reference.
+
+The isolated `coherent-reference-ranking.mjs` prefers references satisfying the existing gates before comparing the original mean/score. It retains the best failing evidence when no reference qualifies. The frozen detector module is not overwritten. With this selection-order change, the original64 reference bank and dual background mask produce all three H4 enemy boxes and no box on710. The repaired coverage12 bank and labelled D1 player bank are unnecessary for this latest path. The430 box is still partial:27/34 of its GT-box width, IoU0.79412. Other H4 boxes are unchanged; full-body and generalization claims remain unsupported.
+
+On all33 fixed D1/D2/H4/H2/Lasdan frames using the original geometry, both banks retain the same boxes. With the original bank, full proposal records are unchanged. With the repaired bank, one D1 proposal changes its reference/evidence because a coherent coarse result avoids fine fallback; the box stays unchanged. Earlier fine-only results and this broader change are stored separately.
+
+Downstream CLS ranks the fixed GT model first for the three automatic H4 body crops within the four selected models, with both opaque and image-derived alpha variants. These scores are uncalibrated. The body-part reference winner must not be interpreted as species identity:430's spatial winner differs from its downstream CLS winner. Diagnostic appearance-component unions were not adopted as box expansions or counted as detection improvements.
+
+A separate fixed temporal block is being evaluated with the source/bank/rules frozen. No production integration or recognition completion is claimed.
