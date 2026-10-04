@@ -135,3 +135,14 @@
 - 直前ROOT CPU checkpoint v8とAT/RTC checkpoint v2の原本SHAが一致。CPUの全manifest entryとATの旧archive連鎖も照合。N1/phase bank等も正式Library保存版を取得・照合。ROOT専用控えは子へ配布していない。
 - 消失直前のLK比較source/手順は非公開tools8f3699912e1fdcc6ab8673ac7891e20cb487700fへ保存済み。430.196元core31点からの逆追跡は429.912で全点を失い、429.596/.796を回復できない。後続の隣接frame残差は全208成分・人物/壁等混在の負結果を表示確認したが、raw結果の保存前に消失。報告値だけの再記録と原本復元を混同しない。
 - 基盤読込は復旧したが、最新の映像観測adapter/AT compiler/searchの配置と実入力接続は復元作業中。過去の実測を今回の再実行成功へ読み替えず、復元したsourceと正式入力から続ける。
+
+
+## 07:36 JST — 映像観測から条件付き有限探索への接続
+
+- 正式Work7の元64参照PNGから同一Node/WASM providerでCLS/前景part bankを再生成。親側で旧保存bankと全descriptor/geometryを比較し、timings以外の64件が一致。新JSONのSHAは旧版へ偽装せず別に保持。
+- 正式メタル1動画1204.6–1205.4秒から元V2で49frame/5観測/4候補を再生成。既存adapterのrawPTS/ROI/hash/全順位/暫定trackを保った観測bundleに、明示したtable・event順・有限gap・domainを渡す新入口を追加。初期seedやAT消費を映像秒数から推定しない。
+- 実演は同じ暫定trackの最初2sightingを別weighted drawだったとする未証明仮定、D04M02→table30の条件付き供給、gap1..256、low31域0..65535。全順位aliases枝は65536件全部残り、未較正top-model枝は0件。これは入口の動作確認であり、動画AT特定の進捗件数ではない。このprefixの終端output15は0で、top枝0を全域の矛盾と呼ばない。最大16例は全候補exportではない。
+- budget4096での別実行は先頭枝0..4095のみack、残4096..65535とtop枝全域を未探索として保持。開始前INPUTSと各ackの原子的保存を追加し、親の別実行は完了/途中停止ともRESULT全体一致、保存ACKと最終ackも一致。環境消失を越える自動resumeの保証ではない。
+- unknown/既存entity/誤認枝が全uint32を保持し、動画現在state回復false・証明AT加算0。既知origin付きAPIのschemaは照合したが、この動画でorigin付き探索は未実測。
+- 別途、復元した元native二抽選captureを元hashで探索再実行し、有限1..65536内のindex2/state551396688と既存reader読込が一致。これは保存native出力の再探索で、動画のseed根拠にはしない。最初に選んだ別selection captureの実行も保持し、元captureへ黙って置換しない。
+- 新source6件は非公開tools5ba67e4b6616be83d5071e0af3060c626e1f34b0へ通常push、本文/head照合。実入力/結果は旧payloadを保持した私的checkpointへ保存。次は実際に異なる候補とscene/tableを結ぶ材料の確認。1220秒の既存4枠は再抽出画像では命令/ステータスUIであり、敵4体として使えない。
