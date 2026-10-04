@@ -174,3 +174,11 @@
 - C++比較は引き続き-fwrapv条件。5scene合計84件のheight0における未参照UV/RGB初期化overflow診断を保存した。F06の「UVのみ6件」と混同しない。
 - 新しい整数部分描画ではX04M09の炎が欠けるため、通常UIのdefaultへ切り替えていない。ROMの炎材質・A3I5 texture・polygon alpha/IDに基づく半透明合成を実装中。クラウドブラウザでの確認・公開ページの更新は未完了。
 - [初期mode1整数描画ソースのバックアップ](https://github.com/DaisukeDaisuke/dots-tools/commit/85d83d9de38d44fe79328a5f6c4cef601d7fd03d)を通常pushし、2ファイル全文とremote headを照合済み。ユーザー用source ZIPは同じLibrary IDのversion2まで更新済みで、この後に追加した初期mode1 moduleは上記Gitへ保存した。
+
+## 20:36 JST — 半透明接続と実動画の自動候補→種類識別
+- ROMのA3I5/A5I3とpolygon alphaを元の半透明list順・IDで接続。X04M09は104 polygon、76,317 fragment、blend20,210回、不透明texelのdepth書込み1,496回、実ID重複抑止43回を元core C++同入力と比較し、親の再実行も一致。残untextured1枚は当該cameraでは全clip-away、dynamic6件は未対応。初期control限定と-fwrapv条件を保持し、全map/native最終画素一致には拡張しない。
+- ラスダン動画150秒の上画面登録で、旧valid-only相関がROM地図の透明余白まで画面内に要求し、負のY offsetを除外していた。全不透明支持13,891画素が画面内にある候補を取り戻し、前後5frameの地図移動が連続。同じ3scale候補を保持し、親の再実行で結果一致。ROM初期背景の中央frame全画面RGB MAEは旧候補33.41/112.39/43.98から18.35へ改善したが、画像上の位置候補であり現在cameraの確定ではない。
+- 既存固定affineとOtsu/component処理を接続。ラスダンでは人物と青い操作UIが結合し、そのまま敵身体に使えない。既存注釈の実敵frame（メタル動画1205秒、ふういんのほこら1F/D04M02）では背景差分の敵が大成分へ結合し、元サイズ条件で棄却。閾値を変えず失敗を保存し、この背景方式は未採用。
+- 同じ実敵frameを既存の固定V2自動候補経路から元解像度cropへ接続し、既存request validatorを通して同一WASM・固定64参照/4モデルの分類へ渡した。1205秒はROI(50,72,35,36)、1195秒は(92,16,28,18)、いずれもz021aが最上位。GTは予測保存後の比較だけに使用。1205秒は事後box IoU0.702で下脚が欠けており、完全身体切り出しではない。
+- 親の1195秒実推論でも処理時間以外の全結果項目が一致。未較正の4モデル内順位であり、種類確定・対象外モデル判定・認識性能改善・AT証明ではない。背景差分の成功とも混同しない。身体欠けの原因を元mask/候補/cropの段階で追い、既存分類器へ渡す実経路を継続する。
+- [再開用ソースの通常Gitバックアップ](https://github.com/DaisukeDaisuke/dots-tools/commit/2b74c64311b26029458fd303589fedd5bb483899)はremote全文/head一致を確認済み。途中の負結果も保持。ROM/動画/RAM/画像/特徴bankをGitへ入れていない。公開ページとクラウドブラウザの確認は未完了。
