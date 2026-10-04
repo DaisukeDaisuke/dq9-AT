@@ -48,3 +48,16 @@
 - このためSlimSAM point/成分法の標準採用は見送る。閾値は調整しない。d1-v1-160正例と背景誤枠1070の両方が元HUD gateで落ちるため、これをモデル能力不足とは解釈しない。340はraw3候補ともIoU0.5未満、400は複数成分で保留、1215の味方誤枠は品質後も残る。
 - Source・再現手順・失敗内訳は非公開tools ca1e32faa7df71659bf3b366feadbbdf6ef2c6a5まで通常push、remote本文/head確認済み。私的N1結果と固定モデルは別Libraryバックアップ済み。Gitに元動画/ROM/画像/mask/vectorを入れていない。
 - 次は公式SAM ViT-B一候補で、raw mask段階の差を同じ自動pointで少数比較する。SlimSAM能力不足を断定せず、HUD/品質gate・実行providerの違いを分離する。現default、固定33評価、未知拒否、AT状態は変更しない。
+
+## 03:05 JST — 追加身体maskの動画入口を保存
+
+- 公式SAM ViT-Bの固定safetensors/configをhash照合し、インストール済みTorch/Transformersの安全な読込で実行。3固定例のpoint-only比較は問題解消を支持しなかった。340のraw最大IoU0.4092、1205.0の品質参考順位は胴体、1215の味方も残る。親の全9mask再実行一致を確認。
+- 現SlimSAM ONNXへboxラベル2/3を流用する互換根拠は得られず、この未証明経路は使わない。公式ViT-Bのinput_boxes契約で、同一frame/candidateに由来する保存済み一意fine boxだけを入力した。GTや手動余白は使わない。
+- 固定33の元10core中、fine boxは6件で利用可能。340/1100は複数fine成分、1070/1215はenvelopeなし、残23frameは元core0で保持。追加maskを新しい敵検出件数に数えず、元coreごとの身体範囲仮説として比較。
+- box追加18maskでは元core比IoU14改善/4悪化、coverage9改善/9悪化。旧品質規則による参考順位の5maskではIoU4改善/1悪化、coverage2改善/3悪化、旧max/prototype種別一致とも4/5（元core5/5）。種類分類の置換は採用しない。160の旧HUD棄却や元誤枠も残る。親の全6case/36mask再実行一致。
+- 実装は固定評価専用で終えず、observe-video-sam-body-hypotheses.mjs の明示的な動画入口へ接続。動画/範囲/既存bank/runtimeから、元V2/LK→同frame一意fine→公式SAM point＋box→全mask分類を連続実行する。元candidate ID/core bbox/元分類/unknown/AT0はそのまま、身体maskは追加仮説に限定。候補JSONや評価frame名は入口に不要。
+- 正式動画1204.6–1205.4秒の5観測で元V2 4core＋実LK 3coreを保持。一意fine6coreから18mask/18分類、1204.6の1coreは未対応。1frameごとにembeddingを共有し、使用frame4回、model load1回。親も新規出力先で動画から実行し、元観測不変・全18mask/全順位/tensor一致を確認。
+- 1205.4秒はmaskごとに種類順位が分かれ、味方や小断片を含むmaskもある。元V2未検出、種別未確定、品質順位の未較正を維持し、品質1位を正解扱いしない。未知拒否・全身保証・現在AT特定は未達。
+- statusだけで既存phaseを再利用する試作resumeは撤去。旧source/結果を保持し、新版は新規出力先への再実行のみをサポート。安全な一般resumeとは宣言しない。
+- Source/再開手順は非公開tools 768511a4eb6dd761d4ec3a8e78ecb715746891f2まで通常push、remote本文/head反映確認済み。公開UI/defaultは変更していない。
+- 次の実作業はAT側へ移る。既存10/3のclock producer/割込callback/dispatch資料を再利用し、未接続のhardware tick差→elapsed変換をROM命令幅で純粋入力契約へつなぐ。既に保存済みの観測一致を再計数せず、割込時序・outer loop到達unknownは保持する。
