@@ -24,6 +24,35 @@ function zeroLightSource(reader){
  if(ids.some((id,i)=>id!==i)||colors.some(c=>c!==0))throw Error('Initial source light colors are not all zero');
  return {kind:'source-zero-light-colors',lightColorWords:colors.map((c,i)=>(c|(ids[i]<<30))>>>0),callAddresses,setter:0x020b53b8,condition:'Mode1 initial environment; later script/state light writes excluded'};
 }
+function floatFromBits(bits){const b=new ArrayBuffer(4),d=new DataView(b);d.setUint32(0,bits,true);return d.getFloat32(0,true);}
+function readStaticTintRules(sdk,reader){
+ const {word,mov,expect}=reader;let h=2166136261;for(const b of sdk.read(0x02051e40,0x2ac))h=Math.imul(h^b,16777619)>>>0;if(h!==0x0dc815c3)throw Error('Native static color transform differs');
+ expect(0x0200fb68,0xe2800ffe);expect(0x02014b90,0xe5900020);expect(0x02014b98,0xb3a07001);
+ expect(0x0200f2dc,0xe2442002);expect(0x0200f2e4,0xe58a2418);
+ const initialLoadGate=(mov(0x0200f2cc,4)-(word(0x0200f2dc)&255))|0;
+ expect(0x02014cac,0xe3100020);expect(0x02052d68,0xe3100002);
+ expect(0x02052cb0,0xebfee678);expect(0x02052cb4,0xe1a01000);expect(0x02052cb8,0xe59a003c);expect(0x02052cbc,0xebfee675);
+ const commandTable=word(0x02051e38);if(word(0x02051e3c)!==commandTable+1)throw Error('Native color-command classifier differs');
+ const commands=sdk.read(commandTable,256),colorOpcodes=[];for(let i=0;i<128;i++)if(commands[i*2+1])colorOpcodes.push(i);
+ if(!same(colorOpcodes,[0x20])||commands[0x20*2]!==1)throw Error('Static color command subset differs');
+ const denominator=floatFromBits(word(0x020520ec)),maximumChannel=word(0x02051e78)&255,minimum=floatFromBits(mov(0x02051f18,1)),maximum=floatFromBits(mov(0x02051f28,1)),midpoint=floatFromBits(mov(0x02051f74,1));
+ if(initialLoadGate>=0||denominator!==31||maximumChannel!==31||minimum!==0||maximum!==1||midpoint!==0.5)throw Error('Static tint initial conditions outside source subset');
+ return {initialLoadGate,modelSkipMask:word(0x02014cac)&255,shapeRequiredMask:word(0x02052d68)&255,colorOpcodes,denominator,maximumChannel,minimum,maximum,midpoint,
+  evidence:{constructorStore:0x0200f2e4,loadGate:0x02014b90,modelGate:0x02014cac,shapeGate:0x02052d68,classifier:0x02051e10,transform:0x02051e40,contrastCube:[0x02052cb0,0x02052cbc]}};
+}
+// Port of02051e40. Round each native float32 operation, including contrast^3
+// constructed by02052b60. This transforms GX COLOR, not material/NORMAL color.
+export function transformNativeEnvironmentColor555(color555,record,rules){
+ if(!Number.isInteger(color555)||color555<0||color555>32767||!Array.isArray(record.rgbMultiplier)||record.rgbMultiplier.length!==3||[...record.rgbMultiplier,record.brightness,record.contrast].some(x=>!Number.isFinite(x)))throw Error('Finite source tint record and RGB555 required');
+ const f=Math.fround,contrast=f(record.contrast),cube=f(contrast*f(contrast*contrast)),brightness=f(record.brightness);
+ if(!Number.isFinite(cube)||!Number.isFinite(brightness))throw Error('Overflowing source tint outside native finite subset');
+ const clamp=x=>Math.max(rules.minimum,Math.min(rules.maximum,x));
+ const colors=[0,5,10].map((shift,k)=>{const scaled=f((color555>>>shift&31)*f(record.rgbMultiplier[k]));if(!Number.isFinite(scaled)||scaled< -2147483648||scaled>=2147483648)throw Error('Tint float-to-integer conversion outside signed range');
+  let x=Math.min(rules.maximumChannel,Math.trunc(scaled));x=clamp(f(f(f(x)/rules.denominator)+brightness));
+  x=x>rules.midpoint?Math.max(rules.midpoint,f(x+cube)):Math.min(rules.midpoint,f(x-cube));
+  return Math.trunc(f(rules.denominator*clamp(x)));
+ });return colors[0]|colors[1]<<5|colors[2]<<10;
+}
 function readRules(sdk){
  const r=sourceReader(sdk),{word,string,expect,mov}=r,table=word(0x0207c7c0);
  if(word(table+24)!==0x67||word(table+28)!==0x0207c2f8||word(table+32)!==0x68||word(table+36)!==0x0207c32c||word(table+40)!==0x69||word(table+44)!==0x0207c470)throw Error('Environment command dispatch differs');
@@ -73,7 +102,7 @@ function inspectNormals(project,automatic){
 // Resolves an initial ordinary profile, not the current running game's environment.
 // Unknown time phase is eliminated only by proving all four inherited states equal.
 export function readAutomaticMaterialEnvironment(project,record,automatic){
- const unresolved=[];let progress={};const base={profile:'ROM-initial-ordinary-environment',ready:false,materialGlobals:null,normalLighting:null,fogParameters:null};
+ const unresolved=[];let progress={};const base={profile:'ROM-initial-ordinary-environment',ready:false,colorReady:false,colorUnresolved:[],fogReady:false,fogUnresolved:[],materialGlobals:null,normalLighting:null,fogParameters:null};
  try{
   if(!automatic?.plan||!Array.isArray(automatic.scenes))throw Error('ROM automatic scene result required');
   const rules=readRules(project.sdk),source=environmentNameFromMaplist(project,record);
@@ -88,45 +117,46 @@ export function readAutomaticMaterialEnvironment(project,record,automatic){
   const color=lowerStaticColorRecords(calls),ordinary=color.inherited.slice(0,4),timeIndependent=ordinary.every(r=>same(r,ordinary[0]));
   if(!timeIndependent)unresolved.push('Environment time slot/phase affects static material color');
   const identity=ordinary.every(r=>r.rgbMultiplier.every(x=>x===1)&&r.brightness===0&&r.contrast===0);
-  if(!identity)unresolved.push('Nonidentity native display-list color transform is not connected');
+  const tintRules=readStaticTintRules(project.sdk,rules.reader);
   // For the accepted identity transform, the native float32 c/31*31 sequence
   // preserves all32 channel values, including conversion truncation.
   const denominatorBytes=project.sdk.read(0x020520ec,4),denominator=new DataView(denominatorBytes.buffer,denominatorBytes.byteOffset,4).getFloat32(0,true);
   if(denominator!==31||Array.from({length:32},(_,c)=>c).some(c=>Math.trunc(Math.fround(Math.fround(c/denominator)*denominator))!==c))throw Error('Identity color float conversion is not preserved');
   const normals=inspectNormals(project,automatic);unresolved.push(...normals.issues.map(x=>x.reason));
   const normalLighting=zeroLightSource(rules.reader);
-  const fog=lowerEnvironmentFog(calls);if(!fog.ready)unresolved.push(...fog.issues.map(x=>x.error));let fogParameters=null,fogTimeIndependent=false;
-  if(fog.ready){const inherited=inheritTimeFogRecords(fog.records),states=[0,1,2,3].map(i=>staticMode1FogParameters(inherited.records,i));fogTimeIndependent=states.every(x=>same(x,states[0]));if(fogTimeIndependent)fogParameters=states[0];else unresolved.push('Environment time slot/phase affects fog');}
+  const fog=lowerEnvironmentFog(calls),fogUnresolved=fog.issues.map(x=>x.error);let fogParameters=null,fogTimeIndependent=false;
+  if(fog.ready){try{const inherited=inheritTimeFogRecords(fog.records),states=[0,1,2,3].map(i=>staticMode1FogParameters(inherited.records,i));fogTimeIndependent=states.every(x=>same(x,states[0]));if(fogTimeIndependent)fogParameters=states[0];else fogUnresolved.push('Environment time slot/phase affects fog');}catch(e){fogUnresolved.push(e.message);}}
   const globals=readSdkInitialMaterialGlobals(project.sdk);
   // 02052eb4 sets manager+46 from static record+C4, then020b53cc(value,0,0).
   // Other globals retain their SDK initialization in this explicit initial profile.
   const ambientArgument=rules.reader.mov(0x02052cc0,1);if(ambientArgument!==0)throw Error('Environment material setter argument differs');
   const materialGlobals=timeIndependent?{...globals,diffuseAmbient:(ordinary[0].fieldsC4|(ambientArgument<<16))>>>0}:null;
-  return {...base,ready:unresolved.length===0,source:{maplist:source,archive:archivePath,member:resource.name,archiveIndex:resource.index},mode:1,initialSelector:rules.initialSelector,colorRecords:color,ordinaryTimeIndependent:timeIndependent,colorTransformIdentity:identity,normals,normalLighting,materialGlobals,fogParameters,fogTimeIndependent,unresolved,
-   liveStateDependencies:['Environment manager+90 forced slot; +94/+98 time phase when inherited records differ','Quest/special overrides, later script setters and environment transitions','Animated material/DL modifications and scene-dependent rendering state'],
-   scope:'Source-proven initial ordinary static-color profile. A ready identity result needs no tint recoloring. NORMAL reduces to emission under source-zero light colors; it is not live environment, animation, fog rasterization or native-pixel parity.'};
- }catch(e){return {...base,...progress,unresolved:[...unresolved,e.message],scope:'Unresolved source environment; no material, light, color or fog defaults substituted.'};}
+  return {...base,ready:unresolved.length===0&&fogUnresolved.length===0,colorReady:unresolved.length===0,colorUnresolved:unresolved.slice(),fogReady:fogUnresolved.length===0,source:{maplist:source,archive:archivePath,member:resource.name,archiveIndex:resource.index},mode:1,initialSelector:rules.initialSelector,colorRecords:color,ordinaryTimeIndependent:timeIndependent,colorTransformIdentity:identity,staticColorRecord:timeIndependent?ordinary[0]:null,tintRules,normals,normalLighting,materialGlobals,fogParameters,fogTimeIndependent,fogUnresolved,unresolved:[...unresolved,...fogUnresolved],
+   liveStateDependencies:['Environment manager+90 forced slot; +94/+98 time phase when inherited records differ','Quest/special overrides, later script setters and environment transitions','Game context+418 later changes may disable load-time tint; model flags and shape flags are source-derived','Animated material/DL modifications and scene-dependent rendering state'],
+   scope:'Source-proven initial ordinary static-color profile. Static GX COLOR tint follows source load/model/shape guards and float32 operations. NORMAL reduces to emission under source-zero light colors; it is not live environment, animation, fog rasterization or native-pixel parity.'};
+ }catch(e){return {...base,...progress,colorUnresolved:[...unresolved,e.message],unresolved:[...unresolved,e.message],scope:'Unresolved source environment; no material, light, color or fog defaults substituted.'};}
 }
 
 // Event-ordered color replay. NORMAL replaces color at that command; a later
 // COLOR replaces it again. A vertex's retained normal is not a lighting trigger.
-export function replayZeroLightShapeColors(gx,material,initialColor){
- let color=initialColor,inPrimitive=false,normalCommands=0;const atCommand=new Map();
+export function replayZeroLightShapeColors(gx,material,initialColor,{transformColor=null}={}){
+ let color=initialColor,inPrimitive=false,normalCommands=0,colorTransformCommands=0,changedColorCommands=0;const atCommand=new Map();
  for(let i=0;i<gx.commands.length;i++){const c=gx.commands[i];
   if(c.opcode===0x40)inPrimitive=true;
   if(c.opcode===0x41)inPrimitive=false;
-  if(c.opcode===0x20)color=c.parameterWords[0]&32767;
+  if(c.opcode===0x20){const raw=c.parameterWords[0]&32767;color=transformColor?transformColor(raw):raw;if(transformColor){colorTransformCommands++;if(color!==raw)changedColorCommands++;}}
   if(c.opcode===0x21){if(!inPrimitive)throw Error('NORMAL before BEGIN requires prior applied material state');color=material.specularEmission>>>16&32767;normalCommands++;}
   atCommand.set(i,color);
  }
- return {atCommand,finalColor:color,normalCommands};
+ return {atCommand,finalColor:color,normalCommands,colorTransformCommands,changedColorCommands};
 }
 export function applyAutomaticMaterialEnvironment(project,record,automatic){
  const environment=readAutomaticMaterialEnvironment(project,record,automatic);
- if(!environment.ready)return {...automatic,environment,environmentApplied:false};
- const maskBytes=project.sdk.read(0x020e934c,32),md=new DataView(maskBytes.buffer,maskBytes.byteOffset,maskBytes.byteLength),masks=Array.from({length:8},(_,i)=>md.getUint32(i*4,true)),normalDraws=[];
+ if(!environment.colorReady)return {...automatic,environment,environmentApplied:false};
+ const maskBytes=project.sdk.read(0x020e934c,32),md=new DataView(maskBytes.buffer,maskBytes.byteOffset,maskBytes.byteLength),masks=Array.from({length:8},(_,i)=>md.getUint32(i*4,true)),normalDraws=[],colorDraws=[];
  try{
-  const scenes=automatic.scenes.map(scene=>{const members=project.archive(scene.archiveName);return {...scene,instances:scene.instances.map(instance=>{
+  const scenes=automatic.scenes.map(scene=>{const members=project.archive(scene.archiveName),sourceModels=new Map(scene.sourceModels.map(m=>[m.id,m])),sourcePlacements=new Map(scene.sourcePlacements.map(p=>[p.id,p]));return {...scene,instances:scene.instances.map(instance=>{
+   const sourceModel=sourceModels.get(sourcePlacements.get(instance.id)?.modelId);if(!sourceModel?.nativeBranch.startsWith('static-model'))throw Error('Static tint source model branch unresolved');
    const bytes=members.get(instance.modelName);if(!bytes)throw Error('Scene model identity absent from source archive');const model=readNativeModelInfo(bytes).models[0],sbc=decodeNativeSbc(bytes,model),shapes=readNativeShapes(bytes,model);
    if(sbc.unresolved.length||!sbc.terminated)throw Error('Unresolved SBC color replay');
    const byOffset=new Map(instance.draws.map(d=>[d.sbcOffset,d])),bindings=new Map(instance.draws.map(d=>[d.materialIndex,d.textureBinding])),draws=[];let color=null,material=null,visible=true;
@@ -135,7 +165,10 @@ export function applyAutomaticMaterialEnvironment(project,record,automatic){
     if(c.opcode!==5||!visible)continue;const draw=byOffset.get(c.offset);if(!draw)throw Error('Missing source draw in environment replay');if(!material)throw Error('Missing bound material for environment replay');
     const shape=shapes[c.shape.index],gx=decodePackedGx(bytes,shape.displayListOffset,shape.displayListBytes);if(gx.unresolved.length)throw Error('Unresolved GX in environment replay');
     const local=decodeLocalVertices(gx.commands);if(local.unresolved.length||local.vertices.length!==draw.vertices.length)throw Error('Source vertex/color correspondence unresolved');
-    const applied=replayZeroLightShapeColors(gx,material,color);color=applied.finalColor;
+    const flags=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength).getUint32(shape.offset+4,true),tint=environment.tintRules;
+    const tintEnabled=tint.initialLoadGate<0&&!(sourceModel.nativeFlags&tint.modelSkipMask)&&Boolean(flags&tint.shapeRequiredMask);
+    const applied=replayZeroLightShapeColors(gx,material,color,{transformColor:tintEnabled?(rgb=>transformNativeEnvironmentColor555(rgb,environment.staticColorRecord,tint)):null});color=applied.finalColor;
+    if(applied.colorTransformCommands)colorDraws.push({archive:scene.archiveName,instanceId:instance.id,model:instance.modelName,shapeIndex:shape.index,modelFlags:sourceModel.nativeFlags,shapeFlags:flags,colorCommands:applied.colorTransformCommands,changedColorCommands:applied.changedColorCommands});
     const vertices=draw.vertices.map((v,i)=>({...v,color555:applied.atCommand.get(local.vertices[i].command)}));
     const normalLightingApplied=applied.normalCommands>0;
     if(normalLightingApplied)normalDraws.push({archive:scene.archiveName,instanceId:instance.id,model:instance.modelName,shapeIndex:shape.index,normalCommands:applied.normalCommands,emission555:material.specularEmission>>>16&32767});
@@ -143,6 +176,6 @@ export function applyAutomaticMaterialEnvironment(project,record,automatic){
    }
    if(draws.length!==instance.draws.length)throw Error('Environment replay draw count differs');return {...instance,draws};
   })};});
-  return {...automatic,scenes,environment,environmentApplied:true,environmentNormalDraws:normalDraws,scope:automatic.scope+' ROM initial ordinary environment applied; no live/animated light or native pixel acceptance.'};
- }catch(e){return {...automatic,environment:{...environment,ready:false,unresolved:[...environment.unresolved,e.message]},environmentApplied:false};}
+  return {...automatic,scenes,environment,environmentApplied:true,environmentNormalDraws:normalDraws,environmentColorDraws:colorDraws,scope:automatic.scope+' ROM initial ordinary environment applied; no live/animated light or native pixel acceptance.'};
+ }catch(e){return {...automatic,environment:{...environment,ready:false,colorReady:false,colorUnresolved:[...environment.colorUnresolved,e.message],unresolved:[...environment.unresolved,e.message]},environmentApplied:false};}
 }
