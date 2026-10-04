@@ -191,3 +191,12 @@
 - 固定33frameと連続30frameへ同手順を適用。初回は1元候補から複数fine成分が発生しFPが各1増えた。負結果を保持し、分類crop補助は一意な成分だけ許可する共通guardを追加。複数/利用不可は元候補を保持する。guard後は元件数を維持し、固定33は10箱8TP/2FP、連続30は11箱11TP/0FP。異なる保存variantと候補hashを各行へ記録し混ぜていない。
 - fine利用可能な6件/9件でtop1変更0、既存モデル注釈との正解は6/6・9/9。coverageは改善4/7件・悪化0、IoUは改善3/3件・悪化1/5件、top2との差は3/5件で縮小した。未対応4/2件、元2FPとclipped敵も残る。欠けを減らす補助候補だが、元cropの無条件置換は見送る。
 - [一意guardと全比較のソース](https://github.com/DaisukeDaisuke/dots-tools/commit/8fa31cb258c31d4d08ee71261504e61030212e1b)を通常Git保存し6ファイル全文/head一致を確認。次は自動支持と元RGBの境界から、背景混入を抑えた画素切り出しを検討する。本番適用・全map対応・AT証明は未完了。
+
+## 22:45 JST — 実動画から分類とAT探索入力まで接続
+- 注釈JSONや保存済みquery manifestを入力せず、動画パス・時間範囲・既存layout名から実PTSでframeを取り出すheadless入口を実装した。元V2検出、元画素crop、固定4モデル/64参照分類、既存camera chainと暫定trackerを接続。参照bankは既存ROM由来の別入力が必要で、この入口自体がROMから再生成するものではない。
+- メタル動画1194.6〜1195.4秒で49 decoded/5観測、元候補3件・core分類3件・任意fine分類3件。親の実動画再実行も出力path以外の全結果一致。fineなしでも元V2/core/camera/trackは不変。元1195.2/1195.4の欠落を保存した。
+- 既存coherent/alpha両入力の別variantを同じ入口へ接続。同区間のV2は3TP/2欠落、coherentは4TP/1欠落、alpha両入力は5TP/0欠落でFP0。親のalpha再実行も一致。ただし1204.6〜1205.4秒ではalpha版が赤い服のparty候補を追加し、1205.4の見逃しも残った。無条件にdefaultを切り替えない。1205.2はcore/fineのtop1が異なり、両方を保持する。
+- 実出力を既存world観測契約へ渡し、全モデルの種別aliasとbank外unknownを保持。未検出、camera reset、暫定trackを新規出生やAT消費に変換していない。同じtrackで5回見えたことを5回の抽選には数えない。
+- 観測から既存AT compiler/searchへの条件付き接続を実行した。既存地図登録のD04M02仮説とROMのtable候補を使うと、ミイラ男仮説の潜在weighted直後状態は671,088,640 low31クラス、全rankingを残すと2,147,483,648クラス。単一eventの解析的交差であり、実走査数0。映像の現在ATを総当たりで特定した結果ではない。
+- 未追跡の既存個体、観測誤り、bank外種別、生成後の未知AT消費を排除できず、現在uint32状態は依然全候補が可能。出生/消費gap/初期seedを勝手に補わず、台帳への確定消費追加は0。種別/観測を改善しながら、複数eventの探索へ必要な条件を接続する。
+- [動画入口・観測接続・条件付き探索のソース](https://github.com/DaisukeDaisuke/dots-tools/commit/5b2d068089317f9c93a211d6aba5628190ee5661)を通常Git保存し、remote全文/headを照合。復旧用Library控えもversion2へ更新し、以前の控えに最新安定source/結果JSON/選択画像を追加した。新しい大きなdescriptor配列等の再生成可能出力は除外範囲を明記。公開ページ/クラウドブラウザ確認は未完了。
