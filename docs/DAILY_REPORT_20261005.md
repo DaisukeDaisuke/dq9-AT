@@ -166,3 +166,12 @@
 - 元Work7固定ラスダン270.000/zuo229.996を、正式動画から元RGBA/PTSに一致して再抽出。同じ処理でラスダンの名前候補から11map IDとtable193/199/200/202/204/207/208/209/210、zuoから7904/D09M04/table88候補を供給。ラスダンの選択文字列は9Fだが同名・文字代替の別階も残し、no-table4403/4414を除外しない。全OCR不完全で現在map未確定。
 - この2frameの元4model動画検出は候補0で、補助mapがあってもsightingを生成せず探索ready=false/AT0。条件付きtable全union→既存enc/CSV catalogからラスダン14、zuo4、重複なし18modelを列挙し、全て元4model bank外と確認。z030bのenc側175と同model alias276も保持。これは候補表の範囲であり実際の可視敵種別を確定しない。親のplan再実行も全体一致。
 - sourceは非公開tools741ab8bd1e8a69b55fe1e484cc993b4e722cf58aまで通常pushし本文/head確認、私的結果も旧payload保持で保存。次は18modelの実在_f資産と既存CPU decoderで扱えるposeだけをmanifest化する。stand/run欠落や未対応曲線を別variant/複製poseで埋めず、元4model評価は保持する。
+
+
+## 08:28 JST — 条件付き18モデル参照の作成と残る見逃し
+
+- 正式Work7同梱geometry kernelと対応JS/Cを照合し、ROM内18モデルの明示_f資産とbind poseを確認。quick4poseが揃うのはラスダン14中6、zuo4中0。rate0以外の曲線、matrix数不一致、exact clip欠落を保持し、regular代用やpose複製はしない。親の両asset probe再実行もRESULT全一致。
+- 実decodeできた50pose×元4yaw viewを既存CPU unlit rendererで描き、200枚全て非空。同じ既存foreground samplerが全200参照を生成した。欠落22pose（ラスダン16/zuo6）はmanifestへ保持。boundsは利用可能poseのunionであり、model追加だけの効果とpose/bounds変更を分離していない。
+- 既存manifest-local-bankの参照数/model集合bindingだけを可変manifestへ結び、元4/64は変更しない。旧64/4model、ラスダン新160/14とunion224/18、zuo新40/4とunion104/8を比較。二つの正式frameは事後注釈・原画素では味方のみの負例で、全条件0候補。旧predictions全文一致、親の両比較RESULT全一致。敵recall/種別改善はこの比較では未測定。
+- 全画像/特徴/checkpointは私的phase bank同一Library項目のv3へ追加し、旧phase payloadを全保持してhash/CRC照合。sourceは非公開tools7ef5e9f14264fbc1db33acd147044382969a8784、保存receipt3779c9b40b859b5a665678695b9a7e5f97cc3bd7まで本文/head確認。ROOT再開控えにも別bank依存と負例結果を保存。
+- 次の陽性は元正式注釈でzuo130秒（実129.996）のenemy_non_target2体を実行前に選定。species/modelラベルは不明、GT bboxは提案へ渡さない。当該frame自身のmap候補と同model集合を確認し、既存40参照を再生成なしで使用。旧4/追加4/union8はいずれも候補0で見逃し継続。身体の一方は色成分段階で部分的、他方は背景を含む大きい成分で、seed/fine支持不足を段階別に調査中。閾値合わせで成功にしない。
