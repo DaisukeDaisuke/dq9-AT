@@ -1,3 +1,4 @@
+import {readNativeChunkPlacementRule} from './automatic-scene.mjs';
 import {parseCalls,decodeNumber,readPoolString,u32} from './vendor/call-stream.mjs';
 import {decodeNativeModel,decodeNativePlacement,deriveNativeWorld,makeNativeTrig} from './native/native-map-records.mjs';
 import {nativeAsciiNameCandidates} from './native/native-file-name.mjs';
@@ -5,14 +6,14 @@ import {readNativeCol2} from './native-col2.mjs';
 import {intersectNativeSegmentTriangle,intersectNativePlaneSegment} from './native-floor-candidate.mjs';
 import {fxCross,fxDot} from './native/native-camera-fx.mjs';
 export function loadRomFloorInstances(project,plan){
- const instances=[],unsupported=[],trig=makeNativeTrig(project.sdk.read(0x020e955c,16384),25736);
+ const chunkPlacementRule=readNativeChunkPlacementRule(project.sdk),instances=[],unsupported=[],trig=makeNativeTrig(project.sdk.read(0x020e955c,16384),25736);
  for(const stream of plan.streams){
   try{const members=project.archive(stream.archive),bytes=members.get(stream.member),pool=u32(bytes,4),calls=parseCalls(bytes).map(c=>({...c,args:c.args.map(a=>({...a,value:a.type===0?readPoolString(bytes,pool,a):decodeNumber(a)}))}));
    const models=new Map(calls.filter(c=>c.opcode===0x6c).map(decodeNativeModel).map(m=>[m.id,m]));
-   const placements=calls.filter(c=>c.opcode===0x6f).map(c=>decodeNativePlacement(c,4096)),world=deriveNativeWorld(placements,{rootPosition:stream.nativePositionFx,trig}),byId=new Map(placements.map(p=>[p.id,p]));
+   const placements=calls.filter(c=>c.opcode===0x6f).map(c=>decodeNativePlacement(c,4096)),world=deriveNativeWorld(placements,{rootPosition:chunkPlacementRule.rootPositionFx,trig}),byId=new Map(placements.map(p=>[p.id,p]));
    const tiltedAncestor=p=>{for(let q=p;q;q=q.parentId>=0?byId.get(q.parentId):null)if(q.nativeRotation[0]||q.nativeRotation[2])return true;return false;};
    for(let i=0;i<placements.length;i++){const p=placements[i],m=models.get(p.modelId);if(!m||m.name[3]!=='A')continue;
-    const key={archive:stream.archive,stream:stream.member,chunkId:stream.chunkId,placementId:p.id,modelId:p.modelId};
+    const key={archive:stream.archive,stream:stream.member,chunkId:stream.chunkId,placementId:p.id,modelId:p.modelId,chunkPositionSourceFx:stream.nativePositionFx.slice(),chunkPlacementRule:chunkPlacementRule.kind};
     if(tiltedAncestor(p)||world[i].yaw||world[i].scale.some(x=>x!==4096)){unsupported.push({...key,reason:'Collision scale/rotation transform not connected'});continue;}
     const name=m.name.replace(/\.[^.]*$/,'.col2'),matches=nativeAsciiNameCandidates([...members.keys()].map(name=>({name})),name);
     if(matches.length!==1){unsupported.push({...key,reason:'COL2 resource absent/ambiguous in mounted archive',requested:name});continue;}
@@ -20,7 +21,7 @@ export function loadRomFloorInstances(project,plan){
    }
   }catch(e){unsupported.push({stream,reason:e.message});}
  }
- return {instances,unsupported};
+ return {instances,unsupported,chunkPlacementRule};
 }
 export function floorHeightsAtXZ(floors,xFx,zFx){
  if(!Number.isInteger(xFx)||!Number.isInteger(zFx))throw Error('Fixed-point XZ required');

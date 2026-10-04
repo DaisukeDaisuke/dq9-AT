@@ -35,7 +35,7 @@ export function buildCameraGeometry(bytes,pivotTable,{modelIndex=0,defaultColor5
   if(c.opcode===6){const d=c.nodeDescription;if(d.flags!==0)throw Error('Unsupported SBC node descriptor flags');if(d.restoreSlot!==null){if(!stack.has(d.restoreSlot))throw Error('Read uninitialized node matrix slot');matrix=[...stack.get(d.restoreSlot)];}
    for(const op of byOffset.get(c.offset).gx)matrix=multiply(matrix,operation(op.opcode,op.signedFx12));if(d.storeSlot!==null)stack.set(d.storeSlot,[...matrix]);continue;}
   if(c.opcode===11){matrix=multiply(matrix,operation(0x1b,nativeSbcPositionScale(model,c.option)));continue;}
-  if(c.opcode===8){const b=c.billboard;if(b.restoreSlot!==null){if(!stack.has(b.restoreSlot))throw Error('Missing billboard restore slot');matrix=stack.get(b.restoreSlot).slice();}if(typeof evaluateBillboard!=='function')throw Error('Map callback evaluator required');matrix=evaluateBillboard(c,matrix);if(!Array.isArray(matrix)||matrix.length!==16||matrix.some(x=>!Number.isInteger(x)))throw Error('Invalid callback matrix');if(b.storeSlot!==null)stack.set(b.storeSlot,matrix.slice());continue;}
+  if(c.opcode===7||c.opcode===8){const b=c.billboard;if(b.restoreSlot!==null){if(!stack.has(b.restoreSlot))throw Error('Missing billboard restore slot');matrix=stack.get(b.restoreSlot).slice();}if(typeof evaluateBillboard!=='function')throw Error('Source-derived billboard evaluator required');matrix=evaluateBillboard(c,matrix);if(!Array.isArray(matrix)||matrix.length!==16||matrix.some(x=>!Number.isInteger(x)))throw Error('Invalid callback matrix');if(b.storeSlot!==null)stack.set(b.storeSlot,matrix.slice());continue;}
   if(c.opcode!==5)throw Error('Unsupported SBC opcode '+c.opcode);
   if(!visible)continue;if(material===null)throw Error('No material before shape');const shape=shapes[c.shape.index];if(!shape)throw Error('Missing shape');
   const gx=decodePackedGx(bytes,shape.displayListOffset,shape.displayListBytes);if(gx.unresolved.length)throw Error('Unresolved display list');
@@ -46,5 +46,5 @@ export function buildCameraGeometry(bytes,pivotTable,{modelIndex=0,defaultColor5
   const indices=[];let open=null;for(const b of local.boundaries){if(b.type==='begin'){if(open)throw Error('Nested primitive');open=b;}else{if(!open)throw Error('End without primitive');indices.push(...triangles(open.primitive,open.vertexIndex,b.vertexIndex-open.vertexIndex));open=null;}}if(open)throw Error('Unterminated primitive');
   draws.push({sbcOffset:c.offset,shapeIndex:shape.index,materialIndex:material,vertices,indices,matrix:[...matrix]});
  }
- return {modelIndex,draws,scope:'Isolated camera-space default-node geometry with explicit map BBY evaluator. Integer dot/shift arithmetic matches three observed modelviews; other conditions and native raster remain unverified. Identity root placement required by caller.'};
+ return {modelIndex,draws,scope:'Camera-space default-node geometry with an explicit BB/BBY evaluator. FX32 node/stack arithmetic; placement and callback state must be established by the caller. Native raster remains unverified.'};
 }
