@@ -166,3 +166,11 @@
 - 同じF06の自然frame3で、実時計230.337631とROM環境recordからmanager・writer・controlを照合しfogへ接続。旧保存JSONをdefaultにせず、write-only tableの読取0も採用していない。32,768 LUTと49,152画素のfog単体処理が元core C++と一致した。
 - 人物/UIを含めた同frame下画面49,152画素のRGB比較は、整数RGBのみで平均絶対誤差6.859938・完全一致36,099画素、fog後で1.237827・48,210画素。残る942画素の原因を全て人物/UIと確定していない。一場面の結果を全map/全stateへ拡張しない。
 - edge markingは有効だが未接続、正のfog補間枝・半透明/動的要素も未対応。現在の改善sourceは通常backupしてremote一致確認、ユーザーへsource-only ZIPの更新版と比較画像を渡した。公開ページ・新UIのクラウドブラウザ確認は未完了。
+
+## 19:21 JST — 正の霧補間とラスダン初期整数描画
+- F06の元stateから無入力の通常frame進行で時刻388付近へ到達。frame9464/9465のmanager更新遅れ、9466のSDK buffer更新遅れを拒否・保存し、9467の整合したsnapshotで正の補間係数0.0220947265625を取得した。ROM供給式、manager50bytes、元core C++の霧計算が一致。旧係数0の経路も維持した。
+- 診断用checkpointを別sessionで復元し、export前後のmain RAM 4MiB・両ARM register・入力・時計・manager/fogが不変であることを確認。既存workerへのstate-export追加wrapperを使用しており、未変更CLIでの結果とは扱わない。専用AT-state getterはなく、AT特定の完了を意味しない。
+- ラスダン5sceneにROMだけから初期mode1の整数geometry・UV・RGBを接続し、同入力の元core C++出力を親の別出力先でも再現した。X04M18の退化polygon1枚や材質未対応、各sceneの動的要素を除外した部分描画で、全入力対応ではない。
+- C++比較は引き続き-fwrapv条件。5scene合計84件のheight0における未参照UV/RGB初期化overflow診断を保存した。F06の「UVのみ6件」と混同しない。
+- 新しい整数部分描画ではX04M09の炎が欠けるため、通常UIのdefaultへ切り替えていない。ROMの炎材質・A3I5 texture・polygon alpha/IDに基づく半透明合成を実装中。クラウドブラウザでの確認・公開ページの更新は未完了。
+- [初期mode1整数描画ソースのバックアップ](https://github.com/DaisukeDaisuke/dots-tools/commit/85d83d9de38d44fe79328a5f6c4cef601d7fd03d)を通常pushし、2ファイル全文とremote headを照合済み。ユーザー用source ZIPは同じLibrary IDのversion2まで更新済みで、この後に追加した初期mode1 moduleは上記Gitへ保存した。
