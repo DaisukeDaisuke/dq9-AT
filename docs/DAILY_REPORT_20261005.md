@@ -146,3 +146,13 @@
 - unknown/既存entity/誤認枝が全uint32を保持し、動画現在state回復false・証明AT加算0。既知origin付きAPIのschemaは照合したが、この動画でorigin付き探索は未実測。
 - 別途、復元した元native二抽選captureを元hashで探索再実行し、有限1..65536内のindex2/state551396688と既存reader読込が一致。これは保存native出力の再探索で、動画のseed根拠にはしない。最初に選んだ別selection captureの実行も保持し、元captureへ黙って置換しない。
 - 新source6件は非公開tools5ba67e4b6616be83d5071e0af3060c626e1f34b0へ通常push、本文/head照合。実入力/結果は旧payloadを保持した私的checkpointへ保存。次は実際に異なる候補とscene/tableを結ぶ材料の確認。1220秒の既存4枠は再抽出画像では命令/ステータスUIであり、敵4体として使えない。
+
+
+## 07:48 JST — 同frameの地図名候補をROM抽選表へ接続
+
+- 正式動画1205.000秒のfull sourceから既存pixel DS-screen detector→map-name panel detector→ROM glyph CPU matcher→既存名前exact joinを接続。手入力の地図名/ROIなしで「ふういんのほこら１Ｆ」候補が出た。名前CSVのhashを記録し、ROM maplist/encfldから同名7401/D04M01、7402/D04M02をともに保持。全area-byte256通りとtime predicateゼロ/非ゼロを列挙し、現在のarea/flagは選んでいない。
+- 7401にはencfld groupがなくunsupported/unknownとして残す。7402のtable30は条件付き候補。OCRは既存UI auto-threshold/scale/文字数設定と最大10秒・200万評価で停止しtextResolved=false。正解名を注入せず、未探索・誤読候補も残す。full画像のlibvips linear縮小とBrowser Canvasの同値は未検証。
+- full sourceのbody cropと元観測のRGBA/PTS/timebaseが完全一致した1205の1sightingだけへ補助証拠を添付し、隣接4frameへ伝播しない。1205証拠を1160へ渡す入力は拒否、原bundleを保持する。
+- 手指定D04M02を不要にした新経路は単一eventの解析的交差でinspected0。all-rankは全2147483648 low31、top-model仮定は671088640を保持。総当たり実行ではなく、unknown/no-table/OCR未探索/既存entity枝が全uint32を残す。現在AT復元false、証明加算0。別draw順/gapの仮定も追加していない。親の元動画からの5段階別実行でsearch/例/bindings/unknown結果が一致。
+- 1160はexact名前join0を保持。既存画面矩形は1160で319×239、1205で320×240（解析画像座標）。元RGBへ両geometryを交差適用する診断では、名前領域のgeometry差MAE約20に対し同geometryの動画差約3.4。画面境界差が候補原因だが、他frameの矩形を採用して成功とはしていない。次は既存detectorの近接候補を抑制前に保持する明示variantで、geometry不確実性を残して比較する。
+- source10fileは非公開tools d9deff66cbe60d3b42e49682def2a705e16e0f16へ通常push、本文/head確認。同frame証拠と失敗結果は旧payload保持の私的checkpointへ保存。既知名向けの閾値調整、公開UI/default変更、map固定1:1はしていない。
