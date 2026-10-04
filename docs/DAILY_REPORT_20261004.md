@@ -139,3 +139,11 @@
 - ROMから初期環境名を取得し、対象の通常時間4slotが同じ色条件であることを確認。NORMALを含む対象shapeでは、初期mode1のlight RGB=0を元命令から確認し、COLOR/NORMAL順でmaterial emissionを適用。その他の環境モードを同じ条件に置き換えていない。
 - 通常pushで作業中branchを保存し、55ソースファイルのremote Git blobを照合。vendorの改行差も別commitで原文へ戻して照合済み。ゲーム資産・ROM/SAV/RAM/動画/秘密は含めていない。
 - [作業中ソースの固定checkpoint](https://github.com/DaisukeDaisuke/dq9-AT/tree/eba796a3c61bc0ef89215a73ad7d648c2dea8e05/web/map-browser-preview) / [検証範囲と未完了](https://github.com/DaisukeDaisuke/dq9-AT/blob/eba796a3c61bc0ef89215a73ad7d648c2dea8e05/docs/ROM_ONLY_PREVIEW_WIP_20261004.md)。これは公開中ページの修正完了や全マップ対応を示すものではない。
+
+
+## 15:02 JST — mode2環境からCPU法線色への接続
+- ROM内の環境供給・時間補間式を分離実装し、保存済みF06自然到達stateの実selector/time/intensity/override条件と照合。7色項目、2灯の方向・RGB・SDK packed値とDIF_AMBが一致した。同じstateの再観測も一致。観測された補間係数は0で、動的補間のnative一致や任意状態への一般化は未検証。
+- 確認済みのstatic-map ambient writerを隔離adapterへ接続し、低16bitと保持bitを維持。照合可能だった同一stateの164材質と一致した。RAM headerが見つからない3モデルは未比較のまま残した。
+- F06の28 instances/177 drawを既存CPU描画へ接続。177 packet受理・拒否0、2025 NORMALイベントが実観測光源を明示した既存core計算と一致。親の別出力先での再実行でも結果JSON全項目とRGBA hashが一致した。これはnative画素一致ではなく、同一条件でのCPU出力再現である。
+- 対象材質は全てlight mask3・shininess table不使用。灯2/3、shininess tableを仮のゼロで埋めず、要求された場合は未解決として拒否する。BB/BBYの法線行列、動的材質、現在時刻の自動供給は未接続。取得済みF06値をROM-only製品defaultにしない。
+- 初期mode1色変換・色と霧の依存分離などの[作業中ソース](https://github.com/DaisukeDaisuke/dq9-AT/commit/6a57d67282c12a9457314aabbaebde0ff4d6d29b)を通常push・照合し、追加のsource-only checkpointを保存した。新mode2 CPU adapterは隔離作業中で、このcommitには含まれない。公開ページは未更新、クラウドブラウザ確認も未完了。認識改善としての採用はしていない。
