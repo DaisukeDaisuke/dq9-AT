@@ -34,3 +34,17 @@
 ### 保存と次の接続
 - 非公開tools最新79c4cde7cfbe6c93605b2ad02187208225ecff38まで通常push、remote本文/head確認済み。固定モデルは別の私的Libraryへhash検証済みバックアップを作成。既存ROOT/phase bankとは別で、元ROMや映像は含めない。
 - 明示的な動画入口から、N1候補・一意成分・分類を連続実行する経路を実装中。元V2/LK/default、元576/18/top8/top2順位、失敗を維持する。身体完成・未知拒否・任意種対応・AT特定は未達。
+
+## 02:05 JST — 動画入口の完走と固定33条件での不採用
+
+- N1動画入口は1204.6–1205.4秒の5観測で完走。2880 raw mask、84品質選別mask、17一意成分cropを保存。親も動画から別実行し、全mask配列・元84/成分17の画素・順位・tensorの一致を確認。独立実行の時刻・path・由来hashは保持した。1205.0秒のカメラ不確実と1205.4秒の元V2未検出は残っている。
+- 別案として、自動core中心のみをSlimSAM positive pointへ渡した。5frame12coreから36raw mask、元品質規則後7mask。5frameの時間は4.75/6.36/3.42/3.07/2.65秒で、固定gridとはprompt数が違う限定比較。親の全36mask・品質選別一致を確認。
+- raw36に既存の一意連結成分処理を適用すると27crop、9maskは複数成分対応で保留。正式注釈のある1205.0秒で脚付きmaskのbox IoUは0.7239→0.8764。ただし旧maxはz064a、prototypeはz021aの不一致を維持し、stability0.896825は元0.9を下回るため品質棄却のまま。親も27cropのgeometry/画素/tensor/順位一致を確認。身体pixel真値の評価ではない。
+- 局所例だけで採用せず、既存固定33frame・15敵の元V2候補10件だけから同じ処理を実行。残23frameは0promptを維持し、coherent/alpha/別coverage variantを混ぜていない。ラベルは事後評価だけに使用。
+  - 元V2：10箱、TP8、未対応2、FN7。幾何一致8件の旧max/prototype種別一致8/8。
+  - point品質選別：10箱、TP6、未対応4、FN9。種別一致5/6。
+  - 一意成分＋品質選別：9箱、TP5、未対応4、FN10。種別一致4/5。
+  - 全raw診断でもTP7で、元TP8を維持できなかった。親の再生成・64crop分類・既存評価関数による集計も一致。
+- このためSlimSAM point/成分法の標準採用は見送る。閾値は調整しない。d1-v1-160正例と背景誤枠1070の両方が元HUD gateで落ちるため、これをモデル能力不足とは解釈しない。340はraw3候補ともIoU0.5未満、400は複数成分で保留、1215の味方誤枠は品質後も残る。
+- Source・再現手順・失敗内訳は非公開tools ca1e32faa7df71659bf3b366feadbbdf6ef2c6a5まで通常push、remote本文/head確認済み。私的N1結果と固定モデルは別Libraryバックアップ済み。Gitに元動画/ROM/画像/mask/vectorを入れていない。
+- 次は公式SAM ViT-B一候補で、raw mask段階の差を同じ自動pointで少数比較する。SlimSAM能力不足を断定せず、HUD/品質gate・実行providerの違いを分離する。現default、固定33評価、未知拒否、AT状態は変更しない。
