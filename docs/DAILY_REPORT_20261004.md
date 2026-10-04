@@ -156,3 +156,13 @@
 - coreの6bit RGB modulation式と表示精度を分離して実装。元CPUは平均RGB誤差10.353685・完全一致65画素、RGB555表示だけは10.819160・8,368画素、RGB整数演算のみは10.184340・0画素、RGB整数演算＋明示RGB555表示は9.729886・13,203画素。人物/UIを除いた恣意的ROIは使っていない。表示形式が異なる比較も併記し、平均誤差だけで全raster合格とはしていない。
 - 176 textured draw・403,456 texelの変換を直接ROM decodeと照合。staged接続はmode0 RGBだけを切り替え、従来alpha合成・depth・coverageを維持した。F06および既存ラスダン5sceneで親の再実行結果が一致し、全depth/alpha・packet/fragment数は不変。半透明packetは未検証として明記。RGB555表示縮退は独立profileのまま。
 - [4ファイルの通常バックアップ](https://github.com/DaisukeDaisuke/dq9-AT/commit/25279ae95c3298be12c713d78c460fd8bcbdf4e4)をremote全文/head一致確認。公開ページへの反映・クラウドブラウザ操作確認は未完了。native fog/depth/blending、動的要素、全map画素一致と認識改善は引き続き未証明。
+
+
+## 18:25 JST — 元polygonの整数描画と現在fog供給
+- 元のtriangle/quad順を保持し、整数clip・viewport・scanline・depth testを別moduleへ接続した。未clipの実95fragment、上面clipの実250fragment、静的opaque部分の56,518fragmentを同入力の元core C++と照合。元の拒否・最初の順序差・未対応条件は保存した。
+- 二値alphaの実textureをnative整数UV・透視補間・wrap/sampleへ接続し、全2,269 source polygon中、opaque768＋二値alpha1,381を条件から自動分類。透明9,121fragmentはdiscardし、未対応120polygonとpolygon数不明の動的model1件を残した。全coverage/depth/ownerのC++比較を親の別出力先でも再現した。native最終depth attachmentを取得したという意味ではない。
+- RGBではUV未対応21polygonを追加拒否し、2,128入力で整数clip色・補間・texture RGBA・mode0色を接続。当該frameでは追加21枚が全clip-awayのため、旧depth planeとのowner差・RGB unavailableは0。別sceneでも0とは保証せずmask機構を保持。
+- C++比較は-fwrapv条件。UV初期化のsigned64 overflow診断6件はheight0かつ該当UV値のdraw/Step参照0だった。負結果を保存し、無条件のWASM一致・UBSan-cleanとはしていない。fog単体処理の検証とは分けている。
+- 同じF06の自然frame3で、実時計230.337631とROM環境recordからmanager・writer・controlを照合しfogへ接続。旧保存JSONをdefaultにせず、write-only tableの読取0も採用していない。32,768 LUTと49,152画素のfog単体処理が元core C++と一致した。
+- 人物/UIを含めた同frame下画面49,152画素のRGB比較は、整数RGBのみで平均絶対誤差6.859938・完全一致36,099画素、fog後で1.237827・48,210画素。残る942画素の原因を全て人物/UIと確定していない。一場面の結果を全map/全stateへ拡張しない。
+- edge markingは有効だが未接続、正のfog補間枝・半透明/動的要素も未対応。現在の改善sourceは通常backupしてremote一致確認、ユーザーへsource-only ZIPの更新版と比較画像を渡した。公開ページ・新UIのクラウドブラウザ確認は未完了。
