@@ -124,3 +124,14 @@
 - 429.596では見える身体が自動成分生成へ届かず未回復。429.796は部分的な小boxで、全身保証も未知拒否も未成立。default・公開UI・出生/AT確定条件は変更していない。旧「34 crop」は複数variantで繰り返された自動観測34件であり、独立34体や手動GT cropではない。
 - sourceと再実行手順は非公開tools 27165f0e2dc794d9f328cfcdede8cf20fd4f2680まで通常pushし、各本文とremote headを確認。私的再開checkpointは既存Library項目のversion8へ保存し、全旧payload保持・追加687fileのhash/ZIP CRCを照合した。再生成可能なtensor cacheは一部省略、SAM本体は別の固定依存。中断復帰や全入力対応の保証ではない。
 - 環境と既存必要ファイルは保持され、消失は未確認。予測された注意時間帯を確定した消失予定とは扱わず、成分生成前の見逃し原因の調査を続ける。
+
+
+## 07:10 JST — 確認された環境消失からの復旧
+
+- 07:02:53に直前の作業ディレクトリ群の欠落を確認し、07:03:19に親も同じcwdで使用容量が約20GBから123MBへ変わったことと合わせて確認。会話再開だけを根拠にせず、実消失として承認済み復旧を開始した。予測時間帯は確定情報として扱っていない。
+- 正式復元索引version8の原本68,621bytesと指定SHAを照合し全文確認。ROM元8partと必須動画18partをLibraryから再取得し、各part・結合gzip/tar・展開ROM/5動画のsize/SHA、gzip CRCをすべて確認した。旧動画cacheや別ROMへの代替なし。
+- 固定公開/非公開sourceは全359/276payloadのsize/SHA/Git blobを照合。original runtime7資産を復元し、実ROMとmetal.savを使う既存読込smoke2件がpass。既存Node24.19/Python3.12.14/Java21.0.12.1とcompiler moduleを実確認し、追加Oracle JDK取得は不要だった。
+- Ghidra12partとpatched NTRのsize/SHA・ZIP CRCを照合して私的配置。既存Javaを使う人工16byte ARM raw import/saveが成功。これは実ROM再importや旧解析DB復元の成功を意味しない。
+- 直前ROOT CPU checkpoint v8とAT/RTC checkpoint v2の原本SHAが一致。CPUの全manifest entryとATの旧archive連鎖も照合。N1/phase bank等も正式Library保存版を取得・照合。ROOT専用控えは子へ配布していない。
+- 消失直前のLK比較source/手順は非公開tools8f3699912e1fdcc6ab8673ac7891e20cb487700fへ保存済み。430.196元core31点からの逆追跡は429.912で全点を失い、429.596/.796を回復できない。後続の隣接frame残差は全208成分・人物/壁等混在の負結果を表示確認したが、raw結果の保存前に消失。報告値だけの再記録と原本復元を混同しない。
+- 基盤読込は復旧したが、最新の映像観測adapter/AT compiler/searchの配置と実入力接続は復元作業中。過去の実測を今回の再実行成功へ読み替えず、復元したsourceと正式入力から続ける。
