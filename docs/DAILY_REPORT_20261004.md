@@ -147,3 +147,12 @@
 - F06の28 instances/177 drawを既存CPU描画へ接続。177 packet受理・拒否0、2025 NORMALイベントが実観測光源を明示した既存core計算と一致。親の別出力先での再実行でも結果JSON全項目とRGBA hashが一致した。これはnative画素一致ではなく、同一条件でのCPU出力再現である。
 - 対象材質は全てlight mask3・shininess table不使用。灯2/3、shininess tableを仮のゼロで埋めず、要求された場合は未解決として拒否する。BB/BBYの法線行列、動的材質、現在時刻の自動供給は未接続。取得済みF06値をROM-only製品defaultにしない。
 - 初期mode1色変換・色と霧の依存分離などの[作業中ソース](https://github.com/DaisukeDaisuke/dq9-AT/commit/6a57d67282c12a9457314aabbaebde0ff4d6d29b)を通常push・照合し、追加のsource-only checkpointを保存した。新mode2 CPU adapterは隔離作業中で、このcommitには含まれない。公開ページは未更新、クラウドブラウザ確認も未完了。認識改善としての採用はしていない。
+
+
+## 16:20 JST — 現在session供給とmode0 RGB整数演算
+- 保存メタデータJSONを入力せず、既存sessionのstatus/memory読取だけからmap・時刻・環境・camera/light packet・材質を取得しCPU背景へ接続した。F06で27読取、177packet、同一RGBAを親の別sessionでも再現。frame/stateLoadSerial/CPU等が途中で変わるsnapshotと別map要求を拒否した。bridge自身はpause/step/writeを呼ばない。通常static SDK flush packetの再構成に限定し、dynamic scene全体や保持済みGPU状態の再現とは扱わない。
+- manager constructorの時計0/0をmap初期値に使わない。別gameClockの初期210/2、field入口コピー、成功load時の保存header時計上書きをsource確認。ROM＋map名だけでは現在時刻は一意にならず、取得済みF06時刻をdefaultにしていない。
+- native frame1/2の下画面は全白だったため画素比較には使わず保存した。固定した連続frame範囲のframe3で背景・主人公・UIを含むnative下画面を得て、同frameのCPU出力と全49,152画素で比較した。
+- coreの6bit RGB modulation式と表示精度を分離して実装。元CPUは平均RGB誤差10.353685・完全一致65画素、RGB555表示だけは10.819160・8,368画素、RGB整数演算のみは10.184340・0画素、RGB整数演算＋明示RGB555表示は9.729886・13,203画素。人物/UIを除いた恣意的ROIは使っていない。表示形式が異なる比較も併記し、平均誤差だけで全raster合格とはしていない。
+- 176 textured draw・403,456 texelの変換を直接ROM decodeと照合。staged接続はmode0 RGBだけを切り替え、従来alpha合成・depth・coverageを維持した。F06および既存ラスダン5sceneで親の再実行結果が一致し、全depth/alpha・packet/fragment数は不変。半透明packetは未検証として明記。RGB555表示縮退は独立profileのまま。
+- [4ファイルの通常バックアップ](https://github.com/DaisukeDaisuke/dq9-AT/commit/25279ae95c3298be12c713d78c460fd8bcbdf4e4)をremote全文/head一致確認。公開ページへの反映・クラウドブラウザ操作確認は未完了。native fog/depth/blending、動的要素、全map画素一致と認識改善は引き続き未証明。
