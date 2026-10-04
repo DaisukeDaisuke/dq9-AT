@@ -71,3 +71,15 @@
 - 原snapshotの実SPと関数prologueから一段だけsaved r8=0と戻り先を復元し、LR−4の実BL先までROM/RAM双方で照合。直前callerはdecode処理であり、NPC outer cached flagとの同一性は未証明。親の再実行結果も一致。追加unwindは行っていない。
 - 著作source・再開手順は非公開tools 81d7009b2d637cf257f0e238de320b449ad96580まで通常pushし、本文/headを確認済み。ROM/RAM/画像/raw命令出力はGitへ追加していない。
 - 未解決依存だけを保留し、既存追跡/replayへ時計とgateの明示入力を接続する作業を続ける。unknownからAT下限を加算せず、現在AT特定・自動継続・全入力対応は未達。
+
+## 04:19 JST — 新しい開始状態の実dispatchを既存replayへ接続
+
+- 旧Work8のRTC不一致・旧原点hashを保持したまま、同じ正式ROM/SAV/routeを毎frame描画する別の新規epochを取得。RTC注入や旧RAMの修正は行っていない。
+- 原点後だけ有効にした最初の2site捕捉で、実frame2052のdispatcher入口とLR0218dafc・上書き前r8=0を直接記録。次の3site版では、同入口に続く13controller callの順序、callerLR、owner、実r2/r3=50/3を確認。追加は2frame、既存frame境界2053で停止、drop0。両版とも対照/観測の開始・終了時の全RAM・両CPU状態・画素が一致。親も保存済みraw bytes・hash・event関係を独立照合した。これは同区間の介入比較で、全入力の非干渉証明ではない。
+- 毎frame描画後の原点画素は旧2051と一致した。新原点RAMはRTC値が異なるため旧原点を置換しない。RTC callbackはこの短区間で0eventであり、記録した受信buffer値をhost時計の全入力系列とは扱わない。
+- 新原点RAMから既存の固定抽出器を再利用し、ROMからmanagerを読み、通常NPC12体を再抽出。旧Work8の動的origin/controllers/epochは流用しない。同じROM由来の静的resourcesだけを再利用した。実13call中のslot4/kind2は通常モデル外として保持する。
+- 実frame2052のclock50/3を新しい明示入力へ束縛して既存replayを呼出。予測を保存してから停止RAMを読み、対応する12体×13fieldが一致。親の新版再実行も予測・比較・結果JSONの全体一致を確認した。これは1回の実dispatchにおける通常NPC部分の再現であり、将来の呼出し予定や全マップの対応ではない。
+- 予測draw0、開始/停止seed一致だが、AT呼出しsiteを観測していないため実消費0とは証明しない。AT下限追加0、kind2・他consumer・producerからstoreまでの時序は未解決。
+- 旧Work8の300clockについては、別adapterで実controller引数を照合してもdirect gateがないためreplay未呼出を維持。旧conditional6drawは別結果として保持。hardware producerの「過去の最後」を時序証明なく流用する案は撤去し、別epoch入力も拒否する。
+- 新source/再実行手順は非公開tools c78590cce6f93ca87fa4e24be53ca7db123c1963まで通常push、10file本文/head確認済み。新原点/停止RAM・raw観測・予測は私的Library checkpointへ保存し、旧RTC失敗archiveを完全保持した。Gitにゲーム資産や生RAMは入れていない。
+- 次は通常モデルが除外したkind2の実分岐を確認し、AT消費を含み得る未対応箇所の接続を進める。単なるframe延長や一致件数追加には進まない。
