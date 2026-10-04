@@ -61,3 +61,13 @@
 - statusだけで既存phaseを再利用する試作resumeは撤去。旧source/結果を保持し、新版は新規出力先への再実行のみをサポート。安全な一般resumeとは宣言しない。
 - Source/再開手順は非公開tools 768511a4eb6dd761d4ec3a8e78ecb715746891f2まで通常push、remote本文/head反映確認済み。公開UI/defaultは変更していない。
 - 次の実作業はAT側へ移る。既存10/3のclock producer/割込callback/dispatch資料を再利用し、未接続のhardware tick差→elapsed変換をROM命令幅で純粋入力契約へつなぐ。既に保存済みの観測一致を再計数せず、割込時序・outer loop到達unknownは保持する。
+
+## 03:49 JST — AT時計入力の接続と元状態再現の障害
+
+- ROMのhardware tick差からelapsedを作る64bit演算を入力モジュールへ接続。元の保存済みnative観測にある差17481からelapsed33382、producerのraw/scaled delta33とphase2を再現し、親の再実行も一致した。絶対tick pair・後続の割込順序は保存されておらず、将来のdispatch到達の証明ではない。
+- dispatch gateのgetter幅と参照先をROMから確認。Work8原2051 snapshotの値5/0は、その瞬間の条件判定としてのみ保持する。outer loopのcached flagや次frameの値へ流用しない。元の六呼出しprefix・300clock packet・conditional continuationは変更していない。
+- 最初のdispatcher入口を新しく観測する試行は、原2051の完全RAM hashが一致せず、observer有効化前で停止。追加frame0、取得dispatch0。差はRTC日付時刻出力の5byteで、元の時計入力系列が保存されていない。ARM7のRTC読出し経路・ARM9の変換処理・既存coreのhost時刻入力まで確認した。原RAMへの書込みや5byte除外、代替state、hash条件の緩和は行っていない。
+- 別に、新captureの複数frame一括stepは最終frameしか描画せず、原Work8の毎frame描画と違っていた。毎frame描画へ戻す最小修正案を保存。修正後のnative実行は未検証であり、時計不一致の解決とは扱わない。旧失敗source・画像差・raw結果は保持。
+- 原snapshotの実SPと関数prologueから一段だけsaved r8=0と戻り先を復元し、LR−4の実BL先までROM/RAM双方で照合。直前callerはdecode処理であり、NPC outer cached flagとの同一性は未証明。親の再実行結果も一致。追加unwindは行っていない。
+- 著作source・再開手順は非公開tools 81d7009b2d637cf257f0e238de320b449ad96580まで通常pushし、本文/headを確認済み。ROM/RAM/画像/raw命令出力はGitへ追加していない。
+- 未解決依存だけを保留し、既存追跡/replayへ時計とgateの明示入力を接続する作業を続ける。unknownからAT下限を加算せず、現在AT特定・自動継続・全入力対応は未達。
