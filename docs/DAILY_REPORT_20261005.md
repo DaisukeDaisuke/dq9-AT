@@ -94,3 +94,12 @@
 - 原点/停止の対照・観測RAM/両CPU/画素は一致。最大2追加frame、停止2053を維持。AT siteは未観測、kind2全体と別actor、未来の呼出し予定は未対応で、AT下限追加0のまま。
 - Source/再開手順は非公開tools dfe0e1bcffaa1bb9d854426b67330f5a58a9046bまで通常push、12file本文/head確認済み。私的checkpointを更新し、旧archiveを完全保持。既存入力・失敗・旧epochは置換していない。
 - AT側はこの限定接続を安定checkpointとし、次の実作業を敵身体の見逃し/誤枠へ戻す。現V2は既にquery patch対ROM前景12tokenであり、旧Work7のpatch対CLSと混同しない。既知の負結果を再利用し、実装済み手法の再包装や評価閾値合わせはしない。
+
+## 05:02 JST — query側の前景支持を揃え、既知背景1枠を抑制
+
+- 現V2はquery patch対ROM前景12token。fineEvidenceのquery側では、自動alphaで消した背景tokenもpart支持へ数え得た。既存ROM側と同じ9点・alpha128以上・6割の判定をqueryにも適用する別variantを追加した。類似度/mean/参照選択/minParts/順位/geometry/bankは変更しない。
+- 固定33frameの元10候補中fine4件を同条件比較。背景1070は11支持→6支持となり左右支持条件で棄却。落ちた5token中4つは完全透明だった。真の1100/1195は2tokenずつ減っても保持、味方1215は8/8前景で誤枠が残る。6coarseと23候補なしframeは不変。既存事後採点でTP8/FP2/FN7→TP8/FP1/FN7。親も再生成/事後採点し、出力先以外の数値・画素hash・tensor結果一致を確認。
+- 明示的な動画CLIへ接続し、正式動画1069.6–1070.4秒を手作り候補JSONなしで実行。5観測で元2枠→1枠。固定33と同一RGBAの1070背景枠を棄却したが、上端のenemy_unknownは元から未検出で残る。1070.4のcoarse候補は保持され、core z021a/fine z064aの不一致も残る。このframeの正式種別ラベルは未確認。親の実動画別実行も、出力先だけを正規化するとRESULT全体一致。
+- 1205短区間の元4候補、1205.4欠落と元core分類を保持。未知拒否・種別確定・全身保証ではない。新方式は明示variantで、公開UI/default/AT確定条件は変えていない。
+- source5fileは非公開tools e6752f07ea6ca82f9f072cd29c1f9b575776799dへ通常push、本文/head確認。ROOT私的checkpointを同一Library項目の新版へ保存し、旧payloadを全保持した。新追加分の再生成可能なfine grid/cacheは省略し、入力画像・crop・JSON・hash・再実行sourceを保存。
+- 次の未決は、固定HUD矩形が現映像の上端の敵をdescriptor前に消す点と、人物頭部だけで全身の縦支持に見える1215。既知敵へ矩形を合わせず、既存HUD除外OFFを全固定入力へ同条件適用して、見逃しとUI誤検知の両方を比較する。
