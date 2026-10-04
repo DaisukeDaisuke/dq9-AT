@@ -156,3 +156,13 @@
 - 手指定D04M02を不要にした新経路は単一eventの解析的交差でinspected0。all-rankは全2147483648 low31、top-model仮定は671088640を保持。総当たり実行ではなく、unknown/no-table/OCR未探索/既存entity枝が全uint32を残す。現在AT復元false、証明加算0。別draw順/gapの仮定も追加していない。親の元動画からの5段階別実行でsearch/例/bindings/unknown結果が一致。
 - 1160はexact名前join0を保持。既存画面矩形は1160で319×239、1205で320×240（解析画像座標）。元RGBへ両geometryを交差適用する診断では、名前領域のgeometry差MAE約20に対し同geometryの動画差約3.4。画面境界差が候補原因だが、他frameの矩形を採用して成功とはしていない。次は既存detectorの近接候補を抑制前に保持する明示variantで、geometry不確実性を残して比較する。
 - source10fileは非公開tools d9deff66cbe60d3b42e49682def2a705e16e0f16へ通常push、本文/head確認。同frame証拠と失敗結果は旧payload保持の私的checkpointへ保存。既知名向けの閾値調整、公開UI/default変更、map固定1:1はしていない。
+
+
+## 08:02 JST — 画面枠の代替保持と別sceneの参照供給
+
+- 既存screen detectorのIoU抑制前候補を、元score順・max8 geometryの明示variantで保持。元detector返却結果は完全不変。既知幅/名前への丸めや正解枝選択はしない。各OCRは同じ既存上限を使い、総予算増加を記録。
+- 1160は7geometry中OCR3、約599万評価/15秒。元319×239枝は誤読のまま、元から存在した次2geometryが7401/7402候補へ届く。名前panel失敗2/役割不明2を保持。1205は27中8枠、OCR3/約599万評価、失敗5/未処理19を保持。親の両frame再実行はelapsed以外RESULT全一致。
+- geometry別証拠を同frame sightingへ接続。各2geometry×2species政策は独立した代替仮説で、4体/4draw連鎖ではない。原観測・no-table7401・未探索・unknownを保持。解析的単一event交差inspected0、全uint32/証明AT0のまま。親の両search RESULTは全体一致。
+- 元Work7固定ラスダン270.000/zuo229.996を、正式動画から元RGBA/PTSに一致して再抽出。同じ処理でラスダンの名前候補から11map IDとtable193/199/200/202/204/207/208/209/210、zuoから7904/D09M04/table88候補を供給。ラスダンの選択文字列は9Fだが同名・文字代替の別階も残し、no-table4403/4414を除外しない。全OCR不完全で現在map未確定。
+- この2frameの元4model動画検出は候補0で、補助mapがあってもsightingを生成せず探索ready=false/AT0。条件付きtable全union→既存enc/CSV catalogからラスダン14、zuo4、重複なし18modelを列挙し、全て元4model bank外と確認。z030bのenc側175と同model alias276も保持。これは候補表の範囲であり実際の可視敵種別を確定しない。親のplan再実行も全体一致。
+- sourceは非公開tools741ab8bd1e8a69b55fe1e484cc993b4e722cf58aまで通常pushし本文/head確認、私的結果も旧payload保持で保存。次は18modelの実在_f資産と既存CPU decoderで扱えるposeだけをmanifest化する。stand/run欠落や未対応曲線を別variant/複製poseで埋めず、元4model評価は保持する。
