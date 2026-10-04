@@ -113,3 +113,14 @@
 - 同じquery前景guardを3bankの全保存候補へ一律に適用すると、旧64=8/1/7、control64=4/0/11、全685=8/11/7。全685ではFP11件と真陽性1100の1件を除き、430を得て1100を失った。TP数8でも元8体の保持ではない。残る11FPは前景支持を満たすfine7件と対象外coarse4件で、透明tokenだけでは説明できない。これも不採用。
 - 生成vector/manifestは私的phase bankへ別保存し、旧CLS/prototype payloadを保持。比較source・再開手順は非公開tools c9be2686b1c344d6c51475868018355e92e80c40まで通常pushし、本文/head反映を確認。ROOT私的checkpointも旧payloadを保持して更新した。公開UI/defaultは変えていない。
 - 次は選別順序の未試行部分。元64/HUD既定でfineへ入る44自動成分のうち、実fine棄却39成分/19frameを対象に、既存公式SAMの成分中心point＋元成分box→mask付きcrop→同じfineEvidenceを追加仮説として比較する。元V2受理後だけを扱う以前のSAM入口とは異なる。全3maskを保持し、空maskはunsupported、GTで最良maskを選んで成功とはしない。元の候補・全失敗・評価閾値は保持する。
+
+## 06:49 JST — 棄却成分からの映像入口と分類入力の分離
+
+- 元64/HUD既定のfine棄却39成分・19frameから、既存SAMの自動成分中心＋boxで全117maskを保持した。fine位置支持を満たす7仮説のうち、既知430の身体boxに重なるのは1体の1仮説で、残る人物/UI候補も保存。3maskは同一成分の代替であり、3体とは数えない。
+- masked CLSでは430の3maskはmaxが全z064a、prototypeがz000c/z064a/z064aとなり、正式モデルz021aを選ばない。既存ROMと同じ前景token poolingを追加比較しても全3maskがz064aのまま。全117件の親側再実行は出力先だけの正規化でRESULT一致し、負結果も保持した。
+- 同じ430原画素の旧自動core/union診断4条件を再現し、順位・scoreが完全一致。native256側の同じgeometryでも全4条件がz021aだった。同じSAM bboxとRGBのままalpha255へ戻すとz021a、SAM alphaではz064aを再現し、この例では透明化が順位を変えることを実測した。消した画素が身体か背景かの一般判定は未解決。
+- 全117maskに、位置支持用maskを保持しつつ種別判定だけ元RGB不透明cropを渡す明示variantを追加。430の3代替はmax/prototypeともz021aになったが、1070のUIも一部z021a、人物断片の誤候補も残る。親の別実行111 fresh encode＋6同一入力cacheでも全RESULT一致。初版40件後の診断側cache扱い失敗と最小修正を保存した。
+- 動画ファイル・既存layout・時間指定だけの入口へ接続。正式1ninnの429.596–430.396秒から49frameをdecodeし5観測。元V2の1候補・分類・追跡を保持し、fine棄却3成分の9maskを別仮説として記録。実PTS429.996は旧430とRGBA一致し、3maskの画素、支持、masked/opaque全順位も一致。9maskのopaque順位は全z021aだが正式種別比較は中心1体だけ。近隣frameへラベルを流用しない。
+- 429.596では見える身体が自動成分生成へ届かず未回復。429.796は部分的な小boxで、全身保証も未知拒否も未成立。default・公開UI・出生/AT確定条件は変更していない。旧「34 crop」は複数variantで繰り返された自動観測34件であり、独立34体や手動GT cropではない。
+- sourceと再実行手順は非公開tools 27165f0e2dc794d9f328cfcdede8cf20fd4f2680まで通常pushし、各本文とremote headを確認。私的再開checkpointは既存Library項目のversion8へ保存し、全旧payload保持・追加687fileのhash/ZIP CRCを照合した。再生成可能なtensor cacheは一部省略、SAM本体は別の固定依存。中断復帰や全入力対応の保証ではない。
+- 環境と既存必要ファイルは保持され、消失は未確認。予測された注意時間帯を確定した消失予定とは扱わず、成分生成前の見逃し原因の調査を続ける。
