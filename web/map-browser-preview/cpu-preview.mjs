@@ -20,7 +20,8 @@ export function rasterizePreviewPackets(packets,{view,projection,clearRGBA}){
     const x0=Math.max(0,Math.ceil(Math.min(...screen.map(v=>v[0]))-.5)),x1=Math.min(W-1,Math.floor(Math.max(...screen.map(v=>v[0]))-.5)),y0=Math.max(0,Math.ceil(Math.min(...screen.map(v=>v[1]))-.5)),y1=Math.min(H-1,Math.floor(Math.max(...screen.map(v=>v[1]))-.5));
     for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){const weights=[edge(b,c,x+.5,y+.5)/area,edge(c,a,x+.5,y+.5)/area,edge(a,b,x+.5,y+.5)/area];if(weights.some(w=>w<0))continue;const z=(weights.reduce((s,w,i)=>s+w*screen[i][2],0)+1)/2,index=y*W+x;if(z>=depth[index])continue;const invW=weights.reduce((s,w,i)=>s+w*screen[i][3],0);if(!invW)continue;const attr=offset=>weights.reduce((s,w,i)=>s+w*tri[i][offset]*screen[i][3],0)/invW;
      const sx=texelIndex(attr(7),texture.width,p.sampler.repeatS,p.sampler.flipS),sy=texelIndex(attr(8),texture.height,p.sampler.repeatT,p.sampler.flipT),t=(sy*texture.width+sx)*4,alpha=texture.pixels[t+3]/255*p.alpha;if(alpha===0)continue;const dest=index*4;
-     for(let ch=0;ch<3;ch++)rgba[dest+ch]=Math.round(texture.pixels[t+ch]*attr(4+ch)*alpha+rgba[dest+ch]*(1-alpha));rgba[dest+3]=Math.round(255*alpha*alpha+rgba[dest+3]*(1-alpha));if(p.alpha===1||(p.polygonAttribute&0x800))depth[index]=z;stats.fragments++;
+     const destinationAlpha=rgba[dest+3]/255,outputAlpha=alpha+destinationAlpha*(1-alpha);
+     for(let ch=0;ch<3;ch++)rgba[dest+ch]=Math.round((texture.pixels[t+ch]*attr(4+ch)*alpha+rgba[dest+ch]*destinationAlpha*(1-alpha))/outputAlpha);rgba[dest+3]=Math.round(255*outputAlpha);if(p.alpha===1||(p.polygonAttribute&0x800))depth[index]=z;stats.fragments++;
     }
    }
   }
