@@ -103,3 +103,13 @@
 - 1205短区間の元4候補、1205.4欠落と元core分類を保持。未知拒否・種別確定・全身保証ではない。新方式は明示variantで、公開UI/default/AT確定条件は変えていない。
 - source5fileは非公開tools e6752f07ea6ca82f9f072cd29c1f9b575776799dへ通常push、本文/head確認。ROOT私的checkpointを同一Library項目の新版へ保存し、旧payloadを全保持した。新追加分の再生成可能なfine grid/cacheは省略し、入力画像・crop・JSON・hash・再実行sourceを保存。
 - 次の未決は、固定HUD矩形が現映像の上端の敵をdescriptor前に消す点と、人物頭部だけで全身の縦支持に見える1215。既知敵へ矩形を合わせず、既存HUD除外OFFを全固定入力へ同条件適用して、見逃しとUI誤検知の両方を比較する。
+
+## 05:44 JST — HUD解除・参照拡大の負結果を保存
+
+- 既存HUD除外OFFを全固定33へ一律適用するとTP8/FP2/FN7→TP7/FP1/FN8となり、不採用。1070上端は成分生成まで届くがfine横支持1で落ちる。160は文字と身体のcoreが結合し、同じcoarse経路の縦支持が3→2となる。元高さ35もfine上限32を超えており、「高さ増加でfine対象から外れた」という初期説明は誤りとして訂正・保存した。
+- ROM fontは既存sourceで実抽出できるが、既存自動ROIはマップ名枠専用でcommand UIを局在化できなかった。未校正OCRや文字幅の列全消去で身体を消す処理は追加していない。
+- 既存の全整数位相PNGから、同じforeground samplerで位置検出用bankを生成。686入力中685参照を生成し、empty1は既存unsupportedのまま。682参照は12part、薄い3参照は既存規則の8/6/9partで、複製補完しない。旧64、新bounds control64、全685を分け、数値gate・HUD既定・全固定入力を維持した。
+- 固定33結果は、旧64=TP8/FP2/FN7、control64=TP4/FP1/FN11、全685=TP9/FP22/FN6。430の追加検出はcontrol64でも起こるため、位相追加単独の効果とは数えない。全685は誤枠増加が大きく不採用。全候補と拒否理由を保存し、旧64出力の完全再現とquery cacheのhashを照合した。親の保存予測からの再採点も一致。
+- 同じquery前景guardを3bankの全保存候補へ一律に適用すると、旧64=8/1/7、control64=4/0/11、全685=8/11/7。全685ではFP11件と真陽性1100の1件を除き、430を得て1100を失った。TP数8でも元8体の保持ではない。残る11FPは前景支持を満たすfine7件と対象外coarse4件で、透明tokenだけでは説明できない。これも不採用。
+- 生成vector/manifestは私的phase bankへ別保存し、旧CLS/prototype payloadを保持。比較source・再開手順は非公開tools c9be2686b1c344d6c51475868018355e92e80c40まで通常pushし、本文/head反映を確認。ROOT私的checkpointも旧payloadを保持して更新した。公開UI/defaultは変えていない。
+- 次は選別順序の未試行部分。元64/HUD既定でfineへ入る44自動成分のうち、実fine棄却39成分/19frameを対象に、既存公式SAMの成分中心point＋元成分box→mask付きcrop→同じfineEvidenceを追加仮説として比較する。元V2受理後だけを扱う以前のSAM入口とは異なる。全3maskを保持し、空maskはunsupported、GTで最良maskを選んで成功とはしない。元の候補・全失敗・評価閾値は保持する。
