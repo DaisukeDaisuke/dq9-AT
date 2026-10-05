@@ -207,3 +207,12 @@
 - main統合commit b4a2e4320ce4e05ef04add14efba824f22a26b05のPages run37249432473はbuild/deployともsuccess。
 - 公開map-browser-previewのindex.html、preview.mjs、automatic-scene.mjsをHTTP取得し、統合元ソースとbyte単位一致を確認。preview.mjs初回timeoutは再取得で解消。
 - 配信反映を確認した範囲は上記3ファイル。ブラウザ上のROM読込・クリック・描画操作と全入力対応は未検証のまま。
+
+## 10:26 JST — 近隣見逃しの段階差とHUD除外の比較
+
+- 同5frameで前半の身体候補はquality後まで残るがfineの縦/横支持不足、後半は固定command-HUD矩形とのbbox交差が先に棄却することを分離。全148旧候補で参照のcoherent優先を試しても結果は不変。近隣の身体対応は事後目視であり、中心frameの正式近似bbox注釈を転用しない。
+- SAM生成後の固定HUD bbox gateだけOFFにした明示variantは、同2880rawから148→166quality候補（旧候補消失0）。既存148の入力/vectorを照合再利用し、追加18 opaque/7 masked/20 tileを実推論。条件付きcoherentは0/0/1/0/0→0/0/1/0/1。後半1frameの身体候補が戻る一方、前半top8に大背景が増え、既存UI誤受理も残るためdefault不採用。以前のappearance HUD OFFとは適用段階が異なる。
+- 親の独立再選別22JSONは出力pathのみ正規化して一致。追加推論の全5frame rows/summary/順位も一致（結果hashは出力pathに依存）。
+- 全166候補で画面固定と既存camera補正の同一画素域のRGB差を比較。初回30/共通域なし2を保持し134件実測。UIは画面固定支持が強いが背景/主人公にも成立し、単独のUI除外根拠には不足。親のRESULT再実行は完全一致。
+- bbox交差があっても実maskのHUD交差ゼロなら残す別診断では、全2880中120件該当・47件のHUD理由を解除できるが、23は元IoU quality、24はstabilityで落ち、候補/順位は不変。後半身体は実交差があり回復しない。既存仕様のバグとは断定しない。
+- sourceと再開手順は非公開toolsへ通常push。HUD比較と旧全payloadはLibrary同項目v16へ保存し、700追加fileのhash/ZIP CRCを確認。画面固定支持等その後の結果は作業領域にも保持。次は参照の未対応poseを実ROM/decoderで確認する。身体完全性・種別/未知拒否・出生/ATは未解決。
