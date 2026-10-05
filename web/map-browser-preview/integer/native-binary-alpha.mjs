@@ -5,9 +5,9 @@
  */
 import {readNativeModelInfo} from '../native/native-model-info.mjs';
 import {readNativeShapes,decodePackedGx,decodeLocalVertices} from '../native/native-sbc-gx.mjs';
-import {clipNativePositionPolygon} from './native-position-clip.mjs?v=destination-reuse-20261006-0501';
-import {rasterizeBinaryCoverageNativeZPolygon} from './native-polygon-depth.mjs?v=destination-reuse-20261006-0501';
-import {nativeOpaqueSortBounds,compareNativeOpaqueOrder,testNativeOpaqueDepth} from './static-opaque-depth.mjs?v=destination-reuse-20261006-0501';
+import {clipNativePositionPolygon} from './native-position-clip.mjs?v=native-raster-reuse-20261006-0637';
+import {rasterizeBinaryCoverageNativeZPolygon} from './native-polygon-depth.mjs?v=native-raster-reuse-20261006-0637';
+import {nativeOpaqueSortBounds,compareNativeOpaqueOrder,testNativeOpaqueDepth} from './static-opaque-depth.mjs?v=native-raster-reuse-20261006-0637';
 const S=65536n;
 const i64=x=>{if(x<-(1n<<63n)||x>=(1n<<63n))throw Error('Native UV signed64 overflow outside connected scope');return x;};
 const s32=x=>{if(x< -2147483648n||x>2147483647n)throw Error('Native UV signed32 overflow outside connected scope');return Number(x);};
@@ -36,7 +36,7 @@ function interpolantOnEdge(rowEdge,vertices,attributes,key){
 /** Produces all incoming geometric fragments with exact sampled alpha, then
  * exposes transparent-discard and opaque lists separately. No alpha blending.
  */
-export function rasterizeNativeBinaryAlphaPolygon(args,texture,{textureScalingFactor,retainGeometry=false}={}){
+export function rasterizeNativeBinaryAlphaPolygon(args,texture,{textureScalingFactor,retainGeometry=false,geometryPixelPlanes=true}={}){
  if(args.viewportWord!==0xbfff0000||args.depthMode!=='Z'||args.fragmentSamplingHack!==false)throw Error('Explicit full viewport/Z/integer sampling profile required');
  if(!Number.isInteger(args.polygonAttribute)||(args.polygonAttribute>>>16&31)!==31||(args.polygonAttribute>>>4&3)!==0||(args.polygonAttribute&0x4000))throw Error('Opaque mode0 polygon alpha31 and ordinary depth mode required');
  if(!Number.isInteger(args.primitiveMode)||args.primitiveMode<0||args.primitiveMode>3||args.clipVerticesFx?.length!==(args.primitiveMode%2?4:3))throw Error('Matching original GX primitive required');
@@ -46,16 +46,18 @@ export function rasterizeNativeBinaryAlphaPolygon(args,texture,{textureScalingFa
  for(const x of clip.intersections){const a=uvById.get(x.insideId),b=uvById.get(x.outsideId);if(!a||!b)throw Error('Clip UV dependency absent');uvById.set(x.id,a.map((v,k)=>s32(i64(BigInt(v)*4096n+i64(BigInt(b[k]-v)*BigInt(x.ratioFx)))/4096n)));}
  const clippedUvFx4=clip.vertices.map(v=>uvById.get(v.id));
  if(clip.discarded)return{ready:true,discarded:true,clip,clippedUvFx4,fragments:[],opaqueFragments:[],transparentFragments:[]};
- const geometry=rasterizeBinaryCoverageNativeZPolygon({...args,textureFormat:texture.format,textureAllAlpha255:texture.counts.transparent===0,textureBinaryAlpha:true,clipVerticesFx:clip.positionsFx});
+ const geometry=rasterizeBinaryCoverageNativeZPolygon({...args,textureFormat:texture.format,textureAllAlpha255:texture.counts.transparent===0,textureBinaryAlpha:true,clipVerticesFx:clip.positionsFx},{materializePixelPlanes:retainGeometry&&geometryPixelPlanes});
  if(!geometry.ready)return{...geometry,clip,clippedUvFx4};
- const attributes=clip.positionsFx.map((v,i)=>{const w=BigInt(v[3]);if(w<=0n)throw Error('Nonpositive perspective W is unsupported');return{invW:(1n<<44n)/w,s:i64(BigInt(clippedUvFx4[i][0])*(1n<<40n))/w,t:i64(BigInt(clippedUvFx4[i][1])*(1n<<40n))/w};}),fragments=[],opaqueFragments=[],transparentFragments=[];
+ const attributes=clip.positionsFx.map((v,i)=>{const w=BigInt(v[3]);if(w<=0n)throw Error('Nonpositive perspective W is unsupported');return{invW:(1n<<44n)/w,s:i64(BigInt(clippedUvFx4[i][0])*(1n<<40n))/w,t:i64(BigInt(clippedUvFx4[i][1])*(1n<<40n))/w};}),fragments=[],opaqueFragments=[],transparentFragments=[];let geometryCursor=0;
  for(const row of geometry.scanlines){const width=BigInt(row.xEndExclusive-row.xStart);if(width===0n)continue;const current={},delta={};for(const key of['invW','s','t']){current[key]=interpolantOnEdge(row.left,geometry.transformed,attributes,key);const end=interpolantOnEdge(row.right,geometry.transformed,attributes,key);delta[key]=(end-current[key])/width;}
-  let z=row.left.z;for(let x=row.xStart;x<row.xEndExclusive;x++,z=i64(z+row.zStep)){
+  // Geometry has already completed this exact depth walk and its overflow checks.
+  for(let x=row.xStart;x<row.xEndExclusive;x++){
    if(current.invW<=0n)throw Error('Interpolated inverse W outside connected positive domain');const uv=[s32(current.s/current.invW),s32(current.t/current.invW)],sample=[wrap(uv[0],texture.width,Boolean(texture.wrapMode&1),Boolean(texture.wrapMode&4)),wrap(uv[1],texture.height,Boolean(texture.wrapMode&2),Boolean(texture.wrapMode&8))],alpha=texture.alpha5[sample[1]*texture.width+sample[0]];
    if(alpha!==0&&alpha!==31)throw Error('Intermediate sampled alpha remains unsupported');
    // With polygon alpha31, core modulate_table[expand5(alpha)][63] >>1
    // returns the same binary alpha. No RGB/color default is introduced.
-   const fragment={x,y:row.y,depth24:Number(BigInt.asUintN(32,z/(1n<<19n))&0xfffffffen),uv,sample,alpha5:alpha};fragments.push(fragment);(alpha?opaqueFragments:transparentFragments).push(fragment);for(const key of['invW','s','t'])current[key]=i64(current[key]+delta[key]);
+   const geometryFragment=geometry.fragments[geometryCursor++];if(!geometryFragment||geometryFragment.x!==x||geometryFragment.y!==row.y)throw Error('UV walk lost native position/depth correspondence');
+   const fragment={x,y:row.y,depth24:geometryFragment.depth24,uv,sample,alpha5:alpha};fragments.push(fragment);(alpha?opaqueFragments:transparentFragments).push(fragment);for(const key of['invW','s','t'])current[key]=i64(current[key]+delta[key]);
   }
  }
  if(fragments.length!==geometry.fragments.length||fragments.some((f,i)=>f.x!==geometry.fragments[i].x||f.y!==geometry.fragments[i].y||f.depth24!==geometry.fragments[i].depth24))throw Error('UV walk lost native position/depth correspondence');

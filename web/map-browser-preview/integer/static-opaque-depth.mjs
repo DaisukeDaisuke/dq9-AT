@@ -7,7 +7,7 @@
 import {makeNativeTrig} from '../native/native-map-records.mjs';
 import {buildMode2LitGeometry} from './mode2-lighting-adapter.mjs?v=field-stream-20261005-1108';
 import {retainNativePrimitiveInputs,projectNativePrimitiveFx} from './native-primitive-inputs.mjs';
-import {rasterizeNativePositionClippedZPolygon} from './native-position-clip.mjs?v=destination-reuse-20261006-0501';
+import {rasterizeNativePositionClippedZPolygon} from './native-position-clip.mjs?v=native-raster-reuse-20261006-0637';
 const mul=(a,b)=>Array.from({length:16},(_,k)=>{let v=0n;for(let j=0;j<4;j++)v+=BigInt(a[j*4+k%4])*BigInt(b[(k>>2)*4+j]);return Number(BigInt.asIntN(32,v>>12n));});
 /** Native opaque sort uses ORIGINAL pre-clip homogeneous positions, then
  * maximumY, minimumY, and original emission order. No float screen estimates.

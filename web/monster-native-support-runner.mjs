@@ -1,10 +1,10 @@
 // Optional bounded worker-side source-native evaluator. No production caller.
 import{readMonsterAssets}from'./monster-assets.mjs';
 import{readNSBCA}from'./monster-animation.mjs';
-import{prepareNativeBodyEnvelope,placeNativeBodyEnvelopeOnFloors}from'./monster-native-body-placement.mjs?v=native-cpu-reuse-20261006-0612';
+import{prepareNativeBodyEnvelope,placeNativeBodyEnvelopeOnFloors}from'./monster-native-body-placement.mjs?v=native-raster-reuse-20261006-0637';
 import{readSdkInitialMaterialGlobals}from'./map-browser-preview/rom-sdk-initial-material.mjs';
-import{readInitialMode1RasterProfile}from'./map-browser-preview/integer/initial-mode1-integer-preview.mjs?v=native-cpu-reuse-20261006-0612';
-import{prepareNativeBodyProgram,projectNativeBodyPolygons,rasterNativeBody}from'./monster-native-body.mjs?v=native-cpu-reuse-20261006-0612';
+import{readInitialMode1RasterProfile}from'./map-browser-preview/integer/initial-mode1-integer-preview.mjs?v=native-raster-reuse-20261006-0637';
+import{prepareNativeBodyProgram,projectNativeBodyPolygons,rasterNativeBody}from'./monster-native-body.mjs?v=native-raster-reuse-20261006-0637';
 import{createNativeBodyBillboardState}from'./monster-native-billboard.mjs?v=native-body-20261006-0212';
 import{bindFrozenBodyProjection}from'./monster-perspective-input.mjs?v=native-body-20261006-0212';
 import{comparePerspectiveBody}from'./monster-perspective-body.mjs?v=native-body-20261006-0212';

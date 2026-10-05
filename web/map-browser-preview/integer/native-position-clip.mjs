@@ -4,7 +4,7 @@
  * This preserves native N-gon order. It does not interpolate texture/color,
  * implement shadow/translucent rendering, or accept full-frame pixel parity.
  */
-import {rasterizePositionClippedNativeZPolygon} from './native-polygon-depth.mjs?v=destination-reuse-20261006-0501';
+import {rasterizePositionClippedNativeZPolygon} from './native-polygon-depth.mjs?v=native-raster-reuse-20261006-0637';
 const PLANES=[[0,-1],[0,1],[1,-1],[1,1],[2,-1],[2,1]];
 const i64=x=>{if(x<-(1n<<63n)||x>=(1n<<63n))throw Error('Native clip signed64 overflow outside connected scope');return x;};
 const s32=x=>{if(x< -2147483648n||x>2147483647n)throw Error('Native clip signed32 overflow outside connected scope');return Number(x);};

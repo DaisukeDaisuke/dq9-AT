@@ -9,7 +9,7 @@ import {runSourceStepsSync,runSourceStepsAsync} from '../cooperative-source-work
 import {makeNativeTrig} from '../native/native-map-records.mjs';
 import {buildMode2LitGeometry} from './mode2-lighting-adapter.mjs?v=field-stream-20261005-1108';
 import {retainNativePrimitiveInputs} from './native-primitive-inputs.mjs';
-import {readNativeBinaryPolygonTexture,rasterizeNativeBinaryAlphaPolygon,compositeBinaryAwareDepth} from './native-binary-alpha.mjs?v=native-cpu-reuse-20261006-0612';
+import {readNativeBinaryPolygonTexture,rasterizeNativeBinaryAlphaPolygon,compositeBinaryAwareDepth} from './native-binary-alpha.mjs?v=native-raster-reuse-20261006-0637';
 const expand5=n=>n===0?0:n*2+1,expand8=n=>(n<<3)|(n>>>2);
 const alphabet=new Map(Array.from({length:32},(_,n)=>[expand8(n),expand5(n)]));
 const eq=(a,b)=>a.length===b.length&&a.every((v,i)=>Array.isArray(v)?eq(v,b[i]):v===b[i]);
@@ -50,14 +50,15 @@ function edgeValue(e,vertices,values){const a=vertices[e.topIndex],b=vertices[e.
 export function rasterizeNativeMode0Rgb(args,colorInput,{textureScalingFactor}={}){
  if(!colorInput||colorInput.rgb555.length!==args.clipVerticesFx.length)throw Error('Original source polygon color inputs required');
  // Reuse the exact same-call binary geometry walk; do not retain it in output.
- const {geometry,...result}=rasterizeNativeBinaryAlphaPolygon(args,colorInput.texture,{textureScalingFactor,retainGeometry:true});if(!result.ready) return result;
+ const {geometry,...result}=rasterizeNativeBinaryAlphaPolygon(args,colorInput.texture,{textureScalingFactor,retainGeometry:true,geometryPixelPlanes:false});if(!result.ready) return result;
  const byId=new Map(colorInput.rgb555.map((v,i)=>{if(!Number.isInteger(v)||v<0||v>32767)throw Error('Native RGB555 required');return[i,[0,5,10].map(s=>expand5(v>>>s&31))];}));
  for(const q of result.clip.intersections){const a=byId.get(q.insideId),b=byId.get(q.outsideId);if(!a||!b||q.ratioFx<0||q.ratioFx>4096)throw Error('Unsigned RGB clip dependency/ratio unsupported');byId.set(q.id,a.map((v,c)=>Number(BigInt.asUintN(8,BigInt.asUintN(64,(BigInt(v)<<12n)+BigInt.asUintN(64,BigInt(b[c]-v))*BigInt(q.ratioFx))>>12n))));}
  const clippedRgb6=result.clip.vertices.map(v=>byId.get(v.id));if(result.discarded||result.culled||result.fragments.length===0)return{...result,clippedRgb6};
  if(!geometry?.ready)throw Error(geometry?.reason??'Binary source geometry unavailable');
  const attributes=result.clip.positionsFx.map((v,i)=>{const w=BigInt(v[3]);if(w<=0n)throw Error('Nonpositive RGB perspective W unsupported');return[(1n<<44n)/w,...clippedRgb6[i].map(c=>i64(BigInt(c)*(1n<<44n))/w)];});let cursor=0;const fragments=[];
  for(const row of geometry.scanlines){const width=BigInt(row.xEndExclusive-row.xStart);if(width===0n)continue;const current=[],delta=[];for(let c=0;c<4;c++){const values=attributes.map(v=>v[c]);current[c]=edgeValue(row.left,geometry.transformed,values);delta[c]=(edgeValue(row.right,geometry.transformed,values)-current[c])/width;}
-  for(let x=row.xStart;x<row.xEndExclusive;x++){const f=result.fragments[cursor++];if(!f||f.x!==x||f.y!==row.y||current[0]<=0n)throw Error('RGB/geometry/UV fragment correspondence differs');const vertexRgb6=current.slice(1).map(v=>Number((v/current[0])>63n?63n:(v/current[0])<0n?0n:v/current[0])),at=(f.sample[1]*colorInput.texture.width+f.sample[0])*4,textureRgb6=Array.from(colorInput.texture.rgba6665.slice(at,at+3));if(colorInput.texture.rgba6665[at+3]!==f.alpha5)throw Error('Source texture color/alpha correspondence differs');const rgb6=textureRgb6.map((v,c)=>((v+1)*(vertexRgb6[c]+1)-1)>>6);fragments.push({...f,vertexRgb6,textureRgb6,rgb6});for(let c=0;c<4;c++)current[c]=i64(current[c]+delta[c]);}
+  for(let x=row.xStart;x<row.xEndExclusive;x++){const f=result.fragments[cursor++];if(!f||f.x!==x||f.y!==row.y||current[0]<=0n)throw Error('RGB/geometry/UV fragment correspondence differs');const vertexRgb6=current.slice(1).map(v=>{const q=v/current[0];return Number(q>63n?63n:q<0n?0n:q);}),at=(f.sample[1]*colorInput.texture.width+f.sample[0])*4,textureRgb6=Array.from(colorInput.texture.rgba6665.slice(at,at+3));if(colorInput.texture.rgba6665[at+3]!==f.alpha5)throw Error('Source texture color/alpha correspondence differs');const rgb6=textureRgb6.map((v,c)=>((v+1)*(vertexRgb6[c]+1)-1)>>6);// Binary fragments have exactly these six fields; preserve their values/references.
+   fragments.push({x:f.x,y:f.y,depth24:f.depth24,uv:f.uv,sample:f.sample,alpha5:f.alpha5,vertexRgb6,textureRgb6,rgb6});for(let c=0;c<4;c++)current[c]=i64(current[c]+delta[c]);}
  }
  if(cursor!==result.fragments.length)throw Error('RGB fragment count differs');return{...result,clippedRgb6,fragments,opaqueFragments:fragments.filter(f=>f.alpha5===31),transparentFragments:fragments.filter(f=>f.alpha5===0),scope:'Source integer RGB clip/perspective/sample/mode0 only. No fog/translucent shader, framebuffer completeness or live retained texture state claim.'};
 }

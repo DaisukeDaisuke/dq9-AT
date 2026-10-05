@@ -1,4 +1,4 @@
-import {composeNativeBodyOverSourceDestination} from './monster-native-scene-composition.mjs?v=native-cpu-reuse-20261006-0612';
+import {composeNativeBodyOverSourceDestination} from './monster-native-scene-composition.mjs?v=native-raster-reuse-20261006-0637';
 /* SPDX-License-Identifier: GPL-2.0-or-later
  * Isolated original-GX body bridge. Reuses existing DeSmuME535f676-derived
  * position/clip/raster/color/depth modules with their original notices.
@@ -15,9 +15,9 @@ import {readNativeTextureResource} from './map-browser-preview/native/native-tex
 import {unpackNativeTexture} from './map-browser-preview/native/native-texture-unpack.mjs';
 import {makeNativeTrig} from './map-browser-preview/native/native-map-records.mjs';
 import {readNSBCA} from './monster-animation.mjs';
-import {rasterizeNativeMode0Rgb,presentStaticRgb} from './map-browser-preview/integer/static-mode0-rgb.mjs?v=native-cpu-reuse-20261006-0612';
-import {compositeBinaryAwareDepth} from './map-browser-preview/integer/native-binary-alpha.mjs?v=native-cpu-reuse-20261006-0612';
-import {rasterizeNativeTexturedTranslucentMode0} from './map-browser-preview/integer/native-textured-translucent.mjs?v=destination-reuse-20261006-0501';
+import {rasterizeNativeMode0Rgb,presentStaticRgb} from './map-browser-preview/integer/static-mode0-rgb.mjs?v=native-raster-reuse-20261006-0637';
+import {compositeBinaryAwareDepth} from './map-browser-preview/integer/native-binary-alpha.mjs?v=native-raster-reuse-20261006-0637';
+import {rasterizeNativeTexturedTranslucentMode0} from './map-browser-preview/integer/native-textured-translucent.mjs?v=native-raster-reuse-20261006-0637';
 import {applyFogPixel} from './map-browser-preview/native/fog-raster.mjs';
 const need=(v,m)=>{if(!v)throw Error(m);},i32=v=>Number(BigInt.asIntN(32,BigInt(v))),signed=(x,n)=>(x<<(32-n))>>(32-n);
 const identity=()=>[4096,0,0,0,0,4096,0,0,0,0,4096,0,0,0,0,4096];
@@ -70,6 +70,10 @@ export function rasterNativeBody(program,projected,{profile,fog=null,alignment,d
  if(participants.some(p=>p.translucent))return{ready:false,reason:'Exact source translucent fragments require a known pre-fog destination, retained depth/IDs/fog and source ordering; no final-background surrogate',originalPolygons:projected.polygons.length,fragmentPrograms:participants,unsupportedDestination:true,partialBodyNotScored:true};
  const plane=compositeBinaryAwareDepth(participants),rgba6665=new Uint8Array(49152*4),fogByOwner=new Map(projected.polygons.map(p=>[p.index,Boolean(p.material.effective.polygonAttribute&0x8000)]));for(const p of participants)for(const f of p.fragments){const i=f.y*256+f.x;if(f.alpha5===31&&plane.coverage[i]&&plane.owner[i]===p.index&&plane.depth24[i]===f.depth24)rgba6665.set([...f.rgb6,31],i*4);}
  if(fog)for(let i=0;i<49152;i++)if(plane.coverage[i])rgba6665.set(applyFogPixel(rgba6665.subarray(i*4,i*4+4),plane.depth24[i],fogByOwner.get(plane.owner[i]),fog.parameters,fog.table),i*4);
- const image=presentStaticRgb({width:256,height:192,rgba6665},{profile:'rgb555-expanded'}),rgba=new Uint8ClampedArray(49152*4);for(let y=0;y<192;y++)for(let x=0;x<256;x++){const xx=x+alignment.dx,yy=y+alignment.dy;if(xx>=0&&yy>=0&&xx<256&&yy<192)rgba.set(image.rgba.subarray((y*256+x)*4,(y*256+x+1)*4),(yy*256+xx)*4);}
+ const image=presentStaticRgb({width:256,height:192,rgba6665},{profile:'rgb555-expanded'}),rgba=new Uint8ClampedArray(49152*4);
+ // Frozen integer translation preserves each contiguous in-frame source row.
+ // Copy all channels, including transparent pixels, without a view per pixel.
+ const xStart=Math.max(0,-alignment.dx),xEnd=Math.min(256,256-alignment.dx);
+ if(xStart<xEnd)for(let y=0;y<192;y++){const yy=y+alignment.dy;if(yy>=0&&yy<192)rgba.set(image.rgba.subarray((y*256+xStart)*4,(y*256+xEnd)*4),(yy*256+xStart+alignment.dx)*4);}
  return {ready:true,width:256,height:192,rgba,sourceDepth24:plane.depth24,sourceOwner:plane.owner,sourceCoverage:plane.coverage,sourceAcceptedSubset:'isolated-opaque-binary-body-polygons',originalPolygons:projected.polygons.length,raster:'source-integer-original-GX-body-subset',sceneOcclusionApplied:false,clippedTriangles:null,errors,scope:'Isolated source original polygons, integer coverage/UV/RGB/depth and body-owned fog. No scene occlusion or complete native frame/body/identity certification.'};
 }

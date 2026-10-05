@@ -1,10 +1,10 @@
 // Same-frame CPU source-render handoff only. No final-RGB inversion, cross-frame
 // source cache, GPU substitution or exported raw planes in appearance evidence.
-import {bindNativeBodyDestination} from '../monster-native-scene-composition.mjs?v=native-cpu-reuse-20261006-0612';
+import {bindNativeBodyDestination} from '../monster-native-scene-composition.mjs?v=native-raster-reuse-20261006-0637';
 import {readNaturalBodySceneOrder} from '../monster-native-scene-order.mjs';
 import {readFrozenMonsterFog} from '../monster-source-fog.mjs';
 import {readArm9Overlay} from './rom-overlay.mjs';
-import {readInitialTexturedBlendProfile} from './integer/native-textured-translucent.mjs?v=destination-reuse-20261006-0501';
+import {readInitialTexturedBlendProfile} from './integer/native-textured-translucent.mjs?v=native-raster-reuse-20261006-0637';
 const N=49152,need=(v,m)=>{if(!v)throw Error(m);},same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const sha=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');
 const frameKeys=['romSHA256','recordKey','sourceId','sourceEpoch','timelineSegment','mediaTime','fullRGBA_SHA256'];

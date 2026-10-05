@@ -14,11 +14,11 @@ import{unpackNativeTexture}from'../native/native-texture-unpack.mjs';
 import{readNativeModelInfo}from'../native/native-model-info.mjs';
 import{readNativeShapes,decodePackedGx,decodeLocalVertices}from'../native/native-sbc-gx.mjs';
 import{projectNativePrimitiveFx}from'./native-primitive-inputs.mjs';
-import{clipNativePositionPolygon}from'./native-position-clip.mjs?v=destination-reuse-20261006-0501';
-import{rasterizeTexturedTranslucentCoverageNativeZPolygon}from'./native-polygon-depth.mjs?v=destination-reuse-20261006-0501';
+import{clipNativePositionPolygon}from'./native-position-clip.mjs?v=native-raster-reuse-20261006-0637';
+import{rasterizeTexturedTranslucentCoverageNativeZPolygon}from'./native-polygon-depth.mjs?v=native-raster-reuse-20261006-0637';
 const expand5=x=>x===0?0:2*x+1,modulate=(a,b)=>((a+1)*(b+1)-1)>>6;
 const i64=n=>{if(n<-(1n<<63n)||n>=(1n<<63n))throw Error('Active signed64 interpolant overflow unsupported');return n;};
-export {readInitialMode1BlendProfile as readInitialTexturedBlendProfile} from './native-mode0-translucent.mjs?v=destination-reuse-20261006-0501';
+export {readInitialMode1BlendProfile as readInitialTexturedBlendProfile} from './native-mode0-translucent.mjs?v=native-raster-reuse-20261006-0637';
 
 function resource(project,p,e){
  let bytes;if(e.kind==='embedded-model')bytes=project.archive(p.archive).get(p.model);else if(e.kind==='ambl-member'){
@@ -63,10 +63,11 @@ export function rasterizeNativeTexturedTranslucentMode0(args,input){
  const clip=clipNativePositionPolygon(args.clipVerticesFx),uvs=new Map(input.texture.uvFx4.map((v,i)=>[i,v.slice()])),colors=new Map(input.rgb555.map((v,i)=>[i,[0,5,10].map(s=>expand5(v>>>s&31))]));
  for(const q of clip.intersections){const a=uvs.get(q.insideId),b=uvs.get(q.outsideId),ca=colors.get(q.insideId),cb=colors.get(q.outsideId);uvs.set(q.id,a.map((v,c)=>Number((BigInt(v)*4096n+BigInt(b[c]-v)*BigInt(q.ratioFx))/4096n)));colors.set(q.id,ca.map((v,c)=>Number(BigInt.asUintN(8,BigInt.asUintN(64,(BigInt(v)<<12n)+BigInt.asUintN(64,BigInt(cb[c]-v))*BigInt(q.ratioFx))>>12n))));}
  const clippedUvFx4=clip.vertices.map(v=>uvs.get(v.id)),clippedRgb6=clip.vertices.map(v=>colors.get(v.id));if(clip.discarded)return{ready:true,discarded:true,clip,clippedUvFx4,clippedRgb6,fragments:[]};
- const geometry=rasterizeTexturedTranslucentCoverageNativeZPolygon({...args,clipVerticesFx:clip.positionsFx});if(!geometry.ready)return{...geometry,clip,clippedUvFx4,clippedRgb6};
+ const geometry=rasterizeTexturedTranslucentCoverageNativeZPolygon({...args,clipVerticesFx:clip.positionsFx},{materializePixelPlanes:false});if(!geometry.ready)return{...geometry,clip,clippedUvFx4,clippedRgb6};
  const attributes=clip.positionsFx.map((v,i)=>{const w=BigInt(v[3]);if(w<=0n)throw Error('Nonpositive perspective W');return[(1n<<44n)/w,...clippedUvFx4[i].map(u=>i64(BigInt(u)*(1n<<40n))/w),...clippedRgb6[i].map(c=>i64(BigInt(c)*(1n<<44n))/w)];}),fragments=[],alpha=args.polygonAttribute>>>16&31,texture=input.texture;let cursor=0;
  for(const row of geometry.scanlines){const width=BigInt(row.xEndExclusive-row.xStart);if(!width)continue;const current=[],delta=[];for(let c=0;c<6;c++){const values=attributes.map(v=>v[c]);current[c]=edgeValue(row.left,geometry.transformed,values);delta[c]=(edgeValue(row.right,geometry.transformed,values)-current[c])/width;}
-  for(let x=row.xStart;x<row.xEndExclusive;x++){const g=geometry.fragments[cursor++];if(!g||g.x!==x||g.y!==row.y||current[0]<=0n)throw Error('Attribute/coverage correspondence differs');const uv=current.slice(1,3).map(v=>Number(v/current[0])),sample=[wrap(uv[0],texture.width,!!(texture.wrapMode&1),!!(texture.wrapMode&4)),wrap(uv[1],texture.height,!!(texture.wrapMode&2),!!(texture.wrapMode&8))],at=(sample[1]*texture.width+sample[0])*4,texel=Array.from(texture.rgba6665.slice(at,at+4)),vertexRgb6=current.slice(3).map(v=>Math.max(0,Math.min(63,Number(v/current[0])))),rgb6=texel.slice(0,3).map((v,c)=>modulate(v,vertexRgb6[c])),alpha5=modulate(expand5(texel[3]),expand5(alpha))>>1;fragments.push({...g,uv,sample,vertexRgb6,textureRgba6665:texel,rgb6,alpha5});for(let c=0;c<6;c++)current[c]=i64(current[c]+delta[c]);}
+  for(let x=row.xStart;x<row.xEndExclusive;x++){const g=geometry.fragments[cursor++];if(!g||g.x!==x||g.y!==row.y||current[0]<=0n)throw Error('Attribute/coverage correspondence differs');const uv=current.slice(1,3).map(v=>Number(v/current[0])),sample=[wrap(uv[0],texture.width,!!(texture.wrapMode&1),!!(texture.wrapMode&4)),wrap(uv[1],texture.height,!!(texture.wrapMode&2),!!(texture.wrapMode&8))],at=(sample[1]*texture.width+sample[0])*4,texel=Array.from(texture.rgba6665.slice(at,at+4)),vertexRgb6=current.slice(3).map(v=>Math.max(0,Math.min(63,Number(v/current[0])))),rgb6=texel.slice(0,3).map((v,c)=>modulate(v,vertexRgb6[c])),alpha5=modulate(expand5(texel[3]),expand5(alpha))>>1;// Geometry fragments contain only x, y and depth24. Preserve their shape/order.
+   fragments.push({x:g.x,y:g.y,depth24:g.depth24,uv,sample,vertexRgb6,textureRgba6665:texel,rgb6,alpha5});for(let c=0;c<6;c++)current[c]=i64(current[c]+delta[c]);}
  }
  if(cursor!==geometry.fragments.length)throw Error('Attribute fragment count differs');return{ready:true,discarded:false,culled:geometry.culled,nativeEdgeSetupAbort:geometry.nativeEdgeSetupAbort??null,frontFacing:geometry.facing>=0n,clip,clippedUvFx4,clippedRgb6,fragments};
 }

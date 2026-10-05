@@ -39,7 +39,7 @@ export function rasterizePositionClippedNativeZPolygon(args){return rasterizeNat
 /** Binary-alpha callers need incoming coverage BEFORE texel discard. This
  * separate entry requires a proven binary domain, never a false all-opaque flag.
  */
-export function rasterizeBinaryCoverageNativeZPolygon(args){return rasterizeNativeZPolygon(args,true,true);}
+export function rasterizeBinaryCoverageNativeZPolygon(args,{materializePixelPlanes=true}={}){return rasterizeNativeZPolygon(args,true,true,false,false,materializePixelPlanes);}
 /** Exact edge/scanline preparation without materializing CPU depth pixels.
  * Intended only for the integer GPU preparer, not CPU compositors. */
 export function prepareBinaryNativeZScanlines(args){return rasterizeNativeZPolygon(args,true,true,false,true);}
@@ -64,15 +64,15 @@ export function rasterizeA5I3TranslucentCoverageNativeZPolygon(args){
  * Connected real formats1/3/6 and TexGen0 only. A pixel's sampled alpha may
  * still be31; this entry emits geometry before the compositor classifies it.
  */
-export function rasterizeTexturedTranslucentCoverageNativeZPolygon(args){return texturedCoverage(args,false);}
+export function rasterizeTexturedTranslucentCoverageNativeZPolygon(args,{materializePixelPlanes=true}={}){return texturedCoverage(args,false,materializePixelPlanes);}
 export function prepareTexturedTranslucentNativeZScanlines(args){return texturedCoverage(args,true);}
-function texturedCoverage(args,scanlinesOnly){
+function texturedCoverage(args,scanlinesOnly,materializePixelPlanes=true){
  const format=args.textureParameter>>>26&7,alpha=args.polygonAttribute>>>16&31;
  if(!Number.isInteger(args.textureParameter)||args.textureParameter>>>30!==0||![1,3,6].includes(format)||format!==args.textureFormat)throw Error('Explicit connected native TexGen0 texture required');
  if(alpha<1||alpha>31||!(alpha<31||format===1||format===6))throw Error('Native translucent-list polygon required');
- return rasterizeNativeZPolygon(args,true,false,true,scanlinesOnly);
+ return rasterizeNativeZPolygon(args,true,false,true,scanlinesOnly,materializePixelPlanes);
 }
-function rasterizeNativeZPolygon({clipVerticesFx,polygonAttribute,viewportWord,depthMode,primitiveMode,textureFormat,textureAllAlpha255,textureBinaryAlpha,fragmentSamplingHack},postClip,binaryCoverage=false,translucentCoverage=false,scanlinesOnly=false){
+function rasterizeNativeZPolygon({clipVerticesFx,polygonAttribute,viewportWord,depthMode,primitiveMode,textureFormat,textureAllAlpha255,textureBinaryAlpha,fragmentSamplingHack},postClip,binaryCoverage=false,translucentCoverage=false,scanlinesOnly=false,materializePixelPlanes=true){
  if(viewportWord!==0xbfff0000)throw Error('Explicit full native viewport required');
  if(depthMode!=='Z')throw Error('Explicit source/observed Z mode required');
  if(fragmentSamplingHack!==false)throw Error('Explicit integer fragment sampling profile required');
@@ -98,7 +98,11 @@ function rasterizeNativeZPolygon({clipVerticesFx,polygonAttribute,viewportWord,d
  const texturedClipHorizontal=postClip&&textureFormat!==0&&vertices.every(v=>v.y===vertices[0].y);
  if(facing===0n&&!texturedClipHorizontal)return{ready:false,reason:'Degenerate polygon outside ordinary polygon path'};
  let fragmentCount=0;const occupiedRows=scanlinesOnly?new Map():null;
- const result={ready:true,width:256,height:192,coverage:scanlinesOnly?null:new Uint8Array(256*192),depth24:scanlinesOnly?null:new Uint32Array(256*192),fragments:[],scanlines:[],edgeRuns:[],originalTransformed,transformed:vertices,clipOutputVertexIndices:vertices.map(v=>v.index),facing,cullingMode,culled:![[false,false,true,true],[false,true,false,true]][Number(back)][cullingMode],primitiveVertexCount:vertices.length,scope:'Incoming original-polygon geometric coverage and integer Z. No scene occlusion, final framebuffer, texture sampling or fog.'};
+ // Shaders consume every fragment and scanline but not framebuffer-sized planes.
+ // Keep the same per-fragment duplicate guard in this explicit internal mode;
+ // ordinary exports still materialize both public pixel planes by default.
+ const seenFragments=!scanlinesOnly&&!materializePixelPlanes?new Set():null;
+ const result={ready:true,width:256,height:192,coverage:scanlinesOnly||!materializePixelPlanes?null:new Uint8Array(256*192),depth24:scanlinesOnly||!materializePixelPlanes?null:new Uint32Array(256*192),fragments:[],scanlines:[],edgeRuns:[],originalTransformed,transformed:vertices,clipOutputVertexIndices:vertices.map(v=>v.index),facing,cullingMode,culled:![[false,false,true,true],[false,true,false,true]][Number(back)][cullingMode],primitiveVertexCount:vertices.length,scope:'Incoming original-polygon geometric coverage and integer Z. No scene occlusion, final framebuffer, texture sampling or fog.'};
  if(result.culled)return result;
  // _sort_verts: reverse front-facing winding, then rotate to minimum Y.
  const vs=back?[...vertices]:[...vertices].reverse();
@@ -138,8 +142,8 @@ function rasterizeNativeZPolygon({clipVerticesFx,polygonAttribute,viewportWord,d
      rowInfo.fragmentCount=Number(width);fragmentCount+=Number(width);
     }else for(let x=left.x;x<right.x;x++,z=i64(z+dz)){
      const depth=Number(BigInt.asUintN(32,z/(1n<<19n))&0xfffffffen);if(depth>0xffffff)throw Error('Native depth outside24-bit domain');
-     const xx=Number(x),offset=left.y*256+xx;if(result.coverage[offset])throw Error('Duplicate fragment in original polygon walk');
-     result.coverage[offset]=1;result.depth24[offset]=depth;result.fragments.push({x:xx,y:left.y,depth24:depth});rowInfo.fragmentCount++;fragmentCount++;
+     const xx=Number(x),offset=left.y*256+xx;if(seenFragments?seenFragments.has(offset):result.coverage[offset])throw Error('Duplicate fragment in original polygon walk');
+     if(seenFragments)seenFragments.add(offset);else{result.coverage[offset]=1;result.depth24[offset]=depth;}result.fragments.push({x:xx,y:left.y,depth24:depth});rowInfo.fragmentCount++;fragmentCount++;
     }
    }
    step(left);step(right);
