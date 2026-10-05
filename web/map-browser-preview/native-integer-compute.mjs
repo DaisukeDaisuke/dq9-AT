@@ -1,3 +1,4 @@
+import{submitNativeIntegerBatch}from'./native-integer-compute-batch.mjs';
 /* SPDX-License-Identifier: GPL-2.0-or-later
  * Integer pixel portion of the existing DeSmuME535f676-derived raster subset.
  * Native clip/edge preparation and NORMAL remain CPU/source operations.
@@ -88,16 +89,12 @@ fn main(@builtin(global_invocation_id) gid:vec3<u32>){
 }
 `;
 const need=(x,m)=>{if(!x)throw Error(m);};
-export async function createNativeIntegerCompute({onStatus=()=>{},forceFallbackAdapter=false}={}){
+export async function createNativeIntegerCompute({onStatus=()=>{}}={}){
  if(!globalThis.navigator?.gpu)return{ready:false,reason:'navigator.gpu unavailable'};
- onStatus({phase:'requesting-adapter',forceFallbackAdapter});const adapter=await navigator.gpu.requestAdapter({forceFallbackAdapter});if(!adapter)return{ready:false,reason:'WebGPU adapter unavailable'};
- onStatus({phase:'adapter',info:adapter.info?{vendor:adapter.info.vendor,architecture:adapter.info.architecture,device:adapter.info.device,description:adapter.info.description,isFallbackAdapter:adapter.info.isFallbackAdapter}:null,limits:{maxStorageBufferBindingSize:adapter.limits.maxStorageBufferBindingSize,maxBufferSize:adapter.limits.maxBufferSize}});
+ const adapter=await navigator.gpu.requestAdapter();if(!adapter)return{ready:false,reason:'WebGPU adapter unavailable'};
+ onStatus({phase:'adapter',info:adapter.info?{vendor:adapter.info.vendor,architecture:adapter.info.architecture,device:adapter.info.device,description:adapter.info.description}:null,limits:{maxStorageBufferBindingSize:adapter.limits.maxStorageBufferBindingSize,maxBufferSize:adapter.limits.maxBufferSize}});
  const device=await adapter.requestDevice();device.addEventListener('uncapturederror',e=>onStatus({phase:'device-error',error:e.error.message}));device.lost.then(info=>onStatus({phase:'device-lost',reason:info.reason,message:info.message}));const module=device.createShaderModule({label:'Source integer background pixels',code:NATIVE_INTEGER_COMPUTE_WGSL}),info=await module.getCompilationInfo();const messages=info.messages.map(m=>({type:m.type,line:m.lineNum,column:m.linePos,message:m.message}));onStatus({phase:'compile',messages});
  if(messages.some(m=>m.type==='error')){device.destroy();return{ready:false,reason:'WGSL compilation failed',messages};}
  const pipeline=await device.createComputePipelineAsync({layout:'auto',compute:{module,entryPoint:'main'}});onStatus({phase:'ready'});
- return{ready:true,device,async render(job){
-  const start=performance.now();for(const k of['config','rows','references','texels','fogTable'])need(job[k] instanceof Uint32Array,'Uint32 '+k+' required');need(job.config.length===16&&job.config[0]===256&&job.config[1]===192,'Native256x192 profile required');need(job.fogTable.length===32768,'Source fog LUT required');
-  const buffers=[],upload=(data,usage)=>{const b=device.createBuffer({size:Math.max(4,data.byteLength),usage});device.queue.writeBuffer(b,0,data);buffers.push(b);return b;},u=upload(job.config,GPUBufferUsage.UNIFORM|GPUBufferUsage.COPY_DST),r=upload(job.rows,GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_DST),refs=upload(job.references,GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_DST),t=upload(job.texels,GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_DST),f=upload(job.fogTable,GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_DST),bytes=256*192*8*4,dst=device.createBuffer({size:bytes,usage:GPUBufferUsage.STORAGE|GPUBufferUsage.COPY_SRC}),read=device.createBuffer({size:bytes,usage:GPUBufferUsage.COPY_DST|GPUBufferUsage.MAP_READ});buffers.push(dst,read);
-  try{const bind=device.createBindGroup({layout:pipeline.getBindGroupLayout(0),entries:[u,r,refs,t,f,dst].map((buffer,binding)=>({binding,resource:{buffer}}))}),encoder=device.createCommandEncoder(),pass=encoder.beginComputePass();pass.setPipeline(pipeline);pass.setBindGroup(0,bind);pass.dispatchWorkgroups(768);pass.end();encoder.copyBufferToBuffer(dst,0,read,0,bytes);device.queue.submit([encoder.finish()]);await read.mapAsync(GPUMapMode.READ);const words=new Uint32Array(read.getMappedRange()).slice();read.unmap();let errors=0;for(let i=7;i<words.length;i+=8)errors|=words[i];return{ready:errors===0,errorFlags:errors,words,elapsedMs:performance.now()-start,scope:'GPU integer pixel/sample/depth/blend/fog only; CPU source geometry/scanlines/NORMAL retained'};}finally{for(const b of buffers)b.destroy();}
- },destroy(){device.destroy();}};
+ return{ready:true,device,async render(job){return(await submitNativeIntegerBatch(device,pipeline,[job]))[0];},async renderBatch(jobs){return submitNativeIntegerBatch(device,pipeline,jobs);},destroy(){device.destroy();}};
 }

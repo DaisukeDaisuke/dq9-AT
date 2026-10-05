@@ -29,8 +29,9 @@ export function testNativeOpaqueDepth(depth24,frontFacing,previousDepth24,previo
  * coherent mode2 bridge input. Preserve rejected instances and every source
  * polygon in the returned inventory; unavailable polygon counts remain null.
  */
-export function collectStaticOpaqueDepthInputs(project,automatic,input,{viewportWord,depthMode,fragmentSamplingHack}={}){
- if(input?.ready!==true||input.profile!=='current-buffer-default-static-map-flush'||automatic.plan.recordKey!==input.record.key)throw Error('Matching explicit current-buffer static map input required');
+export function collectStaticOpaqueDepthInputs(project,automatic,input,{viewportWord,depthMode,fragmentSamplingHack}={},sourceCache=null){
+ if(input?.ready!==true||!['current-buffer-default-static-map-flush','ROM-initial-mode2-slot-hypothesis'].includes(input.profile)||automatic.plan.recordKey!==input.record.key)throw Error('Matching explicit current-buffer static map input required');
+ if(input.profile==='ROM-initial-mode2-slot-hypothesis'&&(input.hypothesis?.kind!==input.profile||input.hypothesis.recordKey!==input.record.key||input.snapshot?.profile!==input.profile||input.snapshot.timeIndex!==input.hypothesis.timeIndex||input.mode2Evaluation?.selection.index!==input.hypothesis.timeIndex||input.mode2Evaluation.selection.coefficient!==0))throw Error('Initial mode2 source slot/snapshot mismatch');
  if(viewportWord!==0xbfff0000||depthMode!=='Z'||fragmentSamplingHack!==false)throw Error('Explicit full viewport/Z/integer sampling profile required');
  const trig=makeNativeTrig(project.sdk.read(0x020e955c,16384),25736),polygons=[],unresolved=[...automatic.unresolved.map(reason=>({scope:'scene-plan',reason,polygonCount:null}))],counts={sourcePlacements:0,sourceStaticInstances:0,sourceDraws:0,sourcePolygons:0,opaqueEligible:0,rejectedPolygons:0};
  for(const[sceneIndex,scene]of automatic.scenes.entries()){
@@ -43,6 +44,7 @@ export function collectStaticOpaqueDepthInputs(project,automatic,input,{viewport
     const bytes=members.get(instance.modelName),{sin,cos}=trig(instance.world.yaw),rotation=[cos,0,-sin,0,0,4096,0,0,sin,0,cos,0,0,0,0,4096],world=rotation.slice();
     for(let c=0;c<3;c++)for(let r=0;r<3;r++)world[c*4+r]=Number(BigInt.asIntN(32,BigInt(rotation[c*4+r])*BigInt(instance.world.scale[c])>>12n));world.splice(12,3,...instance.world.position);
     const lit=buildMode2LitGeometry(bytes,project.sdk,{mode2Evaluation:input.mode2Evaluation,materialGlobals:input.materialGlobals,viewFx:mul(input.viewFx,world),normalViewFx:mul(input.viewFx,rotation),lightMatrixFx:input.lightMatrixFx,retainedLights:input.retainedLights,shininessTable:input.shininessTable}),preserved=retainNativePrimitiveInputs(bytes,lit.geometry),byOffset=new Map(instance.draws.map(d=>[d.sbcOffset,d]));
+    if(sourceCache)sourceCache.litInstances.set(instance,{input,bytes,lit,preserved});
     for(const[drawOrder,draw]of preserved.draws.entries()){
      counts.sourceDraws++;const original=byOffset.get(draw.sbcOffset),binding=original?.textureBinding,material=lit.materialResult.materials[draw.materialIndex];let reason=null;
      if(!material)reason='Effective native material missing';

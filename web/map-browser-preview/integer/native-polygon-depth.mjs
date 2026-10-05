@@ -40,6 +40,9 @@ export function rasterizePositionClippedNativeZPolygon(args){return rasterizeNat
  * separate entry requires a proven binary domain, never a false all-opaque flag.
  */
 export function rasterizeBinaryCoverageNativeZPolygon(args){return rasterizeNativeZPolygon(args,true,true);}
+/** Exact edge/scanline preparation without materializing CPU depth pixels.
+ * Intended only for the integer GPU preparer, not CPU compositors. */
+export function prepareBinaryNativeZScanlines(args){return rasterizeNativeZPolygon(args,true,true,false,true);}
 /** Incoming coverage only for real A3I5/TexGen0 mode0 alpha1..30 inputs.
  * Coverage does not shade or claim opacity. Existing opaque/binary guards stay
  * unchanged; no polygon alpha or format is replaced to enter this path.
@@ -61,13 +64,15 @@ export function rasterizeA5I3TranslucentCoverageNativeZPolygon(args){
  * Connected real formats1/3/6 and TexGen0 only. A pixel's sampled alpha may
  * still be31; this entry emits geometry before the compositor classifies it.
  */
-export function rasterizeTexturedTranslucentCoverageNativeZPolygon(args){
+export function rasterizeTexturedTranslucentCoverageNativeZPolygon(args){return texturedCoverage(args,false);}
+export function prepareTexturedTranslucentNativeZScanlines(args){return texturedCoverage(args,true);}
+function texturedCoverage(args,scanlinesOnly){
  const format=args.textureParameter>>>26&7,alpha=args.polygonAttribute>>>16&31;
  if(!Number.isInteger(args.textureParameter)||args.textureParameter>>>30!==0||![1,3,6].includes(format)||format!==args.textureFormat)throw Error('Explicit connected native TexGen0 texture required');
  if(alpha<1||alpha>31||!(alpha<31||format===1||format===6))throw Error('Native translucent-list polygon required');
- return rasterizeNativeZPolygon(args,true,false,true);
+ return rasterizeNativeZPolygon(args,true,false,true,scanlinesOnly);
 }
-function rasterizeNativeZPolygon({clipVerticesFx,polygonAttribute,viewportWord,depthMode,primitiveMode,textureFormat,textureAllAlpha255,textureBinaryAlpha,fragmentSamplingHack},postClip,binaryCoverage=false,translucentCoverage=false){
+function rasterizeNativeZPolygon({clipVerticesFx,polygonAttribute,viewportWord,depthMode,primitiveMode,textureFormat,textureAllAlpha255,textureBinaryAlpha,fragmentSamplingHack},postClip,binaryCoverage=false,translucentCoverage=false,scanlinesOnly=false){
  if(viewportWord!==0xbfff0000)throw Error('Explicit full native viewport required');
  if(depthMode!=='Z')throw Error('Explicit source/observed Z mode required');
  if(fragmentSamplingHack!==false)throw Error('Explicit integer fragment sampling profile required');
@@ -91,7 +96,8 @@ function rasterizeNativeZPolygon({clipVerticesFx,polygonAttribute,viewportWord,d
  // area polygons unsupported; do not turn the general line branch into a fill.
  const texturedClipPoint=postClip&&textureFormat!==0&&vertices.every(v=>v.x===vertices[0].x&&v.y===vertices[0].y);
  if(facing===0n&&!texturedClipPoint)return{ready:false,reason:'Degenerate polygon outside ordinary polygon path'};
- const result={ready:true,width:256,height:192,coverage:new Uint8Array(256*192),depth24:new Uint32Array(256*192),fragments:[],scanlines:[],edgeRuns:[],originalTransformed,transformed:vertices,clipOutputVertexIndices:vertices.map(v=>v.index),facing,cullingMode,culled:![[false,false,true,true],[false,true,false,true]][Number(back)][cullingMode],primitiveVertexCount:vertices.length,scope:'Incoming original-polygon geometric coverage and integer Z. No scene occlusion, final framebuffer, texture sampling or fog.'};
+ let fragmentCount=0;const occupiedRows=scanlinesOnly?new Map():null;
+ const result={ready:true,width:256,height:192,coverage:scanlinesOnly?null:new Uint8Array(256*192),depth24:scanlinesOnly?null:new Uint32Array(256*192),fragments:[],scanlines:[],edgeRuns:[],originalTransformed,transformed:vertices,clipOutputVertexIndices:vertices.map(v=>v.index),facing,cullingMode,culled:![[false,false,true,true],[false,true,false,true]][Number(back)][cullingMode],primitiveVertexCount:vertices.length,scope:'Incoming original-polygon geometric coverage and integer Z. No scene occlusion, final framebuffer, texture sampling or fog.'};
  if(result.culled)return result;
  // _sort_verts: reverse front-facing winding, then rotate to minimum Y.
  const vs=back?[...vertices]:[...vertices].reverse();
@@ -104,7 +110,7 @@ function rasterizeNativeZPolygon({clipVerticesFx,polygonAttribute,viewportWord,d
  for(let runs=0;;runs++){
   if(runs>=2*vs.length)throw Error('Native edge walk did not converge');
   try{if(stepLeft)left=edge(vs[lv===vs.length?0:lv],vs[lv-1]);
-  if(stepRight)right=edge(vs[rv],vs[rv+1]);}catch(error){if(!error.nativeEdgeSetupFailure)throw error;result.nativeEdgeSetupAbort={reason:error.message,numerator:error.numerator,denominator:error.denominator,completedEdgeRuns:result.edgeRuns.length,retainedFragments:result.fragments.length,source:'rasterize.cpp FloorDivMod failure -> _shape_engine return (535f676)'};return result;}
+  if(stepRight)right=edge(vs[rv],vs[rv+1]);}catch(error){if(!error.nativeEdgeSetupFailure)throw error;result.nativeEdgeSetupAbort={reason:error.message,numerator:error.numerator,denominator:error.denominator,completedEdgeRuns:result.edgeRuns.length,retainedFragments:fragmentCount,source:'rasterize.cpp FloorDivMod failure -> _shape_engine return (535f676)'};return result;}
   stepLeft=stepRight=false;
   const count=Math.min(left.height,right.height);result.edgeRuns.push({left:edgeState(left),right:edgeState(right),scanlineCount:count});
   for(let row=0;row<count;row++){
@@ -115,10 +121,21 @@ function rasterizeNativeZPolygon({clipVerticesFx,polygonAttribute,viewportWord,d
    if(width!==0n){
     if(left.y<0||left.y>=192||left.x<0n||right.x>256n)throw Error('Unexpected out-of-frame span in unclipped native path');
     const dz=(right.z-left.z)/width;let z=left.z;rowInfo.zStep=dz;
-    for(let x=left.x;x<right.x;x++,z=i64(z+dz)){
+    if(scanlinesOnly){
+     // Linear integer Z stays in signed64 iff its two endpoint extrema do.
+     // Include the final increment because the CPU loop checks that too.
+     i64(z+dz*width);const last=i64(z+dz*(width-1n));i64(z);
+     const lo=z<last?z:last,hi=z>last?z:last;
+     // In the ordinary nonnegative 24-bit quotient interval, every sample
+     // is valid. Outside it retain the ORIGINAL modulo/truncation checks;
+     // endpoint tests alone would be unsound across an unsigned wrap.
+     if(lo<0n||hi>=(1n<<43n))for(let x=left.x;x<right.x;x++,z=i64(z+dz)){const depth=Number(BigInt.asUintN(32,z/(1n<<19n))&0xfffffffen);if(depth>0xffffff)throw Error('Native depth outside24-bit domain');}
+     const spans=occupiedRows.get(left.y)??[];if(spans.some(([a,b])=>left.x<b&&right.x>a))throw Error('Duplicate fragment in original polygon walk');spans.push([left.x,right.x]);occupiedRows.set(left.y,spans);
+     rowInfo.fragmentCount=Number(width);fragmentCount+=Number(width);
+    }else for(let x=left.x;x<right.x;x++,z=i64(z+dz)){
      const depth=Number(BigInt.asUintN(32,z/(1n<<19n))&0xfffffffen);if(depth>0xffffff)throw Error('Native depth outside24-bit domain');
      const xx=Number(x),offset=left.y*256+xx;if(result.coverage[offset])throw Error('Duplicate fragment in original polygon walk');
-     result.coverage[offset]=1;result.depth24[offset]=depth;result.fragments.push({x:xx,y:left.y,depth24:depth});rowInfo.fragmentCount++;
+     result.coverage[offset]=1;result.depth24[offset]=depth;result.fragments.push({x:xx,y:left.y,depth24:depth});rowInfo.fragmentCount++;fragmentCount++;
     }
    }
    step(left);step(right);

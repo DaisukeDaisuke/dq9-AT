@@ -12,7 +12,7 @@ import{readNativeModelInfo}from'../native/native-model-info.mjs';
 import{readNativeShapes,decodePackedGx,decodeLocalVertices}from'../native/native-sbc-gx.mjs';
 import{projectNativePrimitiveFx}from'./native-primitive-inputs.mjs';
 import{clipNativePositionPolygon}from'./native-position-clip.mjs';
-import{rasterizeTexturedTranslucentCoverageNativeZPolygon}from'./native-polygon-depth.mjs?v=phase-grid-20261005-0620';
+import{rasterizeTexturedTranslucentCoverageNativeZPolygon}from'./native-polygon-depth.mjs?v=edge-source-return-20261005-0434';
 const expand5=x=>x===0?0:2*x+1,modulate=(a,b)=>((a+1)*(b+1)-1)>>6;
 const i64=n=>{if(n<-(1n<<63n)||n>=(1n<<63n))throw Error('Active signed64 interpolant overflow unsupported');return n;};
 export {readInitialMode1BlendProfile as readInitialTexturedBlendProfile} from './native-mode0-translucent.mjs';
@@ -22,8 +22,15 @@ function resource(project,p,e){
   const at=e.name.indexOf('/'),archive=e.name.slice(0,at),member=e.name.slice(at+1),z=Narc.load(new Uint8Array(project.nfs.readFile('data/map/'+archive))),matches=z.files.map((_,i)=>i).filter(i=>z.fnt.getFilenameOf(i)===member);if(matches.length!==1)throw Error('Exact source AMBL member required');bytes=z.files[matches[0]];if(bytes[0]===0x10)bytes=new Uint8Array(Compression.decompress(new BufferReader(bytes.buffer,bytes.byteOffset,bytes.length)));
  }else throw Error('Unsupported source texture resource');return{bytes,resource:readNativeTextureResource(bytes)};
 }
-export function collectInitialMode1TexturedTranslucentInputs(project,automatic,inventory){
+export function collectInitialMode1TexturedTranslucentInputs(project,automatic,inventory,sourceCache=null){
  if(automatic?.environmentApplied!==true||automatic.environment.mode!==1||!automatic.environment.colorReady||!automatic.environment.ordinaryTimeIndependent||automatic.plan.recordKey!==inventory.recordKey||inventory.snapshot?.profile!=='ROM-initial-time-independent-mode1')throw Error('Matching source-verified initial mode1 inventory required');
+ return collectStaticTexturedTranslucentInputs(project,automatic,inventory,sourceCache);
+}
+export function collectInitialMode2TexturedTranslucentInputs(project,automatic,inventory,sourceCache=null){
+ if(automatic?.mode2Applied!==true||automatic.mode2Evaluation?.ready!==true||automatic.plan.recordKey!==inventory.recordKey||inventory.snapshot?.profile!=='ROM-initial-mode2-slot-hypothesis'||automatic.plan.recordKey!==`map:${automatic.mode2Evaluation.source.callIndex}:${automatic.mode2Evaluation.source.callOffset}`)throw Error('Matching explicit initial mode2 slot hypothesis required');
+ return collectStaticTexturedTranslucentInputs(project,automatic,inventory,sourceCache);
+}
+function collectStaticTexturedTranslucentInputs(project,automatic,inventory,sourceCache=null){
  const polygons=[],rejected=[],cache=new Map();for(const p of inventory.polygons){if(p.classification!=='rejected')continue;
   try{
    const attr=p.materialEvidence.polygonAttribute,alpha=attr>>>16&31;if(!Number.isInteger(attr)||(attr>>>4&3)!==0||alpha<1||alpha>31||(attr&0x4000))throw Error('Requires mode0 alpha1..31 ordinary depth');if(attr&0x800)throw Error('Translucent depth-write branch remains outside measured subset');
@@ -32,7 +39,7 @@ export function collectInitialMode1TexturedTranslucentInputs(project,automatic,i
    const parameter=(binding.material.textureParameter|binding.texture.parameter)>>>0;if(parameter>>>30!==0||![1,3,6].includes(parameter>>>26&7))throw Error('Only actual A3I5/I4/A5I3 TexGen0 is connected');if(alpha===31&&![1,6].includes(parameter>>>26&7))throw Error('Native classifier places this alpha31 format in opaque list');if(((parameter^binding.texture.parameter)&0x3ff00000)!==0)throw Error('Effective texture format differs');
    const key=JSON.stringify([binding.selectionEvidence,parameter]);let texture=cache.get(key);if(!texture){const e=binding.selectionEvidence,tr=resource(project,p,e.texture),pr=resource(project,p,e.palette),t=tr.resource.textures[e.texture.entryIndex],pal=pr.resource.palettes[e.palette.entryIndex];if(t.nameHex!==e.texture.nameHex||pal.nameHex!==e.palette.nameHex)throw Error('Source texture/palette exact name differs');
     const rgba=unpackNativeTexture(tr.bytes,tr.resource,t,pal,'6665',{paletteBytes:pr.bytes,paletteResource:pr.resource});texture={width:rgba.width,height:rgba.height,rgba6665:rgba.pixels,format:t.format,parameter,wrapMode:parameter>>>16&15,source:{binding:e},raw:{bytes:tr.bytes.slice(t.data.offset,t.data.offset+t.data.bytes),palette:Array.from({length:t.format===1?32:t.format===3?16:8},(_,i)=>new DataView(pr.bytes.buffer,pr.bytes.byteOffset,pr.bytes.length).getUint16(pal.paletteDataOffset+2*i,true))}};cache.set(key,texture);}
-   const bytes=project.archive(p.archive).get(p.model),model=readNativeModelInfo(bytes).models[0],shape=readNativeShapes(bytes,model)[p.shapeIndex],gx=decodePackedGx(bytes,shape.displayListOffset,shape.displayListBytes),local=decodeLocalVertices(gx.commands);if(gx.unresolved.length||local.unresolved.length||local.vertices.length!==draw.vertices.length)throw Error('Source GX correspondence unresolved');
+   const bytes=project.archive(p.archive).get(p.model);let gx,local;if(sourceCache){({gx,local}=sourceCache.shape(bytes,0,p.shapeIndex));}else{const model=readNativeModelInfo(bytes).models[0],shape=readNativeShapes(bytes,model)[p.shapeIndex];gx=decodePackedGx(bytes,shape.displayListOffset,shape.displayListBytes);local=decodeLocalVertices(gx.commands);}if(gx.unresolved.length||local.unresolved.length||local.vertices.length!==draw.vertices.length)throw Error('Source GX correspondence unresolved');
    const uvFx4=p.primitive.vertexIndices.map((i,k)=>{const v=local.vertices[i];if(v.command!==p.primitive.vertexCommands[k]||JSON.stringify(v.positionFx12)!==JSON.stringify(p.primitive.localPositionFx[k])||!v.texcoordFx4)throw Error('Original UV/position command-index differs');return v.texcoordFx4.slice();}),rgb555=p.primitive.vertexIndices.map(i=>draw.vertices[i].color555);if(rgb555.some(v=>!Number.isInteger(v)||v<0||v>32767))throw Error('Source event-ordered RGB555 required');
    const projected=projectNativePrimitiveFx(p.primitive,p.positionMatrixFx,p.projectionFx);polygons.push({...p,args:{...inventory.rasterProfile,clipVerticesFx:projected.clipVerticesFx,polygonAttribute:attr,primitiveMode:p.primitive.primitiveMode,textureFormat:texture.format,textureParameter:parameter},translucentInput:{rgb555,texture:{...texture,uvFx4}},polygonId:attr>>>24&63});
   }catch(e){rejected.push({index:p.index,originalRejection:p.binaryRejection,reason:e.message});}
