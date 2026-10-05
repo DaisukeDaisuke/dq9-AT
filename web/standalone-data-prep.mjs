@@ -3,7 +3,7 @@ import{readBackgroundFile,verifyDataAssets,readTarget}from'./standalone-data-inp
 import{createDataStore,exportDataPart,exportDataManifest,importDataPart}from'./standalone-data-store.mjs';
 import{DATA_VIEWS,prepareDataChunk}from'./standalone-data-run.mjs';
 import{MonsterGeometry}from'./monster-geometry.mjs';
-import{createROMPoseSource}from'./detector-rom-source.mjs';
+import{createROMPoseSource}from'./detector-rom-source.mjs?v=stored-pivot-source-20261006-0800';
 const $=id=>document.getElementById(id);let busy=false,controller=null,store=null,job=null,report=null,parts=new Map();
 const show=value=>{$('status').textContent=value.phase??(value.passed===false?'停止 / 未完了':'完了');$('report').textContent=JSON.stringify(value,null,2);};
 const refresh=()=>{for(const element of document.querySelectorAll('input,button'))element.disabled=busy;$('stop').disabled=!busy;$('save-report').disabled=busy||!report;$('export-part').disabled=busy||!job?.nextIndex;$('export-manifest').disabled=busy||!job?.nextIndex;};

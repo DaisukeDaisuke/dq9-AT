@@ -1,3 +1,4 @@
+import {fieldNativeNormalize} from './field-preferred-node.mjs';
 import {composeNativeBodyOverSourceDestination} from './monster-native-scene-composition.mjs?v=native-raster-reuse-20261006-0637';
 /* SPDX-License-Identifier: GPL-2.0-or-later
  * Isolated original-GX body bridge. Reuses existing DeSmuME535f676-derived
@@ -14,7 +15,7 @@ import {readNativeMaterials,deriveNativeMaterialResult} from './map-browser-prev
 import {readNativeTextureResource} from './map-browser-preview/native/native-tex0.mjs';
 import {unpackNativeTexture} from './map-browser-preview/native/native-texture-unpack.mjs';
 import {makeNativeTrig} from './map-browser-preview/native/native-map-records.mjs';
-import {readNSBCA} from './monster-animation.mjs';
+import {readNSBCA} from './monster-animation.mjs?v=stored-pivot-source-20261006-0800';
 import {rasterizeNativeMode0Rgb,presentStaticRgb} from './map-browser-preview/integer/static-mode0-rgb.mjs?v=native-raster-reuse-20261006-0637';
 import {compositeBinaryAwareDepth} from './map-browser-preview/integer/native-binary-alpha.mjs?v=native-raster-reuse-20261006-0637';
 import {rasterizeNativeTexturedTranslucentMode0} from './map-browser-preview/integer/native-textured-translucent.mjs?v=native-raster-reuse-20261006-0637';
@@ -28,12 +29,14 @@ function operation(op,v){const m=identity();if(op===0x19||op===0x1a){for(let c=0
 function transform(v,m){return [0,1,2,3].map(r=>{let n=0n;for(let c=0;c<4;c++)n+=BigInt(m[c*4+r])*BigInt(v[c]);need(n>=-(1n<<63n)&&n<(1n<<63n),'Vertex signed64 overflow');if(n>0x7ffffffffffn)return 2147483647;if(n< -0x80000000000n)return -2147483648;return Number(n>>12n);});}
 /** Stored NSBCA samples only. Source FX channels stay integral. Compressed
  * basis rotation's third axis is the signed fixed-point cross product: ASR12.
+ * Sampled pivot third axes use source020ba464 ->020c49e4 normalization;
+ * constant pivots and stored basis branches retain their original values.
  * This matches the separately retained12-node native integer-frame witness;
  * fractional interpolation and arbitrary joint callbacks are not connected. */
 export function nativeStoredBodyNodes(nodeInfo,animation,frame){
  need(animation?.format==='bounded-nsbca-exact-samples-v1'&&Number.isInteger(frame)&&frame>=0&&frame<animation.numFrames&&animation.numObjects>=nodeInfo.count,'Complete stored source animation frame required');
  const value=(c,otherwise)=>c===null?otherwise:c.samples?c.samples[frame]:c.constant;
- return nodeInfo.nodes.map((base,i)=>{const a=animation.objects[i],translation=a.translation.map(c=>Math.round(value(c,0)*4096)),rotation=value(a.rotation,[1,0,0,0,1,0,0,0,1]).map(x=>Math.floor(x*4096)),scale=a.scale.map(c=>Math.round(value(c,1)*4096)),inverse=a.scale.map(c=>c===null?4096:Math.round((c.inverseSamples?c.inverseSamples[frame]:c.inverseConstant)*4096));need([...translation,...rotation,...scale,...inverse].every(Number.isSafeInteger),'Finite exact FX joint sample required');return {...base,flags:(a.translation.every(c=>c===null)?1:0)|(a.rotation===null?2:0)|(a.scale.every(c=>c===null)?4:0),translationFx12:translation,rotationFx12:rotation,scaleFx12:scale,inverseScaleFx12:inverse};});
+ return nodeInfo.nodes.map((base,i)=>{const a=animation.objects[i],translation=a.translation.map(c=>Math.round(value(c,0)*4096)),rotation=value(a.rotation,[1,0,0,0,1,0,0,0,1]).map(x=>Math.floor(x*4096)),scale=a.scale.map(c=>Math.round(value(c,1)*4096)),inverse=a.scale.map(c=>c===null?4096:Math.round((c.inverseSamples?c.inverseSamples[frame]:c.inverseConstant)*4096));need([...translation,...rotation,...scale,...inverse].every(Number.isSafeInteger),'Finite exact FX joint sample required');if(a.rotation?.samples){const pivots=a.rotation.sampledPivotFlags;need(Array.isArray(pivots)&&pivots.length===animation.numFrames&&typeof pivots[frame]==='boolean','Source sampled-rotation pivot tags required');if(pivots[frame]&&(rotation[6]!==0||rotation[7]!==0||rotation[8]!==0)){const third=fieldNativeNormalize(rotation.slice(6,9));need(third,'Degenerate sampled pivot normalization unresolved');rotation.splice(6,3,...third);}}return {...base,flags:(a.translation.every(c=>c===null)?1:0)|(a.rotation===null?2:0)|(a.scale.every(c=>c===null)?4:0),translationFx12:translation,rotationFx12:rotation,scaleFx12:scale,inverseScaleFx12:inverse};});
 }
 export function prepareNativeBodyProgram({asset,sdk,materialGlobals,allowTexturedTranslucent=false}){
  need(asset?.model?.bytes instanceof Uint8Array&&sdk?.read,'Explicit source model and SDK required');const bytes=asset.model.bytes,model=readNativeModelInfo(bytes).models[0];need(model,'Source model absent');const sbc=decodeNativeBodySbc(bytes,model);need(sbc.terminated&&!sbc.unresolved.length,'Unsupported source SBC; no triangle-preview fallback');need(sbc.commands.every(c=>[0,1,2,3,4,5,6,7,8,9,11].includes(c.opcode)),'Source SBC outside original-body subset');

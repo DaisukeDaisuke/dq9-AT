@@ -10,11 +10,11 @@ import{loadRomFloorInstances}from'./map-browser-preview/rom-floor-candidates.mjs
 import{readArm9Overlay}from'./map-browser-preview/rom-overlay.mjs';
 import{unpackBranchRGBA,unpackBackgroundMask}from'./map-browser-preview/background-branch-support.mjs?v=native-raster-reuse-20261006-0637';
 import{readMonsterAssets}from'./monster-assets.mjs';
-import{readNSBCA,sampleMatrices}from'./monster-animation.mjs';
+import{readNSBCA,sampleMatrices}from'./monster-animation.mjs?v=stored-pivot-source-20261006-0800';
 import{decodeEncounterStream}from'./encounter-distribution.mjs';
 import{readNaturalMonsterScaleRule,naturalMonsterScaleCandidates}from'./monster-source-scale.mjs?v=native-body-20261006-0212';
 import{sourceFloorPlanes,preparePerspectiveBody,placeCompleteBodyOnFloors}from'./monster-perspective-body.mjs?v=native-body-20261006-0212';
-import{createNativeBodySupportRunner}from'./monster-native-support-runner.mjs?v=native-raster-reuse-20261006-0637';
+import{createNativeBodySupportRunner}from'./monster-native-support-runner.mjs?v=stored-pivot-source-20261006-0800';
 import{readFrozenMonsterMode1Fog}from'./monster-source-mode1-fog.mjs?v=native-body-20261006-0212';
 import{readFrozenMonsterFog}from'./monster-source-fog.mjs?v=native-body-20261006-0212';
 const need=(v,m)=>{if(!v)throw Error(m);},clone=v=>structuredClone(v),pause=()=>new Promise(r=>setTimeout(r,0));
