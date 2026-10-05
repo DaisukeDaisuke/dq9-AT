@@ -49,3 +49,43 @@ ROM・SAV・RAM・動画・抽出ゲーム資産はGitに含めていない。�
 - [霧clock adapter checkpoint ea052076](https://github.com/DaisukeDaisuke/dq9-AT/commit/ea052076e931da8735b8bdda2afdb49a5a26ba93)
 - [霧解析注釈](https://github.com/DaisukeDaisuke/dqix-functions/blob/89c15a7b03451362bca24ddca22f6366abc0337f/analysis/fog-observed-clock-20261005/epoch-render-clock-91b69fdb.md)
 - 非公開headlessソースはdots-toolsのe3cdbfb8まで通常更新し、remote反映を確認。
+
+## 02:18 JST — S04実ブラウザ一致、地図由来の誤った種類/AT接続の修正
+
+### 公開済み経路の実測
+
+- b68507b9でS04/type4/床/clear/clip修正を統合、a48d51f8で霧情報欠落をunknownに保持、ef76cd44で方向別キャッシュを修正。いずれも通常更新しremoteとPages成功を確認。
+- クラウドブラウザで正式な長尺動画を2355秒へ移動し、ROMと動画以外に地図・XYZ・モデル・JSONを手入力せず自動照合した。背景はS04、ずれ(0,0)、43090画素比較/6062不明、RGB平均差8.203。元画像hashは前節の失敗入力から変えていない。
+- 通過背景はyaw0/45/315の異なる3画像。最小残差のプレビューを表示するが、3枝と共通残差を保持し、単一の現行カメラ確定にはしていない。
+- 次の実フレームで地図全体テンプレートを再利用したことは時系列記録で確認。文字からの地図探索を毎回やり直す条件を修正した。
+- 一方、各方向が単一cacheを消し合う実装のため、方向を回るたび冷間探索へ戻っていた。方向・recordごとに独立保持へ修正。同じ固定画素を使う3方向のNode実測はcold61.951秒、warm6.943秒。これは動く動画全体や実GPUの速度保証ではない。
+- 実再生の記録は欠測と保持上限によるevictionを含む。連続区間全体を検証済みとはせず、ブラウザの一時停止/DOM操作timeoutも未解決事項として保持した。
+
+### 誤候補と地図由来の整合性
+
+- S04の青い操作矢印付近をバブルスライム、足元/階段断片をみならいあくまとする旧条件付き予測を実ブラウザで確認した。入力を保持して原因を分けた。
+- これらの旧body fitはS04背景に対して評価した一方、種類のencounter-table由来はF02だけだった。異なる地図の根拠を結合していたため、同じ背景枝とencounter originが対応するか検査するguardを追加。
+- 旧順位・fit・species aliases・地図候補は削除しない。結び付かない予測をunboundとして保持し、種類の共同支持やAT検索には使わない。F02の未探索枝や未知のscripted spawnの可能性は否定しない。
+- 保存済みS04の2旧予測からのAT検索は0件に。対応するF01モーモン/D04メタルの条件付き予測と既存WASM探索結果は維持した。low31条件付き件数は824115200/134152192、unknown/no-eventは無制約、AT証明下限は0のまま。
+- located-onlyのmapCandidatesを別用途へ変えず、固定表示点・通過背景の地図仮説を別fieldとして既存timeline/entry/replay/ATへ運ぶ。3個のS04枝を落とさない。
+
+### 身体比較と実行制御
+
+- 元GX・source scale・source pose・枝ごとのcamera/backgroundを使うnative支持比較を、既存の外観比較後に追加。候補順位やgainだけで種類を確定しない。
+- 全選択領域を1つの有限jobで扱い、未試行・半透明destination未対応・他のspawn routeを明示する。既存DINO bestPoseはsource poseの初期候補に使うが、参照サムネイルのpitchをゲームカメラへ代入しない。
+- mode1/2のactor-owned fogを接続。実1ninn227.250のメタル自身の支持は+19998を保持。S04の旧2誤候補は3camera枝で試行範囲の自身gainが負だったが、未試行姿勢があるため不在や候補全体の否定にはしない。
+- optional native応答待ち期限がDINOと共用するworker/cacheを破棄しないよう修正。遅延配信、古いcancel、ROM交換、通常の前進再生を区別。1500ms/128提案は協調的な処理目安で、同期処理の時間上限を保証しない。
+- workerへ送るS04背景metadataは6.30MBから0.819MBへ必要項目だけ投影。全枝の画素・mask・fog入力・originsは保持し、元の詳しい記録は変更しない。実F01/S04の比較結果は投影前後で一致。
+
+### CPU描画が操作を塞ぐ区間
+
+- mode1と、同名候補F02のmode2に既存source polygon境界で処理を譲る経路を追加。元の同期APIを同じgenerator本体の比較基準として残す。
+- 親の統合stageでも3個のS04 camera出力とF02のlight0/light1/保存済みforward出力を比較。画素・depth・mask・診断が完全一致し、計算中にevent loopが進むことを確認。
+- F02は旧同期呼出し約2.5–2.8秒に対し、統合版の測定区間最大約90–103ms、S04は約120–143msだった。Nodeでの観測であり、全処理の高速化やブラウザの応答時間上限ではない。
+- 旧jobがyield中に新しいframe/ROMへ置き換わるケースも、旧jobはAbortErrorとなり新結果・共有cacheを壊さなかった。
+
+### 保留と公開確認
+
+- この節のnative-body/整合性guard/協調処理の統合版は、公開後にブラウザでも確認する。上記の統合stage検証を公開ブラウザ成功へ拡張しない。
+- 診断用WebGPU rasterは別checkpointに保存。CPU fallbackとhost契約は検証したが、WGSL実コンパイル・device dispatch・速度は未検証なので、本番有効化には含めていない。対象は保存計測の0.762秒部分で、主な再投影10.30秒をGPU化したとは扱わない。
+- 全マップの種類識別、F04の背景誤候補、半透明actor合成、動画の入場時刻と霧epochの同期、出生/AT消費の特定は継続中。

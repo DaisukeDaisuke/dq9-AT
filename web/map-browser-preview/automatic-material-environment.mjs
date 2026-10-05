@@ -127,6 +127,43 @@ export function proveMode1StaticColorInvariance(ordinary,normals,tintRules){
   unproved:['Live script writes and forced/progression selectors','Load-time state retained across later clock changes','Edge/toon state, dynamic objects and other runtime passes'],
   scope:'Equality of initial static GX COLOR tint and diffuse/ambient inputs for all four ordinary source records. This does not identify the game clock or certify omitted renderer components.'};
 }
+// Shared source request only. This never loads or fabricates automatic scenes.
+function readEnvironmentSource(project,record){
+ const rules=readRules(project.sdk),source=environmentNameFromMaplist(project,record);
+ if(record.mapId===rules.specialMapId)throw Error('Quest-flag environment slot override requires current progression state');
+ const archivePath=rules.archiveFormat.replace('%s',rules.directory).replace('%c',source.name[0]),member=rules.memberFormat.replace('%s',source.name),z=Narc.load(new Uint8Array(project.nfs.readFile(archivePath)));
+ const matches=nativeAsciiNameCandidates(z.files.map((_,index)=>({name:z.fnt.getFilenameOf(index),index})),member);if(matches.length!==1)throw Error('Native environment member absent/ambiguous');
+ const resource=matches[0],raw=z.files[resource.index],bytes=raw[0]===0x10?new Uint8Array(Compression.decompress(new BufferReader(raw.buffer,raw.byteOffset,raw.length))):raw,calls=parseCalls(bytes);
+ const modeCalls=calls.filter(c=>c.opcode===0x64||c.opcode===0x67);
+ return {rules,source,archivePath,resource,calls,modeCalls,
+  progress:{source:{maplist:source,archive:archivePath,member:resource.name,archiveIndex:resource.index},mode:modeCalls.length===1?(modeCalls[0].opcode===0x67?1:2):null,initialSelector:rules.initialSelector}};
+}
+function readMode1RetainedStateProof(sdk){
+ const selection=readMode1DiscreteSelectionProof(sdk),spans=[[0x020531f8,0x38,0xa09a2122]];
+ for(const[address,length,expected]of spans){const bytes=sdk.read(address,length);let hash=2166136261;for(const b of bytes)hash=Math.imul(hash^b,16777619)>>>0;if(bytes.length!==length||hash!==expected)throw Error('Native mode1 retained-state update gate differs');}
+ return {selection,spans};
+}
+/** Geometry-free initial ordinary mode1 fog source. All four possibilities remain
+ * explicit. Equality removes only ordinary fog selection, never live-state unknowns.
+ * This neither inspects map COLOR nor supplies any actor light/material/depth state.
+ */
+export function readMode1SourceFogEnvironment(project,record){
+ const {calls,modeCalls,progress}=readEnvironmentSource(project,record);
+ if(modeCalls.length!==1||modeCalls[0].opcode!==0x67)throw Error('Only source mode1 fog environment is connected');
+ if(calls.some(c=>![0x65,0x67,0x68,0x69].includes(c.opcode)))throw Error('Additional environment callbacks require evaluation');
+ const fog=lowerEnvironmentFog(calls);
+ if(!fog.ready||fog.mode!==1)throw Error('Mode1 source fog records unresolved: '+fog.issues.map(x=>x.error).join('; '));
+ const inheritanceRules=readTimeFogInheritanceRules(project.sdk),inherited=inheritTimeFogRecords(fog.records,{rules:inheritanceRules});
+ const fogOrdinaryParameters=[0,1,2,3].map(i=>staticMode1FogParameters(inherited.records,i));
+ const fogTimeIndependent=fogOrdinaryParameters.every(x=>same(x,fogOrdinaryParameters[0]));
+ const {selection,spans}=readMode1RetainedStateProof(project.sdk);
+ return {...progress,ready:true,profile:'ROM-initial-ordinary-environment',fogOrdinaryParameters,fogTimeIndependent,
+  fogParameters:fogTimeIndependent?fogOrdinaryParameters[0]:null,selection,updateSpans:spans,
+  evidence:{fogRecordSources:fog.recordSources,inheritanceRules,inheritanceCopies:inherited.copies},
+  sourceStateObserved:false,currentEnvironmentCertified:false,
+  scope:'Source initial ordinary mode1 fog only. Forced selectors, differing load/entry records, later writes, transitions and reload history remain unknown.'};
+}
+
 // Resolves an initial ordinary static component, not the running environment.
 // Eliminate time only with identical consumed fields or exhaustive source-draw
 // color equality under the source-proven discrete (not interpolated) selector.
@@ -134,13 +171,8 @@ export function readAutomaticMaterialEnvironment(project,record,automatic){
  const unresolved=[];let progress={};const base={profile:'ROM-initial-ordinary-environment',ready:false,colorReady:false,colorUnresolved:[],fogReady:false,fogUnresolved:[],materialGlobals:null,normalLighting:null,fogParameters:null};
  try{
   if(!automatic?.plan||!Array.isArray(automatic.scenes))throw Error('ROM automatic scene result required');
-  const rules=readRules(project.sdk),source=environmentNameFromMaplist(project,record);
-  if(record.mapId===rules.specialMapId)throw Error('Quest-flag environment slot override requires current progression state');
-  const archivePath=rules.archiveFormat.replace('%s',rules.directory).replace('%c',source.name[0]),member=rules.memberFormat.replace('%s',source.name),z=Narc.load(new Uint8Array(project.nfs.readFile(archivePath)));
-  const matches=nativeAsciiNameCandidates(z.files.map((_,index)=>({name:z.fnt.getFilenameOf(index),index})),member);if(matches.length!==1)throw Error('Native environment member absent/ambiguous');
-  const resource=matches[0],raw=z.files[resource.index],bytes=raw[0]===0x10?new Uint8Array(Compression.decompress(new BufferReader(raw.buffer,raw.byteOffset,raw.length))):raw,calls=parseCalls(bytes);
-  const modeCalls=calls.filter(c=>c.opcode===0x64||c.opcode===0x67);
-  progress={source:{maplist:source,archive:archivePath,member:resource.name,archiveIndex:resource.index},mode:modeCalls.length===1?(modeCalls[0].opcode===0x67?1:2):null,initialSelector:rules.initialSelector};
+  const {rules,source,archivePath,resource,calls,modeCalls,progress:sourceProgress}=readEnvironmentSource(project,record);
+  progress=sourceProgress;
   if(modeCalls.length!==1||modeCalls[0].opcode!==0x67)throw Error('Only source mode1 static color environment is connected');
   if(calls.some(c=>![0x65,0x67,0x68,0x69].includes(c.opcode)))throw Error('Additional environment callbacks require evaluation');
   const color=lowerStaticColorRecords(calls),ordinary=color.inherited.slice(0,4);
@@ -221,11 +253,8 @@ export function readMode1OrdinaryHypotheses(project,record,automatic){
  const allowed=new Set(['Environment time slot/phase affects static material color','Environment time slot/phase affects fog']);
  try {
   if(environment.mode!==1||environment.unresolved.some(x=>!allowed.has(x)))throw Error('Mode1 source dependencies remain unresolved: '+environment.unresolved.join('; '));
-  const selection=readMode1DiscreteSelectionProof(project.sdk);
-  // The regular updater branches straight to return for mode1: its mode2 fog
-  // interpolation must not be substituted for the retained mode1 entry record.
-  const spans=[[0x020531f8,0x38,0xa09a2122]];
-  for(const[address,length,expected]of spans){let hash=2166136261;for(const b of project.sdk.read(address,length))hash=Math.imul(hash^b,16777619)>>>0;if(hash!==expected)throw Error('Native mode1 retained-state update gate differs');}
+  // The regular updater does not interpolate the retained mode1 entry record.
+  const {selection,spans}=readMode1RetainedStateProof(project.sdk);
   if(!environment.fogOrdinaryParameters||!environment.initialMaterialGlobals)throw Error('Mode1 source ordinary records incomplete');
   const hypotheses=[];
   for(const index of selection.ordinaryIndices){

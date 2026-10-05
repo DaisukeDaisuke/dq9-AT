@@ -1,24 +1,25 @@
+import {runSourceStepsSync,runSourceStepsAsync} from './cooperative-source-work.mjs?v=native-body-20261006-0212';
 /* Source-retained mode1 COLOR inference. One algebraic white texture basis;
  * no time/fog-state images are searched. Source COLOR interpolation and the common
  * zero-fog domain delimit the supported photometric observations. */
-import{readMode1OrdinaryHypotheses,applyMode1OrdinaryHypothesis}from'./automatic-material-environment.mjs?v=field-stream-20261005-1108';
+import{readMode1OrdinaryHypotheses,applyMode1OrdinaryHypothesis}from'./automatic-material-environment.mjs?v=native-body-20261006-0212';
 import{automaticBillboardScenes}from'./automatic-billboard-scene.mjs';
-import{readInitialMode1RasterProfile,collectInitialMode1IntegerInputs}from'./integer/initial-mode1-integer-preview.mjs?v=source-scene-20261006-0040';
-import{renderClassifiedStaticBinaryDepth}from'./integer/static-binary-depth.mjs?v=source-scene-20261006-0040';
-import{renderStaticMode0Rgb,presentStaticRgb}from'./integer/static-mode0-rgb.mjs?v=source-scene-20261006-0040';
-import{collectInitialMode1TexturedTranslucentInputs,readInitialTexturedBlendProfile,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb}from'./integer/native-textured-translucent.mjs?v=source-scene-20261006-0040';
+import{readInitialMode1RasterProfile,collectInitialMode1IntegerInputsSteps}from'./integer/initial-mode1-integer-preview.mjs?v=native-body-20261006-0212';
+import{renderClassifiedStaticBinaryDepthSteps}from'./integer/static-binary-depth.mjs?v=native-body-20261006-0212';
+import{renderStaticMode0RgbSteps,presentStaticRgb}from'./integer/static-mode0-rgb.mjs?v=native-body-20261006-0212';
+import{collectInitialMode1TexturedTranslucentInputs,readInitialTexturedBlendProfile,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb}from'./integer/native-textured-translucent.mjs?v=native-body-20261006-0212';
 import{projectNativePrimitiveFx}from'./integer/native-primitive-inputs.mjs';
 import{clipNativePositionPolygon}from'./integer/native-position-clip.mjs?v=source-scene-20261006-0040';
 import{buildFogTable}from'./native/fog-raster.mjs';
 import{prepareNativeIntegerCompute}from'./native-integer-compute-input.mjs?v=source-scene-20261006-0040';
-import{renderPreparedIntegerCompute}from'./prepare-initial-integer-compute.mjs?v=source-scene-20261006-0040';
+import{renderPreparedIntegerCompute}from'./prepare-initial-integer-compute.mjs?v=native-body-20261006-0212';
 const need=(x,m)=>{if(!x)throw Error(m);},expand=n=>n?2*n+1:0,median=a=>{const b=a.slice().sort((x,y)=>x-y);return b[Math.floor(b.length/2)];};
-export function prepareMode1PhotometricBasis({project,rom,record,automatic,camera}){
+function* prepareMode1PhotometricBasisSteps({project,rom,record,automatic,camera}){
  const read=readMode1OrdinaryHypotheses(project,record,automatic);need(read.ready,read.reason);need(read.environment.timeIndependenceProof.commonMaterial,'Variable material globals outside flat-COLOR inverse subset');
  const billboard=automaticBillboardScenes(project,automatic,camera.viewFx),states=read.hypotheses.map(e=>applyMode1OrdinaryHypothesis(project,record,billboard,e));need(states.every(a=>a.environmentApplied),'Source mode1 COLOR replay unresolved');
  // The first record is a structural input only: every color is overwritten by
  // algebraic white before any raster; neither it nor its fog is a preview.
- const profile=readInitialMode1RasterProfile(project,rom),original=collectInitialMode1IntegerInputs(project,record,states[0],camera,profile),trans=collectInitialMode1TexturedTranslucentInputs(project,states[0],original),controls=readInitialTexturedBlendProfile(project,rom);
+ const profile=readInitialMode1RasterProfile(project,rom),original=yield*collectInitialMode1IntegerInputsSteps(project,record,states[0],camera,profile),trans=collectInitialMode1TexturedTranslucentInputs(project,states[0],original),controls=readInitialTexturedBlendProfile(project,rom);
  need(original.unresolved.every(x=>x.reason?.startsWith('name-char3-A / ')),'Source basis contains unresolved drawable instances');
  for(const reject of trans.rejected){const p=original.polygons[reject.index],position=projectNativePrimitiveFx(p.primitive,p.positionMatrixFx,p.projectionFx);need(clipNativePositionPolygon(position.clipVerticesFx).discarded,'Unsupported visible polygon in mode1 basis');}
  const colors=new Map();
@@ -37,9 +38,7 @@ export async function renderMode1PhotometricBasis(model,{gpu=null,isCurrent=()=>
  const {controls}=model,inventory=weights?model.weightInventory:model.inventory,translucent=weights?model.weightTranslucent:model.translucent;let result;
  if(gpu?.ready){const parameters={...model.read.hypotheses[0].fogParameters,enabled:false},job=prepareNativeIntegerCompute(inventory,translucent,controls,parameters);result=await renderPreparedIntegerCompute(gpu,job);const w=result.nativeWords,rgba6665=new Uint8Array(196608),depth24=new Uint32Array(49152),owner=new Int32Array(49152),knownMask=new Uint8Array(49152),isFogged=new Uint8Array(49152);for(let i=0;i<49152;i++){const at=i*8;depth24[i]=w[at+1];owner[i]=w[at+2];knownMask[i]=Number(Boolean(w[at+4]&2)&&w[at+2]===w[at+3]&&w[at+5]===255);isFogged[i]=w[at+4]>>>3&1;for(let c=0;c<4;c++)rgba6665[i*4+c]=w[at]>>>(c*8)&255;}result={...result,rgba6665,sourceDepth24:depth24,owner,knownMask,isFogged};
  }else{
-  const depth=renderClassifiedStaticBinaryDepth(inventory),rgb=renderStaticMode0Rgb(inventory,depth),participants=[];for(const p of translucent.polygons){const r=rasterizeNativeTexturedTranslucentMode0(p.args,p.translucentInput);need(r.ready,r.reason);participants.push({index:p.index,frontFacing:Boolean(r.frontFacing),fragments:r.fragments});}
-  const combined=compositeTexturedTranslucentOverStaticRgb(rgb,translucent,participants,controls),image=presentStaticRgb(combined,{profile:'rgb555-expanded'}),knownMask=Uint8Array.from(rgb.plane.coverage,(v,i)=>Number(v&&!combined.unavailableMask[i]&&combined.colorOwner[i]===combined.depthOwner[i]&&combined.translucentId[i]===255));
-  result={...image,rgba:Uint8ClampedArray.from(image.rgba),ready:true,rgba6665:combined.rgba6665,sourceDepth24:combined.depth24,owner:combined.colorOwner,knownMask,isFogged:combined.isFogged,diagnostics:{backend:'CPU-algebraic-white-texture-basis',sourcePolygons:inventory.polygons.length}};
+  result=await runSourceStepsAsync(renderMode1BasisCpuSteps(inventory,translucent,controls),{isCurrent});
  }
  if(!isCurrent())throw new DOMException('Mode1 inference cancelled','AbortError');return{...result,basisOnly:true,currentEnvironmentCertified:false,scope:'White vertex-color texture/ownership probe; never a selected ordinary state or accepted background.'};
 }
@@ -77,3 +76,11 @@ export function inferMode1OrdinaryColor({model,basis,weights,video}){
  return{ready:unique,reason:unique?null:'Discrete source COLOR alternatives overlap observed dispersion',index:unique?best.index:null,equivalentIndices:equivalent.map(r=>r.index),samples:samples.length,pixels,counts,alternatives:rows,margins,basisRenders:2,ordinaryStateRenders:0,currentEnvironmentCertified:false,loadRecordObserved:false,
   scope:'Conditional source COLOR discrimination from texture and vertex-weight algebraic bases. Common source-zero-fog pixels only; no fog phase or ordinary-state image search. Codec/geometry/weight-quantization errors and unknown live states remain. One native forward render must validate the proposal.'};
 }
+
+function* renderMode1BasisCpuSteps(inventory,translucent,controls){
+  const depth=yield*renderClassifiedStaticBinaryDepthSteps(inventory),rgb=yield*renderStaticMode0RgbSteps(inventory,depth),participants=[];for(const p of translucent.polygons){yield 'native-translucent-polygon';const r=rasterizeNativeTexturedTranslucentMode0(p.args,p.translucentInput);need(r.ready,r.reason);participants.push({index:p.index,frontFacing:Boolean(r.frontFacing),fragments:r.fragments});}
+  const combined=compositeTexturedTranslucentOverStaticRgb(rgb,translucent,participants,controls),image=presentStaticRgb(combined,{profile:'rgb555-expanded'}),knownMask=Uint8Array.from(rgb.plane.coverage,(v,i)=>Number(v&&!combined.unavailableMask[i]&&combined.colorOwner[i]===combined.depthOwner[i]&&combined.translucentId[i]===255));
+  return{...image,rgba:Uint8ClampedArray.from(image.rgba),ready:true,rgba6665:combined.rgba6665,sourceDepth24:combined.depth24,owner:combined.colorOwner,knownMask,isFogged:combined.isFogged,diagnostics:{backend:'CPU-algebraic-white-texture-basis',sourcePolygons:inventory.polygons.length}};
+}
+export function prepareMode1PhotometricBasis(args){return runSourceStepsSync(prepareMode1PhotometricBasisSteps(args));}
+export function prepareMode1PhotometricBasisAsync(args,options){return runSourceStepsAsync(prepareMode1PhotometricBasisSteps(args),options);}

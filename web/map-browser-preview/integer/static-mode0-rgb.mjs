@@ -1,3 +1,4 @@
+import {runSourceStepsSync,runSourceStepsAsync} from '../cooperative-source-work.mjs?v=native-body-20261006-0212';
 /* SPDX-License-Identifier: GPL-2.0-or-later
  * Integer RGB connection derived from DeSmuME contributors, 535f676:
  * gfx3d.cpp SetVertexColor/AddCurrentVertexToList, GFX3D_LerpUnsigned;
@@ -19,13 +20,13 @@ const i64=v=>{if(v<-(1n<<63n)||v>=(1n<<63n))throw Error('RGB signed64 arithmetic
  * colors by GX command/index. Prior depth eligibility does not imply UV readiness:
  * opaque textures must also pass the source TexGen0/native1x predicate here.
  */
-export function collectStaticMode0ColorInputs(project,automatic,input,depthInventory,sourceCache=null){
+export function* collectStaticMode0ColorInputsSteps(project,automatic,input,depthInventory,sourceCache=null){
  if(input?.ready!==true||!['current-buffer-default-static-map-flush','ROM-initial-mode2-slot-hypothesis','ROM-mode2-inverse-source-hypothesis'].includes(input.profile)||input.record.key!==automatic.plan.recordKey||input.record.key!==depthInventory.recordKey||JSON.stringify(input.snapshot)!==JSON.stringify(depthInventory.snapshot))throw Error('Matching coherent map/frame inputs required');
  if(input.profile==='ROM-initial-mode2-slot-hypothesis'&&(input.hypothesis?.kind!==input.profile||input.hypothesis.recordKey!==input.record.key||input.snapshot?.profile!==input.profile||input.snapshot.timeIndex!==input.hypothesis.timeIndex||input.mode2Evaluation?.selection.index!==input.hypothesis.timeIndex||input.mode2Evaluation.selection.coefficient!==0))throw Error('Initial mode2 source slot/snapshot mismatch');
  if(input.profile==='ROM-mode2-inverse-source-hypothesis'&&(input.snapshot?.profile!==input.profile||input.mode2Evaluation?.ready!==true||input.mode2Evaluation.mode!==2||input.record.key!==`map:${input.mode2Evaluation.source?.callIndex}:${input.mode2Evaluation.source?.callOffset}`))throw Error('Matching source mode2 inverse hypothesis required');
  if(depthInventory.textureScalingFactor!==1)throw Error('Explicit native1x profile required');
  const trig=makeNativeTrig(project.sdk.read(0x020e955c,16384),25736),cache=new Map(),textureCache=new Map(),polygons=[],counts={sourcePolygons:depthInventory.polygons.length,priorEligible:0,priorRejected:0,colorEligible:0,colorRejected:0};
- for(const p of depthInventory.polygons){const row={...p,colorInput:null,colorRejection:null};polygons.push(row);if(p.classification==='rejected'){counts.priorRejected++;continue;}counts.priorEligible++;
+ for(const p of depthInventory.polygons){yield 'native-source-color';const row={...p,colorInput:null,colorRejection:null};polygons.push(row);if(p.classification==='rejected'){counts.priorRejected++;continue;}counts.priorEligible++;
   try{
    const scene=automatic.scenes[p.sceneIndex],instance=scene?.instances.find(i=>i.id===p.instanceId);if(!instance||scene.archiveName!==p.archive||scene.streamName!==p.stream||instance.modelName!==p.model)throw Error('Source instance correspondence changed');
    const key=JSON.stringify([p.sceneIndex,p.instanceId]);const shared=sourceCache?.litInstances.get(instance);let value=cache.get(key)??(shared?.input===input?shared:null);
@@ -60,9 +61,9 @@ export function rasterizeNativeMode0Rgb(args,colorInput,{textureScalingFactor}={
  }
  if(cursor!==result.fragments.length)throw Error('RGB fragment count differs');return{...result,clippedRgb6,fragments,opaqueFragments:fragments.filter(f=>f.alpha5===31),transparentFragments:fragments.filter(f=>f.alpha5===0),scope:'Source integer RGB clip/perspective/sample/mode0 only. No fog/translucent shader, framebuffer completeness or live retained texture state claim.'};
 }
-export function renderStaticMode0Rgb(inventory,referenceDepth){
+export function* renderStaticMode0RgbSteps(inventory,referenceDepth){
  if(referenceDepth?.recordKey!==inventory.recordKey||JSON.stringify(referenceDepth.snapshot)!==JSON.stringify(inventory.snapshot)||referenceDepth.stats?.originalPolygons!==inventory.polygons.length||!(referenceDepth.plane?.owner instanceof Int32Array)||referenceDepth.plane.owner.length!==49152)throw Error('Preserved same-frame full eligible depth reference required');
- const participants=[],rows=[];for(const p of inventory.polygons){const row={index:p.index,classification:p.classification,priorRejection:p.binaryRejection,colorRejection:p.colorRejection};rows.push(row);if(!p.colorInput)continue;
+ const participants=[],rows=[];for(const p of inventory.polygons){yield 'native-rgb-polygon';const row={index:p.index,classification:p.classification,priorRejection:p.binaryRejection,colorRejection:p.colorRejection};rows.push(row);if(!p.colorInput)continue;
   try{const r=rasterizeNativeMode0Rgb(p.args,p.colorInput,{textureScalingFactor:inventory.textureScalingFactor});if(!r.ready)throw Error(r.reason);row.discarded=Boolean(r.discarded);row.culled=Boolean(r.culled);row.fragments=r.fragments.length;participants.push({index:p.index,clipVerticesFx:p.args.clipVerticesFx,frontFacing:Boolean(r.frontFacing),fragments:r.fragments});}catch(e){row.rasterRejection=e.message;}
  }
  const plane=compositeBinaryAwareDepth(participants),rgba6665=new Uint8Array(49152*4),written=new Uint8Array(49152);for(const p of participants)for(const f of p.fragments){const at=f.y*256+f.x;if(f.alpha5===31&&plane.coverage[at]&&plane.owner[at]===p.index&&plane.depth24[at]===f.depth24){if(written[at])throw Error('Repeated winning source polygon fragment unsupported');rgba6665.set([...f.rgb6,31],at*4);written[at]=1;}}
@@ -73,3 +74,8 @@ export function renderStaticMode0Rgb(inventory,referenceDepth){
 }
 /** Explicit diagnostic display only. Native RGB6665 retained independently. */
 export function presentStaticRgb(result,{profile}={}){if(!['rgb666-expanded','rgb555-expanded'].includes(profile))throw Error('Explicit display precision profile required');const rgba=new Uint8Array(result.rgba6665.length);for(let i=0;i<rgba.length;i++){const v=result.rgba6665[i];rgba[i]=i%4===3?expand8(v):profile==='rgb666-expanded'?(v<<2)|(v>>>4):expand8(v>>>1);}return{width:result.width,height:result.height,rgba,profile,scope:result.scope};}
+
+export function renderStaticMode0Rgb(inventory,referenceDepth){return runSourceStepsSync(renderStaticMode0RgbSteps(inventory,referenceDepth));}
+export function renderStaticMode0RgbAsync(inventory,referenceDepth,options){return runSourceStepsAsync(renderStaticMode0RgbSteps(inventory,referenceDepth),options);}
+
+export function collectStaticMode0ColorInputs(project,automatic,input,depthInventory,sourceCache=null){return runSourceStepsSync(collectStaticMode0ColorInputsSteps(project,automatic,input,depthInventory,sourceCache));}

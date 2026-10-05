@@ -5,11 +5,11 @@ import {createRendererSourceArchives} from './renderer-source-archives.mjs?v=rec
  * remain CPU preparation; a GPU utilisation or acceleration claim is not made.
  */
 import {createNativeIntegerCompute} from './native-integer-compute.mjs?v=wgsl-keyword-20261005-0834';
-import {prepareInitialMode1IntegerCompute,renderPreparedIntegerCompute} from './prepare-initial-integer-compute.mjs?v=source-scene-20261006-0040';
-import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=source-scene-20261006-0040';
+import {prepareInitialMode1IntegerCompute,renderPreparedIntegerCompute} from './prepare-initial-integer-compute.mjs?v=native-body-20261006-0212';
+import {renderInitialIntegerFogAsync} from './integer-static-fog.mjs?v=native-body-20261006-0212';
 import {createSourcePreparationCache} from './integer/source-preparation-cache.mjs';
 
-export function createAutomaticBackgroundRenderer({initialize=createNativeIntegerCompute,prepare=prepareInitialMode1IntegerCompute,renderGpu=renderPreparedIntegerCompute,renderCpu=renderInitialIntegerFog,createCache=createSourcePreparationCache,now=()=>performance.now()}={}) {
+export function createAutomaticBackgroundRenderer({initialize=createNativeIntegerCompute,prepare=prepareInitialMode1IntegerCompute,renderGpu=renderPreparedIntegerCompute,renderCpu=renderInitialIntegerFogAsync,createCache=createSourcePreparationCache,now=()=>performance.now()}={}) {
  const sourceArchives=createRendererSourceArchives();
  let initialization=null,gpu=null,generation=0;
  const begin=()=>{if(initialization)return initialization;const mine=generation;return initialization=(async()=>{try{const value=await initialize();if(mine!==generation){value?.destroy?.();return{ready:false,reason:'renderer session released'};}return gpu=value;}catch(error){return{ready:false,reason:error.message};}})();};
@@ -33,7 +33,7 @@ export function createAutomaticBackgroundRenderer({initialize=createNativeIntege
     if(!counts||counts.covered!==counts.known||counts.unknownTranslucentDestinationFragments!==0)throw Error('GPU translucent destination/native color remains unresolved');
    } catch(error) {if(error.name==='AbortError')throw error;reason='GPU source/compute rejected: '+error.message;result=null;}
   }
-  if(!result){check();const at=now();try {result=renderCpu(project,rom,record,active,camera,{applyFog:true,screenEffectPhase});}finally {timings.cpuFallbackMs=now()-at;}}
+  if(!result){check();const at=now();try {result=await renderCpu(project,rom,record,active,camera,{applyFog:true,screenEffectPhase,isCurrent});}finally {timings.cpuFallbackMs=now()-at;}}
   check();const pipeline={backend:reason?'cpu-fallback':'webgpu-source-integer-pixels',fallbackReason:reason,timings:{...timings,totalMs:now()-start},cpuReferenceRendered:false,gpuTimingScope:'Wall time includes upload, compute, readback and decode; not a GPU timestamp or utilisation metric.',scope:'Existing candidate only; no position, phase, time, slot or model sweep. Dynamic state and native parity remain unproven.'};
   return {...result,diagnostics:{...result.diagnostics,automaticBackgroundPipeline:pipeline}};
  }

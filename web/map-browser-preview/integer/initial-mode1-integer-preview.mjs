@@ -1,3 +1,4 @@
+import {runSourceStepsSync} from '../cooperative-source-work.mjs?v=native-body-20261006-0212';
 /* SPDX-License-Identifier: GPL-2.0-or-later
  * ROM-initial mode1 adapter into the existing DeSmuME535f676-derived integer
  * polygon components. Those components retain their source/license notices.
@@ -8,12 +9,12 @@ import {makeNativeTrig} from '../native/native-map-records.mjs';
 import {readNativeModelInfo} from '../native/native-model-info.mjs';
 import {decodeNativeSbc,readNativeShapes,decodePackedGx,decodeLocalVertices} from '../native/native-sbc-gx.mjs';
 import {deriveNativeMaterialResult} from '../native/native-material.mjs';
-import {isSupportedMode1ColorEnvironment,replayZeroLightShapeColors,transformNativeEnvironmentColor555} from '../automatic-material-environment.mjs?v=field-stream-20261005-1108';
+import {isSupportedMode1ColorEnvironment,replayZeroLightShapeColors,transformNativeEnvironmentColor555} from '../automatic-material-environment.mjs?v=native-body-20261006-0212';
 import {readArm9Overlay} from '../rom-overlay.mjs';
 import {retainNativePrimitiveInputs,projectNativePrimitiveFx} from './native-primitive-inputs.mjs';
 import {readNativeBinaryPolygonTexture} from './native-binary-alpha.mjs?v=source-scene-20261006-0040';
-import {renderClassifiedStaticBinaryDepth} from './static-binary-depth.mjs?v=source-scene-20261006-0040';
-import {renderStaticMode0Rgb,presentStaticRgb} from './static-mode0-rgb.mjs?v=source-scene-20261006-0040';
+import {renderClassifiedStaticBinaryDepthSteps} from './static-binary-depth.mjs?v=native-body-20261006-0212';
+import {renderStaticMode0RgbSteps,presentStaticRgb} from './static-mode0-rgb.mjs?v=native-body-20261006-0212';
 const eq=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const fx=m=>Array.isArray(m)&&m.length===16&&m.every(x=>Number.isInteger(x)&&x>=-2147483648&&x<=2147483647);
 const i32=n=>Number(BigInt.asIntN(32,n));
@@ -62,7 +63,7 @@ function verifySourceColors(bytes,model,sbc,instance,sourceModel,environment,mas
  * Explicit raster profile selects the same bounded component as prior probes;
  * it does not assert a running game's retained viewport/swap/hack settings.
  */
-export function collectInitialMode1IntegerInputs(project,record,automatic,camera,{viewportWord,depthMode,fragmentSamplingHack,textureScalingFactor}={}){
+export function* collectInitialMode1IntegerInputsSteps(project,record,automatic,camera,{viewportWord,depthMode,fragmentSamplingHack,textureScalingFactor}={}){
  if(automatic?.plan?.recordKey!==record?.key||automatic.environmentApplied!==true||automatic.environment?.profile!=='ROM-initial-ordinary-environment'||!isSupportedMode1ColorEnvironment(automatic.environment,record.key))throw Error('Source-proven matching time-independent initial mode1 environment required');
  if(automatic.environment.normalLighting?.kind!=='source-zero-light-colors'||automatic.environment.normalLighting.lightColorWords.some((x,i)=>x!==(i<<30)>>>0))throw Error('Source mode1 zero-light proof required');
  if(!fx(camera?.viewFx)||!fx(camera?.projectionFx))throw Error('Calculated source FX32 initial camera required');
@@ -76,7 +77,7 @@ export function collectInitialMode1IntegerInputs(project,record,automatic,camera
   unresolved.push(...scene.unsupported.map(value=>({...value,sceneIndex,scope:'source-instance',polygonCount:null})));
   const members=project.archive(scene.archiveName),instances=new Map(scene.instances.map(instance=>[instance.id,instance]));
   // Source placement order, rather than the presentation array's BB append order.
-  for(const [instanceOrder,placement] of scene.sourcePlacements.entries()){
+  for(const [instanceOrder,placement] of scene.sourcePlacements.entries()){yield 'native-source-instance';
    const instance=instances.get(placement.id);if(!instance)continue;geometryCounts.sourceStaticInstances++;
    const identity={sceneIndex,instanceOrder,archive:scene.archiveName,stream:scene.streamName,instanceId:instance.id,model:instance.modelName};
    try{
@@ -104,7 +105,7 @@ export function collectInitialMode1IntegerInputs(project,record,automatic,camera
      else if(![2,3,4,7].includes(binding.texture.format))rejection='Texture format outside connected opaque/binary path';
      else if(binding.decoded.pixels.some((v,i)=>i%4===3&&v!==0&&v!==255))rejection='Intermediate texture alpha remains unsupported';
      else allOpaque=!binding.decoded.pixels.some((v,i)=>i%4===3&&v!==255);
-     for(const [polygonIndex,primitive] of draw.polygons.entries()){
+     for(const [polygonIndex,primitive] of draw.polygons.entries()){yield 'native-source-polygon';
       const row={index:polygons.length,...identity,drawOrder,sbcOffset:draw.sbcOffset,shapeIndex:draw.shapeIndex,materialIndex:draw.materialIndex,materialName:binding?.material?.name??null,polygonIndex,primitive,positionMatrixFx:draw.positionMatrixFx.slice(),projectionFx:camera.projectionFx.slice(),materialEvidence,classification:'rejected',originalRejection:rejection,binaryRejection:rejection,colorInput:null,colorRejection:null};
       polygons.push(row);if(rejection)continue;
       try{
@@ -130,7 +131,10 @@ export function collectInitialMode1IntegerInputs(project,record,automatic,camera
  for(const p of polygons){if(p.classification==='rejected'){counts.rejected++;colorCounts.priorRejected++;}else{counts[p.classification==='opaque'?'existingOpaque':'binaryEligible']++;colorCounts.priorEligible++;colorCounts[p.colorInput?'colorEligible':'colorRejected']++;}}
  return{recordKey:record.key,snapshot,polygons,unresolved,counts,colorCounts,geometryCounts,textureScalingFactor,rasterProfile:profile,environmentEvidence:{source:automatic.environment.source,ordinaryTimeIndependent:automatic.environment.ordinaryTimeIndependent,discreteOrdinaryHypothesis:automatic.environment.discreteOrdinaryHypothesis??null,normalLighting:automatic.environment.normalLighting,materialGlobals:automatic.environment.materialGlobals,colorTransformIdentity:automatic.environment.colorTransformIdentity,normalDraws:automatic.environmentNormalDraws,colorDraws:automatic.environmentColorDraws},scope:'Initial ROM mode1 default static pose at caller-selected geometric floor/heading. Integer source original polygons and event-ordered RGB; retained live visibility, dynamic models, fog, translucent paths and native framebuffer acceptance are unresolved.'};
 }
-export function renderInitialMode1IntegerPreview(project,record,automatic,camera,profile){
- const inventory=collectInitialMode1IntegerInputs(project,record,automatic,camera,profile),depth=renderClassifiedStaticBinaryDepth(inventory),rgb=renderStaticMode0Rgb(inventory,depth);
+export function* renderInitialMode1IntegerPreviewSteps(project,record,automatic,camera,profile){
+ const inventory=yield*collectInitialMode1IntegerInputsSteps(project,record,automatic,camera,profile),depth=yield*renderClassifiedStaticBinaryDepthSteps(inventory),rgb=yield*renderStaticMode0RgbSteps(inventory,depth);
  return{ready:true,complete:false,inventory,depth,rgb,present(options){return presentStaticRgb(rgb,options);}};
 }
+
+export function collectInitialMode1IntegerInputs(project,record,automatic,camera,profile={}){return runSourceStepsSync(collectInitialMode1IntegerInputsSteps(project,record,automatic,camera,profile));}
+export function renderInitialMode1IntegerPreview(project,record,automatic,camera,profile){return runSourceStepsSync(renderInitialMode1IntegerPreviewSteps(project,record,automatic,camera,profile));}

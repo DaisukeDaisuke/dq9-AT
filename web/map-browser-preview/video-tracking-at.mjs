@@ -1,4 +1,4 @@
-import {deriveTrackingEventEvidence,automaticSingletonSearchOptions} from '../tracking-at-event-evidence.mjs?v=field-stream-20261005-1108';
+import {deriveTrackingEventEvidence,automaticSingletonSearchOptions} from '../tracking-at-event-evidence.mjs?v=native-body-20261006-0212';
 import {fingerprint} from '../tracking-at-runner.mjs?v=field-stream-20261005-1108';
 import {prepareTrackingJob,openTrackingCheckpointStore,startTrackingSession} from '../tracking-at-session.mjs?v=field-stream-20261005-1108';
 // This is an execution budget/prior supplied by the user, never inferred from PTS.

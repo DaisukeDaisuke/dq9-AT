@@ -1,4 +1,5 @@
-import{isSupportedMode1ColorEnvironment,isSupportedMode1FogEnvironment}from'./automatic-material-environment.mjs?v=field-stream-20261005-1108';
+import {runSourceStepsSync,runSourceStepsAsync} from './cooperative-source-work.mjs?v=native-body-20261006-0212';
+import{isSupportedMode1ColorEnvironment,isSupportedMode1FogEnvironment}from'./automatic-material-environment.mjs?v=native-body-20261006-0212';
 import {readRomMapScreenEffectPlan} from './rom-map-screen-effect-plan.mjs';
 import {readInitialMseLayers,buildMsePolygonInputs} from './native-mse-initial-preview.mjs';
 /* SPDX-License-Identifier: GPL-2.0-or-later
@@ -6,21 +7,21 @@ import {readInitialMseLayers,buildMsePolygonInputs} from './native-mse-initial-p
  * DeSmuME535f676-derived modules retain their notices; see INTEGER_RENDER_NOTICE.md.
  * No previewDepth/RGBA8888 is converted into native raster input.
  */
-import {readInitialMode1RasterProfile,renderInitialMode1IntegerPreview} from './integer/initial-mode1-integer-preview.mjs?v=source-scene-20261006-0040';
-import {readInitialTexturedBlendProfile,collectInitialMode1TexturedTranslucentInputs,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb} from './integer/native-textured-translucent.mjs?v=source-scene-20261006-0040';
+import {readInitialMode1RasterProfile,renderInitialMode1IntegerPreviewSteps} from './integer/initial-mode1-integer-preview.mjs?v=native-body-20261006-0212';
+import {readInitialTexturedBlendProfile,collectInitialMode1TexturedTranslucentInputs,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb} from './integer/native-textured-translucent.mjs?v=native-body-20261006-0212';
 import {projectNativePrimitiveFx} from './integer/native-primitive-inputs.mjs';
 import {clipNativePositionPolygon} from './integer/native-position-clip.mjs?v=source-scene-20261006-0040';
-import {presentStaticRgb} from './integer/static-mode0-rgb.mjs?v=source-scene-20261006-0040';
+import {presentStaticRgb} from './integer/static-mode0-rgb.mjs?v=native-body-20261006-0212';
 import {buildFogTable,applyFogPixel} from './native/fog-raster.mjs';
-import {readInitialMode1ClearProfile} from './integer/native-initial-clear.mjs?v=source-scene-20261006-0040';
+import {readInitialMode1ClearProfile} from './integer/native-initial-clear.mjs?v=native-body-20261006-0212';
 
-export function renderInitialIntegerFog(project,rom,record,automatic,camera,{applyFog=true,screenEffectPhase=null}={}){
+export function* renderInitialIntegerFogSteps(project,rom,record,automatic,camera,{applyFog=true,screenEffectPhase=null}={}){
  const diagnostics={backend:'source-integer-static-mode1',requestedFog:applyFog,recordKey:record.key,fogApplied:false,sourcePolygonCount:null,remaining:[],scope:'ROM initial mode1 static scene; live camera/environment, animation, edge marking/antialiasing and native framebuffer parity unverified.'};
  try{
   const environment=automatic.environment;
   if(!isSupportedMode1ColorEnvironment(environment,record.key))throw Error('時間独立mode1材質が未対応です');
   if(applyFog&&(!isSupportedMode1FogEnvironment(environment,record.key)))throw Error('ROMの時間独立fog入力が未解決です');
-  const profile=readInitialMode1RasterProfile(project,rom),base=renderInitialMode1IntegerPreview(project,record,automatic,camera,profile),inventory=base.inventory;
+  const profile=readInitialMode1RasterProfile(project,rom),base=yield*renderInitialMode1IntegerPreviewSteps(project,record,automatic,camera,profile),inventory=base.inventory;
   diagnostics.profile=profile;diagnostics.inventory=inventory.counts;diagnostics.colorCounts=inventory.colorCounts;diagnostics.sourcePolygonCount=inventory.polygons.length;diagnostics.unresolved=inventory.unresolved;diagnostics.depth=base.depth.stats;diagnostics.availability=base.rgb.availability;
   // The existing source name-char3-A branch is collision data, not drawable
   // geometry. Every other missing source-instance/matrix/material path blocks
@@ -31,8 +32,8 @@ export function renderInitialIntegerFog(project,rom,record,automatic,camera,{app
   diagnostics.translucent={eligible:translucent.polygons.length,controls,rejected:translucent.rejected};
   for(const row of translucent.rejected){const p=inventory.polygons[row.index],position=projectNativePrimitiveFx(p.primitive,p.positionMatrixFx,p.projectionFx),clip=clipNativePositionPolygon(position.clipVerticesFx);diagnostics.remaining.push({...row,model:p.model,materialName:p.materialName,positionClipDiscarded:clip.discarded,remainingVertices:clip.positionsFx.length});}
   if(diagnostics.remaining.some(p=>!p.positionClipDiscarded))throw Error('可視範囲に未対応polygonがあります（原形状と拒否理由を保持）');
-  diagnostics.nativeEdgeSetupAborts=[];for(const p of translucent.polygons){const r=rasterizeNativeTexturedTranslucentMode0(p.args,p.translucentInput);if(!r.ready)throw Error('半透明raster未対応: '+r.reason);if(r.nativeEdgeSetupAbort)diagnostics.nativeEdgeSetupAborts.push({index:p.index,...r.nativeEdgeSetupAbort});participants.push({index:p.index,frontFacing:Boolean(r.frontFacing),fragments:r.fragments});}
-  let compositeInputs=translucent;const effectPlan=readRomMapScreenEffectPlan(project,automatic.plan);diagnostics.screenEffect={plan:effectPlan,requestedPhase:screenEffectPhase,applied:false,currentPhaseProven:false,gatesEvaluated:false};if(screenEffectPhase){if(!effectPlan.ready)throw Error('画面効果のROM選択が未解決です');if(effectPlan.request){const mse=readInitialMseLayers(project,effectPlan),screen=buildMsePolygonInputs(project,mse,{phase:screenEffectPhase,indexStart:inventory.polygons.length,rasterProfile:profile});for(const p of screen.polygons){const r=rasterizeNativeTexturedTranslucentMode0(p.args,p.translucentInput);if(!r.ready)throw Error(r.reason);participants.push({index:p.index,frontFacing:Boolean(r.frontFacing),fragments:r.fragments});}compositeInputs={...translucent,polygons:[...translucent.polygons,...screen.polygons]};diagnostics.screenEffect.applied=true;diagnostics.screenEffect.polygonCount=screen.polygons.length;}}
+  diagnostics.nativeEdgeSetupAborts=[];for(const p of translucent.polygons){yield 'native-translucent-polygon';const r=rasterizeNativeTexturedTranslucentMode0(p.args,p.translucentInput);if(!r.ready)throw Error('半透明raster未対応: '+r.reason);if(r.nativeEdgeSetupAbort)diagnostics.nativeEdgeSetupAborts.push({index:p.index,...r.nativeEdgeSetupAbort});participants.push({index:p.index,frontFacing:Boolean(r.frontFacing),fragments:r.fragments});}
+  let compositeInputs=translucent;const effectPlan=readRomMapScreenEffectPlan(project,automatic.plan);diagnostics.screenEffect={plan:effectPlan,requestedPhase:screenEffectPhase,applied:false,currentPhaseProven:false,gatesEvaluated:false};if(screenEffectPhase){if(!effectPlan.ready)throw Error('画面効果のROM選択が未解決です');if(effectPlan.request){const mse=readInitialMseLayers(project,effectPlan),screen=buildMsePolygonInputs(project,mse,{phase:screenEffectPhase,indexStart:inventory.polygons.length,rasterProfile:profile});for(const p of screen.polygons){yield 'native-screen-polygon';const r=rasterizeNativeTexturedTranslucentMode0(p.args,p.translucentInput);if(!r.ready)throw Error(r.reason);participants.push({index:p.index,frontFacing:Boolean(r.frontFacing),fragments:r.fragments});}compositeInputs={...translucent,polygons:[...translucent.polygons,...screen.polygons]};diagnostics.screenEffect.applied=true;diagnostics.screenEffect.polygonCount=screen.polygons.length;}}
  let combined=compositeTexturedTranslucentOverStaticRgb(base.rgb,compositeInputs,participants,controls);
   // Resolve uncovered native destinations only through the guarded ROM clear
   // producer/consumer. Existing successful renders keep their exact output.
@@ -47,3 +48,6 @@ export function renderInitialIntegerFog(project,rom,record,automatic,camera,{app
   return{ready:true,...image,completeVisibleStatic:diagnostics.completeVisibleStatic,knownMask,unavailableMask:combined.unavailableMask,rgba:Uint8ClampedArray.from(image.rgba),diagnostics,scope:diagnostics.scope,stats:{...base.depth.stats,fragments:base.depth.stats.opaqueGeometricFragments+base.depth.stats.binaryGeometricFragments+combined.stats.incoming,rejected:[]}};
  }catch(error){return{ready:false,reason:error.message,diagnostics};}
 }
+
+export function renderInitialIntegerFog(project,rom,record,automatic,camera,options={}){return runSourceStepsSync(renderInitialIntegerFogSteps(project,rom,record,automatic,camera,options));}
+export function renderInitialIntegerFogAsync(project,rom,record,automatic,camera,options={}){return runSourceStepsAsync(renderInitialIntegerFogSteps(project,rom,record,automatic,camera,options),options);}

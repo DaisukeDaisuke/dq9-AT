@@ -3,7 +3,7 @@
  * Render3D::Render/ClearFramebuffer and gfx3d_init DS_DEPTH15TO24 table.
  * ROM producer/consumer guards resolve only ordinary initial mode1 field state.
  */
-import{isSupportedMode1ColorEnvironment}from'../automatic-material-environment.mjs?v=field-stream-20261005-1108';
+import{isSupportedMode1ColorEnvironment}from'../automatic-material-environment.mjs?v=native-body-20261006-0212';
 import{readArm9Overlay}from'../rom-overlay.mjs';
 export function readInitialMode1ClearProfile(project,rom,record,automatic){
  const environment=automatic?.environment;

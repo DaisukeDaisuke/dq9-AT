@@ -1,11 +1,12 @@
-import{isSupportedMode1ColorEnvironment}from'../automatic-material-environment.mjs?v=field-stream-20261005-1108';
+import {runSourceStepsSync} from '../cooperative-source-work.mjs?v=native-body-20261006-0212';
+import{isSupportedMode1ColorEnvironment}from'../automatic-material-environment.mjs?v=native-body-20261006-0212';
 /* SPDX-License-Identifier: GPL-2.0-or-later
  * Bounded A3I5/I4/A5I3 mode0 connection, derived from DeSmuME contributors,535f676:
  * clip interpolation, edge_fx_fl::Interpolant, _drawscanline, _shade, _pixel,
  * alphaBlend and GFX3D_GenerateRenderLists. Existing ROM unpacker is reused.
  * Original source IDs are retained. No captured color/alpha or unique-ID fixup.
  */
-import{initializeKnownClear}from'./native-initial-clear.mjs?v=source-scene-20261006-0040';
+import{initializeKnownClear}from'./native-initial-clear.mjs?v=native-body-20261006-0212';
 import{Narc}from'../vendor/narc-source.js';
 import{Compression,BufferReader}from'../vendor/nitro-fs.mjs';
 import{readNativeTextureResource}from'../native/native-tex0.mjs';
@@ -32,12 +33,12 @@ export function collectInitialMode2TexturedTranslucentInputs(project,automatic,i
  if(automatic?.mode2Applied!==true||automatic.mode2Evaluation?.ready!==true||automatic.plan.recordKey!==inventory.recordKey||inventory.snapshot?.profile!=='ROM-initial-mode2-slot-hypothesis'||automatic.plan.recordKey!==`map:${automatic.mode2Evaluation.source.callIndex}:${automatic.mode2Evaluation.source.callOffset}`)throw Error('Matching explicit initial mode2 slot hypothesis required');
  return collectStaticTexturedTranslucentInputs(project,automatic,inventory,sourceCache);
 }
-export function collectInferredMode2TexturedTranslucentInputs(project,automatic,inventory,sourceCache=null){
+export function* collectInferredMode2TexturedTranslucentInputsSteps(project,automatic,inventory,sourceCache=null){
  if(automatic?.mode2Applied!==true||automatic.mode2Evaluation?.ready!==true||automatic.plan.recordKey!==inventory.recordKey||inventory.snapshot?.profile!=='ROM-mode2-inverse-source-hypothesis'||automatic.plan.recordKey!==`map:${automatic.mode2Evaluation.source?.callIndex}:${automatic.mode2Evaluation.source?.callOffset}`)throw Error('Matching source mode2 inverse hypothesis required');
- return collectStaticTexturedTranslucentInputs(project,automatic,inventory,sourceCache);
+ return yield*collectStaticTexturedTranslucentInputSteps(project,automatic,inventory,sourceCache);
 }
-function collectStaticTexturedTranslucentInputs(project,automatic,inventory,sourceCache=null){
- const polygons=[],rejected=[],cache=new Map();for(const p of inventory.polygons){if(p.classification!=='rejected')continue;
+function* collectStaticTexturedTranslucentInputSteps(project,automatic,inventory,sourceCache=null){
+ const polygons=[],rejected=[],cache=new Map();for(const p of inventory.polygons){yield 'native-source-translucent';if(p.classification!=='rejected')continue;
   try{
    const attr=p.materialEvidence.polygonAttribute,alpha=attr>>>16&31;if(!Number.isInteger(attr)||(attr>>>4&3)!==0||alpha<1||alpha>31||(attr&0x4000))throw Error('Requires mode0 alpha1..31 ordinary depth');if(attr&0x800)throw Error('Translucent depth-write branch remains outside measured subset');
    const scene=automatic.scenes[p.sceneIndex],instance=scene.instances.find(v=>v.id===p.instanceId),draw=instance?.draws.find(d=>d.sbcOffset===p.sbcOffset),binding=draw?.textureBinding;
@@ -89,3 +90,6 @@ export function compositeTexturedTranslucentOverStaticRgb(base,inventory,partici
  }
  return{ready:true,complete:false,width:256,height:192,rgba6665,depth24,depthOwner,colorOwner,frontFacing:facing,coverage,clearMask,translucentId,opaqueId,isTranslucentPoly,isFogged,changedMask,unavailableMask,stats,events,scope:'Source mode0 translucent-list subset, including opaque alpha-texture pixels and indexed textures with polygon alpha<31. Source IDs/manual order/depth writes retained. Unknown geometry, fog application, antialiasing and live framebuffer remain unresolved.'};
 }
+
+function collectStaticTexturedTranslucentInputs(project,automatic,inventory,sourceCache=null){return runSourceStepsSync(collectStaticTexturedTranslucentInputSteps(project,automatic,inventory,sourceCache));}
+export function collectInferredMode2TexturedTranslucentInputs(project,automatic,inventory,sourceCache=null){return runSourceStepsSync(collectInferredMode2TexturedTranslucentInputsSteps(project,automatic,inventory,sourceCache));}
