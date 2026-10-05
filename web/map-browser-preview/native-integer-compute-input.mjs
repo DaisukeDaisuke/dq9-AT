@@ -2,9 +2,9 @@
  * DeSmuME535f676 integer attribute preparation. Existing source clip/edge
  * functions are reused; packed pixel work is consumed by WebGPU without floats.
  */
-import{clipNativePositionPolygon}from'./integer/native-position-clip.mjs';
-import{prepareBinaryNativeZScanlines,prepareTexturedTranslucentNativeZScanlines}from'./integer/native-polygon-depth.mjs';
-import{nativeOpaqueSortBounds,compareNativeOpaqueOrder}from'./integer/static-opaque-depth.mjs?v=field-stream-20261005-1108';
+import{clipNativePositionPolygon}from'./integer/native-position-clip.mjs?v=source-scene-20261006-0040';
+import{prepareBinaryNativeZScanlines,prepareTexturedTranslucentNativeZScanlines}from'./integer/native-polygon-depth.mjs?v=source-scene-20261006-0040';
+import{nativeOpaqueSortBounds,compareNativeOpaqueOrder}from'./integer/static-opaque-depth.mjs?v=source-scene-20261006-0040';
 import{buildFogTable,rgb555To6665}from'./native/fog-raster.mjs';
 const need=(x,m)=>{if(!x)throw Error(m);},i64=x=>{need(x>=-(1n<<63n)&&x<(1n<<63n),'Active signed64 interpolation overflow');return x;};
 const pack=v=>(v[0]|v[1]<<8|v[2]<<16|v[3]<<24)>>>0;

@@ -1,0 +1,16 @@
+// Source-bound settling branch only. Not native floor selection or live actor Y.
+const need=(v,m)=>{if(!v)throw Error(m);};const i32=v=>Number(BigInt.asIntN(32,BigInt(v)));
+const fixed=(v,name)=>need(Number.isInteger(v)&&v>=-2147483648&&v<=2147483647,name+' must be signed FX32');
+export function readActorGroundSettlingRule(fieldOverlay){
+ need(fieldOverlay?.id===17&&typeof fieldOverlay.read==='function','Formal source overlay17 required');const source=0x02193710,length=1836,bytes=fieldOverlay.read(source,length);let fnv=2166136261;for(const x of bytes)fnv=Math.imul(fnv^x,16777619)>>>0;need(fnv===0x279d8ff6,'Unsupported actor floor-wrapper source');
+ const d=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength),word=a=>d.getUint32(a-source,true),checks=[[0x021938a0,0xe2811b06],[0x021938b4,0xe2400a0a],[0x02193900,0xe2811099],[0x02193904,0xe2811c01],[0x02193a20,0xe3500028],[0x02193a24,0xda000004]];for(const[a,w]of checks)need(word(a)===w,'Unsupported ground branch instruction');
+ return Object.freeze({kind:'source-actor-ground-settling-branch',queryAboveFx:0x1800,queryBelowFx:0xa000,clearanceFx:0x199,retainPriorToleranceFx:0x28,source:{function:source,length,fnv32:fnv,clearanceInstructions:[0x02193900,0x02193904],toleranceInstructions:[0x02193a20,0x02193a24]},unresolved:['Actual ordered collision candidate list and instance transform','Native segment-plane query result, not geometric barycentric height','Actor flag0x100 / floor-search gate','Prior highest floor and step-height/admission branch','Special map4561 step-height branch, movement and param14','Current actor root and prior height'],currentActorYProven:false});
+}
+/** Caller supplies an already evaluated native segment-plane result. The
+ * interval describes possible retained prior Y ONLY in this admitted branch.
+ * Do not add clearance directly to an unrelated geometric floor approximation. */
+export function conditionalSettledActorHeight({nativePlaneYFx,instanceYFx,priorYFx=null,rule}){
+ need(rule?.kind==='source-actor-ground-settling-branch'&&rule.clearanceFx===409&&rule.retainPriorToleranceFx===40,'Verified settling source rule required');fixed(nativePlaneYFx,'Native plane Y');fixed(instanceYFx,'Instance Y');const groundYFx=i32(i32(nativePlaneYFx+rule.clearanceFx)+instanceYFx);
+ let branchResult=null;if(priorYFx!==null){fixed(priorYFx,'Prior actor Y');const delta=i32(priorYFx-groundYFx);need(delta!==-2147483648,'Native signed abs overflow outside diagnostic subset');branchResult=Math.abs(delta)<=rule.retainPriorToleranceFx?{branch:'retain-prior-within-source-tolerance',actorYFx:priorYFx}:{branch:'write-native-ground-plus-clearance',actorYFx:groundYFx};}
+ need(groundYFx-40>=-2147483648&&groundYFx+40<=2147483647,'Wrapped height interval outside supported presentation subset');return {kind:'conditional-actor-ground-height-domain',nativePlaneYFx,instanceYFx,groundYFx,retainedPriorIntervalFx:{min:groundYFx-rule.retainPriorToleranceFx,max:groundYFx+rule.retainPriorToleranceFx},branchResult,outerBranchAcceptanceRequired:true,currentActorYProven:false,nativeCandidateSelectionProven:false,unknownOtherHeightPossible:true,minimumProvenATCalls:0,scope:'Only the source settling branch AFTER all native actor/movement/instance admission conditions. Not a global current-Y interval and not a body gate.'};
+}

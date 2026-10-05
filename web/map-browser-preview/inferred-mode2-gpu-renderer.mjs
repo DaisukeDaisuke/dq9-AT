@@ -1,5 +1,5 @@
 import {createRendererSourceArchives} from './renderer-source-archives.mjs?v=recognition-cache-20261005-1007';
-import{createNativeIntegerCompute}from'./native-integer-compute.mjs?v=wgsl-keyword-20261005-0834';import{renderPreparedIntegerCompute}from'./prepare-initial-integer-compute.mjs?v=field-stream-20261005-1108';import{prepareInferredMode2IntegerCompute}from'./inferred-mode2-integer-compute.mjs?v=field-stream-20261005-1108';import{renderMode2InverseSource}from'./mode2-inverse-render.mjs?v=field-stream-20261005-1108';
+import{createNativeIntegerCompute}from'./native-integer-compute.mjs?v=wgsl-keyword-20261005-0834';import{renderPreparedIntegerCompute}from'./prepare-initial-integer-compute.mjs?v=source-scene-20261006-0040';import{prepareInferredMode2IntegerCompute}from'./inferred-mode2-integer-compute.mjs?v=source-scene-20261006-0040';import{renderMode2InverseSource}from'./mode2-inverse-render.mjs?v=source-scene-20261006-0040';
 export function createInferredMode2GpuRenderer({initialize=createNativeIntegerCompute,prepare=prepareInferredMode2IntegerCompute,renderGpu=renderPreparedIntegerCompute,renderCpu=renderMode2InverseSource,now=()=>performance.now()}={}){
  const sourceArchives=createRendererSourceArchives();
  let initialization=null;const begin=()=>initialization??=Promise.resolve().then(initialize).catch(error=>({ready:false,reason:error.message}));

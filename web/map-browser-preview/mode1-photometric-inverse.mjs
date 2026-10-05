@@ -3,15 +3,15 @@
  * zero-fog domain delimit the supported photometric observations. */
 import{readMode1OrdinaryHypotheses,applyMode1OrdinaryHypothesis}from'./automatic-material-environment.mjs?v=field-stream-20261005-1108';
 import{automaticBillboardScenes}from'./automatic-billboard-scene.mjs';
-import{readInitialMode1RasterProfile,collectInitialMode1IntegerInputs}from'./integer/initial-mode1-integer-preview.mjs?v=field-stream-20261005-1108';
-import{renderClassifiedStaticBinaryDepth}from'./integer/static-binary-depth.mjs?v=field-stream-20261005-1108';
-import{renderStaticMode0Rgb,presentStaticRgb}from'./integer/static-mode0-rgb.mjs?v=field-stream-20261005-1108';
-import{collectInitialMode1TexturedTranslucentInputs,readInitialTexturedBlendProfile,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb}from'./integer/native-textured-translucent.mjs?v=field-stream-20261005-1108';
+import{readInitialMode1RasterProfile,collectInitialMode1IntegerInputs}from'./integer/initial-mode1-integer-preview.mjs?v=source-scene-20261006-0040';
+import{renderClassifiedStaticBinaryDepth}from'./integer/static-binary-depth.mjs?v=source-scene-20261006-0040';
+import{renderStaticMode0Rgb,presentStaticRgb}from'./integer/static-mode0-rgb.mjs?v=source-scene-20261006-0040';
+import{collectInitialMode1TexturedTranslucentInputs,readInitialTexturedBlendProfile,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb}from'./integer/native-textured-translucent.mjs?v=source-scene-20261006-0040';
 import{projectNativePrimitiveFx}from'./integer/native-primitive-inputs.mjs';
-import{clipNativePositionPolygon}from'./integer/native-position-clip.mjs';
+import{clipNativePositionPolygon}from'./integer/native-position-clip.mjs?v=source-scene-20261006-0040';
 import{buildFogTable}from'./native/fog-raster.mjs';
-import{prepareNativeIntegerCompute}from'./native-integer-compute-input.mjs?v=field-stream-20261005-1108';
-import{renderPreparedIntegerCompute}from'./prepare-initial-integer-compute.mjs?v=field-stream-20261005-1108';
+import{prepareNativeIntegerCompute}from'./native-integer-compute-input.mjs?v=source-scene-20261006-0040';
+import{renderPreparedIntegerCompute}from'./prepare-initial-integer-compute.mjs?v=source-scene-20261006-0040';
 const need=(x,m)=>{if(!x)throw Error(m);},expand=n=>n?2*n+1:0,median=a=>{const b=a.slice().sort((x,y)=>x-y);return b[Math.floor(b.length/2)];};
 export function prepareMode1PhotometricBasis({project,rom,record,automatic,camera}){
  const read=readMode1OrdinaryHypotheses(project,record,automatic);need(read.ready,read.reason);need(read.environment.timeIndependenceProof.commonMaterial,'Variable material globals outside flat-COLOR inverse subset');

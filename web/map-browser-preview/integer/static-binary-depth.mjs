@@ -3,8 +3,8 @@
  * subset. No map/material-name rules and no changes to the opaque baseline.
  */
 import {projectNativePrimitiveFx} from './native-primitive-inputs.mjs';
-import {rasterizeNativePositionClippedZPolygon} from './native-position-clip.mjs';
-import {readNativeBinaryPolygonTexture,rasterizeNativeBinaryAlphaPolygon,compositeBinaryAwareDepth} from './native-binary-alpha.mjs?v=field-stream-20261005-1108';
+import {rasterizeNativePositionClippedZPolygon} from './native-position-clip.mjs?v=source-scene-20261006-0040';
+import {readNativeBinaryPolygonTexture,rasterizeNativeBinaryAlphaPolygon,compositeBinaryAwareDepth} from './native-binary-alpha.mjs?v=source-scene-20261006-0040';
 export function classifyStaticBinaryDepthInputs(project,automatic,opaqueInventory,{viewportWord,depthMode,fragmentSamplingHack,textureScalingFactor}={}){
  if(automatic.plan.recordKey!==opaqueInventory.recordKey)throw Error('Same source map inventory required');
  if(viewportWord!==0xbfff0000||depthMode!=='Z'||fragmentSamplingHack!==false||textureScalingFactor!==1)throw Error('Explicit native viewport/Z/integer/native1x profile required');
