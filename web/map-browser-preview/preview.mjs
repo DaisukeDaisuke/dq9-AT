@@ -1,10 +1,12 @@
-import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=map-integer-fog-clamped-20261005-0324';
+import {ResidualRecognitionClient} from './residual-recognition-client.mjs';
+import {residualModelPlan,residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs';
+import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=map-residual-recognition-20261005-0324';
 import {CPUTextClient} from '../font-akinator-cpu-client.mjs';
 import {deriveVideoMapNames} from './video-map-name-input.mjs';
 import {MapPositionMatcher} from '../map-position.mjs';
 import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
-import {mountMapVideoComparison} from './map-video-comparison.mjs?v=map-integer-fog-20261005-0312';
+import {mountMapVideoComparison} from './map-video-comparison.mjs?v=map-residual-recognition-20261005-0324';
 import {openMapRom} from './static-scene.mjs';
 import {buildRomMapCatalog} from './rom-map-catalog.mjs';
 import {nameCatalogMaps} from './rom-map-names.mjs';
@@ -19,15 +21,16 @@ import {rasterizePreviewPackets} from './cpu-preview.mjs';
 const $=id=>document.getElementById(id),ctx=$('view').getContext('2d'),mapCtx=$('minimap').getContext('2d');
 let rom,project,catalog,maps=[],record,automatic,floors,image,point,renderer,version=0,loaded=false,renderVersion=0,romSHA256=null,positionMatcher=null,markerInput=null;
 const identity=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
+const residualClient=new ResidualRecognitionClient();let encounterTables=null;
 const nameClient=new CPUTextClient();let nameInput=null;
-const videoComparison=mountMapVideoComparison({renderBackground:render,derivePlayerBackground:renderFromMarker,deriveMapBackground:renderFromName,cancelPending:()=>nameClient.cancel()});
+const videoComparison=mountMapVideoComparison({renderBackground:render,derivePlayerBackground:renderFromMarker,deriveMapBackground:renderFromName,classifyResiduals:classifyBackgroundResiduals,cancelPending:()=>{nameClient.cancel();residualClient.cancel();}});
 function clearView(){$('marker-details').textContent='';$('marker-status').textContent='描画入力が変わりました。固定映像の上画面から再計算します。';renderVersion++;videoComparison.invalidate('背景の入力が変わりました。');ctx.clearRect(0,0,256,192);$('draw').disabled=true;point=null;markerInput=null;$('floor').replaceChildren();$('floor').disabled=true;}
 function reportError(e){videoComparison.invalidate('背景の描画に失敗しました。');$('status').textContent='描画できません：'+e.message;console.error(e);}
 function guard(fn){return async event=>{try{await fn(event);}catch(e){reportError(e);}};}
 const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
 async function responseBytes(url){const r=await fetch(url);if(!r.ok)throw Error('必要なファイルを読めません: '+url+' ('+r.status+')');return r;}
 $('rom').onchange=guard(async()=>{
- nameClient.cancel();nameInput=null;$('name-input-candidates').replaceChildren();$('name-input-details').textContent='';const id=++version,file=$('rom').files[0];clearView();loaded=false;for(const x of['search','map','descriptor'])$(x).disabled=true;if(!file)return;
+ nameClient.cancel();residualClient.release();nameInput=null;$('name-input-candidates').replaceChildren();$('name-input-details').textContent='';const id=++version,file=$('rom').files[0];clearView();loaded=false;for(const x of['search','map','descriptor'])$(x).disabled=true;if(!file)return;
  $('status').textContent='ROMとマップ一覧を読んでいます…';await frame();const bytes=new Uint8Array(await file.arrayBuffer());if(id!==version)return;
  const p=openMapRom(bytes),c=buildRomMapCatalog(p);let csv='';try{csv=await(await responseBytes('../data/map-id-names.csv')).text();}catch(e){throw Error('既存マップ名一覧の取得に失敗: '+e.message);}
  const w=await(await responseBytes('../wasm/map_render.wasm')).arrayBuffer(),inst=await WebAssembly.instantiate(w,{});if(id!==version)return;
@@ -101,3 +104,22 @@ async function render(){
 $('floor').onchange=guard(render);$('draw').onclick=guard(render);$('yaw').oninput=()=>{$('automatic-map-name').checked=false;$('automatic-player').checked=false;markerInput=null;renderVersion++;videoComparison.invalidate('向きが変わりました。');$('yawlabel').value=$('yaw').value+'°';};$('yaw').onchange=guard(render);
 
 $('render-profile').onchange=guard(render);
+
+async function classifyBackgroundResiduals(input){
+ const key=romSHA256,frameId=videoComparison.frameId();if(input.backgroundEvidence.romSHA256!==key)throw Error('背景とROMの識別が異なります');
+ const catalog=await residualClient.load(rom,key);if(romSHA256!==key||videoComparison.frameId()!==frameId)throw Error('比較中に入力が変わりました');
+ encounterTables??=(await(await responseBytes('../data/enc.json')).json()).main;
+ const retained=input.backgroundEvidence.nameInput?.maps?.map(m=>m.mapId)??[input.backgroundEvidence.mapId],variant=$('residual-model-variant').value,plan=residualModelPlan(project,retained,{catalog,tables:encounterTables,variant}),modelIds=plan.models.map(m=>m.modelId),classifications=[];
+ if(!modelIds.length)throw Error('同frameのmap/table候補からROMモデルを供給できません: '+JSON.stringify(plan.unsupported));
+ for(const regionId of input.regionIds){const region=input.regions.find(r=>r.id===regionId);if(!region)throw Error('元残差領域が変わりました');let sourceROI=null,cropSHA256=null;const batches=[],rankings=[];
+  for(let first=0;first<modelIds.length;first+=4){
+   if(romSHA256!==key||videoComparison.frameId()!==frameId)throw Error('比較中に入力が変わりました');
+   const request=residualClassificationRequest({...input,gameplayROI:input.videoEvidence.roi,region,modelIds:modelIds.slice(first,first+4),variant,romEpoch:residualClient.epoch});sourceROI=request.captureStamp.enemyROI;
+   cropSHA256=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',request.crop.rgba)),x=>x.toString(16).padStart(2,'0')).join('');
+   const result=await residualClient.classify(request,input.onProgress);batches.push({...result,rankings:result.rankings.map(({thumbnail,...r})=>r)});rankings.push(...result.rankings.map(({thumbnail,...r})=>r));
+  }
+  rankings.sort((a,b)=>a.distance-b.distance||a.modelId.localeCompare(b.modelId));classifications.push({regionId,sourceROI,cropSHA256,batches,rankings});
+  input.onPartial?.({...residualObservationBundle({...input,plan,classifications}),classificationJob:{complete:false,requestedRegionIds:input.regionIds,completed:classifications.length}});
+ }
+ return {...residualObservationBundle({...input,plan,classifications}),classificationJob:{complete:true,requestedRegionIds:input.regionIds,completed:classifications.length}};
+}
