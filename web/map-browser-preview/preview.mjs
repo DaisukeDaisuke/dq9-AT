@@ -1,9 +1,10 @@
+import {renderInitialIntegerFog} from './integer-static-fog.mjs';
 import {CPUTextClient} from '../font-akinator-cpu-client.mjs';
 import {deriveVideoMapNames} from './video-map-name-input.mjs';
 import {MapPositionMatcher} from '../map-position.mjs';
 import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
-import {mountMapVideoComparison} from './map-video-comparison.mjs?v=map-residual-display-20261005-0249';
+import {mountMapVideoComparison} from './map-video-comparison.mjs?v=map-integer-fog-20261005-0312';
 import {openMapRom} from './static-scene.mjs';
 import {buildRomMapCatalog} from './rom-map-catalog.mjs';
 import {nameCatalogMaps} from './rom-map-names.mjs';
@@ -88,10 +89,15 @@ async function render(){
  if(!point||!$('floor').options.length)return;const id=version,drawId=++renderVersion,comparisonFrameId=videoComparison.frameId();videoComparison.invalidate('背景を再描画しています。');const selected={...point,yFx:Number($('floor').value),yawDegrees:Number($('yaw').value)};$('status').textContent='CPUで描画しています…';await frame();if(id!==version||drawId!==renderVersion)return;
  const camera=automaticPreviewCamera(project,rom,record,selected),active=applyAutomaticMaterialEnvironment(project,record,automaticBillboardScenes(project,automatic,camera.viewFx));
  if(!active.environmentApplied){$('diagnostics').textContent=JSON.stringify(active.environment,null,2);throw Error('ROMの初期環境をまだ適用できません: '+active.environment.unresolved.join('; '));}
- const parts=active.scenes.map(s=>prepareDrawPackets(s,{materialGlobals:active.environment.materialGlobals,masks:automatic.masks})),packets={draws:parts.flatMap(x=>x.draws)},r=rasterizePreviewPackets(packets,{view:identity,projection:camera.projectionFx.map(x=>x/4096),clearRGBA:[0,0,0,0],colorProfile:'native-mode0-rgb'});
+ const parts=active.scenes.map(s=>prepareDrawPackets(s,{materialGlobals:active.environment.materialGlobals,masks:automatic.masks})),packets={draws:parts.flatMap(x=>x.draws)},requestedRenderer=$('render-profile').value;
+ const integer=requestedRenderer==='legacy'?null:renderInitialIntegerFog(project,rom,record,active,camera,{applyFog:requestedRenderer==='integer-fog'});
+ const r=integer?.ready?integer:rasterizePreviewPackets(packets,{view:identity,projection:camera.projectionFx.map(x=>x/4096),clearRGBA:[0,0,0,0],colorProfile:'native-mode0-rgb'}),backend=integer?.ready?'source-integer-static-mode1':'float64-diagnostic',fogApplied=integer?.ready===true&&integer.diagnostics.fogApplied===true;
+ const rendererEvidence={requestedRenderer,backend,fogApplied,fallback:integer&&!integer.ready?{reason:integer.reason,diagnostics:integer.diagnostics}:null,integer:integer?.ready?integer.diagnostics:null};
  ctx.putImageData(new ImageData(r.rgba,r.width,r.height),0,0);const blocked=[...active.unresolved,...active.scenes.flatMap(s=>s.unsupported).filter(x=>!x.reason.startsWith('name-char3-A')),...parts.flatMap(p=>p.unsupported),...r.stats.rejected];
- $('status').textContent=(r.stats.fragments?'CPU描画しました。':blocked.length?'未対応項目のため描画できません。':'この向きでは描画対象が見えません。')+(blocked.length?' 未対応の描画項目があります。':'')+' 初期状態のプレビューです。霧・動的変化・実動画との一致は未確認です。';
- const evidence={romSHA256,recordKey:record.key,mapId:record.mapId,fieldCode:record.fieldCode,selected,viewFx:camera.viewFx,projectionFx:camera.projectionFx,cameraScope:camera.scope,renderScope:r.scope,stats:r.stats,unresolved:blocked,floorUnresolved:floors.unsupported,fogApplied:false,liveCameraVerified:false,playerInput:markerInput,nameInput};videoComparison.setBackground(r,evidence,comparisonFrameId);
- $('diagnostics').textContent=JSON.stringify({map:record.displayLabel,backend:'cpu-canvas2d',point,floor:Number($('floor').value),floorUnresolved:floors.unsupported,cameraScope:camera.scope,renderScope:r.scope,environment:active.environment.scope,colorReady:active.environment.colorReady,fogReady:active.environment.fogReady,fogUnresolved:active.environment.fogUnresolved,fogApplied:false,stats:r.stats,unresolved:blocked},null,2);
+ $('status').textContent=(r.stats.fragments?'CPU描画しました。':blocked.length?'未対応項目のため描画できません。':'この向きでは描画対象が見えません。')+(blocked.length?' 未対応の描画項目があります。':'')+(integer?.ready?(fogApplied?' ROM整数描画と時間独立の霧を適用しました。':' ROM整数描画（霧なし比較）です。'):' Float64プレビュー（霧なし）です。')+(integer&&!integer.ready?' 整数経路の条件未成立でfallback: '+integer.reason:'')+' 初期状態の仮説です。現在の動的状態とnative画像一致は未確認です。';
+ const evidence={romSHA256,recordKey:record.key,mapId:record.mapId,fieldCode:record.fieldCode,selected,viewFx:camera.viewFx,projectionFx:camera.projectionFx,cameraScope:camera.scope,renderScope:r.scope,stats:r.stats,unresolved:blocked,floorUnresolved:floors.unsupported,fogApplied,rendererEvidence,liveCameraVerified:false,playerInput:markerInput,nameInput};videoComparison.setBackground(r,evidence,comparisonFrameId);
+ $('diagnostics').textContent=JSON.stringify({map:record.displayLabel,backend,rendererEvidence,point,floor:Number($('floor').value),floorUnresolved:floors.unsupported,cameraScope:camera.scope,renderScope:r.scope,environment:active.environment.scope,colorReady:active.environment.colorReady,fogReady:active.environment.fogReady,fogUnresolved:active.environment.fogUnresolved,fogApplied,stats:r.stats,unresolved:blocked},null,2);
 }
 $('floor').onchange=guard(render);$('draw').onclick=guard(render);$('yaw').oninput=()=>{$('automatic-map-name').checked=false;$('automatic-player').checked=false;markerInput=null;renderVersion++;videoComparison.invalidate('向きが変わりました。');$('yawlabel').value=$('yaw').value+'°';};$('yaw').onchange=guard(render);
+
+$('render-profile').onchange=guard(render);

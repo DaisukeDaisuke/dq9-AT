@@ -1,0 +1,11 @@
+# Integer static mode1 browser profile
+
+The modules in integer/ are source-only ports of the previously compared components saved in DaisukeDaisuke/dots-tools at8f3699912e1fdcc6ab8673ac7891e20cb487700f, recovery/checkpoints/20261004-rom-only/ and tools/map-render-committee/cpu/. Their arithmetic and guards are unchanged; only relative browser import paths were adjusted. The port manifest records original Git blob IDs and original/browser SHA256. No ROM resources, captured frames, state files or native memory are distributed.
+
+Integer clip/raster/depth/UV/RGB/blending/fog portions derive from DeSmuME535f676778dff6e2cbd57ff8468b4a9846d23933 and are GPL-2.0-or-later. Original module notices are retained. See adjacent LICENSE-DESMUME-GPL2.txt. Existing dq9-AT MIT and NTRGhidra notices remain applicable to their separate ROM/camera/material helpers. The browser adapter integer-static-fog.mjs is GPL-2.0-or-later.
+
+This profile replays original GX polygons and event-ordered material/COLOR/NORMAL inputs with FX matrices, full initial viewport, native1x texture sampling and source Z-depth submission. It retains source manual translucent order, polygon IDs, alpha/depth rules and accepted-fragment fog flags. Fog uses the native integer depth24 and same source owner/flag planes. Float64 previewDepth is never passed to fog.
+
+It accepts time-independent ordinary initial mode1 environment only. ROM initializer values do not prove current camera/environment/script state. Visible unknown source polygons, unavailable frontmost RGB, unconnected instances and unsupported native raster paths cause an explicit whole-profile fallback to the prior Float64 preview with fog disabled. Unsupported polygons are retained in diagnostics; a geometric source clip proof can show they are outside the current view. Source collision-only name-char3-A instances remain separate from drawable models.
+
+The old C++ component comparisons used a signed-wrap compilation profile. Prior unused horizontal-edge UV/RGB overflow diagnostics remain limitations; this port adds no claim of universal native/WASM parity. Native edge marking, antialiasing, dynamic animation/materials and final framebuffer parity remain unconnected. RGB555 presentation is an explicit profile, distinct from the older RGBA8888 preview. No species, enemy, birth or AT inference is made by this renderer.
