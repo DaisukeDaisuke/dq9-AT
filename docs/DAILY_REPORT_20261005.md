@@ -225,3 +225,14 @@
 - CLIの別描画点と実動画RGBA比較はMAE49.021、未位置合わせ/枠0。親再実行のstats/alignment/components一致。ブラウザとはクリック座標/decoded画素が同一と確認していないため数値同一を主張しない。以前のD09M04クリック2点の床未検出だけで全map描画不能とは扱わず、今回有効床から実描画できた。
 - 現段階の地点・向きは手動で、自動位置特定の完成ではない。上画面marker→ROM地図登録→BMMP物理XZ→COL2床→ROMcameraの自動供給を接続中。同名map・marker・床の代替、初期cameraと現時点cameraの条件は保持する。差分を敵/出生/AT draw確定にはしない。
 - 中断した比較/解析途中は既存Library控えversion17へ旧全payloadを保持して保存。現在の新map-video実装は公開Gitへ保存され、このLibrary版には未収録。公開ブラウザ実測画像/JSONは私的保存。
+
+## 12:02 JST — 地図名・主人公位置からの背景比較とサイズ表示
+
+- 同frame上画面のHUD色校正/点候補と既存MapPositionMatcherをROM地図へ結び、BMMP座標→COL2床→ROM初期heading→Canvas2D背景を接続。zuo129.996ではmap画像(172,118)、XZ FX(104474,46092)、唯一床21324。全12登録peak×4色marker候補・本人対応未証明・初期camera条件を保持。Nodeでは手動仮地点MAE49.021→自動地点16.658、微小translation(+4,0)適用14.871。敵精度の改善値とは呼ばない。
+- 公開marker版55c8d1dで、ブラウザの新旧module混在が疑われるrenderCurrent未定義を検出。69240993でentry/importの版queryを揃え、再読込後に同NDS/動画から自動描画成功。Pages成功とbrowser実動作を分離して確認した。
+- ROMfontの同frame名前候補→catalog map群→上画面marker→背景も接続し、main1b1bed8b/Pages37256808507成功。親ブラウザでは地図名・地点・向きを入力せず、NDS＋zuo＋OBS配置＋129.996秒の固定操作から7904/D09M04候補を得て描画/比較/JSON保存まで成功。検索予算停止・textResolved=false・未知候補は維持。最初の読込で反応しなかった試行は1回再読込で解消、原因は未確定。
+- 親browserではrawMAE17.709、(+4,0)適用15.833・400未分類領域。Nodeの422領域とdecoded画素の完全同一は未確認で、数値を混ぜない。画面/名前/点/床の各段階は同じ固定frame由来を保持する。
+- サイズ表示設定をmain2e7757eb/Pages37257413427へ公開。default1は全領域表示。小さい内部領域を表示だけ保留し、画面端と未描画境界に触れる領域はサイズに関わらず保持、全生残差と全候補はJSONに残す。親browser min8+再比較で400→90表示、310内部保留、小さい端/未描画境界33保持を実測。遠方の小敵も内部保留に入り得るため、不在/ノイズ確定にしない。
+- 保存5frameのNode実行は各frame独立に名前/marker/床/背景を取得。生領域396/409/422/409/519、例min8表示74/62/79/77/125。中心のみ元正式近似bboxへ事後比較し、上端enemy2対応IoU.892を保持、enemy1は大背景へ結合し最高.055。味方/UIも残る。GTは生成/閾値/選択に渡さない。
+- 私的再実行source/手順はdots-tools main8f662942まで通常反映確認。ROOT Library v18にはmap-video/marker/browser証拠まで保存、最新name/sizeは公開Git保存済みでLibrary同版には未収録。新たな環境消失はなく、同hostとROM/動画所在を確認。
+- 次は現在D09M04でfogReady=trueなのに公開rasterがfogApplied=falseである差を、既存整数clip/native depth24経路から最小接続して比較。古い報告を現行成功とせず、同ROM/frame/cameraのbefore/afterで背景結合と小敵保持を見る。ATへの出生/draw確定は未成立のまま。
