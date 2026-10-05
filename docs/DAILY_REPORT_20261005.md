@@ -202,3 +202,8 @@
 - 作業ブランチ25279ae95c3298be12c713d78c460fd8bcbdf4e4のROM-only previewソースをmainへ統合。main側の既存日報を保持し、旧公開待ちの説明とライセンス参照名を更新。
 - 56 JavaScriptファイル構文、46module/108相対importリンク、既存CSV/WASM依存とMapRenderer初期化を確認。機能コードの追加変更なし。ブラウザ操作・全map対応は未検証。
 - 既存Pages workflowによるbuild/deployと公開配信内容の照合は、この記録の作成時点では確認待ち。
+
+### 09:59 JST 公開結果
+- main統合commit b4a2e4320ce4e05ef04add14efba824f22a26b05のPages run37249432473はbuild/deployともsuccess。
+- 公開map-browser-previewのindex.html、preview.mjs、automatic-scene.mjsをHTTP取得し、統合元ソースとbyte単位一致を確認。preview.mjs初回timeoutは再取得で解消。
+- 配信反映を確認した範囲は上記3ファイル。ブラウザ上のROM読込・クリック・描画操作と全入力対応は未検証のまま。
