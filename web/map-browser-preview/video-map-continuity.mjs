@@ -1,6 +1,6 @@
-import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=source-scene-20261006-0040';
+import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=ambiguous-physical-markers-20261005';
 // A cached map is a search hypothesis, never a temporal assertion. Every hit
-// requires fresh whole-minimap registration and physical-player/floor or fixed-display-anchor evidence.
+// requires fresh whole-minimap registration and physical-marker/floor hypotheses or fixed-display-anchor evidence.
 export class VideoMapContinuity {
  constructor(){this.entry=null;this.stats={probes:0,hits:0,misses:0,nameSearches:0,invalidations:0};}
  reset(){this.entry=null;this.stats.invalidations++;}
@@ -23,7 +23,7 @@ export class VideoMapContinuity {
   for(const candidate of entry.evidence.maps){
    if(!isCurrent())throw new DOMException('Map continuity cancelled','AbortError');
    const record=alignment.records.find(r=>r.key===candidate.key);if(!record){revalidatedMaps.push({recordKey:candidate.key,status:'unknown',unsupported:'ROM record unavailable'});continue;}
-   try{const scene=alignment.scene(record),selection=await resolveVideoMinimapCandidates({record,catalog:alignment.catalog,renderer,matcher:alignment.matcher,floors:scene.floors,...input,isCurrent});selections.set(record.key,selection);const survived=Boolean(selection.accepted.length||selection.anchorOnly?.length);revalidatedMaps.push({recordKey:record.key,mapId:record.mapId,status:survived?'surviving-map-hypothesis':'no-accepted-map-hypothesis',diagnostics:selection.diagnostics});if(survived)accepted.push(selection);}
+   try{const scene=alignment.scene(record),selection=await resolveVideoMinimapCandidates({record,catalog:alignment.catalog,renderer,matcher:alignment.matcher,floors:scene.floors,...input,isCurrent});selections.set(record.key,selection);const survived=Boolean(selection.accepted.length||selection.anchorOnly?.length||selection.physicalMarkerHypotheses?.length);revalidatedMaps.push({recordKey:record.key,mapId:record.mapId,status:survived?'surviving-map-hypothesis':'no-accepted-map-hypothesis',diagnostics:selection.diagnostics});if(survived)accepted.push(selection);}
    catch(error){if(error.name==='AbortError')throw error;revalidatedMaps.push({recordKey:record.key,mapId:record.mapId,status:'unknown',unsupported:error.message});}
   }
   if(!isCurrent())throw new DOMException('Map continuity cancelled','AbortError');
@@ -34,7 +34,7 @@ export class VideoMapContinuity {
   // No chosen physical record or unique map identity is required.
   if(!accepted.length){this.stats.misses++;return null;}
   this.stats.hits++;
-  const evidence={...entry.evidence,kind:'known-ROM-map-template-candidates',frameEvidence:entry.originFrame,templateFrameEvidence:input.frameEvidence,scope:'The full prior name-candidate set is reused when at least one candidate passes fresh same-frame full-minimap registration and physical marker/floor or fixed-display-anchor checks; each current failure or unknown remains explicit. Name evidence belongs to originFrame; other map identities remain unsearched and no identity is certified.',status:'known-map-template-revalidated',continuity:{kind:'same-frame-known-minimap-revalidation',originFrame:entry.originFrame,currentFrame:input.frameEvidence,aliases:accepted.length===1?accepted[0].diagnostics?.equivalentGroups??[]:[],revalidatedMaps,survivingRecordKeys:revalidatedMaps.filter(r=>r.status==='surviving-map-hypothesis').map(r=>r.recordKey),candidateSetPreserved:true,stats:{...this.stats},nameEvidenceReused:true,nameReadOnCurrentFrame:false,unsearchedMapsPossible:true,mapIdentityCertified:false,minimumProvenATCalls:0}};
+  const evidence={...entry.evidence,kind:'known-ROM-map-template-candidates',frameEvidence:entry.originFrame,templateFrameEvidence:input.frameEvidence,scope:'The full prior name-candidate set is reused when at least one candidate passes fresh same-frame full-minimap registration and physical marker/floor hypothesis or fixed-display-anchor checks; each current failure or unknown remains explicit. Name evidence belongs to originFrame; other map identities remain unsearched and no identity is certified.',status:'known-map-template-revalidated',continuity:{kind:'same-frame-known-minimap-revalidation',originFrame:entry.originFrame,currentFrame:input.frameEvidence,aliases:accepted.length===1?accepted[0].diagnostics?.equivalentGroups??[]:[],revalidatedMaps,survivingRecordKeys:revalidatedMaps.filter(r=>r.status==='surviving-map-hypothesis').map(r=>r.recordKey),candidateSetPreserved:true,stats:{...this.stats},nameEvidenceReused:true,nameReadOnCurrentFrame:false,unsearchedMapsPossible:true,mapIdentityCertified:false,minimumProvenATCalls:0}};
   return{evidence,prevalidatedMaps:{frameId:input.frameId,sourceImage:input.sourceImage,selections}};
  }
 }

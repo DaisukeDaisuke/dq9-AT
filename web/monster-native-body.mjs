@@ -1,3 +1,4 @@
+import {composeNativeBodyOverSourceDestination} from './monster-native-scene-composition.mjs';
 /* SPDX-License-Identifier: GPL-2.0-or-later
  * Isolated original-GX body bridge. Reuses existing DeSmuME535f676-derived
  * position/clip/raster/color/depth modules with their original notices.
@@ -61,10 +62,11 @@ export function projectNativeBodyPolygons(program,{camera,positionFx,actorScaleF
  }
  return {kind:'source-original-body-polygons',polygons,vertexCount,matrixTrace:retainMatrixTrace?matrixTrace:undefined,transform:{camera:structuredClone(camera),positionFx:positionFx.slice(),actorScaleFx,yawFx},pose:animation?{clip:animation.name,frame}:null,scope:'Source node-scale/restore GX replay with original polygons. Stored animation/ordinary materials only; unobserved live bindings remain conditional.'};
 }
-export function rasterNativeBody(program,projected,{profile,fog=null,alignment}){
+export function rasterNativeBody(program,projected,{profile,fog=null,alignment,destination=null}){
  need(profile?.textureScalingFactor===1&&Number.isInteger(alignment?.dx)&&Number.isInteger(alignment?.dy),'Explicit source raster profile and frozen integer alignment required');const participants=[],errors=[];
  for(const p of projected.polygons){try{const texture={...p.material.texture,uvFx4:p.vertices.map(v=>v.uv)},args={...profile,clipVerticesFx:p.vertices.map(v=>v.clipFx),polygonAttribute:p.material.effective.polygonAttribute,primitiveMode:p.primitiveMode,textureFormat:texture.format,textureParameter:texture.parameter},input={rgb555:p.vertices.map(v=>v.color555),texture},result=texture.translucent?rasterizeNativeTexturedTranslucentMode0(args,input):rasterizeNativeMode0Rgb(args,input,{textureScalingFactor:1});need(result.ready,result.reason);participants.push({index:p.index,clipVerticesFx:args.clipVerticesFx,frontFacing:Boolean(result.frontFacing),translucent:Boolean(texture.translucent),fragments:result.fragments});}catch(e){errors.push({polygonIndex:p.index,shapeIndex:p.shapeIndex,sbcOffset:p.sbcOffset,reason:e.message});}}
  if(errors.length)return{ready:false,errors,originalPolygons:projected.polygons.length,reason:'Unsupported original body polygon retained; partial raster not scored'};
+ if(participants.some(p=>p.translucent)&&destination){need(destination.binding?.kind==='same-frozen-source-destination-v1','Frozen source destination binding required');return composeNativeBodyOverSourceDestination(projected,participants,{destination,fog,alignment});}
  if(participants.some(p=>p.translucent))return{ready:false,reason:'Exact source translucent fragments require a known pre-fog destination, retained depth/IDs/fog and source ordering; no final-background surrogate',originalPolygons:projected.polygons.length,fragmentPrograms:participants,unsupportedDestination:true,partialBodyNotScored:true};
  const plane=compositeBinaryAwareDepth(participants),rgba6665=new Uint8Array(49152*4),fogByOwner=new Map(projected.polygons.map(p=>[p.index,Boolean(p.material.effective.polygonAttribute&0x8000)]));for(const p of participants)for(const f of p.fragments){const i=f.y*256+f.x;if(f.alpha5===31&&plane.coverage[i]&&plane.owner[i]===p.index&&plane.depth24[i]===f.depth24)rgba6665.set([...f.rgb6,31],i*4);}
  if(fog)for(let i=0;i<49152;i++)if(plane.coverage[i])rgba6665.set(applyFogPixel(rgba6665.subarray(i*4,i*4+4),plane.depth24[i],fogByOwner.get(plane.owner[i]),fog.parameters,fog.table),i*4);
