@@ -4,7 +4,7 @@ let checks=0;const eq=(a,b)=>{assert.deepEqual(a,b);checks++;},ok=x=>{assert(x);
 const dataURL=s=>'data:text/javascript;base64,'+Buffer.from(s).toString('base64');
 const assetModule=dataURL(`export function readMonsterAssets(n,c,rs){return{models:rs.map(r=>({...r,animations:n.missing?[]:['stand.nsbca','run.nsbca','appear.nsbca'].map(name=>({name,bytes:new Uint8Array(1)}))}))};}`);
 const animationModule=dataURL(`export const readNSBCA=()=>({numFrames:3});export const sampleMatrices=()=>new Float32Array(16);`);
-const sourceURL=new URL('../web/monster-recognition-engine.mjs',import.meta.url);let source=await fs.readFile(sourceURL,'utf8');source=source.replace(/from '(\.\/[^']+)'/g,(_,p)=>`from '${p==='./monster-assets.mjs'?assetModule:p==='./monster-animation.mjs'?animationModule:new URL(p,sourceURL).href}'`);
+const sourceURL=new URL('../web/monster-recognition-engine.mjs',import.meta.url);let source=await fs.readFile(sourceURL,'utf8');source=source.replace(/from '(\.\/[^']+)'/g,(_,p)=>`from '${p==='./monster-assets.mjs'?assetModule:p.split('?')[0]==='./monster-animation.mjs'?animationModule:new URL(p,sourceURL).href}'`);
 const {recognizeROI,prepareDinoPoseBank,supplementEnemyROIs,DENSE_POSE_MODELS,FEATURE_RENDER_REVISION}=await import(dataURL(source+'\n//# sourceURL=synthetic-engine-integration.mjs'));
 const clone=structuredClone,store=new Map();let reads=[],writes=[],failRead=false,failWrite=false;
 const featureStore={async read(key){reads.push(key);if(failRead)throw Error('synthetic corrupt');return store.has(key)?clone(store.get(key)):null;},async write(key,entries){writes.push(key);if(failWrite)throw Error('synthetic quota');store.set(key,clone(entries));}};
@@ -51,3 +51,4 @@ for(const badRequest of[{...denseRequest,romEpoch:2},{...denseRequest,inferenceB
 const midway=new AbortController();await assert.rejects(supplementEnemyROIs(denseRequest,{...prepDeps,signal:midway.signal,onProgress:p=>{if(p.phase==='render')midway.abort()}}),e=>e.name==='AbortError');checks++;
 await backend.dispose();
 console.log(JSON.stringify({passed:true,checks,syntheticOnly:true,source:'actual engine with synthetic asset/animation readers and ORT session',actualRenderer:true,persistentStorageUnitTestSeparate:true}));
+
