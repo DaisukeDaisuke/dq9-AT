@@ -1,5 +1,5 @@
 import {nativeBodyRequestPayload} from './native-body-request.mjs?v=destination-reuse-20261006-0501';
-import {attachResidualNativeSupport,RESIDUAL_NATIVE_BODY_BUDGET} from './residual-native-support.mjs?v=native-preparation-20261006-0422';
+import {attachResidualNativeSupport,RESIDUAL_NATIVE_BODY_BUDGET} from './residual-native-support.mjs?v=emitted-continuation-20261006-0545';
 import {chooseResidualBackend,residualBackendProvenance,assertResidualBackendResult} from './residual-recognition-backend.mjs';
 import {residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs?v=native-body-20261006-0212';
 // A job is all requested regions and all model batches for one frozen frame.
@@ -13,6 +13,12 @@ export async function runResidualRecognitionJob({input,plan,variant,client,prefe
  const check=()=>{assertCurrent();checkFrozen();};
  const nativeCurrent=()=>{checkFrozen();return input.isNativeCurrent?.()===true;};
  const modelIds=plan.models.map(m=>m.modelId);if(!modelIds.length)throw Error('同frameのmap/table候補からROMモデルを供給できません: '+JSON.stringify(plan.unsupported));
+ // Claim the native-only background payload while this frozen appearance job
+ // owns a current handoff. Later playback/name-unresolved searches may replace
+ // the one-frame mailbox while DINO runs. Keep only this job's exact snapshot;
+ // never put its planes into appearance bundles or extend mailbox lifetime.
+ let nativeBackgroundEvidence=null,nativeBackgroundCaptureError=null;
+ check();try{nativeBackgroundEvidence=structuredClone(nativeBodyRequestPayload({videoEvidence:input.videoEvidence,backgroundEvidence:frozenBackground,nativeComparison:frozenComparison}).backgroundEvidence);}catch(error){if(error.name==='AbortError')throw error;nativeBackgroundCaptureError=error;}check();
  const selection=await choose({preference,assertCurrent:check});check();let fallback=null;
  const attempt=async backend=>{
   const classifications=[],provenance=residualBackendProvenance(backend);
@@ -41,7 +47,8 @@ export async function runResidualRecognitionJob({input,plan,variant,client,prefe
  let nativeResult=null,nativeError=null,nativeRequest=null,nativeRequestSequence;
  try{
   if(typeof client.nativeBodySupport!=='function')throw Error('Automatic native body worker unavailable');
-  nativeRequest=structuredClone(nativeBodyRequestPayload({videoEvidence:input.videoEvidence,backgroundEvidence:input.backgroundEvidence,nativeVideo:input.nativeVideo,nativeComparison:input.nativeComparison,regions:input.regionIds.map(id=>input.regions.find(region=>region.id===id)),candidates:plan.models,variant,appearancePoseHints:{romSHA256:input.backgroundEvidence.romSHA256,frame:input.videoEvidence,regions:appearance.sightings.map(s=>({regionId:s.originalProposalId,candidates:(s.classificationEvidence?.[0]?.rankings??[]).map(r=>({modelId:r.modelId,bestPose:r.bestPose}))}))}}));
+  if(nativeBackgroundCaptureError)throw nativeBackgroundCaptureError;
+  nativeRequest=structuredClone(nativeBodyRequestPayload({videoEvidence:input.videoEvidence,backgroundEvidence:nativeBackgroundEvidence,nativeVideo:input.nativeVideo,nativeComparison:input.nativeComparison,regions:input.regionIds.map(id=>input.regions.find(region=>region.id===id)),candidates:plan.models,variant,appearancePoseHints:{romSHA256:input.backgroundEvidence.romSHA256,frame:input.videoEvidence,regions:appearance.sightings.map(s=>({regionId:s.originalProposalId,candidates:(s.classificationEvidence?.[0]?.rankings??[]).map(r=>({modelId:r.modelId,bestPose:r.bestPose}))}))}}));
   const pending=client.nativeBodySupport(nativeRequest,input.onProgress,{assertCurrent:check});nativeRequestSequence=client.sequence;nativeResult=await pending;check();
  }catch(error){check();if(error?.name==='AbortError')throw error;nativeError=error;}
  check();

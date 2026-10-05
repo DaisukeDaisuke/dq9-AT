@@ -1,4 +1,4 @@
-import {attachNativeBodySupport} from '../monster-native-support.mjs?v=native-preparation-20261006-0422';
+import {attachNativeBodySupport} from '../monster-native-support.mjs?v=emitted-continuation-20261006-0545';
 
 // Cooperative work budget for the entire frozen set, including preparation.
 // Synchronous source work cannot be preempted, so this is not a hard elapsed-
@@ -41,7 +41,7 @@ export function attachResidualNativeSupport(appearance,{input,result=null,error=
  let expected=[],setupError=null;
  try{expected=groupsFromBackground(input);}catch(e){setupError=e.message;}
  const valid=result?.kind==='automatic-source-native-body-support'&&Array.isArray(result.regions);
- const progress=result?.continuation,workProgress=progress?.kind==='same-frozen-native-job'?{slice:progress.slice,totalAttempts:progress.totalAttempts,totalPreparationSteps:progress.totalPreparationSteps??0,preparationPending:progress.preparationPending===true,pairsWithFirstOutcome:progress.firstSweepServed,totalPairs:progress.jobsTotal,firstSweepComplete:progress.firstSweepComplete===true,hasUntestedPoseDomain:progress.hasMore===true,poseAndCameraCoverageComplete:false}:null;
+ const progress=result?.continuation,workProgress=progress?.kind==='same-frozen-native-job'?{slice:progress.slice,totalAttempts:progress.totalAttempts,totalPreparationSteps:progress.totalPreparationSteps??0,preparationPending:progress.preparationPending===true,...(progress.laterPlacementPhase==='source-native-emitted-envelope-v1'?{laterPlacementPhase:progress.laterPlacementPhase,totalCompletedVisits:progress.totalCompletedVisits,totalEmittedPlacementSteps:progress.totalEmittedPlacementSteps}:{}),pairsWithFirstOutcome:progress.firstSweepServed,totalPairs:progress.jobsTotal,firstSweepComplete:progress.firstSweepComplete===true,hasUntestedPoseDomain:progress.hasMore===true,poseAndCameraCoverageComplete:false}:null;
  const reason=failure??setupError??(valid?'Native body candidate/branch not evaluated':'Automatic source-native body result unavailable');
  const supportByRegion=new Map();
  for(const regionId of input.regionIds){

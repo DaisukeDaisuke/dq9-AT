@@ -1,5 +1,5 @@
 import {nativeBodyRequestPayload} from './native-body-request.mjs?v=destination-reuse-20261006-0501';
-import {RESIDUAL_NATIVE_BODY_BUDGET,RESIDUAL_NATIVE_BODY_OPTIONAL_WAIT_MS} from './residual-native-support.mjs?v=native-preparation-20261006-0422';
+import {RESIDUAL_NATIVE_BODY_BUDGET,RESIDUAL_NATIVE_BODY_OPTIONAL_WAIT_MS} from './residual-native-support.mjs?v=emitted-continuation-20261006-0545';
 // First-sweep progress is work coverage, never a recognition/pose certificate.
 const continuationProgress=result=>{
  const value=result?.continuation;
@@ -7,9 +7,11 @@ const continuationProgress=result=>{
  if(!['firstSweepServed','jobsTotal','slice','totalAttempts'].every(key=>Number.isSafeInteger(value[key])&&value[key]>=0))return null;
  if(value.firstSweepServed>value.jobsTotal||typeof value.firstSweepComplete!=='boolean'||typeof value.hasMore!=='boolean')return null;
  const totalPreparationSteps=value.totalPreparationSteps??0;if(!Number.isSafeInteger(totalPreparationSteps)||totalPreparationSteps<0||value.preparationPending!==undefined&&typeof value.preparationPending!=='boolean')return null;
- return{...value,totalPreparationSteps,preparationPending:value.preparationPending===true};
+ const laterPlacementPhase=value.laterPlacementPhase==='source-native-emitted-envelope-v1',totalCompletedVisits=value.totalCompletedVisits??0,totalEmittedPlacementSteps=value.totalEmittedPlacementSteps??0;if(![totalCompletedVisits,totalEmittedPlacementSteps].every(n=>Number.isSafeInteger(n)&&n>=0))return null;
+ return{...value,totalPreparationSteps,totalCompletedVisits,totalEmittedPlacementSteps,laterPlacementPhase,preparationPending:value.preparationPending===true};
 };
-const needsNativeContinuation=p=>p&&p.firstSweepComplete===false&&p.hasMore===true&&p.firstSweepServed<p.jobsTotal;
+const needsNativeContinuation=p=>p&&p.hasMore===true&&(p.firstSweepComplete===false&&p.firstSweepServed<p.jobsTotal||p.firstSweepComplete===true&&p.laterPlacementPhase);
+const madeNativeProgress=(next,previous)=>next.firstSweepServed>previous.firstSweepServed||next.totalPreparationSteps>previous.totalPreparationSteps||next.laterPlacementPhase&&(next.totalCompletedVisits>previous.totalCompletedVisits||next.totalEmittedPlacementSteps>previous.totalEmittedPlacementSteps)||!next.laterPlacementPhase&&!next.preparationPending&&next.totalAttempts>previous.totalAttempts;
 const continuationAbort=()=>new DOMException('保持フレームの身体比較を中止しました','AbortError');
 // One ROM worker owns both its appearance cache and optional source preparations.
 export class ResidualRecognitionClient{
@@ -39,7 +41,7 @@ export class ResidualRecognitionClient{
     state.check();if(this.pending){this.stopNativeContinuation(state);return;}
     const result=await this.nativeBodySupport({...state.request,continuationToken:state.progress.token},state.onProgress,{assertCurrent:state.check,nativeContinuation:state});
     state.check();const next=continuationProgress(result),previous=state.progress;
-    if(!next||next.token!==previous.token||next.jobsTotal!==previous.jobsTotal||next.slice<=previous.slice||next.firstSweepServed<previous.firstSweepServed||next.totalAttempts<previous.totalAttempts||next.totalPreparationSteps<previous.totalPreparationSteps||!(next.firstSweepServed>previous.firstSweepServed||next.totalPreparationSteps>previous.totalPreparationSteps||!next.preparationPending&&next.totalAttempts>previous.totalAttempts)){this.stopNativeContinuation(state);return;}
+    if(!next||next.token!==previous.token||next.jobsTotal!==previous.jobsTotal||next.slice<=previous.slice||next.firstSweepServed<previous.firstSweepServed||next.totalAttempts<previous.totalAttempts||next.totalPreparationSteps<previous.totalPreparationSteps||next.totalCompletedVisits<previous.totalCompletedVisits||next.totalEmittedPlacementSteps<previous.totalEmittedPlacementSteps||next.laterPlacementPhase!==previous.laterPlacementPhase||!(madeNativeProgress(next,previous)||!next.hasMore&&previous.hasMore)){this.stopNativeContinuation(state);return;}
     state.progress=next;state.onResult(result);state.check();
     if(needsNativeContinuation(next))this.queueNativeContinuation(state);else this.stopNativeContinuation(state);
    }catch{this.stopNativeContinuation(state);}
@@ -85,7 +87,7 @@ export class ResidualRecognitionClient{
  async load(rom,sha){
   this.stopNativeContinuation();
   if(this.romSHA===sha&&this.catalog&&this.worker)return this.catalog;
-  this.release();const worker=new Worker(new URL('../monster-recognition-worker.mjs?v=destination-reuse-20261006-0501',import.meta.url),{type:'module'});this.worker=worker;this.epoch++;
+  this.release();const worker=new Worker(new URL('../monster-recognition-worker.mjs?v=emitted-continuation-20261006-0545',import.meta.url),{type:'module'});this.worker=worker;this.epoch++;
   worker.onmessage=({data:m})=>{
    if(this.worker!==worker)return;
    if(m.romEpoch===this.epoch&&['cancelled','error','result'].includes(m.type))this.clearNativeDeadline(m.id);
