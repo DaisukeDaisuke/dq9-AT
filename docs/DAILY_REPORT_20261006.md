@@ -146,3 +146,14 @@ ROM・SAV・RAM・動画・抽出ゲーム資産はGitに含めていない。�
 - 放棄したiteratorは明示的にcloseする。実4205.700→4205.733の切替後、後者の全初回結果が独立fresh serviceと一致した。
 - 親の統合版でも、実保存画素とROMを実client idle schedulerへ渡して4呼出しで65対の初回結果へ到達。約1505/1504/1511/1308ms、準備step5272→13324→14374、結果2→2→28→65。各partialの旧外観・fit・AT情報は同一、取消し0、worker/catalogを維持。これはNodeのworker-message adapter実行で、ブラウザ応答時間の保証ではない。
 - 修正版の公開ブラウザ確認はこれから。背景ですでに計算した同一planeの再利用は別の検証中変更であり、この修正にはまだ含めていない。
+
+## 05:16 JST — 同じ背景の二重構成を省略し、符号付きscanlineを修正
+
+- 最終CPU背景描画で得た霧適用前の色・depth・polygon ID等を、その同じ固定frameのnative身体合成へ渡す経路を追加。ROM、地図、camera、alignment、環境、maskと実payloadの一致を検査する。通常の表示・保存には小さな参照だけを残す。新しい要求で古い参照を破棄し、欠落・破損・期限切れ・GPU経路では従来の再開可能なsource再構成へ戻す。
+- 実F04の4205.700→4205.733保存入力を統合後のNodeで測定。保持・投影・clone・fingerprint・検証等の追加費用は約150/136ms、回避する重複再構成は約2503/2150ms。同じdestinationの全データと身体raster/state/fitは一致。これはブラウザの再生速度や通信時間の実測ではない。
+- 別の補助保持処理が失敗しても既存の背景RGBA/depthを変更しないこと、異なるframeや古い進行中処理のpayloadを採用しないことも確認。従来の準備slice・取消し処理を保持。
+- nativeの符号付きrasterWidthが負になる行を、ポリゴン全体の失敗にしていた処理を修正。元C++同様、その行のpixel loopは0回で後続行へ進む。GPU用packingでは非正の幅だけを除外し、uint32へのwrapを防ぐ。
+- 保存済み身体出力1693件は不変、従来negative-spanで失敗した69件がscore可能になった。対象reference poseのgainは依然負で、種類を確定・排除しない。元の3個のincoming fragmentはalpha0であり、可視身体3pixelの回復とは呼ばない。共有背景のF04、S04の6出力、他3マップ、および7GPU packing出力の既存成功値も不変。統合後のsynthetic98条件を通過。WebGPU実行は未検証。
+- 直前9232e840のPages公開はGitHubのInternal server errorとhosted runner割当失敗で、build step開始前に終了した。公開ブラウザは3934c859のまま。この実装変更で通常の公開を再試行する。公開後の実動画確認はまだ未実施。
+
+全マップでの身体・種類識別、全姿勢の処理、動画と霧/ATの同期、再生中の十分な観測頻度は未完成。元の固定入力・失敗・旧評価は維持している。

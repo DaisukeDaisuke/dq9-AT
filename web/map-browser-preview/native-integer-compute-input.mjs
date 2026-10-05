@@ -2,9 +2,9 @@
  * DeSmuME535f676 integer attribute preparation. Existing source clip/edge
  * functions are reused; packed pixel work is consumed by WebGPU without floats.
  */
-import{clipNativePositionPolygon}from'./integer/native-position-clip.mjs?v=source-scene-20261006-0040';
-import{prepareBinaryNativeZScanlines,prepareTexturedTranslucentNativeZScanlines}from'./integer/native-polygon-depth.mjs?v=source-scene-20261006-0040';
-import{nativeOpaqueSortBounds,compareNativeOpaqueOrder}from'./integer/static-opaque-depth.mjs?v=source-scene-20261006-0040';
+import{clipNativePositionPolygon}from'./integer/native-position-clip.mjs?v=destination-reuse-20261006-0501';
+import{prepareBinaryNativeZScanlines,prepareTexturedTranslucentNativeZScanlines}from'./integer/native-polygon-depth.mjs?v=destination-reuse-20261006-0501';
+import{nativeOpaqueSortBounds,compareNativeOpaqueOrder}from'./integer/static-opaque-depth.mjs?v=destination-reuse-20261006-0501';
 import{buildFogTable,rgb555To6665}from'./native/fog-raster.mjs';
 const need=(x,m)=>{if(!x)throw Error(m);},i64=x=>{need(x>=-(1n<<63n)&&x<(1n<<63n),'Active signed64 interpolation overflow');return x;};
 const pack=v=>(v[0]|v[1]<<8|v[2]<<16|v[3]<<24)>>>0;
@@ -36,7 +36,9 @@ export function prepareNativeIntegerCompute(inventory,translucent,controls,fogPa
   const entry={index:p.index,translucent:p.gpuTranslucent,clipDiscarded:clip.discarded,rows:0};ledger.push(entry);if(clip.discarded)continue;
   const geometry=(p.gpuTranslucent?prepareTexturedTranslucentNativeZScanlines:prepareBinaryNativeZScanlines)({...args,textureFormat:t.format,textureBinaryAlpha:true,clipVerticesFx:clip.positionsFx});need(geometry.ready,geometry.reason);entry.culled=geometry.culled;entry.nativeEdgeSetupAbort=geometry.nativeEdgeSetupAbort??null;
   const attributes=clip.vertices.map(v=>{const w=BigInt(v.positionFx[3]);need(w>0n,'Positive perspective W required');return[(1n<<44n)/w,...uvs.get(v.id).map(u=>i64(BigInt(u)*(1n<<40n))/w),...rgb.get(v.id).map(c=>i64(BigInt(c)*(1n<<44n))/w)];});
-  for(const row of geometry.scanlines){const width=row.xEndExclusive-row.xStart;if(!width)continue;const values=new Uint32Array(40);values.set([Number(p.gpuTranslucent),p.index,attr,textureOffset,t.width,t.height,t.wrapMode,row.xStart,width,row.y,Number(geometry.facing>=0n),0]);put64(values,12,row.left.z);put64(values,14,row.zStep);i64(row.left.z+row.zStep*BigInt(width));
+  // Pack only rows that execute the source signed rasterWidth pixel loop.
+  // A negative diagnostic row must not wrap into a uint32 GPU work count.
+  for(const row of geometry.scanlines){const width=row.xEndExclusive-row.xStart;if(width<=0)continue;const values=new Uint32Array(40);values.set([Number(p.gpuTranslucent),p.index,attr,textureOffset,t.width,t.height,t.wrapMode,row.xStart,width,row.y,Number(geometry.facing>=0n),0]);put64(values,12,row.left.z);put64(values,14,row.zStep);i64(row.left.z+row.zStep*BigInt(width));
    for(let c=0;c<6;c++){const v=attributes.map(a=>a[c]),current=edgeValue(row.left,geometry.transformed,v),delta=(edgeValue(row.right,geometry.transformed,v)-current)/BigInt(width);i64(current+delta*BigInt(width));if(c===0)need(current>0n&&current+delta*BigInt(width-1)>0n,'Positive active inverse W required');put64(values,16+c*4,current);put64(values,18+c*4,delta);}
    rows.push(values);entry.rows++;for(let x=row.xStart;x<row.xEndExclusive;x++)counts[row.y*256+x]++;
   }

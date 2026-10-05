@@ -2,8 +2,8 @@
 import{readMonsterAssets}from'./monster-assets.mjs';
 import{readNSBCA}from'./monster-animation.mjs';
 import{readSdkInitialMaterialGlobals}from'./map-browser-preview/rom-sdk-initial-material.mjs';
-import{readInitialMode1RasterProfile}from'./map-browser-preview/integer/initial-mode1-integer-preview.mjs?v=native-body-20261006-0212';
-import{prepareNativeBodyProgram,projectNativeBodyPolygons,rasterNativeBody}from'./monster-native-body.mjs?v=native-continuation-20261006-0333';
+import{readInitialMode1RasterProfile}from'./map-browser-preview/integer/initial-mode1-integer-preview.mjs?v=destination-reuse-20261006-0501';
+import{prepareNativeBodyProgram,projectNativeBodyPolygons,rasterNativeBody}from'./monster-native-body.mjs?v=destination-reuse-20261006-0501';
 import{createNativeBodyBillboardState}from'./monster-native-billboard.mjs?v=native-body-20261006-0212';
 import{bindFrozenBodyProjection}from'./monster-perspective-input.mjs?v=native-body-20261006-0212';
 import{comparePerspectiveBody}from'./monster-perspective-body.mjs?v=native-body-20261006-0212';

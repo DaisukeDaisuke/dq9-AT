@@ -1,10 +1,10 @@
 import{createAmbiguousMarkerBackgroundBudget}from'./physical-marker-background-hypotheses.mjs?v=native-continuation-20261006-0333';
-import{buildBackgroundBranchSupport}from'./background-branch-support.mjs?v=scene-fog-unknown-20261006-0054';
-import{createSourceAnchorSceneInference}from'./source-anchor-scene-inference.mjs?v=native-body-20261006-0212';
+import{buildBackgroundBranchSupport}from'./background-branch-support.mjs?v=destination-reuse-20261006-0501';
+import{createSourceAnchorSceneInference}from'./source-anchor-scene-inference.mjs?v=destination-reuse-20261006-0501';
 import{resolveFrozenInferencePixels}from'./capture-analysis-pixels.mjs?v=native-continuation-20261006-0333';
-import{createMode1BackgroundInference}from'./automatic-mode1-background.mjs?v=native-body-20261006-0212';
-import {Mode2VideoContinuity} from './mode2-video-continuity.mjs?v=native-preparation-20261006-0422';
-import {inferAutomaticMode2Background} from './automatic-mode2-background.mjs?v=native-preparation-20261006-0422';
+import{createMode1BackgroundInference}from'./automatic-mode1-background.mjs?v=destination-reuse-20261006-0501';
+import {Mode2VideoContinuity} from './mode2-video-continuity.mjs?v=destination-reuse-20261006-0501';
+import {inferAutomaticMode2Background} from './automatic-mode2-background.mjs?v=destination-reuse-20261006-0501';
 import {readRomMapCameraInputGate} from './rom-camera-input-gate.mjs';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
 import {CandidateMapMatcher} from '../map-disambiguation.mjs';
@@ -14,7 +14,7 @@ import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=na
 import {automaticPreviewCamera} from './automatic-preview-camera.mjs';
 import {automaticBillboardScenes} from './automatic-billboard-scene.mjs';
 import {applyAutomaticMaterialEnvironment} from './automatic-material-environment.mjs?v=native-body-20261006-0212';
-import {createAutomaticBackgroundRenderer} from './automatic-background-renderer.mjs?v=native-body-20261006-0212';
+import {createAutomaticBackgroundRenderer} from './automatic-background-renderer.mjs?v=destination-reuse-20261006-0501';
 import {readRomMapScreenEffectPlan} from './rom-map-screen-effect-plan.mjs';
 import {prepareDrawPackets} from './draw-packets.mjs';
 import {rasterizePreviewPackets} from './cpu-preview.mjs';

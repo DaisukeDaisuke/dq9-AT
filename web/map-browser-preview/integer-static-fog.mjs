@@ -7,11 +7,11 @@ import {readInitialMseLayers,buildMsePolygonInputs} from './native-mse-initial-p
  * DeSmuME535f676-derived modules retain their notices; see INTEGER_RENDER_NOTICE.md.
  * No previewDepth/RGBA8888 is converted into native raster input.
  */
-import {readInitialMode1RasterProfile,renderInitialMode1IntegerPreviewSteps} from './integer/initial-mode1-integer-preview.mjs?v=native-body-20261006-0212';
-import {readInitialTexturedBlendProfile,collectInitialMode1TexturedTranslucentInputs,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb} from './integer/native-textured-translucent.mjs?v=native-body-20261006-0212';
+import {readInitialMode1RasterProfile,renderInitialMode1IntegerPreviewSteps} from './integer/initial-mode1-integer-preview.mjs?v=destination-reuse-20261006-0501';
+import {readInitialTexturedBlendProfile,collectInitialMode1TexturedTranslucentInputs,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb} from './integer/native-textured-translucent.mjs?v=destination-reuse-20261006-0501';
 import {projectNativePrimitiveFx} from './integer/native-primitive-inputs.mjs';
-import {clipNativePositionPolygon} from './integer/native-position-clip.mjs?v=source-scene-20261006-0040';
-import {presentStaticRgb} from './integer/static-mode0-rgb.mjs?v=native-body-20261006-0212';
+import {clipNativePositionPolygon} from './integer/native-position-clip.mjs?v=destination-reuse-20261006-0501';
+import {presentStaticRgb} from './integer/static-mode0-rgb.mjs?v=destination-reuse-20261006-0501';
 import {buildFogTable,applyFogPixel} from './native/fog-raster.mjs';
 import {readInitialMode1ClearProfile} from './integer/native-initial-clear.mjs?v=native-body-20261006-0212';
 

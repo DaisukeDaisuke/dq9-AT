@@ -5,9 +5,9 @@
  */
 import {readNativeModelInfo} from '../native/native-model-info.mjs';
 import {readNativeShapes,decodePackedGx,decodeLocalVertices} from '../native/native-sbc-gx.mjs';
-import {clipNativePositionPolygon} from './native-position-clip.mjs?v=source-scene-20261006-0040';
-import {rasterizeBinaryCoverageNativeZPolygon} from './native-polygon-depth.mjs?v=source-scene-20261006-0040';
-import {nativeOpaqueSortBounds,compareNativeOpaqueOrder,testNativeOpaqueDepth} from './static-opaque-depth.mjs?v=source-scene-20261006-0040';
+import {clipNativePositionPolygon} from './native-position-clip.mjs?v=destination-reuse-20261006-0501';
+import {rasterizeBinaryCoverageNativeZPolygon} from './native-polygon-depth.mjs?v=destination-reuse-20261006-0501';
+import {nativeOpaqueSortBounds,compareNativeOpaqueOrder,testNativeOpaqueDepth} from './static-opaque-depth.mjs?v=destination-reuse-20261006-0501';
 const S=65536n;
 const i64=x=>{if(x<-(1n<<63n)||x>=(1n<<63n))throw Error('Native UV signed64 overflow outside connected scope');return x;};
 const s32=x=>{if(x< -2147483648n||x>2147483647n)throw Error('Native UV signed32 overflow outside connected scope');return Number(x);};

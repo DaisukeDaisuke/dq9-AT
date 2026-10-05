@@ -3,7 +3,7 @@
  */
 import {automaticBillboardScenes} from './automatic-billboard-scene.mjs';
 import {applyAutomaticMaterialEnvironment} from './automatic-material-environment.mjs?v=native-body-20261006-0212';
-import {prepareInitialMode1IntegerCompute} from './prepare-initial-integer-compute.mjs?v=native-body-20261006-0212';
+import {prepareInitialMode1IntegerCompute} from './prepare-initial-integer-compute.mjs?v=destination-reuse-20261006-0501';
 import {createSourcePreparationCache} from './integer/source-preparation-cache.mjs';
 
 export function automaticGpuBinding(result, frameEvidence) {

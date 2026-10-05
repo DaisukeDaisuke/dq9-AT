@@ -116,13 +116,16 @@ function rasterizeNativeZPolygon({clipVerticesFx,polygonAttribute,viewportWord,d
   const count=Math.min(left.height,right.height);result.edgeRuns.push({left:edgeState(left),right:edgeState(right),scanlineCount:count});
   for(let row=0;row<count;row++){
    if(left.y!==right.y)throw Error('Native edge Y mismatch');
-   const width=right.x-left.x;if(width<0n)throw Error('Negative native span outside convex polygon path');
+   // _drawscanline keeps rasterWidth signed. Its while (rasterWidth-- > 0)
+   // emits no samples for a negative row, but _runscanlines still steps both
+   // edges and later positive rows of this same polygon remain drawable.
+   const width=right.x-left.x;
    const rowInfo={y:left.y,xStart:Number(left.x),xEndExclusive:Number(right.x),left:edgeState(left),right:edgeState(right),fragmentCount:0};
    result.scanlines.push(rowInfo);
    if(width!==0n){
     if(left.y<0||left.y>=192||left.x<0n||right.x>256n)throw Error('Unexpected out-of-frame span in unclipped native path');
     const dz=(right.z-left.z)/width;let z=left.z;rowInfo.zStep=dz;
-    if(scanlinesOnly){
+    if(scanlinesOnly&&width>0n){
      // Linear integer Z stays in signed64 iff its two endpoint extrema do.
      // Include the final increment because the CPU loop checks that too.
      i64(z+dz*width);const last=i64(z+dz*(width-1n));i64(z);

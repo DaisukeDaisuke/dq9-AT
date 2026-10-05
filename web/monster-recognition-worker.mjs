@@ -5,7 +5,7 @@ import {createDinoFeatureBackend} from './monster-dinov2.mjs?v=recognition-cache
 import {createFeatureBankStore} from './monster-feature-cache.mjs';
 import {recognizeROI,supplementEnemyROIs,prepareDinoPoseBank,createRenderedReferenceCache} from './monster-recognition-engine.mjs?v=forward-map-20261005-1138';
 let state=null,epoch=0,active=null,nativeBodyModulePromise=null;
-const loadNativeBodyModule=()=>nativeBodyModulePromise??=import('./monster-native-auto-support.mjs?v=native-preparation-20261006-0422').catch(error=>{nativeBodyModulePromise=null;throw error;});
+const loadNativeBodyModule=()=>nativeBodyModulePromise??=import('./monster-native-auto-support.mjs?v=destination-reuse-20261006-0501').catch(error=>{nativeBodyModulePromise=null;throw error;});
 const post=message=>self.postMessage(message);
 self.onmessage=async({data:m})=>{
  if(!m||!['load','recognize','supplement','prepare','native-body-support','cancel'].includes(m.type))return;

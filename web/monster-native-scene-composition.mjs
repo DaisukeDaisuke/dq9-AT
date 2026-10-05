@@ -3,11 +3,11 @@
  * alphaBlend and fog postprocess. Conditional source scene/body composition.
  * No reconstruction from final RGB; no live actor, MSE or ordering assertion.
  */
-import {compositeBinaryAwareDepth} from './map-browser-preview/integer/native-binary-alpha.mjs';
+import {compositeBinaryAwareDepth} from './map-browser-preview/integer/native-binary-alpha.mjs?v=destination-reuse-20261006-0501';
 import {applyFogPixel} from './map-browser-preview/native/fog-raster.mjs';
-import {presentStaticRgb} from './map-browser-preview/integer/static-mode0-rgb.mjs';
+import {presentStaticRgb} from './map-browser-preview/integer/static-mode0-rgb.mjs?v=destination-reuse-20261006-0501';
 import {projectNativePrimitiveFx} from './map-browser-preview/integer/native-primitive-inputs.mjs';
-import {clipNativePositionPolygon} from './map-browser-preview/integer/native-position-clip.mjs';
+import {clipNativePositionPolygon} from './map-browser-preview/integer/native-position-clip.mjs?v=destination-reuse-20261006-0501';
 const N=256*192,need=(ok,why)=>{if(!ok)throw Error(why);};
 
 /** Keep source opaque framebuffer state BEFORE map translucency/fog. A map

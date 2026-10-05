@@ -6,16 +6,16 @@ import{createSourcePreparationCache}from'./integer/source-preparation-cache.mjs'
  * Source geometry/material preparation only. No CPU pixel render is required
  * before GPU submission. Existing ROM profiles and rejection ledgers remain.
  */
-import{readInitialMode1RasterProfile,collectInitialMode1IntegerInputs}from'./integer/initial-mode1-integer-preview.mjs?v=native-body-20261006-0212';
-import{collectStaticOpaqueDepthInputs}from'./integer/static-opaque-depth.mjs?v=source-scene-20261006-0040';
-import{classifyStaticBinaryDepthInputs}from'./integer/static-binary-depth.mjs?v=native-body-20261006-0212';
-import{collectStaticMode0ColorInputs}from'./integer/static-mode0-rgb.mjs?v=native-body-20261006-0212';
-import{collectInitialMode1TexturedTranslucentInputs,collectInitialMode2TexturedTranslucentInputs,readInitialTexturedBlendProfile}from'./integer/native-textured-translucent.mjs?v=native-body-20261006-0212';
+import{readInitialMode1RasterProfile,collectInitialMode1IntegerInputs}from'./integer/initial-mode1-integer-preview.mjs?v=destination-reuse-20261006-0501';
+import{collectStaticOpaqueDepthInputs}from'./integer/static-opaque-depth.mjs?v=destination-reuse-20261006-0501';
+import{classifyStaticBinaryDepthInputs}from'./integer/static-binary-depth.mjs?v=destination-reuse-20261006-0501';
+import{collectStaticMode0ColorInputs}from'./integer/static-mode0-rgb.mjs?v=destination-reuse-20261006-0501';
+import{collectInitialMode1TexturedTranslucentInputs,collectInitialMode2TexturedTranslucentInputs,readInitialTexturedBlendProfile}from'./integer/native-textured-translucent.mjs?v=destination-reuse-20261006-0501';
 import{automaticBillboardScenes}from'./automatic-billboard-scene.mjs';
 import{buildAutomaticNormalMatrices,applyMode2ToAutomaticScenes}from'./integer/mode2-lighting-adapter.mjs?v=field-stream-20261005-1108';
 import{projectNativePrimitiveFx}from'./integer/native-primitive-inputs.mjs';
-import{clipNativePositionPolygon}from'./integer/native-position-clip.mjs?v=source-scene-20261006-0040';
-import{prepareNativeIntegerCompute}from'./native-integer-compute-input.mjs?v=source-scene-20261006-0040';
+import{clipNativePositionPolygon}from'./integer/native-position-clip.mjs?v=destination-reuse-20261006-0501';
+import{prepareNativeIntegerCompute}from'./native-integer-compute-input.mjs?v=destination-reuse-20261006-0501';
 const need=(x,m)=>{if(!x)throw Error(m);};
 function completeVisibleInventory(inventory,translucent){
  need(inventory.unresolved.every(x=>typeof x.reason==='string'&&x.reason.startsWith('name-char3-A / ')),'Unresolved source drawable instance');

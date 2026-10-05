@@ -1,8 +1,9 @@
+import {adoptNativeBodyDestinationHandoff} from './map-browser-preview/native-body-destination-handoff.mjs?v=destination-reuse-20261006-0501';
 // Frame-local lazy source destination reconstruction. No final-RGB inversion,
 // transport parameters, camera search, state search or persistent pixel cache.
 import {loadAutomaticScene} from './map-browser-preview/automatic-scene.mjs';
-import {prepareMode2InverseModel,renderMode2InverseSourceSteps} from './map-browser-preview/mode2-inverse-render.mjs?v=native-preparation-20261006-0422';
-import {bindNativeBodyDestination} from './monster-native-scene-composition.mjs?v=native-continuation-20261006-0333';
+import {prepareMode2InverseModel,renderMode2InverseSourceSteps} from './map-browser-preview/mode2-inverse-render.mjs?v=destination-reuse-20261006-0501';
+import {bindNativeBodyDestination} from './monster-native-scene-composition.mjs?v=destination-reuse-20261006-0501';
 const need=(v,m)=>{if(!v)throw Error(m);};
 const task=()=>globalThis.scheduler?.yield?globalThis.scheduler.yield():new Promise(resolve=>setTimeout(resolve,0));
 /** Advance only this provider's frozen source image. A budget yield is pending,
@@ -10,7 +11,8 @@ const task=()=>globalThis.scheduler?.yield?globalThis.scheduler.yield():new Prom
  * load/model/bind and an individual generator.next() remain indivisible and
  * are timed through onSegment. Their wall time is not a hard slice bound. */
 export function createNativeBodyDestinationProvider({project,rom,record,branch,frame,assertCurrent=()=>{}}){
- frame=structuredClone(frame);branch={recordKey:branch.recordKey,viewFx:branch.viewFx.slice(),projectionFx:branch.projectionFx.slice(),alignment:{...branch.alignment},sourceEnvironment:structuredClone(branch.sourceEnvironment),backgroundRGBA:branch.backgroundRGBA.slice(),validMask:branch.validMask.slice()};
+ let reuseEnvelope=branch.nativeBodyDestinationReuse?structuredClone(branch.nativeBodyDestinationReuse):null;
+ frame=structuredClone(frame);branch={branchId:branch.branchId,recordKey:branch.recordKey,viewFx:branch.viewFx.slice(),projectionFx:branch.projectionFx.slice(),alignment:{...branch.alignment},sourceEnvironment:structuredClone(branch.sourceEnvironment),backgroundRGBA:branch.backgroundRGBA.slice(),validMask:branch.validMask.slice()};
  const camera={viewFx:branch.viewFx,projectionFx:branch.projectionFx};
  let state=null,advancing=false,disposed=false;
  const clear=()=>{try{state?.steps?.return?.();}finally{state=null;}};
@@ -38,7 +40,11 @@ export function createNativeBodyDestinationProvider({project,rom,record,branch,f
     if(phase==='validate'){
      need(branch.sourceEnvironment?.mode2Inputs&&branch.sourceEnvironment.fogApplied===true,'Source scene destination currently admits explicit frozen mode2 only; retained mode1/MSE alternatives remain unknown');
      need(frame.recordKey===record.key&&branch.recordKey===record.key,'Source scene destination record differs');
-     state.phase='load-automatic-scene';
+     state.phase=reuseEnvelope?'adopt-background-handoff':'load-automatic-scene';
+    }else if(phase==='adopt-background-handoff'){
+     const adopted=await adoptNativeBodyDestinationHandoff({envelope:reuseEnvelope,project,rom,record,branch,frame,assertCurrent:check});check();reuseEnvelope=null;
+     if(adopted.ready){state.destination=adopted.destination;state.phase='complete';boundary='validated-background-source-reuse';}
+     else{state.phase='load-automatic-scene';boundary='unverified-handoff-source-reconstruction-fallback';}
     }else if(phase==='load-automatic-scene'){
      state.automatic=loadAutomaticScene(project,record);state.phase='prepare-mode2-model';
     }else if(phase==='prepare-mode2-model'){
@@ -61,11 +67,11 @@ export function createNativeBodyDestinationProvider({project,rom,record,branch,f
     if(now()-sliceStarted>=sliceMilliseconds){await yieldTask();check();sliceStarted=now();}
    }
   }catch(error){
-   if(error.name==='AbortError')clear();
+   if(error.name==='AbortError'){reuseEnvelope=null;clear();}
    else if(state){state.steps?.return?.();state.steps=null;state.error=error;}
    throw error;
   }finally{advancing=false;}
  };
- advance.dispose=()=>{disposed=true;clear();};
+ advance.dispose=()=>{disposed=true;reuseEnvelope=null;clear();};
  return advance;
 }

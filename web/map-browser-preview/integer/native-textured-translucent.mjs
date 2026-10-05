@@ -14,11 +14,11 @@ import{unpackNativeTexture}from'../native/native-texture-unpack.mjs';
 import{readNativeModelInfo}from'../native/native-model-info.mjs';
 import{readNativeShapes,decodePackedGx,decodeLocalVertices}from'../native/native-sbc-gx.mjs';
 import{projectNativePrimitiveFx}from'./native-primitive-inputs.mjs';
-import{clipNativePositionPolygon}from'./native-position-clip.mjs?v=source-scene-20261006-0040';
-import{rasterizeTexturedTranslucentCoverageNativeZPolygon}from'./native-polygon-depth.mjs?v=source-scene-20261006-0040';
+import{clipNativePositionPolygon}from'./native-position-clip.mjs?v=destination-reuse-20261006-0501';
+import{rasterizeTexturedTranslucentCoverageNativeZPolygon}from'./native-polygon-depth.mjs?v=destination-reuse-20261006-0501';
 const expand5=x=>x===0?0:2*x+1,modulate=(a,b)=>((a+1)*(b+1)-1)>>6;
 const i64=n=>{if(n<-(1n<<63n)||n>=(1n<<63n))throw Error('Active signed64 interpolant overflow unsupported');return n;};
-export {readInitialMode1BlendProfile as readInitialTexturedBlendProfile} from './native-mode0-translucent.mjs?v=source-scene-20261006-0040';
+export {readInitialMode1BlendProfile as readInitialTexturedBlendProfile} from './native-mode0-translucent.mjs?v=destination-reuse-20261006-0501';
 
 function resource(project,p,e){
  let bytes;if(e.kind==='embedded-model')bytes=project.archive(p.archive).get(p.model);else if(e.kind==='ambl-member'){
