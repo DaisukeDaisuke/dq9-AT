@@ -1,4 +1,6 @@
 // Prepared renderer packets. Requires caller's actual native material globals.
+import {buildNativeTextureMatrix3,transformExplicitTextureCoordinate} from './native/native-texture-matrix.mjs';
+import {NATIVE_MODE0_COLOR_SOURCE} from './native-mode0-color.mjs';
 import {deriveNativeMaterialResult} from './native/native-material.mjs';
 export function prepareDrawPackets(scene,{materialGlobals,masks}){
  if(!materialGlobals||!Array.isArray(masks)||masks.length!==8)throw Error('Native material globals and masks required');
@@ -7,11 +9,14 @@ export function prepareDrawPackets(scene,{materialGlobals,masks}){
   if(!b||b.status==='unsupported'){unsupported.push({...key,reason:b?.reason??'Texture resource not supplied'});continue;}
   try{const material=deriveNativeMaterialResult(b.material,materialGlobals,masks);if(material.hideShapes){hidden.push(key);continue;}
    const parameter=(b.material.textureParameter|(b.texture?.parameter??0))>>>0;
-   if(material.textureSrt)throw Error('Texture matrix not integrated');if(parameter>>>30)throw Error('Nonzero texture-coordinate transform mode not integrated');
-   if(draw.vertices.some(v=>v.normalFx9!==null)&&(material.polygonAttribute&15))throw Error('Native normal/lighting not integrated');
+   let textureMatrix=null;const transformMode=parameter>>>30;
+   if(transformMode===1){if(b.textureMatrixMode!==3)throw Error('Texture matrix convention not integrated: '+b.textureMatrixMode);textureMatrix=buildNativeTextureMatrix3(material);}
+   else if(transformMode!==0)throw Error('Normal/vertex texture-coordinate generation not integrated');
+   if(draw.normalLightingApplied!==true&&draw.vertices.some(v=>v.normalFx9!==null)&&(material.polygonAttribute&15))throw Error('Native normal/lighting not integrated');
    if(b.status==='bound'&&draw.vertices.some(v=>v.texcoord===null))throw Error('Missing explicit UV state');
-   const vertices=draw.indices.flatMap(index=>{const v=draw.vertices[index];if(v.color555===null)throw Error('Missing native color state');return [...v.position,...[0,5,10].map(k=>(v.color555>>k&31)/31),...(v.texcoord??[0,0])];});
-   draws.push({...key,vertices:new Float32Array(vertices),texture:b.status==='bound'?b.decoded:null,sampler:{repeatS:Boolean(parameter&0x10000),repeatT:Boolean(parameter&0x20000),flipS:Boolean(parameter&0x40000),flipT:Boolean(parameter&0x80000)},polygonAttribute:material.polygonAttribute,alpha:(material.polygonAttribute>>>16&31)/31,polygonMode:material.polygonAttribute>>>4&3,scope:'Preview packet, native raster/sampling/blend/depth/fog parity unverified'});
+   const vertices=draw.indices.flatMap(index=>{const v=draw.vertices[index];if(v.color555===null)throw Error('Missing native color state');return [...v.position,...[0,5,10].map(k=>(v.color555>>k&31)/31),...(textureMatrix?transformExplicitTextureCoordinate(v.texcoord,textureMatrix):(v.texcoord??[0,0]))];});
+   const nativeColorEncoding=b.selectionEvidence?.rule==='embedded-model-then-reverse-ambl-first-exact16-per-mapping'&&draw.vertices.every(v=>Number.isInteger(v.color555)&&v.color555>=0&&v.color555<=0x7fff)?{source:NATIVE_MODE0_COLOR_SOURCE,vertex:'rgb555-normalized-f32',texture:b.status==='bound'?'native-unpack-8888':'untextured',textureFormat:b.texture?.format??null}:null;
+   draws.push({...key,nativeColorEncoding,vertices:new Float32Array(vertices),texture:b.status==='bound'?b.decoded:null,sampler:{repeatS:Boolean(parameter&0x10000),repeatT:Boolean(parameter&0x20000),flipS:Boolean(parameter&0x40000),flipT:Boolean(parameter&0x80000)},polygonAttribute:material.polygonAttribute,alpha:(material.polygonAttribute>>>16&31)/31,polygonMode:material.polygonAttribute>>>4&3,scope:'Preview packet, native raster/sampling/blend/depth/fog parity unverified'});
   }catch(e){unsupported.push({...key,reason:e.message});}
  }
  return {draws,unsupported,hidden};

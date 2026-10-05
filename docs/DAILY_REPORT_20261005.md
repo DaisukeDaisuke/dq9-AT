@@ -196,3 +196,9 @@
 - 中心129.996は固定単frameのRGBA/画像tensor/576mask/29fine/CLSvector/全順位/3banktop8とtop2がexact一致。条件付きcoherentは5frameで0/0/1/0/0となり、近隣で支持が安定しない。旧/unionは小UIを通し、body/species/unknown/出生/ATの未解決を維持。全20レビュー画像と941私的fileのhashを保存。
 - GitHubプラグインの再許可後、保留分と動画入口を非公開tools main95e2fc1d840d3610aa9b9065d0590885ecb38970へ通常反映。main refとファイル本文を照合した。先に作成した未所属commitへのリンクはmain反映完了前だったため訂正し、現在はmainが同commitを指す。ROM/SAV/RAM/動画/抽出資産はGitへ入れていない。
 - 私的作業控えは旧全payloadを保持し、動画入口の947追加payloadまでhash/ZIP CRC検証して既存Library項目のversion15へ保存済み。復旧索引の正式原本/モデル依存と併用する控えであり、全実行環境が単一ZIPに入るという意味ではない。
+
+## 09:55 JST — 公開ソースをmainへ統合
+
+- 作業ブランチ25279ae95c3298be12c713d78c460fd8bcbdf4e4のROM-only previewソースをmainへ統合。main側の既存日報を保持し、旧公開待ちの説明とライセンス参照名を更新。
+- 56 JavaScriptファイル構文、46module/108相対importリンク、既存CSV/WASM依存とMapRenderer初期化を確認。機能コードの追加変更なし。ブラウザ操作・全map対応は未検証。
+- 既存Pages workflowによるbuild/deployと公開配信内容の照合は、この記録の作成時点では確認待ち。

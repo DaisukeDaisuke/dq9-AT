@@ -1,3 +1,7 @@
+# Current status — 2026-10-05
+
+The ROM-only UI and source are now integrated into main. See [current scope and verification limits](../../docs/ROM_ONLY_PREVIEW_WIP_20261004.md). The October 3 checkpoint below is retained as historical evidence; its manual-input and unconnected-BB descriptions do not describe the current UI.
+
 # DQ9 map renderer integration checkpoint
 
 2026-10-03 10:43 UTC. Work in progress. This is an emergency source backup, not a completed all-map viewer. Existing production pages are not replaced.

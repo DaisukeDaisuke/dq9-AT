@@ -2,7 +2,7 @@
 // Backward decompression follows NTRGhidra CRT0 (Pedro Javier Fernandez),
 // pinned 9e0674c, Apache-2.0; preserve accompanying NOTICE/LICENSE on distribution.
 const u32=(a,p)=>new DataView(a.buffer,a.byteOffset,a.byteLength).getUint32(p,true);
-function backwards(input){
+export function backwards(input){
  if(input.length<8)throw Error('Short ARM9 compressed footer');
  const footer=u32(input,input.length-8),outLength=input.length+u32(input,input.length-4);
  if(outLength<input.length||outLength>16*1024*1024)throw Error('Unsupported ARM9 expanded size');

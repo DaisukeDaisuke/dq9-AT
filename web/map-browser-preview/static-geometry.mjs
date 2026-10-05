@@ -19,7 +19,7 @@ function triangles(mode,start,count){const out=[],add=(a,b,c)=>out.push(start+a,
  else if(mode===3){if(count%2)throw Error('Incomplete quad strip');for(let i=0;i<count-3;i+=2){add(i,i+1,i+3);add(i,i+3,i+2);}}
  else throw Error('Missing primitive mode');return out;
 }
-export function buildStaticGeometry(bytes,pivotTable,{modelIndex=0,defaultColor555=null}={}){
+export function buildStaticGeometry(bytes,pivotTable,{modelIndex=0,defaultColor555=null,materialColor=null}={}){
  const model=readNativeModelInfo(bytes).models[modelIndex];if(!model)throw Error('Missing model');
  const sbc=decodeNativeSbc(bytes,model);if(sbc.unresolved.length||!sbc.terminated)throw Error('Unresolved SBC');
  const nodes=readNativeNodes(bytes,model,pivotTable),plan=planNativeNodeMatrices(nodes,sbc);if(plan.unresolved.length)throw Error('Unresolved default node plan');
@@ -29,7 +29,7 @@ export function buildStaticGeometry(bytes,pivotTable,{modelIndex=0,defaultColor5
   if(c.opcode===0)continue;if(c.opcode===1)break;
   if(c.opcode===2){visible=c.nodeVisibility.visible;continue;}
   if(c.opcode===3){if(!stack.has(c.matrixRestore))throw Error('Read uninitialized SBC matrix slot');matrix=[...stack.get(c.matrixRestore)];continue;}
-  if(c.opcode===4){material=c.materialIndex;continue;}
+  if(c.opcode===4){material=c.materialIndex;if(materialColor)color=materialColor(material,color);continue;}
   if(c.opcode===6){const d=c.nodeDescription;if(d.flags!==0)throw Error('Unsupported SBC node descriptor flags');if(d.restoreSlot!==null){if(!stack.has(d.restoreSlot))throw Error('Read uninitialized node matrix slot');matrix=[...stack.get(d.restoreSlot)];}
    for(const op of byOffset.get(c.offset).gx)matrix=multiply(matrix,operation(op.opcode,op.signedFx12));if(d.storeSlot!==null)stack.set(d.storeSlot,[...matrix]);continue;}
   if(c.opcode===11){matrix=multiply(matrix,operation(0x1b,nativeSbcPositionScale(model,c.option)));continue;}
