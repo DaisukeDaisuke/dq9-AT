@@ -2,7 +2,7 @@ import {mountResidualInferencePreparation} from './residual-inference-preparatio
 import {createVideoTrackingAT,videoATSearchOptions} from './video-tracking-at.mjs?v=field-stream-20261005-1108';
 import {runResidualRecognitionJob} from './residual-recognition-job.mjs?v=field-stream-20261005-1108';
 import {VideoMapContinuity} from './video-map-continuity.mjs?v=map-coverage-20261005-0931';
-import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=field-stream-20261005-1108';
+import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=video-inference-20261005-1232';
 import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
 import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=forward-map-20261005-1138';
@@ -13,7 +13,7 @@ import {deriveVideoMapNames} from './video-map-name-input.mjs';
 import {MapPositionMatcher} from '../map-position.mjs';
 import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
-import {mountMapVideoComparison} from './map-video-comparison.mjs?v=forward-map-20261005-1138';
+import {mountMapVideoComparison} from './map-video-comparison.mjs?v=video-inference-20261005-1232';
 import {openMapRom} from './static-scene.mjs';
 import {buildRomMapCatalog} from './rom-map-catalog.mjs';
 import {nameCatalogMaps} from './rom-map-names.mjs';
@@ -37,7 +37,7 @@ const trackingAT=createVideoTrackingAT({engineRevision:'sha256:e14f431e81e0441c9
 for(const id of ['video-at-seed','video-at-first','video-at-last'])$(id).addEventListener('input',()=>trackingAT.cancel('AT入力を変更しました。再試行または次の動画観測を待ちます。',{retainObservation:true}));
 $('video-at-retry').onclick=()=>trackingAT.retry();
 const videoComparison=mountMapVideoComparison({onObservationBundle:bundle=>trackingAT.observe(bundle),onObservationReset:reason=>trackingAT.cancel(reason),canAnalyze:()=>loaded,getRomIdentity:()=>romSHA256,getRecognitionContext:()=>({romEpoch:nameRomEpoch,variant:$('residual-model-variant').value,backend:$('residual-inference-backend')?.value??'wasm'}),renderBackground:render,derivePlayerBackground:renderFromMarker,deriveMapBackground:renderFromName,classifyResiduals:classifyBackgroundResiduals,cancelSearch:()=>{version++;$('auto-search-status').textContent='自動探索を中止しました。';},cancelPending:()=>{nameClient.cancel();residualClient.cancel();}});
-function clearView(){automaticMsePhase=null;$('marker-details').textContent='';$('marker-status').textContent='描画入力が変わりました。固定映像の上画面から再計算します。';renderVersion++;videoComparison.invalidate('背景の入力が変わりました。');ctx.clearRect(0,0,256,192);$('draw').disabled=true;point=null;markerInput=null;$('floor').replaceChildren();$('floor').disabled=true;}
+function clearView({comparisonAlreadyCleared=false}={}){automaticMsePhase=null;$('marker-details').textContent='';$('marker-status').textContent='描画入力が変わりました。固定映像の上画面から再計算します。';renderVersion++;if(!comparisonAlreadyCleared)videoComparison.invalidate('背景の入力が変わりました。');ctx.clearRect(0,0,256,192);$('draw').disabled=true;point=null;markerInput=null;$('floor').replaceChildren();$('floor').disabled=true;}
 function reportError(e){videoComparison.invalidate('背景の描画に失敗しました。',{resetTracking:true});$('status').textContent='描画できません：'+e.message;console.error(e);}
 function guard(fn){return async event=>{try{await fn(event);}catch(e){reportError(e);}};}
 const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
@@ -87,7 +87,9 @@ async function loadNamedMap(candidate,input,evidence){
 }
 async function renderFromName(input){
  if(!loaded||!project){$('name-input-status').textContent='固定映像を保持しています。NDSを選択してください。';return;}
- const id=++version;clearView();nameInput=null;$('name-input-status').textContent='既知マップを先に再照合し、未解決の場合はNDSフォントで名前候補を探索します…';await frame();if(id!==version||input.frameId!==videoComparison.frameId())return;
+ // Continuous analyze already cleared this new frame's comparison while retaining
+ // independently owned older classification jobs. Only reset the preview here.
+ const id=++version;clearView({comparisonAlreadyCleared:input.automaticRecognition===true});nameInput=null;$('name-input-status').textContent='既知マップを先に再照合し、未解決の場合はNDSフォントで名前候補を探索します…';await frame();if(id!==version||input.frameId!==videoComparison.frameId())return;
  const reuse=input.automaticRecognition&&automaticSearch?await mapContinuity.probe({input,alignment:automaticSearch,isCurrent:()=>id===version&&input.frameId===videoComparison.frameId()}):null;
  if(id!==version||input.frameId!==videoComparison.frameId())return;
  if(!reuse)mapContinuity.stats.nameSearches++;

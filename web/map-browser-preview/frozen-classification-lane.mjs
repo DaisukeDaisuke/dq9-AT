@@ -1,13 +1,13 @@
 // One active frozen-frame job. Busy frames stay explicitly unclassified; no
 // unbounded queue, hidden candidate truncation, or re-labelling of newer frames.
 export class FrozenClassificationLane {
- constructor({process,onState=()=>{},onError=()=>{}}){Object.assign(this,{process,onState,onError,active:null,generation:0});}
+ constructor({process,onState=()=>{},onError=()=>{},onIdle=()=>{}}){Object.assign(this,{process,onState,onError,onIdle,active:null,generation:0});}
  offer(job){
   if(this.active){this.onState(job,'skipped-busy');return false;}
   const generation=this.generation,token={job,generation};this.active=token;
   const isCurrent=()=>this.active===token&&generation===this.generation;
   this.onState(job,'running');
-  token.done=Promise.resolve().then(()=>isCurrent()?this.process(job,isCurrent):undefined).then(result=>{if(isCurrent())this.onState(job,result===false?'discarded-stale':'finished');},error=>{if(isCurrent()){this.onState(job,'failed',error);this.onError(error);}}).finally(()=>{if(this.active===token)this.active=null;});
+  token.done=Promise.resolve().then(()=>isCurrent()?this.process(job,isCurrent):undefined).then(result=>{if(isCurrent())this.onState(job,result===false?'discarded-stale':'finished');},error=>{if(isCurrent()){this.onState(job,'failed',error);this.onError(error);}}).finally(()=>{if(this.active===token){this.active=null;this.onIdle(job);}});
   return true;
  }
  cancel(reason='cancelled'){

@@ -43,6 +43,14 @@ export async function renderMode1PhotometricBasis(model,{gpu=null,isCurrent=()=>
  }
  if(!isCurrent())throw new DOMException('Mode1 inference cancelled','AbortError');return{...result,basisOnly:true,currentEnvironmentCertified:false,scope:'White vertex-color texture/ownership probe; never a selected ordinary state or accepted background.'};
 }
+// Exact inverse interval of native integer mode0 modulation followed by the
+// existing RGB555 presentation. This avoids a biased continuous point inverse.
+export function nativeMode0ColorInterval(texture6,observed8){
+ if(!Number.isInteger(texture6)||texture6<0||texture6>63||!Number.isFinite(observed8)||observed8<0||observed8>255)throw Error('Native texture6 and observed channel required');
+ let error=Infinity,qs=[];for(let q=0;q<32;q++){const d=Math.abs(((q<<3)|(q>>>2))-observed8);if(d<error){error=d;qs=[q];}else if(d===error)qs.push(q);}
+ const intervals=qs.map(q=>{const lo=Math.max(0,Math.ceil((128*q+1)/(texture6+1))-1),hi=Math.min(63,Math.ceil((128*q+129)/(texture6+1))-2);return lo<=hi?{q,lo,hi}:null;}).filter(Boolean);
+ if(!intervals.length)return null;return{low:Math.min(...intervals.map(v=>v.lo)),high:Math.min(63,Math.max(...intervals.map(v=>v.hi))+1),quantized:qs,displayError:error};
+}
 export function inferMode1OrdinaryColor({model,basis,weights,video}){
  need(model?.basisOnly&&basis?.basisOnly&&video?.rgba?.length===196608,'Same-frame algebraic basis and video required');const samples=[],counts={known:0,zeroFog:0,sourceColors:0,interior:0};
  need(weights?.basisOnly,'Independent source interpolation-weight basis required');
@@ -53,16 +61,18 @@ export function inferMode1OrdinaryColor({model,basis,weights,video}){
   const x=i%256,y=(i/256)|0;if(x===0||x===255||y===0||y===191||[i-1,i+1,i-256,i+256].some(j=>!basis.knownMask[j]||basis.owner[j]!==basis.owner[i]))continue;counts.interior++;
   const w=[0,1,2].map(c=>weights.rgba6665[i*4+c]/63);w.push(Math.max(0,1-w.reduce((a,b)=>a+b,0)));const total=w.slice(0,colors[0].length).reduce((a,b)=>a+b,0);if(!total)continue;
   for(let c=0;c<3;c++){const predicted=colors.map(vertices=>vertices.reduce((sum,v,j)=>sum+w[j]/total*expand(v>>>(5*c)&31),0));if(predicted.every(v=>v===predicted[0]))continue;
-   const texture=basis.rgba6665[i*4+c];if(texture===0)continue;const observed=video.rgba[i*4+c]*31/255*2+1,measured=64*(observed+.5)/(texture+1)-1;
-   samples.push({pixel:i,channel:c,owner:basis.owner[i],measured,predicted,errors:predicted.map(v=>Math.abs(measured-v))});
+   const texture=basis.rgba6665[i*4+c];if(texture===0)continue;const displayPredicted=predicted.map(v=>((texture+1)*(Math.max(0,Math.min(63,Math.floor(v)))+1)-1)>>7);if(displayPredicted.every(q=>q===displayPredicted[0])){counts.noQuantizedDiscrimination=(counts.noQuantizedDiscrimination??0)+1;continue;}const interval=nativeMode0ColorInterval(texture,video.rgba[i*4+c]);if(!interval){counts.outsideSourceTexture=(counts.outsideSourceTexture??0)+1;continue;}
+   samples.push({pixel:i,channel:c,owner:basis.owner[i],interval,predicted,displayPredicted,errors:predicted.map(v=>Math.abs((interval.low+interval.high)/2-v))});
   }
  }
  const pixels=new Set(samples.map(s=>s.pixel)).size;
  if(pixels<256)return{ready:false,reason:'Insufficient discriminating common zero-fog source-COLOR pixels',samples:samples.length,pixels,counts,alternatives:model.read.hypotheses.map(e=>({index:e.discreteOrdinaryHypothesis.index})),currentEnvironmentCertified:false};
  const rows=model.read.hypotheses.map((e,index)=>({index,error:median(samples.map(s=>s.errors[index]))})).sort((a,b)=>a.error-b.error),best=rows[0];
  const equivalent=rows.filter(r=>samples.every(s=>s.predicted[r.index]===s.predicted[best.index]));
- const margins=rows.filter(r=>!equivalent.includes(r)).map(r=>{const values=samples.map(s=>s.errors[r.index]-s.errors[best.index]),margin=median(values),dispersion=median(values.map(v=>Math.abs(v-margin)));return{index:r.index,margin,dispersion,separated:margin>dispersion+Number.EPSILON*64*16};});
+ const margins=rows.filter(r=>!equivalent.includes(r)).map(r=>{const informative=samples.filter(s=>s.displayPredicted[r.index]!==s.displayPredicted[best.index]),values=informative.map(s=>s.errors[r.index]-s.errors[best.index]),pixels=new Set(informative.map(s=>s.pixel)).size,margin=values.length?median(values):0,dispersion=values.length?median(values.map(v=>Math.abs(v-margin))):0;return{index:r.index,pixels,margin,dispersion,separated:pixels>=256&&margin>dispersion+Number.EPSILON*64*16};});
  // Arithmetic-roundoff allowance only; no video acceptance threshold.
+ // Only pixels with distinct source-predicted quantized display responses may
+ // distinguish two states. Interval-center differences alone are not evidence.
  const unique=margins.every(r=>r.separated);
  return{ready:unique,reason:unique?null:'Discrete source COLOR alternatives overlap observed dispersion',index:unique?best.index:null,equivalentIndices:equivalent.map(r=>r.index),samples:samples.length,pixels,counts,alternatives:rows,margins,basisRenders:2,ordinaryStateRenders:0,currentEnvironmentCertified:false,loadRecordObserved:false,
   scope:'Conditional source COLOR discrimination from texture and vertex-weight algebraic bases. Common source-zero-fog pixels only; no fog phase or ordinary-state image search. Codec/geometry/weight-quantization errors and unknown live states remain. One native forward render must validate the proposal.'};

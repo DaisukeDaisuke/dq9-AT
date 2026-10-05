@@ -2,7 +2,7 @@ import {mountResidualInferencePreparation} from './residual-inference-preparatio
 import {runResidualRecognitionJob} from './residual-recognition-job.mjs?v=field-stream-20261005-1108';
 import {VideoMapContinuity} from './video-map-continuity.mjs?v=map-coverage-20261005-0931';
 import {mountAutomaticGpuPanel} from './gpu-file-panel.mjs?v=forward-map-20261005-1138';
-import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=field-stream-20261005-1108';
+import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=video-inference-20261005-1232';
 import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
 import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=forward-map-20261005-1138';
@@ -13,7 +13,7 @@ import {deriveVideoMapNames} from './video-map-name-input.mjs';
 import {MapPositionMatcher} from '../map-position.mjs';
 import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
-import {mountMapVideoComparison} from './map-video-comparison.mjs?v=forward-map-20261005-1138';
+import {mountMapVideoComparison} from './map-video-comparison.mjs?v=video-inference-20261005-1232';
 import {openMapRom} from './static-scene.mjs';
 import {buildRomMapCatalog} from './rom-map-catalog.mjs';
 import {nameCatalogMaps} from './rom-map-names.mjs';
