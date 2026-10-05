@@ -13,7 +13,7 @@ import {deriveVideoMapNames} from './video-map-name-input.mjs';
 import {MapPositionMatcher} from '../map-position.mjs';
 import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
-import {mountMapVideoComparison} from './map-video-comparison.mjs?v=video-inference-20261005-1232';
+import {mountMapVideoComparison} from './map-video-comparison.mjs?v=completed-boxes-20261005-1257';
 import {openMapRom} from './static-scene.mjs';
 import {buildRomMapCatalog} from './rom-map-catalog.mjs';
 import {nameCatalogMaps} from './rom-map-names.mjs';

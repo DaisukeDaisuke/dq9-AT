@@ -14,7 +14,7 @@ export function renderClassificationSummary(container,value,{completed=null,docu
   root.append(make('p','下の画像・枠・候補はこの過去の固定フレームの結果です。再生中の現在フレームを示していません。'));
   const canvas=make('canvas');canvas.width=256;canvas.height=192;canvas.style.width='256px';canvas.style.height='192px';canvas.style.maxWidth='100%';canvas.setAttribute('aria-label','比較が完了した元の固定映像と残差枠');
   const ctx=canvas.getContext('2d');ctx.putImageData(new ImageData(completed.image.rgba,256,192),0,0);ctx.strokeStyle='#ffcc00';ctx.lineWidth=1;ctx.font='10px sans-serif';ctx.fillStyle='#ffcc00';
-  for(const s of visible){const r=completed.regions.find(r=>r.id===s.originalProposalId)?.roi;if(!r)continue;ctx.strokeRect(r.x,r.y,r.w,r.h);ctx.fillText(String(s.originalProposalId),Math.max(0,r.x),Math.max(10,r.y));}root.append(canvas);
+  for(const s of visible){const r=completed.regions.find(r=>String(r.id)===String(s.originalProposalId))?.roi;if(!r)continue;ctx.strokeRect(r.x,r.y,r.w,r.h);ctx.fillText(String(s.originalProposalId),Math.max(0,r.x),Math.max(10,r.y));}root.append(canvas);
  }
  root.append(make('p',`比較した残差 ${rows.length}件 / 条件付き予測 ${predicted.length}件 / 比較済み・種類未確定 ${other.length}件 / 未比較 ${(value?.unclassifiedRegionIds??[]).length}件。候補は未確定で、背景・味方・UI・候補外を除外できません。出生・AT加算の証明ではありません。`));
  const list=make('ul');for(const s of visible){const p=s.conditionalBodyPrediction;list.append(make('li',`残差 ${s.originalProposalId}: ${p?.modelId?'条件付き予測 '+(names(p)||p.modelId)+'（未確定）':'種類未確定'}`));}root.append(list);

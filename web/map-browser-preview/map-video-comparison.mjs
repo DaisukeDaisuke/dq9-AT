@@ -1,5 +1,5 @@
 import {createFrozenAnalysisCapture} from './capture-analysis-pixels.mjs?v=video-inference-20261005-1232';
-import {completedClassificationSnapshot,renderClassificationSummary} from './completed-classification-display.mjs?v=video-inference-20261005-1232';
+import {completedClassificationSnapshot,renderClassificationSummary} from './completed-classification-display.mjs?v=completed-boxes-20261005-1257';
 import {captureAutomaticResidualPolicy,automaticResidualPolicyKey,selectAutomaticResiduals,withAutomaticResidualSelection} from './automatic-residual-policy.mjs?v=video-inference-20261005-1232';
 import {FrozenClassificationLane} from './frozen-classification-lane.mjs?v=video-inference-20261005-1232';
 import {replaceResidualTimelineClassification} from './residual-classification-state.mjs?v=residual-backend-20261005';
