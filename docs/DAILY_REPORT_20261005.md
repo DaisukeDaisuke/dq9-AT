@@ -329,3 +329,12 @@
 - 既存3×3以下の内部小片を自動/一括分類の予算前で保留し、画面端・未描画境界と全生残差を保持。ウォルロ1200秒の実ブラウザでは268生領域、246保留、22比較、条件付き種類予測は可視モーモン1件。元動画画素は保存し、AT接続の解析終了表示まで確認。旧版と解析画素/背景が変わるため旧266領域とIDを同一扱いしない。現在AT、出生、厳密下限の進行は未証明。
 - F04では19比較中7件のギズモ条件付き予測が背景の小片に対応しており、敵識別の完成ではない。ROM寸法・camera/floorによる物理的な大きさの整合を調査中。既知失敗に合わせて3×3を4へ増やさない。完了画像に枠が出ない別不具合は数値/文字列ID不一致と確定し、一行の表示修正と実artifact上8枠の描画呼出し検査を追加。公開後の枠の画面確認は継続。
 - 12:44/12:47 UTCにクラウドbrowserのタブ消失、複数回の一時的な承認review capacity失敗があった。作業hostと正式ROM/動画は保持され、環境消失とは断定せず、再接続後に上記実測を行った。コードはGitHub、元入力は既存正式Libraryを使用し、追加Library ID発行を待たない。全マップ・動画の全自動識別・AT特定は未達。
+
+
+### 23:00 JST — 小個体の実確認と再開用Gitチェックポイント
+- 公開e17f6f47の完了フレーム枠を実ブラウザで確認。ウォルロ1200秒の8表示枠に条件付きモーモンが含まれる。さらに正式1ninn227.000秒では635生残差を保持、内部小片507件を保留し32件を比較、可視小個体の領域239（14×14）に条件付きメタルスライム予測1件。元RGBA SHA256は8de5d36c8afa225b6128857da8386ff70b4849ccf9a6e92f0b16191882072677。古い227.012秒/領域233と同じ入力に置き換えない。霧の現位相・出生・現在ATは未確定のまま。
+- 新しい西セントシュタイン2355秒の失敗を保存。初期床2枝が改良XZ後に『床が複数』だけで両方止まる経路を修正し、同じCOL2面または幾何学的に接続した面の枝を保持する。F04の斜面移動も既存結果を保つ。ただしF02としての最終画像は引き続き不通過で、これだけで描画成功とはしない。
+- 同2355秒の上画面点は、S04/map5400を広域地図へ表示する固定アンカーにも一致する。西セントシュタインには同名のF02/S03/S04があり、広域地図上の固定点をS04内のactorXZには変換できない。小マップ候補を落とさず残す修正を保存した。S04源sceneには実映像と同じ井戸・階段・池があり、actor位置依存type4 cameraとsource領域内の画像/幾何逆算を実装中。既知の入口座標を現在位置に代入しない。
+- 敵の源scaleはcreator→actor+5c/+5e/+60→GX_MTX_SCALEまで確認し、1044ROM引数・65536 signed16 native演算を照合。しかしcamera遠端だけではF04の7誤予測を除外できなかった。map照明の色付けも4モデル/384描画で同一となり不採用。源scaleと透視投影の別試作は7背景を保留できても真のモーモンを失うため未採用。nativeの既知actorでrootYと幾何床に差を観測し、既存floor wrapperの条件付き補正とpose/projectionを追っている。
+- 霧の再loadは通常field lifecycleから別callerで発生し、以前と同じlayer pointerを再利用した。観測epochはpointer同一で維持せず、clear→request→buildと実際の成功drawから数える。新build2391、最初の更新2410、可視化2424まで6更新。新旧observer ON/OFF2780行・18画像一致。既存動画への同期、owner0x400 setter、秒数だけでの全区間再現は未完。[源解析注釈](https://github.com/DaisukeDaisuke/dqix-functions/blob/293625a80750218a2da7bbec59f70c60a0877512/analysis/fog-observed-clock-20261005/reload-epochs-afee83dd.md)と非公開tools main a5eab4fd1a1e39eeff68323d6d1181b656e9a440へsource-only保存しremoteを照合した。
+- 次の未統合コードは本番成功と混ぜず、通常Gitチェックポイントとして保存・remote照合済み。再開時はmainに加え該当差分を確認する。[source床枝・固定表示アンカー](https://github.com/DaisukeDaisuke/dq9-AT/commit/2373d020242dbb6e256b1f04bf7f2ca06bbd17bf)、[現在frameの古い分類status解除](https://github.com/DaisukeDaisuke/dq9-AT/commit/abdd75ee7c287bbfb4ada4028636ee9ca3d6c608)、[源scale decoder](https://github.com/DaisukeDaisuke/dq9-AT/commit/72afdb7f2b918e83315b425a7b9ed1d1dd07c1a5)、[actor固有depth用の源fog helper](https://github.com/DaisukeDaisuke/dq9-AT/commit/32054819fc19f5a7eeb359b905a362343b26f5f8)。各枝は実装sourceだけで、ROM/SAV/RAM/動画/抽出資産は含めない。新規Library保存はしていない。
