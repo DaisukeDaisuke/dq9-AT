@@ -1,3 +1,4 @@
+import{isSupportedMode1ColorEnvironment,isSupportedMode1FogEnvironment}from'./automatic-material-environment.mjs?v=field-stream-20261005-1108';
 import{readRomMapScreenEffectPlan}from'./rom-map-screen-effect-plan.mjs';
 import{readInitialMseLayers,buildMsePolygonInputs}from'./native-mse-initial-preview.mjs?v=mode2-mse-20261005-0909';
 import{createSourcePreparationCache}from'./integer/source-preparation-cache.mjs';
@@ -5,16 +6,16 @@ import{createSourcePreparationCache}from'./integer/source-preparation-cache.mjs'
  * Source geometry/material preparation only. No CPU pixel render is required
  * before GPU submission. Existing ROM profiles and rejection ledgers remain.
  */
-import{readInitialMode1RasterProfile,collectInitialMode1IntegerInputs}from'./integer/initial-mode1-integer-preview.mjs';
-import{collectStaticOpaqueDepthInputs}from'./integer/static-opaque-depth.mjs?v=mode2-inverse-20261005-0908';
-import{classifyStaticBinaryDepthInputs}from'./integer/static-binary-depth.mjs';
-import{collectStaticMode0ColorInputs}from'./integer/static-mode0-rgb.mjs?v=mode2-inverse-20261005-0908';
-import{collectInitialMode1TexturedTranslucentInputs,collectInitialMode2TexturedTranslucentInputs,readInitialTexturedBlendProfile}from'./integer/native-textured-translucent.mjs?v=mode2-inverse-20261005-0908';
+import{readInitialMode1RasterProfile,collectInitialMode1IntegerInputs}from'./integer/initial-mode1-integer-preview.mjs?v=field-stream-20261005-1108';
+import{collectStaticOpaqueDepthInputs}from'./integer/static-opaque-depth.mjs?v=field-stream-20261005-1108';
+import{classifyStaticBinaryDepthInputs}from'./integer/static-binary-depth.mjs?v=field-stream-20261005-1108';
+import{collectStaticMode0ColorInputs}from'./integer/static-mode0-rgb.mjs?v=field-stream-20261005-1108';
+import{collectInitialMode1TexturedTranslucentInputs,collectInitialMode2TexturedTranslucentInputs,readInitialTexturedBlendProfile}from'./integer/native-textured-translucent.mjs?v=field-stream-20261005-1108';
 import{automaticBillboardScenes}from'./automatic-billboard-scene.mjs';
-import{buildAutomaticNormalMatrices,applyMode2ToAutomaticScenes}from'./integer/mode2-lighting-adapter.mjs';
+import{buildAutomaticNormalMatrices,applyMode2ToAutomaticScenes}from'./integer/mode2-lighting-adapter.mjs?v=field-stream-20261005-1108';
 import{projectNativePrimitiveFx}from'./integer/native-primitive-inputs.mjs';
 import{clipNativePositionPolygon}from'./integer/native-position-clip.mjs';
-import{prepareNativeIntegerCompute}from'./native-integer-compute-input.mjs';
+import{prepareNativeIntegerCompute}from'./native-integer-compute-input.mjs?v=field-stream-20261005-1108';
 const need=(x,m)=>{if(!x)throw Error(m);};
 function completeVisibleInventory(inventory,translucent){
  need(inventory.unresolved.every(x=>typeof x.reason==='string'&&x.reason.startsWith('name-char3-A / ')),'Unresolved source drawable instance');
@@ -22,7 +23,7 @@ function completeVisibleInventory(inventory,translucent){
  need(remaining.every(p=>p.positionClipDiscarded),'Unsupported source polygon remains in visible clip volume');return remaining;
 }
 export function prepareInitialMode1IntegerCompute(project,rom,record,automatic,camera,{applyFog=true,screenEffectPhase=null,screenEffectRenderState=null}={}){
- const start=performance.now(),e=automatic.environment;need(e?.mode===1&&e.colorReady&&e.ordinaryTimeIndependent,'Source mode1 independent color required');need(!applyFog||e.fogReady&&e.fogTimeIndependent&&e.fogParameters,'Source independent fog parameters required');
+ const start=performance.now(),e=automatic.environment;need(isSupportedMode1ColorEnvironment(e,record.key),'Source mode1 invariant or discrete color hypothesis required');need(!applyFog||isSupportedMode1FogEnvironment(e,record.key),'Source invariant or discrete fog hypothesis required');
  const raster=readInitialMode1RasterProfile(project,rom),inventory=collectInitialMode1IntegerInputs(project,record,automatic,camera,raster),translucent=collectInitialMode1TexturedTranslucentInputs(project,automatic,inventory),remaining=completeVisibleInventory(inventory,translucent),controls=readInitialTexturedBlendProfile(project,rom);
  // Disabled fog never consumes color/density. Reuse supplied source parameters;
  // an absent source record is not silently filled with guessed light/fog state.

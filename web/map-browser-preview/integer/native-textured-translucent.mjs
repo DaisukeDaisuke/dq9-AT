@@ -1,3 +1,4 @@
+import{isSupportedMode1ColorEnvironment}from'../automatic-material-environment.mjs?v=field-stream-20261005-1108';
 /* SPDX-License-Identifier: GPL-2.0-or-later
  * Bounded A3I5/I4/A5I3 mode0 connection, derived from DeSmuME contributors,535f676:
  * clip interpolation, edge_fx_fl::Interpolant, _drawscanline, _shade, _pixel,
@@ -23,7 +24,7 @@ function resource(project,p,e){
  }else throw Error('Unsupported source texture resource');return{bytes,resource:readNativeTextureResource(bytes)};
 }
 export function collectInitialMode1TexturedTranslucentInputs(project,automatic,inventory,sourceCache=null){
- if(automatic?.environmentApplied!==true||automatic.environment.mode!==1||!automatic.environment.colorReady||!automatic.environment.ordinaryTimeIndependent||automatic.plan.recordKey!==inventory.recordKey||inventory.snapshot?.profile!=='ROM-initial-time-independent-mode1')throw Error('Matching source-verified initial mode1 inventory required');
+ if(automatic?.environmentApplied!==true||!isSupportedMode1ColorEnvironment(automatic.environment,inventory.recordKey)||automatic.plan.recordKey!==inventory.recordKey||!['ROM-initial-time-independent-mode1','ROM-initial-discrete-ordinary-mode1'].includes(inventory.snapshot?.profile))throw Error('Matching source-verified initial mode1 inventory required');
  return collectStaticTexturedTranslucentInputs(project,automatic,inventory,sourceCache);
 }
 export function collectInitialMode2TexturedTranslucentInputs(project,automatic,inventory,sourceCache=null){

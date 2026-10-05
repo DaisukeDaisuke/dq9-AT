@@ -1,3 +1,4 @@
+import{isSupportedMode1ColorEnvironment,isSupportedMode1FogEnvironment}from'./automatic-material-environment.mjs?v=field-stream-20261005-1108';
 import {readRomMapScreenEffectPlan} from './rom-map-screen-effect-plan.mjs';
 import {readInitialMseLayers,buildMsePolygonInputs} from './native-mse-initial-preview.mjs';
 /* SPDX-License-Identifier: GPL-2.0-or-later
@@ -5,19 +6,19 @@ import {readInitialMseLayers,buildMsePolygonInputs} from './native-mse-initial-p
  * DeSmuME535f676-derived modules retain their notices; see INTEGER_RENDER_NOTICE.md.
  * No previewDepth/RGBA8888 is converted into native raster input.
  */
-import {readInitialMode1RasterProfile,renderInitialMode1IntegerPreview} from './integer/initial-mode1-integer-preview.mjs';
-import {readInitialTexturedBlendProfile,collectInitialMode1TexturedTranslucentInputs,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb} from './integer/native-textured-translucent.mjs?v=phase-grid-20261005-0620';
+import {readInitialMode1RasterProfile,renderInitialMode1IntegerPreview} from './integer/initial-mode1-integer-preview.mjs?v=field-stream-20261005-1108';
+import {readInitialTexturedBlendProfile,collectInitialMode1TexturedTranslucentInputs,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb} from './integer/native-textured-translucent.mjs?v=field-stream-20261005-1108';
 import {projectNativePrimitiveFx} from './integer/native-primitive-inputs.mjs';
 import {clipNativePositionPolygon} from './integer/native-position-clip.mjs';
-import {presentStaticRgb} from './integer/static-mode0-rgb.mjs';
+import {presentStaticRgb} from './integer/static-mode0-rgb.mjs?v=field-stream-20261005-1108';
 import {buildFogTable,applyFogPixel} from './native/fog-raster.mjs';
 
 export function renderInitialIntegerFog(project,rom,record,automatic,camera,{applyFog=true,screenEffectPhase=null}={}){
  const diagnostics={backend:'source-integer-static-mode1',requestedFog:applyFog,recordKey:record.key,fogApplied:false,sourcePolygonCount:null,remaining:[],scope:'ROM initial mode1 static scene; live camera/environment, animation, edge marking/antialiasing and native framebuffer parity unverified.'};
  try{
   const environment=automatic.environment;
-  if(environment?.mode!==1||!environment.colorReady||!environment.ordinaryTimeIndependent)throw Error('時間独立mode1材質が未対応です');
-  if(applyFog&&(!environment.fogReady||!environment.fogTimeIndependent||!environment.fogParameters))throw Error('ROMの時間独立fog入力が未解決です');
+  if(!isSupportedMode1ColorEnvironment(environment,record.key))throw Error('時間独立mode1材質が未対応です');
+  if(applyFog&&(!isSupportedMode1FogEnvironment(environment,record.key)))throw Error('ROMの時間独立fog入力が未解決です');
   const profile=readInitialMode1RasterProfile(project,rom),base=renderInitialMode1IntegerPreview(project,record,automatic,camera,profile),inventory=base.inventory;
   diagnostics.profile=profile;diagnostics.inventory=inventory.counts;diagnostics.colorCounts=inventory.colorCounts;diagnostics.sourcePolygonCount=inventory.polygons.length;diagnostics.unresolved=inventory.unresolved;diagnostics.depth=base.depth.stats;diagnostics.availability=base.rgb.availability;
   // The existing source name-char3-A branch is collision data, not drawable
@@ -36,7 +37,7 @@ export function renderInitialIntegerFog(project,rom,record,automatic,camera,{app
   let rgba6665=combined.rgba6665;
   if(applyFog){const parameters=environment.fogParameters,table=buildFogTable(parameters);rgba6665=rgba6665.slice();let changed=0,fogged=0;
    for(let i=0;i<49152;i++){if(!base.rgb.plane.coverage[i])continue;const before=rgba6665.subarray(i*4,i*4+4),flag=Boolean(combined.isFogged[i]),after=applyFogPixel(before,combined.depth24[i],flag,parameters,table);if(flag)fogged++;if(after.some((v,k)=>v!==before[k]))changed++;rgba6665.set(after,i*4);}
-   diagnostics.fogApplied=true;diagnostics.fog={parameters:{...parameters,density:Array.from(parameters.density)},source:environment.source,changed,fogged,depthSource:'native integer original GX polygon clip/raster/depth24',maskSource:'source polygon owner and accepted opaque/translucent fog flag AND',timeIndependent:true};
+   diagnostics.fogApplied=true;diagnostics.fog={parameters:{...parameters,density:Array.from(parameters.density)},source:environment.source,changed,fogged,depthSource:'native integer original GX polygon clip/raster/depth24',maskSource:'source polygon owner and accepted opaque/translucent fog flag AND',timeIndependent:environment.fogTimeIndependent,discreteOrdinaryHypothesis:environment.discreteOrdinaryHypothesis??null};
   }
   const image=presentStaticRgb({...combined,rgba6665},{profile:'rgb555-expanded'});
   return{ready:true,...image,rgba:Uint8ClampedArray.from(image.rgba),diagnostics,scope:diagnostics.scope,stats:{...base.depth.stats,fragments:base.depth.stats.opaqueGeometricFragments+base.depth.stats.binaryGeometricFragments+combined.stats.incoming,rejected:[]}};

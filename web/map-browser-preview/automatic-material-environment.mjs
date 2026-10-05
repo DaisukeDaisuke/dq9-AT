@@ -155,14 +155,14 @@ export function readAutomaticMaterialEnvironment(project,record,automatic){
   if(timeIndependent&&!timeIndependenceProof.sourceRecordsTimeIndependent)timeIndependenceProof.selection=readMode1DiscreteSelectionProof(project.sdk);
   if(!timeIndependent)unresolved.push('Environment time slot/phase affects static material color');
   const normalLighting=zeroLightSource(rules.reader);
-  const fog=lowerEnvironmentFog(calls),fogUnresolved=fog.issues.map(x=>x.error);let fogParameters=null,fogTimeIndependent=false;
-  if(fog.ready){try{const inherited=inheritTimeFogRecords(fog.records,{rules:readTimeFogInheritanceRules(project.sdk)}),states=[0,1,2,3].map(i=>staticMode1FogParameters(inherited.records,i));fogTimeIndependent=states.every(x=>same(x,states[0]));if(fogTimeIndependent)fogParameters=states[0];else fogUnresolved.push('Environment time slot/phase affects fog');}catch(e){fogUnresolved.push(e.message);}}
+  const fog=lowerEnvironmentFog(calls),fogUnresolved=fog.issues.map(x=>x.error);let fogParameters=null,fogTimeIndependent=false,fogOrdinaryParameters=null;
+  if(fog.ready){try{const inherited=inheritTimeFogRecords(fog.records,{rules:readTimeFogInheritanceRules(project.sdk)}),states=[0,1,2,3].map(i=>staticMode1FogParameters(inherited.records,i));fogOrdinaryParameters=states;fogTimeIndependent=states.every(x=>same(x,states[0]));if(fogTimeIndependent)fogParameters=states[0];else fogUnresolved.push('Environment time slot/phase affects fog');}catch(e){fogUnresolved.push(e.message);}}
   const globals=readSdkInitialMaterialGlobals(project.sdk);
   // 02052eb4 sets manager+46 from static record+C4, then020b53cc(value,0,0).
   // Other globals retain their SDK initialization in this explicit initial profile.
   const ambientArgument=rules.reader.mov(0x02052cc0,1);if(ambientArgument!==0)throw Error('Environment material setter argument differs');
   const materialGlobals=timeIndependent?{...globals,diffuseAmbient:(ordinary[0].fieldsC4|(ambientArgument<<16))>>>0}:null;
-  return {...base,ready:unresolved.length===0&&fogUnresolved.length===0,colorReady:unresolved.length===0,colorUnresolved:unresolved.slice(),fogReady:fogUnresolved.length===0,source:{maplist:source,archive:archivePath,member:resource.name,archiveIndex:resource.index},mode:1,initialSelector:rules.initialSelector,colorRecords:color,ordinaryTimeIndependent:timeIndependent,sourceRecordsTimeIndependent:timeIndependenceProof.sourceRecordsTimeIndependent,timeIndependenceProof,colorTransformIdentity:identity,staticColorRecord:timeIndependent?ordinary[0]:null,tintRules,normals,normalLighting,materialGlobals,fogParameters,fogTimeIndependent,fogUnresolved,unresolved:[...unresolved,...fogUnresolved],
+  return {...base,ready:unresolved.length===0&&fogUnresolved.length===0,colorReady:unresolved.length===0,colorUnresolved:unresolved.slice(),fogReady:fogUnresolved.length===0,source:{maplist:source,archive:archivePath,member:resource.name,archiveIndex:resource.index},mode:1,initialSelector:rules.initialSelector,colorRecords:color,ordinaryTimeIndependent:timeIndependent,sourceRecordsTimeIndependent:timeIndependenceProof.sourceRecordsTimeIndependent,timeIndependenceProof,colorTransformIdentity:identity,staticColorRecord:timeIndependent?ordinary[0]:null,tintRules,normals,normalLighting,materialGlobals,initialMaterialGlobals:globals,fogParameters,fogOrdinaryParameters,fogTimeIndependent,fogUnresolved,unresolved:[...unresolved,...fogUnresolved],
    liveStateDependencies:['Environment manager+90 forced slot; +94/+98 time phase when inherited records differ','Quest/special overrides, later script setters and environment transitions','Game context+418 later changes may disable load-time tint; model flags and shape flags are source-derived','Animated material/DL modifications and scene-dependent rendering state'],
    scope:'Source-proven initial ordinary static-color profile. Static GX COLOR tint follows source load/model/shape guards and float32 operations. NORMAL reduces to emission under source-zero light colors; it is not live environment, animation, fog rasterization or native-pixel parity.'};
  }catch(e){return {...base,...progress,colorUnresolved:[...unresolved,e.message],unresolved:[...unresolved,e.message],scope:'Unresolved source environment; no material, light, color or fog defaults substituted.'};}
@@ -182,7 +182,9 @@ export function replayZeroLightShapeColors(gx,material,initialColor,{transformCo
  return {atCommand,finalColor:color,normalCommands,colorTransformCommands,changedColorCommands};
 }
 export function applyAutomaticMaterialEnvironment(project,record,automatic){
- const environment=readAutomaticMaterialEnvironment(project,record,automatic);
+ return applyReadMaterialEnvironment(project,record,automatic,readAutomaticMaterialEnvironment(project,record,automatic));
+}
+function applyReadMaterialEnvironment(project,record,automatic,environment){
  if(!environment.colorReady)return {...automatic,environment,environmentApplied:false};
  const maskBytes=project.sdk.read(0x020e934c,32),md=new DataView(maskBytes.buffer,maskBytes.byteOffset,maskBytes.byteLength),masks=Array.from({length:8},(_,i)=>md.getUint32(i*4,true)),normalDraws=[],colorDraws=[];
  try{
@@ -209,4 +211,47 @@ export function applyAutomaticMaterialEnvironment(project,record,automatic){
   })};});
   return {...automatic,scenes,environment,environmentApplied:true,environmentNormalDraws:normalDraws,environmentColorDraws:colorDraws,scope:automatic.scope+' ROM initial ordinary environment applied; no live/animated light or native pixel acceptance.'};
  }catch(e){return {...automatic,environment:{...environment,ready:false,colorReady:false,colorUnresolved:[...environment.colorUnresolved,e.message],unresolved:[...environment.unresolved,e.message]},environmentApplied:false};}
+}
+
+// These alternatives are source states, not sampled fog phases or a clock guess.
+// They remain conditional on the same initial ordinary static profile as the
+// invariant path; no live selector/reload/script state is certified.
+export function readMode1OrdinaryHypotheses(project,record,automatic){
+ const environment=readAutomaticMaterialEnvironment(project,record,automatic);
+ const allowed=new Set(['Environment time slot/phase affects static material color','Environment time slot/phase affects fog']);
+ try {
+  if(environment.mode!==1||environment.unresolved.some(x=>!allowed.has(x)))throw Error('Mode1 source dependencies remain unresolved: '+environment.unresolved.join('; '));
+  const selection=readMode1DiscreteSelectionProof(project.sdk);
+  // The regular updater branches straight to return for mode1: its mode2 fog
+  // interpolation must not be substituted for the retained mode1 entry record.
+  const spans=[[0x020531f8,0x38,0xa09a2122]];
+  for(const[address,length,expected]of spans){let hash=2166136261;for(const b of project.sdk.read(address,length))hash=Math.imul(hash^b,16777619)>>>0;if(hash!==expected)throw Error('Native mode1 retained-state update gate differs');}
+  if(!environment.fogOrdinaryParameters||!environment.initialMaterialGlobals)throw Error('Mode1 source ordinary records incomplete');
+  const hypotheses=[];
+  for(const index of selection.ordinaryIndices){
+   const color=environment.colorRecords.inherited[index],fog=environment.fogOrdinaryParameters[index];
+   if(!color||!fog)throw Error('Mode1 ordinary source record absent');
+   const materialGlobals={...environment.initialMaterialGlobals,diffuseAmbient:color.fieldsC4>>>0};
+   const e={...environment,ready:true,colorReady:true,fogReady:true,colorUnresolved:[],fogUnresolved:[],unresolved:[],staticColorRecord:color,materialGlobals,fogParameters:fog,
+    discreteOrdinaryHypothesis:{kind:'source-mode1-retained-ordinary-load-state',recordKey:record.key,index,selection,updateSpans:spans,sourceStateObserved:false,currentEnvironmentCertified:false,
+     coverage:'One ordinary load state; forced selectors, differing load/entry records, later script writes, transitions and reload history remain unknown.'}};
+   hypotheses.push(e);
+  }
+  return {ready:true,environment,hypotheses,currentEnvironmentCertified:false};
+ }catch(error){return{ready:false,reason:error.message,environment,hypotheses:[],currentEnvironmentCertified:false};}
+}
+export function isSupportedMode1ColorEnvironment(environment,recordKey){
+ if(environment?.mode!==1||environment.colorReady!==true)return false;
+ if(environment.ordinaryTimeIndependent===true)return true;
+ const h=environment.discreteOrdinaryHypothesis;
+ return h?.kind==='source-mode1-retained-ordinary-load-state'&&h.recordKey===recordKey&&Number.isInteger(h.index)&&h.index>=0&&h.index<4&&h.selection?.interpolatesLoadTimeTint===false&&same(environment.staticColorRecord,environment.colorRecords?.inherited?.[h.index])&&environment.materialGlobals?.diffuseAmbient===(environment.staticColorRecord?.fieldsC4>>>0);
+}
+export function isSupportedMode1FogEnvironment(environment,recordKey){
+ if(environment?.fogReady!==true||!environment.fogParameters)return false;
+ if(environment.fogTimeIndependent===true)return true;
+ return isSupportedMode1ColorEnvironment(environment,recordKey)&&same(environment.fogParameters,environment.fogOrdinaryParameters?.[environment.discreteOrdinaryHypothesis?.index]);
+}
+export function applyMode1OrdinaryHypothesis(project,record,automatic,environment){
+ if(!isSupportedMode1ColorEnvironment(environment,record.key)||!isSupportedMode1FogEnvironment(environment,record.key))throw Error('Matching source-derived mode1 ordinary hypothesis required');
+ return applyReadMaterialEnvironment(project,record,automatic,environment);
 }

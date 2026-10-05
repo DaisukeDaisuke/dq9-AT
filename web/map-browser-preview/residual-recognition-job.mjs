@@ -1,5 +1,5 @@
 import {chooseResidualBackend,residualBackendProvenance,assertResidualBackendResult} from './residual-recognition-backend.mjs';
-import {residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs?v=residual-backend-20261005';
+import {residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs?v=field-stream-20261005-1108';
 // A job is all requested regions and all model batches for one frozen frame.
 // On GPU failure, discard the entire attempt, clear its displayed partials, and
 // start at region zero under WASM. Never sort/merge scores across model hashes.

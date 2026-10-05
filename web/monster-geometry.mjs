@@ -77,7 +77,10 @@ export class MonsterGeometry {
  static async create(){const response=await fetch(new URL('./wasm/monster_geometry.wasm',import.meta.url));if(!response.ok)throw Error('Monster geometry WASM unavailable');const{instance}=await WebAssembly.instantiate(await response.arrayBuffer(),{});return new MonsterGeometry(instance);}
  decode(asset,{localMatrices=null,poseSource=null}={}){
   const model=inspectMonsterModel(asset.model.bytes),{r,materials,objects,pieces,inverse}=model,w=this.w;w.monster_reset();
-  if(localMatrices!==null){if(!Array.isArray(localMatrices)||localMatrices.length!==objects.length||localMatrices.some(m=>!Array.isArray(m)||m.length!==16||!m.every(Number.isFinite))||!poseSource||poseSource.exactStoredFrame!==true||!Number.isInteger(poseSource.frame)||poseSource.frame<0)throw Error('Explicit exact-frame pose matrices required');for(let i=0;i<objects.length;i++)objects[i].matrix=localMatrices[i].slice();}
+  // NSBCA node arrays may include trailing nodes absent from this model variant.
+  // Match apicula viewer update_object_mats: apply only model-indexed matrices;
+  // never invent matrices for missing nodes, and retain the 64-node BCA budget.
+  if(localMatrices!==null){if(!Array.isArray(localMatrices)||localMatrices.length<objects.length||localMatrices.length>64||localMatrices.some(m=>!Array.isArray(m)||m.length!==16||!m.every(Number.isFinite))||!poseSource||poseSource.exactStoredFrame!==true||!Number.isInteger(poseSource.frame)||poseSource.frame<0)throw Error('Explicit exact-frame pose matrices required');for(let i=0;i<objects.length;i++)objects[i].matrix=localMatrices[i].slice();}
   let current=identity(),stack=Array(32).fill(null),material=-1,p=model.renderStart,finished=false,visibility=true,currentExpression=null;const drawCalls=[],sbcCommands={},billboards=[],stackExpressions=Array(32).fill(null);
   const load=slot=>{if(slot>31||!stack[slot])throw Error('Uninitialized SBC matrix stack '+slot);current=stack[slot].slice();currentExpression=stackExpressions[slot];};
   const store=slot=>{if(slot>31)throw Error('SBC matrix stack out of bounds');stack[slot]=current.slice();stackExpressions[slot]=currentExpression;};
@@ -112,7 +115,7 @@ export class MonsterGeometry {
   const gpuCommands=Object.fromEntries(Array.from(new Uint32Array(w.memory.buffer,w.monster_commands(),256),(count,op)=>[hex(op),count]).filter(([,n])=>n));
   return{format:'dq9-monster-preview',version:1,modelId:asset.modelId,variant:asset.variant,speciesCandidates:asset.speciesCandidates,source:{...asset.source,modelMember:asset.model.name},
    vertices,indices,edgeMasks,materials,drawCalls,billboards,bounds,declared:model.declared,counts:{objects:objects.length,materials:materials.length,pieces:pieces.length,vertices:vertices.length/11,triangles:indices.length/3},sbcCommands,gpuCommands,
-   pose:localMatrices?'exact-nsbca-stored-frame':'static-model-bind-pose',poseSource:localMatrices?structuredClone(poseSource):null,geometryBackend:'WebAssembly',materialBinding:'MDL0-name-to-embedded-TEX0',animationApplied:localMatrices!==null,fieldVariantConfirmed:false,recognitionEvidence:false,
+   pose:localMatrices?'exact-nsbca-stored-frame':'static-model-bind-pose',poseSource:localMatrices?{...structuredClone(poseSource),nodeBinding:{policy:'model-node-index-prefix-v1',modelNodes:objects.length,animationNodes:localMatrices.length,unusedTrailingNodes:localMatrices.length-objects.length}}:null,geometryBackend:'WebAssembly',materialBinding:'MDL0-name-to-embedded-TEX0',animationApplied:localMatrices!==null,fieldVariantConfirmed:false,recognitionEvidence:false,
    limitations:[localMatrices?'Exact stored NSBCA sample; native playback phase and blending unknown':'Static bind pose; NSBCA not applied','Unlit texture preview; game lighting not reproduced','Variant field role unverified','No video identification or AT observation coupling']};
  }
 }

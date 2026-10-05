@@ -55,11 +55,21 @@ export function compileExperiment(input,resources={}){
  requireIt(input&&dense(input.sightings)&&dense(input.hypotheses),'Explicit sighting and hypothesis arrays required');
  requireIt(dense(input.associationAlternatives),'Explicit association alternatives required');
  const sightingIds=new Set();for(const s of input.sightings){requireIt(s&&id(s.id)&&!sightingIds.has(s.id),'Unique sighting IDs required');sightingIds.add(s.id);}
+ // Resources are fixed for this compilation. Repeated crops/tracks may share
+ // a numerical predicate, but each retains its own event/evidence metadata.
+ const eventCache=new Map();
+ const compileCached=e=>{
+  const key=JSON.stringify({operation:e.operation,stateBoundary:e.stateBoundary,alternatives:e.tableSpeciesAlternatives,nodes:e.eligibleNodeIdsInOrder,selected:e.selectedNodeAlternatives});
+  if(!eventCache.has(key)){const compiled=compileEvent(e,resources);eventCache.set(key,compiled);return compiled;}
+  // Validate ID separately: numerical caching does not relax event validation.
+  requireIt(e&&id(e.id),'Explicit event ID required');
+  return {...clone(eventCache.get(key)),id:e.id,eventEvidence:clone(e.evidence??null)};
+ };
  const branchIds=new Set(),branches=[];
  for(const h of input.hypotheses){
   requireIt(h&&id(h.id)&&!branchIds.has(h.id)&&dense(h.events)&&dense(h.edges),'Unique branch ID and explicit events/edges required');branchIds.add(h.id);
   const eventIds=new Set();for(const e of h.events){requireIt(e&&id(e.id)&&!eventIds.has(e.id),'Unique branch event IDs required');eventIds.add(e.id);}
-  const events=h.events.map(e=>compileEvent(e,resources)),edges=h.edges.map(e=>compileGap(e,eventIds));
+  const events=h.events.map(compileCached),edges=h.edges.map(e=>compileGap(e,eventIds));
   const bindings=h.sightingEventBindings??{};requireIt(bindings&&typeof bindings==='object'&&!Array.isArray(bindings),'Sighting bindings must be an object');
   for(const [s,e]of Object.entries(bindings))requireIt(sightingIds.has(s)&&(e===null||eventIds.has(e)),'Sighting binding must refer to known sighting/event or unresolved null');
   const observationEdges=h.observationEdges??[];requireIt(dense(observationEdges),'Dense observation-time edges required');

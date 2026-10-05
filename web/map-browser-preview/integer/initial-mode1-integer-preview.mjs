@@ -8,12 +8,12 @@ import {makeNativeTrig} from '../native/native-map-records.mjs';
 import {readNativeModelInfo} from '../native/native-model-info.mjs';
 import {decodeNativeSbc,readNativeShapes,decodePackedGx,decodeLocalVertices} from '../native/native-sbc-gx.mjs';
 import {deriveNativeMaterialResult} from '../native/native-material.mjs';
-import {replayZeroLightShapeColors,transformNativeEnvironmentColor555} from '../automatic-material-environment.mjs';
+import {isSupportedMode1ColorEnvironment,replayZeroLightShapeColors,transformNativeEnvironmentColor555} from '../automatic-material-environment.mjs?v=field-stream-20261005-1108';
 import {readArm9Overlay} from '../rom-overlay.mjs';
 import {retainNativePrimitiveInputs,projectNativePrimitiveFx} from './native-primitive-inputs.mjs';
-import {readNativeBinaryPolygonTexture} from './native-binary-alpha.mjs';
-import {renderClassifiedStaticBinaryDepth} from './static-binary-depth.mjs';
-import {renderStaticMode0Rgb,presentStaticRgb} from './static-mode0-rgb.mjs';
+import {readNativeBinaryPolygonTexture} from './native-binary-alpha.mjs?v=field-stream-20261005-1108';
+import {renderClassifiedStaticBinaryDepth} from './static-binary-depth.mjs?v=field-stream-20261005-1108';
+import {renderStaticMode0Rgb,presentStaticRgb} from './static-mode0-rgb.mjs?v=field-stream-20261005-1108';
 const eq=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const fx=m=>Array.isArray(m)&&m.length===16&&m.every(x=>Number.isInteger(x)&&x>=-2147483648&&x<=2147483647);
 const i32=n=>Number(BigInt.asIntN(32,n));
@@ -63,13 +63,13 @@ function verifySourceColors(bytes,model,sbc,instance,sourceModel,environment,mas
  * it does not assert a running game's retained viewport/swap/hack settings.
  */
 export function collectInitialMode1IntegerInputs(project,record,automatic,camera,{viewportWord,depthMode,fragmentSamplingHack,textureScalingFactor}={}){
- if(automatic?.plan?.recordKey!==record?.key||automatic.environmentApplied!==true||automatic.environment?.profile!=='ROM-initial-ordinary-environment'||automatic.environment.mode!==1||automatic.environment.colorReady!==true||automatic.environment.ordinaryTimeIndependent!==true)throw Error('Source-proven matching time-independent initial mode1 environment required');
+ if(automatic?.plan?.recordKey!==record?.key||automatic.environmentApplied!==true||automatic.environment?.profile!=='ROM-initial-ordinary-environment'||!isSupportedMode1ColorEnvironment(automatic.environment,record.key))throw Error('Source-proven matching time-independent initial mode1 environment required');
  if(automatic.environment.normalLighting?.kind!=='source-zero-light-colors'||automatic.environment.normalLighting.lightColorWords.some((x,i)=>x!==(i<<30)>>>0))throw Error('Source mode1 zero-light proof required');
  if(!fx(camera?.viewFx)||!fx(camera?.projectionFx))throw Error('Calculated source FX32 initial camera required');
  if(viewportWord!==0xbfff0000||depthMode!=='Z'||fragmentSamplingHack!==false||textureScalingFactor!==1)throw Error('Explicit full native viewport/Z/integer/native1x diagnostic profile required');
  const trig=makeNativeTrig(project.sdk.read(0x020e955c,16384),25736),pivot=project.sdk.read(0x020e936c,36),polygons=[],unresolved=automatic.unresolved.map(reason=>({scope:'scene-plan',reason,polygonCount:null})),textureCache=new Map();
  const counts={originalPolygons:0,existingOpaque:0,binaryEligible:0,rejected:0},colorCounts={sourcePolygons:0,priorEligible:0,priorRejected:0,colorEligible:0,colorRejected:0},geometryCounts={sourcePlacements:0,sourceStaticInstances:0,sourceDraws:0,billboardInstances:0,replayedNonBillboardInstances:0};
- const snapshot={profile:'ROM-initial-time-independent-mode1',recordKey:record.key,viewFx:camera.viewFx.slice(),projectionFx:camera.projectionFx.slice()},profile={viewportWord,depthMode,fragmentSamplingHack,textureScalingFactor};
+ const snapshot={profile:automatic.environment.discreteOrdinaryHypothesis?'ROM-initial-discrete-ordinary-mode1':'ROM-initial-time-independent-mode1',recordKey:record.key,viewFx:camera.viewFx.slice(),projectionFx:camera.projectionFx.slice()},profile={viewportWord,depthMode,fragmentSamplingHack,textureScalingFactor};
  for(const [sceneIndex,scene] of automatic.scenes.entries()){
   if(scene.coordinateSpace!=='camera')throw Error('automaticBillboardScenes camera-space result required');
   geometryCounts.sourcePlacements+=scene.placementCount;
@@ -118,7 +118,7 @@ export function collectInitialMode1IntegerInputs(project,record,automatic,camera
         if(rgb555.some(x=>!Number.isInteger(x)||x<0||x>32767))throw Error('Source event-ordered RGB555 unavailable');
         const texture=row.textureInput??readNativeBinaryPolygonTexture(bytes,row,binding);
         if(!textureCache.has(binding.decoded))textureCache.set(binding.decoded,nativeRgba6665(binding.decoded));
-        row.colorInput={rgb555,texture:{...texture,rgba6665:textureCache.get(binding.decoded)},source:{rule:'initial-mode1-time-independent-source-GX-COLOR-NORMAL-tint',sbcOffset:draw.sbcOffset,shapeIndex:draw.shapeIndex,vertexCommands:primitive.vertexCommands.slice(),normalLightingApplied:source.normalLightingApplied===true,positionMatrix:billboard?'source-emitted-BB/BBY-matrix':'source-view-world-node-replay'}};
+        row.colorInput={rgb555,texture:{...texture,rgba6665:textureCache.get(binding.decoded)},source:{rule:automatic.environment.discreteOrdinaryHypothesis?'initial-mode1-discrete-source-GX-COLOR-NORMAL-tint':'initial-mode1-time-independent-source-GX-COLOR-NORMAL-tint',sbcOffset:draw.sbcOffset,shapeIndex:draw.shapeIndex,vertexCommands:primitive.vertexCommands.slice(),normalLightingApplied:source.normalLightingApplied===true,positionMatrix:billboard?'source-emitted-BB/BBY-matrix':'source-view-world-node-replay'}};
        }catch(e){row.colorRejection=e.message;}
       }catch(e){row.classification='rejected';row.binaryRejection=e.message;}
      }
@@ -128,7 +128,7 @@ export function collectInitialMode1IntegerInputs(project,record,automatic,camera
  }
  counts.originalPolygons=polygons.length;colorCounts.sourcePolygons=polygons.length;
  for(const p of polygons){if(p.classification==='rejected'){counts.rejected++;colorCounts.priorRejected++;}else{counts[p.classification==='opaque'?'existingOpaque':'binaryEligible']++;colorCounts.priorEligible++;colorCounts[p.colorInput?'colorEligible':'colorRejected']++;}}
- return{recordKey:record.key,snapshot,polygons,unresolved,counts,colorCounts,geometryCounts,textureScalingFactor,rasterProfile:profile,environmentEvidence:{source:automatic.environment.source,ordinaryTimeIndependent:true,normalLighting:automatic.environment.normalLighting,materialGlobals:automatic.environment.materialGlobals,colorTransformIdentity:automatic.environment.colorTransformIdentity,normalDraws:automatic.environmentNormalDraws,colorDraws:automatic.environmentColorDraws},scope:'Initial ROM mode1 default static pose at caller-selected geometric floor/heading. Integer source original polygons and event-ordered RGB; retained live visibility, dynamic models, fog, translucent paths and native framebuffer acceptance are unresolved.'};
+ return{recordKey:record.key,snapshot,polygons,unresolved,counts,colorCounts,geometryCounts,textureScalingFactor,rasterProfile:profile,environmentEvidence:{source:automatic.environment.source,ordinaryTimeIndependent:automatic.environment.ordinaryTimeIndependent,discreteOrdinaryHypothesis:automatic.environment.discreteOrdinaryHypothesis??null,normalLighting:automatic.environment.normalLighting,materialGlobals:automatic.environment.materialGlobals,colorTransformIdentity:automatic.environment.colorTransformIdentity,normalDraws:automatic.environmentNormalDraws,colorDraws:automatic.environmentColorDraws},scope:'Initial ROM mode1 default static pose at caller-selected geometric floor/heading. Integer source original polygons and event-ordered RGB; retained live visibility, dynamic models, fog, translucent paths and native framebuffer acceptance are unresolved.'};
 }
 export function renderInitialMode1IntegerPreview(project,record,automatic,camera,profile){
  const inventory=collectInitialMode1IntegerInputs(project,record,automatic,camera,profile),depth=renderClassifiedStaticBinaryDepth(inventory),rgb=renderStaticMode0Rgb(inventory,depth);

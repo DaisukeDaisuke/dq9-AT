@@ -1,0 +1,95 @@
+{
+  "schema": "monster-renderer-dependency-revision-v1",
+  "files": [
+    {
+      "path": "web/encounter-context.mjs",
+      "bytes": 1782,
+      "sha256": "6f6573635a223d158e86700bd96d2fcd297e1c4989f49c8113fe1dea1f3cc035"
+    },
+    {
+      "path": "web/field-graph.mjs",
+      "bytes": 6363,
+      "sha256": "9b2a5215e09786dfa89073f040fb30479dd08888a60b0a844e9afb7b08099165"
+    },
+    {
+      "path": "web/map-core.mjs",
+      "bytes": 10264,
+      "sha256": "dfc3c0c4eca8764d12714697f19e4fdd6a5476a91843deb46004153c7e1a293f"
+    },
+    {
+      "path": "web/minimap-pac.mjs",
+      "bytes": 2129,
+      "sha256": "ff11e9af78e62fdf68a94d88215bb022a5cd1a53580fc0d8d40c3d44e1d1db5e"
+    },
+    {
+      "path": "web/monster-animation.mjs",
+      "bytes": 6670,
+      "sha256": "b057ba5f3d188e148f3ca1217e8d50c9b951b333c61851b6d7141d807f47e3e6"
+    },
+    {
+      "path": "web/monster-assets.mjs",
+      "bytes": 5543,
+      "sha256": "1e4d8c75731bd90cfc7c7cfa2181b2bd6e7043516629c8051037683c4b909626"
+    },
+    {
+      "path": "web/monster-body-support.mjs",
+      "bytes": 5547,
+      "sha256": "935d33f6e5da9f13076cdd07da9d356129b0d927c4b90d5bead98f3e1a627891"
+    },
+    {
+      "path": "web/monster-cpu-template.mjs",
+      "bytes": 4508,
+      "sha256": "85fc1362d2ed327fdceffb34124d9204cd470e7aea2117f448d7e552137f9a5e"
+    },
+    {
+      "path": "web/monster-geometry.mjs",
+      "bytes": 17226,
+      "sha256": "c44b21773c2f8943ba76f89bce5548e4a7e78300f3bdab5eb8ac7f43d5b476cf"
+    },
+    {
+      "path": "web/monster-render-state.mjs",
+      "bytes": 3896,
+      "sha256": "7b4e8b6e76904eae57f135128ead018d4268da4850c1118d2a44a822b23ae951"
+    },
+    {
+      "path": "web/monster-roi-descriptor.mjs",
+      "bytes": 3426,
+      "sha256": "4696a0f227496307f893358226e4c597ccef3a91c153bdcc67eb7fed67f77292"
+    },
+    {
+      "path": "web/monster-template-bank.mjs",
+      "bytes": 8141,
+      "sha256": "edb1c534b466ff703e417c1480e3e47dc60e8d16ecc46b731a7c0c6539dccf3c"
+    },
+    {
+      "path": "web/monster-webgpu.mjs",
+      "bytes": 14876,
+      "sha256": "cb88ee426a8cb07b6ba679d64256cb2f0b617ac228d14331623bfde7a47e14ca"
+    },
+    {
+      "path": "web/vendor/call-stream.mjs",
+      "bytes": 2797,
+      "sha256": "b20a5b6d0ab441435c3c89ead73ff196b28f1be5375b099d956b80945eb579c4"
+    },
+    {
+      "path": "web/vendor/gp2.js",
+      "bytes": 12408,
+      "sha256": "4ba1fc04425c9a5ef3f1bd924e9ce9b01dd7ec48eedfd9b8458c8747e7045aa5"
+    },
+    {
+      "path": "web/vendor/narc-source.js",
+      "bytes": 11822,
+      "sha256": "e585711f4ad23d09bdf9ac737d64eddd15028d29a0d5535aba84df3c57a245ac"
+    },
+    {
+      "path": "web/vendor/nitro-fs.mjs",
+      "bytes": 168113,
+      "sha256": "8429b10c5c69b6799ae7c80ec23beb29b569f6dfdd87ef116b64ea274f3f8713"
+    },
+    {
+      "path": "web/wasm/monster_geometry.wasm",
+      "bytes": 4397,
+      "sha256": "a3439c303fb3a299a8c6454360ee5ba6111768747dd1917bf4d377577f412bf6"
+    }
+  ]
+}

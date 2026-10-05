@@ -1,9 +1,9 @@
-import{createInferredMode2GpuRenderer}from'./inferred-mode2-gpu-renderer.mjs?v=recognition-cache-20261005-1007';
+import{createInferredMode2GpuRenderer}from'./inferred-mode2-gpu-renderer.mjs?v=field-stream-20261005-1108';
 /* One-entry, segment-scoped reuse of a prior environment HYPOTHESIS. Fresh
  * marker bounds + geometry refinement + exact native rendering are mandatory.
  * A hit never means current clock/selector identity or temporal AT evidence.
  */
-import{inferAutomaticMode2Background}from'./automatic-mode2-background.mjs?v=map-coverage-20261005-0931';import{prepareMode2InverseModel,renderMode2InverseSource}from'./mode2-inverse-render.mjs?v=map-coverage-20261005-0931';import{refineGeometryPosition}from'./geometry-position-refinement.mjs?v=map-coverage-20261005-0931';import{automaticPreviewCamera}from'./automatic-preview-camera.mjs';import{floorHeightsAtXZ}from'./rom-floor-candidates.mjs';import{compareMapBackground}from'./map-video-residual.mjs';
+import{inferAutomaticMode2Background}from'./automatic-mode2-background.mjs?v=field-stream-20261005-1108';import{prepareMode2InverseModel,renderMode2InverseSource}from'./mode2-inverse-render.mjs?v=field-stream-20261005-1108';import{refineGeometryPosition}from'./geometry-position-refinement.mjs?v=map-coverage-20261005-0931';import{automaticPreviewCamera}from'./automatic-preview-camera.mjs';import{floorHeightsAtXZ}from'./rom-floor-candidates.mjs';import{compareMapBackground}from'./map-video-residual.mjs';
 export class Mode2VideoContinuity{
  constructor({initializeGpu}={}){this.forwardRenderer=createInferredMode2GpuRenderer({initialize:initializeGpu});this.entry=null;this.stats={coldSolves:0,probes:0,hits:0,misses:0,invalidations:0};}
  reset(){this.entry=null;this.stats.invalidations++;}

@@ -22,3 +22,5 @@ export function inferFoggedMode2Photometry({model,bases,video}){
  }
  rows.sort((a,b)=>a.robustLoss-b.robustLoss);const best=rows[0];if(!best)return{ready:false,reason:'No finite source fog fit',currentEnvironmentCertified:false};return{ready:true,inputs:{selector:0,timeIndex:best.index,timeFloat:Math.fround(model.environment.rules.timeBoundaries[best.index]-model.environment.rules.duration+best.coefficient*model.environment.rules.duration),intensityFx:Math.round(best.intensity*4096),timeOverrideIndex:null,fogWriterEnabled:true},best,alternatives:rows,samples:samples.length,method:'source-polynomial-seed-analytic-gradient-fog-fit',nativeForwardValidationRequired:true,currentEnvironmentCertified:false,minimumProvenATCalls:0,unsearched:['Forced selectors','Light-only override','Retained fog with skipped writer','Other material/view passes'],scope:'Continuous color/fog surrogate only; source integer quantization and full-scene acceptance are checked by subsequent exact native rerender. No clock grid or per-slot candidate images.'};
 }
+
+export {minimizeBox};

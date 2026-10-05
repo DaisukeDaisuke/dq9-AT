@@ -1,9 +1,9 @@
 import {NitroFS} from './vendor/nitro-fs.mjs';
 import {parseMonsterAssetCatalog} from './monster-assets.mjs';
-import {MonsterGeometry} from './monster-geometry.mjs';
+import {MonsterGeometry} from './monster-geometry.mjs?v=field-stream-20261005-1108';
 import {createDinoFeatureBackend} from './monster-dinov2.mjs?v=recognition-cache-20261005-1007';
 import {createFeatureBankStore} from './monster-feature-cache.mjs';
-import {recognizeROI,supplementEnemyROIs,prepareDinoPoseBank} from './monster-recognition-engine.mjs?v=recognition-cache-20261005-1007';
+import {recognizeROI,supplementEnemyROIs,prepareDinoPoseBank} from './monster-recognition-engine.mjs?v=field-stream-20261005-1108';
 let state=null,epoch=0,active=null;
 const post=message=>self.postMessage(message);
 self.onmessage=async({data:m})=>{

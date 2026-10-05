@@ -5,8 +5,8 @@ import {createRendererSourceArchives} from './renderer-source-archives.mjs?v=rec
  * remain CPU preparation; a GPU utilisation or acceleration claim is not made.
  */
 import {createNativeIntegerCompute} from './native-integer-compute.mjs?v=wgsl-keyword-20261005-0834';
-import {prepareInitialMode1IntegerCompute,renderPreparedIntegerCompute} from './prepare-initial-integer-compute.mjs?v=mode2-mse-20261005-0909';
-import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=phase-grid-20261005-0620';
+import {prepareInitialMode1IntegerCompute,renderPreparedIntegerCompute} from './prepare-initial-integer-compute.mjs?v=field-stream-20261005-1108';
+import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=field-stream-20261005-1108';
 import {createSourcePreparationCache} from './integer/source-preparation-cache.mjs';
 
 export function createAutomaticBackgroundRenderer({initialize=createNativeIntegerCompute,prepare=prepareInitialMode1IntegerCompute,renderGpu=renderPreparedIntegerCompute,renderCpu=renderInitialIntegerFog,createCache=createSourcePreparationCache,now=()=>performance.now()}={}) {

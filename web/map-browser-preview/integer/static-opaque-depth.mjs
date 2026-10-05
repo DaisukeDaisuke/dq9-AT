@@ -5,7 +5,7 @@
  * are reused. This is not a native framebuffer or a scene completeness claim.
  */
 import {makeNativeTrig} from '../native/native-map-records.mjs';
-import {buildMode2LitGeometry} from './mode2-lighting-adapter.mjs';
+import {buildMode2LitGeometry} from './mode2-lighting-adapter.mjs?v=field-stream-20261005-1108';
 import {retainNativePrimitiveInputs,projectNativePrimitiveFx} from './native-primitive-inputs.mjs';
 import {rasterizeNativePositionClippedZPolygon} from './native-position-clip.mjs';
 const mul=(a,b)=>Array.from({length:16},(_,k)=>{let v=0n;for(let j=0;j<4;j++)v+=BigInt(a[j*4+k%4])*BigInt(b[(k>>2)*4+j]);return Number(BigInt.asIntN(32,v>>12n));});

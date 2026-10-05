@@ -2,8 +2,8 @@
  * Adapter for one already selected automatic background, never a new search.
  */
 import {automaticBillboardScenes} from './automatic-billboard-scene.mjs';
-import {applyAutomaticMaterialEnvironment} from './automatic-material-environment.mjs';
-import {prepareInitialMode1IntegerCompute} from './prepare-initial-integer-compute.mjs';
+import {applyAutomaticMaterialEnvironment} from './automatic-material-environment.mjs?v=field-stream-20261005-1108';
+import {prepareInitialMode1IntegerCompute} from './prepare-initial-integer-compute.mjs?v=field-stream-20261005-1108';
 import {createSourcePreparationCache} from './integer/source-preparation-cache.mjs';
 
 export function automaticGpuBinding(result, frameEvidence) {
