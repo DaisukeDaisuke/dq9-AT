@@ -1,12 +1,13 @@
+import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
 import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=asset-prepare-20261005-0358';
 import {residualModelPlan,residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs';
-import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=edge-source-return-20261005-0434';
+import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=mse-explicit-20261005-0443';
 import {CPUTextClient} from '../font-akinator-cpu-client.mjs';
 import {deriveVideoMapNames} from './video-map-name-input.mjs';
 import {MapPositionMatcher} from '../map-position.mjs';
 import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
-import {mountMapVideoComparison} from './map-video-comparison.mjs?v=edge-source-return-20261005-0434';
+import {mountMapVideoComparison} from './map-video-comparison.mjs?v=mse-explicit-20261005-0443';
 import {openMapRom} from './static-scene.mjs';
 import {buildRomMapCatalog} from './rom-map-catalog.mjs';
 import {nameCatalogMaps} from './rom-map-names.mjs';
@@ -81,19 +82,19 @@ async function renderFromMarker(input){
  const upper=$('comparison-upper');upper.width=256;upper.height=192;const uc=upper.getContext('2d');uc.putImageData(new ImageData(result.upper.rgba,256,192),0,0);uc.strokeStyle='#f44';
  for(const m of result.markers.candidates)uc.strokeRect(m.bounds.x-1,m.bounds.y-1,m.bounds.w+2,m.bounds.h+2);
  const evidence={...result,upper:{width:256,height:192}};$('marker-details').textContent=JSON.stringify(evidence,null,2);
- if(result.status!=='position-candidate'){$('marker-status').textContent='上画面からの位置供給は未解決: '+result.status;return;}
+ if(!['position-candidate','floor-unresolved-or-multiple'].includes(result.status)||!result.primaryCandidate?.floor.heightsFx.length){$('marker-status').textContent='上画面からの位置供給は未解決: '+result.status;return;}
  const c=result.primaryCandidate,heading=readRomInitialHeading(project.sdk);point={...c.world,source:c.coordinate};markerInput={evidence,heading};markPoint(c.image.x,c.image.y);
- $('floor').replaceChildren(new Option('上画面候補に対応するROM床 '+(c.floor.heightsFx[0]/4096).toFixed(3),String(c.floor.heightsFx[0])));$('floor').disabled=true;$('draw').disabled=false;
+ const multiple=c.floor.heightsFx.length>1;$('floor').replaceChildren(...(multiple?[new Option('ROM床候補を選択（未確定）','')]:[]),...c.floor.heightsFx.map(v=>new Option('ROM床候補 '+(v/4096).toFixed(3),String(v))));$('floor').disabled=!multiple;$('draw').disabled=multiple;const headings=readRomCameraYawCandidates(project.sdk);markerInput.headingAlternatives=headings;$('rom-yaw-candidate').replaceChildren(...headings.candidates.map(h=>new Option(h.kind+' '+h.yawDegrees+'°',String(h.yawDegrees))));
  $('yaw').value=String(heading.yawDegrees);$('yawlabel').value=heading.yawDegrees+'°';
- $('marker-status').textContent='先頭色の点候補→ROM地図位置→唯一の床を取得しました。初期カメラ向きをROM命令から供給して描画します。点の本人対応と映像時点のカメラ変更は未確認です。';
- await render();
+ $('marker-status').textContent=(multiple?'複数のROM床が残るため候補を選択してください。':'先頭色の点候補→ROM地図位置→唯一の床を取得しました。')+'初期カメラ向きをROM命令から供給して描画します。点の本人対応と映像時点のカメラ変更は未確認です。';
+ if(!multiple)await render();
 }
 async function render(){
- if(!point||!$('floor').options.length)return;const id=version,drawId=++renderVersion,comparisonFrameId=videoComparison.frameId();videoComparison.invalidate('背景を再描画しています。');const selected={...point,yFx:Number($('floor').value),yawDegrees:Number($('yaw').value)};$('status').textContent='CPUで描画しています…';await frame();if(id!==version||drawId!==renderVersion)return;
+ if(!point||!$('floor').options.length||$('floor').value==='')return;const id=version,drawId=++renderVersion,comparisonFrameId=videoComparison.frameId();videoComparison.invalidate('背景を再描画しています。');const selected={...point,yFx:Number($('floor').value),yawDegrees:Number($('yaw').value)};$('status').textContent='CPUで描画しています…';await frame();if(id!==version||drawId!==renderVersion)return;
  const camera=automaticPreviewCamera(project,rom,record,selected),active=applyAutomaticMaterialEnvironment(project,record,automaticBillboardScenes(project,automatic,camera.viewFx));
  if(!active.environmentApplied){$('diagnostics').textContent=JSON.stringify(active.environment,null,2);throw Error('ROMの初期環境をまだ適用できません: '+active.environment.unresolved.join('; '));}
  const parts=active.scenes.map(s=>prepareDrawPackets(s,{materialGlobals:active.environment.materialGlobals,masks:automatic.masks})),packets={draws:parts.flatMap(x=>x.draws)},requestedRenderer=$('render-profile').value;
- const integer=requestedRenderer==='legacy'?null:renderInitialIntegerFog(project,rom,record,active,camera,{applyFog:requestedRenderer==='integer-fog'});
+ const integer=requestedRenderer==='legacy'?null:renderInitialIntegerFog(project,rom,record,active,camera,{applyFog:requestedRenderer==='integer-fog',screenEffectPhase:$('mse-initial-effect').checked?{kind:'source-constructor'}:null});
  const r=integer?.ready?integer:rasterizePreviewPackets(packets,{view:identity,projection:camera.projectionFx.map(x=>x/4096),clearRGBA:[0,0,0,0],colorProfile:'native-mode0-rgb'}),backend=integer?.ready?'source-integer-static-mode1':'float64-diagnostic',fogApplied=integer?.ready===true&&integer.diagnostics.fogApplied===true;
  const rendererEvidence={requestedRenderer,backend,fogApplied,fallback:integer&&!integer.ready?{reason:integer.reason,diagnostics:integer.diagnostics}:null,integer:integer?.ready?integer.diagnostics:null};
  ctx.putImageData(new ImageData(r.rgba,r.width,r.height),0,0);const blocked=[...active.unresolved,...active.scenes.flatMap(s=>s.unsupported).filter(x=>!x.reason.startsWith('name-char3-A')),...parts.flatMap(p=>p.unsupported),...r.stats.rejected];
@@ -101,7 +102,7 @@ async function render(){
  const evidence={romSHA256,recordKey:record.key,mapId:record.mapId,fieldCode:record.fieldCode,selected,viewFx:camera.viewFx,projectionFx:camera.projectionFx,cameraScope:camera.scope,renderScope:r.scope,stats:r.stats,unresolved:blocked,floorUnresolved:floors.unsupported,fogApplied,rendererEvidence,liveCameraVerified:false,playerInput:markerInput,nameInput};videoComparison.setBackground(r,evidence,comparisonFrameId);
  $('diagnostics').textContent=JSON.stringify({map:record.displayLabel,backend,rendererEvidence,point,floor:Number($('floor').value),floorUnresolved:floors.unsupported,cameraScope:camera.scope,renderScope:r.scope,environment:active.environment.scope,colorReady:active.environment.colorReady,fogReady:active.environment.fogReady,fogUnresolved:active.environment.fogUnresolved,fogApplied,stats:r.stats,unresolved:blocked},null,2);
 }
-$('floor').onchange=guard(render);$('draw').onclick=guard(render);$('yaw').oninput=()=>{$('automatic-map-name').checked=false;$('automatic-player').checked=false;markerInput=null;renderVersion++;videoComparison.invalidate('向きが変わりました。');$('yawlabel').value=$('yaw').value+'°';};$('yaw').onchange=guard(render);
+$('mse-initial-effect').onchange=guard(render);$('rom-yaw-candidate').onchange=guard(async()=>{if($('rom-yaw-candidate').value==='')return;$('yaw').value=$('rom-yaw-candidate').value;$('yawlabel').value=$('yaw').value+'°';await render();});$('floor').onchange=guard(async()=>{$('draw').disabled=$('floor').value==='';await render();});$('draw').onclick=guard(render);$('yaw').oninput=()=>{$('automatic-map-name').checked=false;$('automatic-player').checked=false;markerInput=null;renderVersion++;videoComparison.invalidate('向きが変わりました。');$('yawlabel').value=$('yaw').value+'°';};$('yaw').onchange=guard(render);
 
 $('render-profile').onchange=guard(render);
 

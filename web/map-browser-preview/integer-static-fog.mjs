@@ -1,3 +1,5 @@
+import {readRomMapScreenEffectPlan} from './rom-map-screen-effect-plan.mjs';
+import {readInitialMseLayers,buildMsePolygonInputs} from './native-mse-initial-preview.mjs';
 /* SPDX-License-Identifier: GPL-2.0-or-later
  * Browser adapter over the previously source-compared integer polygon modules.
  * DeSmuME535f676-derived modules retain their notices; see INTEGER_RENDER_NOTICE.md.
@@ -10,7 +12,7 @@ import {clipNativePositionPolygon} from './integer/native-position-clip.mjs';
 import {presentStaticRgb} from './integer/static-mode0-rgb.mjs';
 import {buildFogTable,applyFogPixel} from './native/fog-raster.mjs';
 
-export function renderInitialIntegerFog(project,rom,record,automatic,camera,{applyFog=true}={}){
+export function renderInitialIntegerFog(project,rom,record,automatic,camera,{applyFog=true,screenEffectPhase=null}={}){
  const diagnostics={backend:'source-integer-static-mode1',requestedFog:applyFog,recordKey:record.key,fogApplied:false,sourcePolygonCount:null,remaining:[],scope:'ROM initial mode1 static scene; live camera/environment, animation, edge marking/antialiasing and native framebuffer parity unverified.'};
  try{
   const environment=automatic.environment;
@@ -28,7 +30,8 @@ export function renderInitialIntegerFog(project,rom,record,automatic,camera,{app
   for(const row of translucent.rejected){const p=inventory.polygons[row.index],position=projectNativePrimitiveFx(p.primitive,p.positionMatrixFx,p.projectionFx),clip=clipNativePositionPolygon(position.clipVerticesFx);diagnostics.remaining.push({...row,model:p.model,materialName:p.materialName,positionClipDiscarded:clip.discarded,remainingVertices:clip.positionsFx.length});}
   if(diagnostics.remaining.some(p=>!p.positionClipDiscarded))throw Error('可視範囲に未対応polygonがあります（原形状と拒否理由を保持）');
   diagnostics.nativeEdgeSetupAborts=[];for(const p of translucent.polygons){const r=rasterizeNativeTexturedTranslucentMode0(p.args,p.translucentInput);if(!r.ready)throw Error('半透明raster未対応: '+r.reason);if(r.nativeEdgeSetupAbort)diagnostics.nativeEdgeSetupAborts.push({index:p.index,...r.nativeEdgeSetupAbort});participants.push({index:p.index,frontFacing:Boolean(r.frontFacing),fragments:r.fragments});}
-  const combined=compositeTexturedTranslucentOverStaticRgb(base.rgb,translucent,participants,controls);
+  let compositeInputs=translucent;const effectPlan=readRomMapScreenEffectPlan(project,automatic.plan);diagnostics.screenEffect={plan:effectPlan,requestedPhase:screenEffectPhase,applied:false,currentPhaseProven:false,gatesEvaluated:false};if(screenEffectPhase){if(!effectPlan.ready)throw Error('画面効果のROM選択が未解決です');if(effectPlan.request){const mse=readInitialMseLayers(project,effectPlan),screen=buildMsePolygonInputs(project,mse,{phase:screenEffectPhase,indexStart:inventory.polygons.length,rasterProfile:profile});for(const p of screen.polygons){const r=rasterizeNativeTexturedTranslucentMode0(p.args,p.translucentInput);if(!r.ready)throw Error(r.reason);participants.push({index:p.index,frontFacing:Boolean(r.frontFacing),fragments:r.fragments});}compositeInputs={...translucent,polygons:[...translucent.polygons,...screen.polygons]};diagnostics.screenEffect.applied=true;diagnostics.screenEffect.polygonCount=screen.polygons.length;}}
+ const combined=compositeTexturedTranslucentOverStaticRgb(base.rgb,compositeInputs,participants,controls);
   diagnostics.translucent.stats=combined.stats;if(combined.stats.unknownDestination||combined.unavailableMask.some(v=>v))throw Error('半透明合成先のnative depth/色が未解決です');
   let rgba6665=combined.rgba6665;
   if(applyFog){const parameters=environment.fogParameters,table=buildFogTable(parameters);rgba6665=rgba6665.slice();let changed=0,fogged=0;
