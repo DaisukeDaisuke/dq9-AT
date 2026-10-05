@@ -11,6 +11,9 @@ export function createAutomaticGpuSession({initialize=createNativeIntegerCompute
  async function run({project,rom,result,frameEvidence,isCurrent=()=>true}) {
   const mine=++epoch,binding=automaticGpuBinding(result,frameEvidence),current=()=>mine===epoch&&isCurrent();
   const emit=value=>{if(current())publish({...value,binding});};
+  const pipeline=result.selected?.integer?.diagnostics?.automaticBackgroundPipeline;
+  if(pipeline?.backend==='webgpu-source-integer-pixels'){emit({state:'gpu-background-used',message:'この背景はGPUで描画してから映像との比較に使用しました。CPUとの画素一致・実機一致・全入力対応は未検証です。',diagnostics:result.selected.integer.diagnostics,image:result.selected.image,scope:pipeline.scope});return;}
+  if(pipeline){emit({state:'cpu-background-fallback',message:'GPU経路の条件が成立しないため、通常のCPU背景比較を使用しました。理由と処理時間を保持しています。',diagnostics:result.selected.integer.diagnostics,reason:pipeline.fallbackReason,image:null,scope:pipeline.scope});return;}
   emit({state:'preparing',message:'同じ自動背景候補のGPU入力を準備しています…',image:null});
   const gpu=await begin();if(!current())return;
   // Surface the missing adapter without preventing CPU map recognition.
