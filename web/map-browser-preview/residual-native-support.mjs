@@ -1,4 +1,4 @@
-import {attachNativeBodySupport} from '../monster-native-support.mjs?v=emitted-continuation-20261006-0545';
+import {attachNativeBodySupport} from '../monster-native-support.mjs?v=native-evidence-sharing-20261006-0723';
 
 // Cooperative work budget for the entire frozen set, including preparation.
 // Synchronous source work cannot be preempted, so this is not a hard elapsed-
