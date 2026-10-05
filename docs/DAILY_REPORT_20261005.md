@@ -185,3 +185,14 @@
 - 保存40参照画像から同一Node/WASMのCLSを別取得し、foreground vectorは代用しない。全24maskの同bbox/元RGBを不透明分類入力として各1回処理。旧64参照/追加40参照/union8モデルの全順位を保持。追加4model top1は22/24がz024bで、身体部分・背景・味方にも同じ順位を返し、unknown拒否や種別正解は未成立。親再実行は参照40ベクトル一致、24queryは出力先以外RESULT一致、同frame context束縛も一致。
 - 同frame129.996のmap候補からmodel/variant/alias集合を照合し、230で生成した静的参照を再利用した。230のmapを時間伝播したわけではない。元6未対応pose・bounds/照明差・認識誤差を保持し、出生/draw/ATには接続しない。
 - source/依存復元記録と訂正文を非公開tools df10d17922a38ec4aa38c35fe52360b16a01f66dまで通常pushし、本文/head確認。私的入力/全mask/CLS/失敗を旧payload保持で保存。次は既存Work1 automatic gridを同Metaモデルへ適用する別baselineで、色成分を入口条件にしない候補生成を確認する。以前のSlimSAM grid失敗とMeta core点/box比較を保持し、新モデルやGT点は追加しない。
+
+
+## 09:40 JST — 全画面候補の順序改善と実動画入口、バックアップ反映
+
+- 同Meta SAMに元Work1の全画面16×12 gridを無変更で適用し、192点/576raw mask、元quality/NMSの29候補を保存。色成分で背景と結合していた上端の敵2に、bboxIoU.867607/近似GT箱coverage.903499のmask37が生成されたが、quality順位15位で元top8外だった。敵1はmask64の部分箱のまま。親の別実行はtiming以外RESULT一致、576 packed mask配列も完全一致。
+- quality29全部をtop8より前に既存fine支持とopaque CLSへ接続。old64/conditional40/union104の適用数15/12/17、coherentは旧/unionが小UI371と敵2側37、conditionalが37のみ。全ineligible/大きいmaskと全順位を保持。CLSは26/29が同モデルでunknown拒否は未解決。親の別実行は出力先以外RESULT全一致。
+- 元coherent判定で安定分割し、coherentを元quality順、その後全残候補を元順で並べる明示variant。3bankすべてのtop8に37が入り、元部分箱64も残った。元top8の近似敵box対応1体→2体だが、種別正解・完全silhouetteではない。新top2にもUI/味方が残る。GTで37を選択せず、新NMS/閾値/既定動作は変更していない。
+- 正式zuo動画129.596–130.396秒の5実観測へ、video/time/layoutと検証済みcacheだけの入口を接続。各frame自身のfullsource→screen/name geometry→ROM候補→model/variant/alias照合で参照を再束縛し、前frameのmapを伝播しない。元V2は全5frameで0候補のまま保持。Meta model/processorは各1実ロード、5embedding/2880raw mask、quality148全件のfine/opaque/priorityまで344.19秒で完走。リアルタイムではない。
+- 中心129.996は固定単frameのRGBA/画像tensor/576mask/29fine/CLSvector/全順位/3banktop8とtop2がexact一致。条件付きcoherentは5frameで0/0/1/0/0となり、近隣で支持が安定しない。旧/unionは小UIを通し、body/species/unknown/出生/ATの未解決を維持。全20レビュー画像と941私的fileのhashを保存。
+- GitHubプラグインの再許可後、保留分と動画入口を非公開tools main95e2fc1d840d3610aa9b9065d0590885ecb38970へ通常反映。main refとファイル本文を照合した。先に作成した未所属commitへのリンクはmain反映完了前だったため訂正し、現在はmainが同commitを指す。ROM/SAV/RAM/動画/抽出資産はGitへ入れていない。
+- 私的作業控えは旧全payloadを保持し、動画入口の947追加payloadまでhash/ZIP CRC検証して既存Library項目のversion15へ保存済み。復旧索引の正式原本/モデル依存と併用する控えであり、全実行環境が単一ZIPに入るという意味ではない。
