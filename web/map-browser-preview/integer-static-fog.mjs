@@ -6,7 +6,7 @@ import {readInitialMseLayers,buildMsePolygonInputs} from './native-mse-initial-p
  * No previewDepth/RGBA8888 is converted into native raster input.
  */
 import {readInitialMode1RasterProfile,renderInitialMode1IntegerPreview} from './integer/initial-mode1-integer-preview.mjs';
-import {readInitialTexturedBlendProfile,collectInitialMode1TexturedTranslucentInputs,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb} from './integer/native-textured-translucent.mjs?v=edge-source-return-20261005-0434';
+import {readInitialTexturedBlendProfile,collectInitialMode1TexturedTranslucentInputs,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb} from './integer/native-textured-translucent.mjs?v=phase-grid-20261005-0620';
 import {projectNativePrimitiveFx} from './integer/native-primitive-inputs.mjs';
 import {clipNativePositionPolygon} from './integer/native-position-clip.mjs';
 import {presentStaticRgb} from './integer/static-mode0-rgb.mjs';

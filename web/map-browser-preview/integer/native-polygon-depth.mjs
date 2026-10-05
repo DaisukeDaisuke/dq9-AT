@@ -85,7 +85,12 @@ function rasterizeNativeZPolygon({clipVerticesFx,polygonAttribute,viewportWord,d
  const rotation=postClip?0:6%originalTransformed.length;
  const vertices=[...originalTransformed.slice(rotation),...originalTransformed.slice(0,rotation)];
  const facing=vertices.reduce((s,v,j)=>{const p=vertices[(j+vertices.length-1)%vertices.length];return s+(v.y+p.y)*(v.x-p.x);},0n),back=facing<0n,cullingMode=polygonAttribute>>>6&3;
- if(facing===0n)return{ready:false,reason:'Degenerate polygon outside ordinary polygon path'};
+ // gfx3d::GeneratePolygon marks the optional line hack only for untextured
+ // primitives. A textured post-clip point keeps the ordinary edge walk: both
+ // edge heights are zero, so _runscanlines emits no samples. Keep other zero
+ // area polygons unsupported; do not turn the general line branch into a fill.
+ const texturedClipPoint=postClip&&textureFormat!==0&&vertices.every(v=>v.x===vertices[0].x&&v.y===vertices[0].y);
+ if(facing===0n&&!texturedClipPoint)return{ready:false,reason:'Degenerate polygon outside ordinary polygon path'};
  const result={ready:true,width:256,height:192,coverage:new Uint8Array(256*192),depth24:new Uint32Array(256*192),fragments:[],scanlines:[],edgeRuns:[],originalTransformed,transformed:vertices,clipOutputVertexIndices:vertices.map(v=>v.index),facing,cullingMode,culled:![[false,false,true,true],[false,true,false,true]][Number(back)][cullingMode],primitiveVertexCount:vertices.length,scope:'Incoming original-polygon geometric coverage and integer Z. No scene occlusion, final framebuffer, texture sampling or fog.'};
  if(result.culled)return result;
  // _sort_verts: reverse front-facing winding, then rotate to minimum Y.

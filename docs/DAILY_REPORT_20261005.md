@@ -264,3 +264,12 @@
 - 保存済み正確PTS3時点に生面積順上位32を同一規則で分類。96query実推論/失敗0、参照6144回はRGBA/tensor/provider一致を確認した再利用。227.012の小個体対応ID233(17×13、128画素、原順位17)、228.012のID352(12×15、128画素、順位11)でz000cが1位。ただしz000c1位11cropのうち9は目視上壁/床/霧/黒領域であり、敵/種類確定にしない。未比較714/624/450を保持、AT追加下限0。
 - 霧は2層のscrollを持ち、源更新の増分/周期から共通描画回数nの条件付きdomainを整理。現nは動画秒数ではない。16点位相gridは未開始、1候補cost287msだけ実測。ユーザーの追加依頼により、初期writer/更新caller/gate/fadeがATや入場timerに依存するかを先に調査中。非依存とはまだ断定していない。
 - ROOT Library v22:403890534bytes、SHA256 23a1ea09d257d7be8d94f1f399dfdf38d8cb4893cc308064734b36a61be90dea。前payload保持、公開source/ブラウザ証拠/旧失敗/96比較と位相domainを保存。非公開再現sourceはdots-tools fee32b0e、receipt225f16be。進行中AT/timer調査は次の保存対象。
+
+
+## 15:21 JST — 一括自動探索ボタン・霧の描画回数と保存
+- 既存UIを維持し、大きい「マップ探索（キャッシュあり）・自動位置合わせ」をmain c9f56a2eへ公開。Pages37270937292成功。既存MapPositionMatcher/chunk-XZ変換とCandidateMapMatcherの画像cacheを再利用し、同frameの名前候補全map・全minimap・床・ROM由来初期/L/R端点・効果仮説を自動比較する。maplist命令由来のカメラ入力gateで、地上F01/F06/F07は初期向き候補のみ。中間角度やruntime overrideは未探索。
+- ブラウザ実測: 正式1ninnの227秒付近を2秒の私的映像へ切り出して入力。ROM/動画の選択後、サイトへ配置・map・座標・床・向き・秒数・モデルを入力せず大ボタン1回。12背景候補から7402/床656/315度/初期MSE仮説を選び、補正(9,7)を適用、45695比較画素・MAE12.7227・635生領域、32領域のROM候補比較完走・603未比較。再実行も同frame/hash・同候補、地図2件/scene2件cache hit。これは切り出した場面の限定動作で、長編動画全体や種類正解の全自動完成ではない。背景/味方の誤候補は残る。
+- 新動画は正式33partを番号順に照合し、tar単一memberとMKVサイズ2215671373bytes/SHA256/CRC32ほか指定8項目一致。CRC64/BLAKE2sp/XXH64は未検証。1200秒は名前候補5mapを保持し、F01/H03の同一minimap aliasをまとめて位置/床まで供給。描画は時間依存mode2環境の未接続で停止し、対応完了とはしない。初期ATはfilenameから確定していない。
+- 霧/AT実測: 正式の同じ保存状態から120frameを進め、観測OFF/ON境界一致、drop0。AT値は同じまま霧offsetが進み、AT write監視も同区間hitなし。60回の完了MSE描画境界がROMの共通counter漸化式と一致。現在ATだけで霧位置が決まる仮説の反例であり、全上流AT非依存の証明ではない。別メニュー停止の入力試行は目的のwriterへ到達せず、負結果保持。動画入場位置・停止/reload/fadeとの対応は未完。
+- MSE16位相gridで残ったn90112の拒否は、textured post-clipの全頂点が画面端の同一点へ潰れる2polygon。正式core C++同入力でscanline0、JS最小受理も0fragment。旧270画像と比較値は不変、新18条件が描画可能になった。周期180224のうち16のみで、現在位相は未確定。自動探索への有限位相候補接続を進める。
+- ROOT Library v23は408631855bytes、SHA256 b7feec2b1444d4211c557c2d091d9ec8eb3f75bc541c40e780b1b24f0ff458e9。以前のpayloadを保持し、native霧実測・新動画所在/照合表・当時の未公開UIを追加。private main a9321ce4。v23保存後の公開大ボタン/ブラウザ実測/位相接続は別の最新Git・作業保存地点であり、同版へ収録済みとはしない。

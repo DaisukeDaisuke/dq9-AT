@@ -12,7 +12,7 @@ import{readNativeModelInfo}from'../native/native-model-info.mjs';
 import{readNativeShapes,decodePackedGx,decodeLocalVertices}from'../native/native-sbc-gx.mjs';
 import{projectNativePrimitiveFx}from'./native-primitive-inputs.mjs';
 import{clipNativePositionPolygon}from'./native-position-clip.mjs';
-import{rasterizeTexturedTranslucentCoverageNativeZPolygon}from'./native-polygon-depth.mjs?v=edge-source-return-20261005-0434';
+import{rasterizeTexturedTranslucentCoverageNativeZPolygon}from'./native-polygon-depth.mjs?v=phase-grid-20261005-0620';
 const expand5=x=>x===0?0:2*x+1,modulate=(a,b)=>((a+1)*(b+1)-1)>>6;
 const i64=n=>{if(n<-(1n<<63n)||n>=(1n<<63n))throw Error('Active signed64 interpolant overflow unsupported');return n;};
 export {readInitialMode1BlendProfile as readInitialTexturedBlendProfile} from './native-mode0-translucent.mjs';

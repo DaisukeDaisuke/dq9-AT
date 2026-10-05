@@ -1,15 +1,15 @@
-import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs';
+import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=phase-grid-20261005-0620';
 import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
 import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=asset-prepare-20261005-0358';
 import {residualModelPlan,residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs';
-import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=automatic-map-button-20261005-0550';
+import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=phase-grid-20261005-0620';
 import {CPUTextClient} from '../font-akinator-cpu-client.mjs';
 import {deriveVideoMapNames} from './video-map-name-input.mjs';
 import {MapPositionMatcher} from '../map-position.mjs';
 import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
-import {mountMapVideoComparison} from './map-video-comparison.mjs?v=automatic-map-button-20261005-0550';
+import {mountMapVideoComparison} from './map-video-comparison.mjs?v=phase-grid-20261005-0620';
 import {openMapRom} from './static-scene.mjs';
 import {buildRomMapCatalog} from './rom-map-catalog.mjs';
 import {nameCatalogMaps} from './rom-map-names.mjs';
@@ -25,9 +25,9 @@ const $=id=>document.getElementById(id),ctx=$('view').getContext('2d'),mapCtx=$(
 let rom,project,catalog,maps=[],record,automatic,floors,image,point,renderer,version=0,loaded=false,renderVersion=0,romSHA256=null,positionMatcher=null,markerInput=null;
 const identity=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
 const residualClient=new ResidualRecognitionClient();let encounterTables=null;
-const nameClient=new CPUTextClient();let nameInput=null,pendingNamedMap=null,automaticSearch=null,automaticRequested=false;
+const nameClient=new CPUTextClient();let nameInput=null,pendingNamedMap=null,automaticSearch=null,automaticRequested=false,automaticMsePhase=null;
 const videoComparison=mountMapVideoComparison({renderBackground:render,derivePlayerBackground:renderFromMarker,deriveMapBackground:renderFromName,classifyResiduals:classifyBackgroundResiduals,cancelSearch:()=>{version++;$('auto-search-status').textContent='自動探索を中止しました。';},cancelPending:()=>{nameClient.cancel();residualClient.cancel();}});
-function clearView(){$('marker-details').textContent='';$('marker-status').textContent='描画入力が変わりました。固定映像の上画面から再計算します。';renderVersion++;videoComparison.invalidate('背景の入力が変わりました。');ctx.clearRect(0,0,256,192);$('draw').disabled=true;point=null;markerInput=null;$('floor').replaceChildren();$('floor').disabled=true;}
+function clearView(){automaticMsePhase=null;$('marker-details').textContent='';$('marker-status').textContent='描画入力が変わりました。固定映像の上画面から再計算します。';renderVersion++;videoComparison.invalidate('背景の入力が変わりました。');ctx.clearRect(0,0,256,192);$('draw').disabled=true;point=null;markerInput=null;$('floor').replaceChildren();$('floor').disabled=true;}
 function reportError(e){videoComparison.invalidate('背景の描画に失敗しました。',{resetTracking:true});$('status').textContent='描画できません：'+e.message;console.error(e);}
 function guard(fn){return async event=>{try{await fn(event);}catch(e){reportError(e);}};}
 const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
@@ -83,11 +83,11 @@ async function renderFromName(input){
  if(automaticRequested){await runAutomaticSearch(input,evidence,id);return;}if(evidence.maps.length===1)await loadNamedMap(evidence.maps[0],input,evidence);
 }
 async function runAutomaticSearch(input,evidence,id){
- if(!automaticSearch)return;const result=await automaticSearch.search({input,names:evidence,isCurrent:()=>id===version&&input.frameId===videoComparison.frameId(),onProgress:async p=>{$('auto-search-status').textContent=p.message;await frame();}});
+ if(!automaticSearch)return;const result=await automaticSearch.search({input,names:evidence,isCurrent:()=>id===version&&input.frameId===videoComparison.frameId(),onProgress:async p=>{$('auto-search-status').textContent=p.message;$('comparison-status').textContent=p.message;await frame();}});
  $('auto-search-details').textContent=JSON.stringify(result.diagnostics,null,2);if(!result.selected){$('auto-search-status').textContent='自動探索で描画可能な候補が得られませんでした。未対応・未探索の内訳を保持しています。';return;}
- const s=result.selected;record=s.record;automatic=s.scene.automatic;floors=s.scene.floors;image=s.reference.image;point={...s.position.world,source:s.position.coordinate};nameInput={...evidence,automaticSearch:result.diagnostics};pendingNamedMap=null;const {upper,...positionEvidence}=s.reference.result;markerInput={evidence:positionEvidence,heading:s.heading};
+ const s=result.selected;record=s.record;automatic=s.scene.automatic;floors=s.scene.floors;image=s.reference.image;point={...s.position.world,source:s.position.coordinate};nameInput={...evidence,automaticSearch:result.diagnostics};pendingNamedMap=null;const {upper,...positionEvidence}=s.reference.result;markerInput={evidence:positionEvidence,heading:s.heading};$('marker-details').textContent=JSON.stringify(positionEvidence,null,2);$('marker-status').textContent='上画面からROM座標候補を取得: X='+s.point.xFx+'/4096、Z='+s.point.zFx+'/4096。床・向き候補を自動比較済み。';$('mapstatus').textContent=record.displayLabel+' / '+s.reference.path+'（自動選択した背景仮説）';$('status').textContent='ROM背景候補'+result.diagnostics.backgroundCandidates.length+'件を比較し描画しました。';if(upper){const c=$('comparison-upper');c.width=upper.width;c.height=upper.height;c.getContext('2d').putImageData(new ImageData(upper.rgba,upper.width,upper.height),0,0);}const hs=s.row.rotationPolicy.candidates;$('rom-yaw-candidate').replaceChildren(...hs.map(h=>new Option(h.kind??'ROM初期向き',String(h.yawDegrees>180?h.yawDegrees-360:h.yawDegrees))));$('rom-yaw-candidate').value=String(s.point.yawDegrees>180?s.point.yawDegrees-360:s.point.yawDegrees);
  $('map').replaceChildren(...evidence.maps.map(r=>new Option(r.displayLabel,r.key)));$('map').value=record.key;$('descriptor').replaceChildren(...record.minimapCandidates.map(d=>new Option(d.path,d.path)));$('descriptor').value=s.reference.path;$('descriptor').disabled=false;
- const canvas=$('minimap');canvas.width=image.width;canvas.height=image.height;markPoint(s.position.image.x,s.position.image.y);$('floor').replaceChildren(...s.position.floor.heightsFx.map(v=>new Option('ROM床候補 '+(v/4096).toFixed(3),String(v))));$('floor').value=String(s.point.yFx);$('floor').disabled=s.position.floor.heightsFx.length===1;$('yaw').value=String(s.point.yawDegrees>180?s.point.yawDegrees-360:s.point.yawDegrees);$('yawlabel').value=$('yaw').value+'°';$('mse-initial-effect').checked=Boolean(s.row.phase);$('draw').disabled=false;
+ const canvas=$('minimap');canvas.width=image.width;canvas.height=image.height;markPoint(s.position.image.x,s.position.image.y);$('floor').replaceChildren(...s.position.floor.heightsFx.map(v=>new Option('ROM床候補 '+(v/4096).toFixed(3),String(v))));$('floor').value=String(s.point.yFx);$('floor').disabled=s.position.floor.heightsFx.length===1;$('yaw').value=String(s.point.yawDegrees>180?s.point.yawDegrees-360:s.point.yawDegrees);$('yawlabel').value=$('yaw').value+'°';automaticMsePhase=s.row.phase;$('mse-initial-effect').checked=Boolean(s.row.phase);$('draw').disabled=false;
  ctx.putImageData(new ImageData(s.image.rgba,s.image.width,s.image.height),0,0);const rendererEvidence={requestedRenderer:'automatic-source-candidates',backend:s.row.backend,fogApplied:s.integer.ready&&s.integer.diagnostics.fogApplied,fallback:s.integer.ready?null:{reason:s.integer.reason},integer:s.integer.ready?s.integer.diagnostics:null};
  const background={romSHA256,recordKey:record.key,mapId:record.mapId,fieldCode:record.fieldCode,selected:s.point,viewFx:s.camera.viewFx,projectionFx:s.camera.projectionFx,cameraScope:s.camera.scope,renderScope:s.image.scope,stats:s.image.stats,unresolved:s.unresolved,floorUnresolved:floors.unsupported,fogApplied:rendererEvidence.fogApplied,rendererEvidence,liveCameraVerified:false,playerInput:markerInput,nameInput,automaticSearch:result.diagnostics};
  videoComparison.setBackground(s.image,background,input.frameId);$('auto-search-status').textContent=(s.row.accepted?'自動位置合わせを適用しました。':'自動候補を比較しましたが、位置合わせ条件を満たしていません。')+' 比較'+result.diagnostics.backgroundCandidates.length+'件・地図キャッシュ'+result.diagnostics.cache.mapImages+'件。種類は続けて候補比較します。';
@@ -112,7 +112,7 @@ async function render(){
  const camera=automaticPreviewCamera(project,rom,record,selected),active=applyAutomaticMaterialEnvironment(project,record,automaticBillboardScenes(project,automatic,camera.viewFx));
  if(!active.environmentApplied){$('diagnostics').textContent=JSON.stringify(active.environment,null,2);throw Error('ROMの初期環境をまだ適用できません: '+active.environment.unresolved.join('; '));}
  const parts=active.scenes.map(s=>prepareDrawPackets(s,{materialGlobals:active.environment.materialGlobals,masks:automatic.masks})),packets={draws:parts.flatMap(x=>x.draws)},requestedRenderer=$('render-profile').value;
- const integer=requestedRenderer==='legacy'?null:renderInitialIntegerFog(project,rom,record,active,camera,{applyFog:requestedRenderer==='integer-fog',screenEffectPhase:$('mse-initial-effect').checked?{kind:'source-constructor'}:null});
+ const integer=requestedRenderer==='legacy'?null:renderInitialIntegerFog(project,rom,record,active,camera,{applyFog:requestedRenderer==='integer-fog',screenEffectPhase:$('mse-initial-effect').checked?(automaticMsePhase??{kind:'source-constructor'}):null});
  const r=integer?.ready?integer:rasterizePreviewPackets(packets,{view:identity,projection:camera.projectionFx.map(x=>x/4096),clearRGBA:[0,0,0,0],colorProfile:'native-mode0-rgb'}),backend=integer?.ready?'source-integer-static-mode1':'float64-diagnostic',fogApplied=integer?.ready===true&&integer.diagnostics.fogApplied===true;
  const rendererEvidence={requestedRenderer,backend,fogApplied,fallback:integer&&!integer.ready?{reason:integer.reason,diagnostics:integer.diagnostics}:null,integer:integer?.ready?integer.diagnostics:null};
  ctx.putImageData(new ImageData(r.rgba,r.width,r.height),0,0);const blocked=[...active.unresolved,...active.scenes.flatMap(s=>s.unsupported).filter(x=>!x.reason.startsWith('name-char3-A')),...parts.flatMap(p=>p.unsupported),...r.stats.rejected];
@@ -120,7 +120,7 @@ async function render(){
  const evidence={romSHA256,recordKey:record.key,mapId:record.mapId,fieldCode:record.fieldCode,selected,viewFx:camera.viewFx,projectionFx:camera.projectionFx,cameraScope:camera.scope,renderScope:r.scope,stats:r.stats,unresolved:blocked,floorUnresolved:floors.unsupported,fogApplied,rendererEvidence,liveCameraVerified:false,playerInput:markerInput,nameInput};videoComparison.setBackground(r,evidence,comparisonFrameId);
  $('diagnostics').textContent=JSON.stringify({map:record.displayLabel,backend,rendererEvidence,point,floor:Number($('floor').value),floorUnresolved:floors.unsupported,cameraScope:camera.scope,renderScope:r.scope,environment:active.environment.scope,colorReady:active.environment.colorReady,fogReady:active.environment.fogReady,fogUnresolved:active.environment.fogUnresolved,fogApplied,stats:r.stats,unresolved:blocked},null,2);
 }
-$('mse-initial-effect').onchange=guard(render);$('rom-yaw-candidate').onchange=guard(async()=>{if($('rom-yaw-candidate').value==='')return;$('yaw').value=$('rom-yaw-candidate').value;$('yawlabel').value=$('yaw').value+'°';await render();});$('floor').onchange=guard(async()=>{$('draw').disabled=$('floor').value==='';await render();});$('draw').onclick=guard(render);$('yaw').oninput=()=>{$('automatic-map-name').checked=false;$('automatic-player').checked=false;markerInput=null;renderVersion++;videoComparison.invalidate('向きが変わりました。');$('yawlabel').value=$('yaw').value+'°';};$('yaw').onchange=guard(render);
+$('mse-initial-effect').onchange=guard(async()=>{automaticMsePhase=null;await render();});$('rom-yaw-candidate').onchange=guard(async()=>{if($('rom-yaw-candidate').value==='')return;$('yaw').value=$('rom-yaw-candidate').value;$('yawlabel').value=$('yaw').value+'°';await render();});$('floor').onchange=guard(async()=>{$('draw').disabled=$('floor').value==='';await render();});$('draw').onclick=guard(render);$('yaw').oninput=()=>{$('automatic-map-name').checked=false;$('automatic-player').checked=false;markerInput=null;renderVersion++;videoComparison.invalidate('向きが変わりました。');$('yawlabel').value=$('yaw').value+'°';};$('yaw').onchange=guard(render);
 
 $('render-profile').onchange=guard(render);
 
