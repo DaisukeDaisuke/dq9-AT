@@ -175,3 +175,13 @@
 - 既存manifest-local-bankの参照数/model集合bindingだけを可変manifestへ結び、元4/64は変更しない。旧64/4model、ラスダン新160/14とunion224/18、zuo新40/4とunion104/8を比較。二つの正式frameは事後注釈・原画素では味方のみの負例で、全条件0候補。旧predictions全文一致、親の両比較RESULT全一致。敵recall/種別改善はこの比較では未測定。
 - 全画像/特徴/checkpointは私的phase bank同一Library項目のv3へ追加し、旧phase payloadを全保持してhash/CRC照合。sourceは非公開tools7ef5e9f14264fbc1db33acd147044382969a8784、保存receipt3779c9b40b859b5a665678695b9a7e5f97cc3bd7まで本文/head確認。ROOT再開控えにも別bank依存と負例結果を保存。
 - 次の陽性は元正式注釈でzuo130秒（実129.996）のenemy_non_target2体を実行前に選定。species/modelラベルは不明、GT bboxは提案へ渡さない。当該frame自身のmap候補と同model集合を確認し、既存40参照を再生成なしで使用。旧4/追加4/union8はいずれも候補0で見逃し継続。身体の一方は色成分段階で部分的、他方は背景を含む大きい成分で、seed/fine支持不足を段階別に調査中。閾値合わせで成功にしない。
+
+
+## 09:01 JST — 陽性zuo130の全成分マスクと種別判定の負結果
+
+- 正式zuo129.996の敵2体はspecies/model不明・GT近似bboxのみでsilhouette maskは無い。GTは予測後の対応説明に使用し、提案/点/box/閾値/参照選択へ渡さない。対象成分の通常seed peakは追加bankで最大.39168/.40438、既存.50以上の画素0。fineSeed .37後もfine支持不足で棄却され、旧4/追加4/union8の2missを保持。
+- 元8appearance成分すべての中心point＋元core boxを同じMeta SAM ViT-Bへ渡し、1embedding/全24raw maskを保存。成分2の敵1側はbboxIoU .587/.575/.490の部分領域、成分0は敵2を含む背景域で.101/.149/.263。元quality参考選別5枚にも階段/味方/床が残る。GT boxの面積被覆を真のsilhouette保持率とは呼ばない。親再実行はtiming以外RESULT一致、全packed mask配列も完全一致。
+- 成分0の点は敵box外でも実appearance mask=1、blocked0。『色前景外の点だから移動する』条件は不成立で、点変更はしていない。全8確認では0..6が色前景内、7だけ外。既知敵位置へ点を寄せない。
+- 保存40参照画像から同一Node/WASMのCLSを別取得し、foreground vectorは代用しない。全24maskの同bbox/元RGBを不透明分類入力として各1回処理。旧64参照/追加40参照/union8モデルの全順位を保持。追加4model top1は22/24がz024bで、身体部分・背景・味方にも同じ順位を返し、unknown拒否や種別正解は未成立。親再実行は参照40ベクトル一致、24queryは出力先以外RESULT一致、同frame context束縛も一致。
+- 同frame129.996のmap候補からmodel/variant/alias集合を照合し、230で生成した静的参照を再利用した。230のmapを時間伝播したわけではない。元6未対応pose・bounds/照明差・認識誤差を保持し、出生/draw/ATには接続しない。
+- source/依存復元記録と訂正文を非公開tools df10d17922a38ec4aa38c35fe52360b16a01f66dまで通常pushし、本文/head確認。私的入力/全mask/CLS/失敗を旧payload保持で保存。次は既存Work1 automatic gridを同Metaモデルへ適用する別baselineで、色成分を入口条件にしない候補生成を確認する。以前のSlimSAM grid失敗とMeta core点/box比較を保持し、新モデルやGT点は追加しない。
