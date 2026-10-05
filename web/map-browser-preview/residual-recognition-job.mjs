@@ -1,5 +1,5 @@
 import {nativeBodyRequestPayload} from './native-body-request.mjs?v=native-continuation-20261006-0333';
-import {attachResidualNativeSupport,RESIDUAL_NATIVE_BODY_BUDGET} from './residual-native-support.mjs?v=native-continuation-20261006-0333';
+import {attachResidualNativeSupport,RESIDUAL_NATIVE_BODY_BUDGET} from './residual-native-support.mjs?v=native-preparation-20261006-0422';
 import {chooseResidualBackend,residualBackendProvenance,assertResidualBackendResult} from './residual-recognition-backend.mjs';
 import {residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs?v=native-body-20261006-0212';
 // A job is all requested regions and all model batches for one frozen frame.

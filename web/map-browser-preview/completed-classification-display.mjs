@@ -1,5 +1,5 @@
 // Presentation only: never assigns sightings to another frame or certifies bodies.
-import {nativeSupportDisplaySummary} from './recognition-display-summary.mjs?v=native-continuation-20261006-0333';
+import {nativeSupportDisplaySummary} from './recognition-display-summary.mjs?v=native-preparation-20261006-0422';
 export function completedClassificationSnapshot(value,frame,bg,regions=[]){
  if(value?.classificationJob?.complete!==true||frame?.image?.width!==256||frame?.image?.height!==192)return null;
  return {value,frameId:frame.id,evidence:structuredClone(frame.evidence),background:structuredClone(bg.evidence),image:{width:256,height:192,rgba:frame.image.rgba.slice()},regions:structuredClone(regions)};
