@@ -1,13 +1,13 @@
 import {upperVideoROI} from './video-player-map-input.mjs';
-import {gameplayVideoROI,sampleGameplayFrame} from './map-video-residual.mjs';
-import {detectMapNameROI} from '../map-name-roi.mjs';
-// Enumerate the existing paired-screen layouts and require observed label-panel
-// evidence. Dimensions alone never certify a layout. Unknown layouts stay unknown.
+import {gameplayVideoROI} from './map-video-residual.mjs';
+// Input contract for the supplied recordings, not a visual/layout classifier.
+// The supplied 1920x1080 recording puts both 960x720 DS screens above the stream HUD.
+// Name visibility, map identity and player position are independently unresolved.
 export function inferPairedVideoLayout(sourceImage){
- const candidates=[];
- for(const layout of ['obs-side-1920','ds-vertical','ds-horizontal']){
-  try{const upper=upperVideoROI(sourceImage.width,sourceImage.height,layout),gameplay=gameplayVideoROI(sourceImage.width,sourceImage.height,layout),image=sampleGameplayFrame(sourceImage,upper),panel=detectMapNameROI({width:256,height:192,data:image.rgba});candidates.push({layout,upper,gameplay,panel,accepted:panel.resolved});}catch(error){candidates.push({layout,accepted:false,reason:error.message});}
- }
- const accepted=candidates.filter(c=>c.accepted);
- return{layout:accepted.length===1?accepted[0].layout:null,candidates,scope:'Pixel-confirmed panel within existing supported paired layouts. Arbitrary OBS layouts, hidden map labels, transition/battle screens and ambiguous layouts remain unresolved.'};
+ const supported=sourceImage.width===1920&&sourceImage.height===1080;
+ const layout=supported?'obs-side-1920':null;
+ return{layout,basis:'provided-recording-format',namePanelRequired:false,
+  candidates:supported?[{layout,upper:upperVideoROI(1920,1080,layout),gameplay:gameplayVideoROI(1920,1080,layout),accepted:true}]:[],
+  reason:supported?null:'provided-recording-dimensions-required',
+  scope:'Only the supplied 1920x1080 recording format: map at (0,0,960,720), gameplay at (960,0,960,720). This crop contract does not establish map identity, player position, or current gameplay state.'};
 }

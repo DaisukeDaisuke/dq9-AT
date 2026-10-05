@@ -2,14 +2,14 @@ import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=entry-c
 import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
 import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=asset-prepare-20261005-0358';
-import {residualModelPlan,residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs?v=video-entry-timeline-20261005';
+import {residualModelPlan,residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs?v=provided-layout-20261005';
 import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=entry-clock-format-20261005-0706';
-import {CPUTextClient} from '../font-akinator-cpu-client.mjs?v=video-entry-timeline-20261005';
+import {CPUTextClient} from '../font-akinator-cpu-client.mjs?v=provided-layout-20261005';
 import {deriveVideoMapNames} from './video-map-name-input.mjs';
 import {MapPositionMatcher} from '../map-position.mjs';
 import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
-import {mountMapVideoComparison} from './map-video-comparison.mjs?v=video-entry-timeline-20261005';
+import {mountMapVideoComparison} from './map-video-comparison.mjs?v=provided-layout-20261005';
 import {openMapRom} from './static-scene.mjs';
 import {buildRomMapCatalog} from './rom-map-catalog.mjs';
 import {nameCatalogMaps} from './rom-map-names.mjs';
