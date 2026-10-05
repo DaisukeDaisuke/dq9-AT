@@ -256,3 +256,11 @@
 - クラウドブラウザでは129.596→129.646で仮継続19件(dx4)、次129.696で13件。比較JSONを実保存。同フレーム再比較で19件のまま保持した。Nodeとブラウザのdecoded画素は別証拠として保持。
 - 1ninn3:47の追加背景経路: AMBL DAT opcode0x6d→context+22→MSE要求→D04M02E1内d04fog01の選択をROM命令から確認。別平行投影の画面効果で、layer offsetは描画後に加算される。現在位相はROM+上画面markerだけで確定しない。源初期値/明示位相の限定描画は進行中。黒領域ownerはM0215/M0216であり、先のM999x仮説は採用しない。
 - Library ROOTチェックポイントv21:390559728bytes、SHA256 e03c001b647dd9a0b5bb4131b78a141798468a9a70e6e06bb48bb6ee0e6c46d9。前payload保持、実ブラウザ結果・失敗・追跡source・MSE選択資料を追加。私的再現sourceはdots-tools main64c6334cまでバックアップ。
+
+## 13:59 JST — 源edge打切り修正とMSE初期仮説の公開検証
+- 129.746秒の停止は、DeSmuME535f676のFloorDivMod failure→_shape_engine returnをJSが例外にして背景全体へ伝播した差。正式tools-v4内rasterize.cppをSHA照合し、実引数の源C++関数でfailureを確認。既に描画済み25fragmentを保持してpolygon処理を打ち切り、診断へ明示する修正をbbb57551へ公開。17点すべて描画、既存成功16点のRGBA/比較成分はexact。クラウドブラウザ129.746も描画し、同25fragment診断を保存。native全frame完全一致や全入力対応ではない。
+- MSE初期位相/fade仮説の明示checkbox、ROM複数床と初期yaw/入力clamp端点の候補を1e109332へ公開。Pages37264881420成功。複数床は選択待ち、同名7401/7402を維持。source位相を現映像の値としない。親adapterは3時点×6候補×effect有無の36画素結果が保存済みsource実装とexact、D09既存2profileもexact。
+- クラウドブラウザ1ninn227.012秒、同video/地点/床656/yaw315°仮説で、効果OFF→初期効果ONの同49152画素MAE23.8074→19.7466。補正後は(9,7)、45695画素MAE12.7227/635生領域。3×3表示保留で128表示/507保留/小境界10保持。異なる比較画素数の値を直接の同条件改善率にしない。CPU文字Worker初回起動失敗は1回再試行で解消、原因未確定。
+- 保存済み正確PTS3時点に生面積順上位32を同一規則で分類。96query実推論/失敗0、参照6144回はRGBA/tensor/provider一致を確認した再利用。227.012の小個体対応ID233(17×13、128画素、原順位17)、228.012のID352(12×15、128画素、順位11)でz000cが1位。ただしz000c1位11cropのうち9は目視上壁/床/霧/黒領域であり、敵/種類確定にしない。未比較714/624/450を保持、AT追加下限0。
+- 霧は2層のscrollを持ち、源更新の増分/周期から共通描画回数nの条件付きdomainを整理。現nは動画秒数ではない。16点位相gridは未開始、1候補cost287msだけ実測。ユーザーの追加依頼により、初期writer/更新caller/gate/fadeがATや入場timerに依存するかを先に調査中。非依存とはまだ断定していない。
+- ROOT Library v22:403890534bytes、SHA256 23a1ea09d257d7be8d94f1f399dfdf38d8cb4893cc308064734b36a61be90dea。前payload保持、公開source/ブラウザ証拠/旧失敗/96比較と位相domainを保存。非公開再現sourceはdots-tools fee32b0e、receipt225f16be。進行中AT/timer調査は次の保存対象。
