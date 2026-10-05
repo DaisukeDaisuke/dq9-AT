@@ -85,22 +85,51 @@ function lowerStaticColorRecords(calls){
  for(let i=0;i<4;i++){if(records[i])continue;let found=null;for(let n=1;n<=3;n++){const k=(i-n+4)&3;if(records[k]){found=k;break;}}if(found===null)throw Error('No specified color predecessor');inherited[i]={...records[found],rgbMultiplier:records[found].rgbMultiplier.slice()};copies.push({destination:i,source:found});}
  return {records,inherited,sources,copies};
 }
-function inspectNormals(project,automatic){
- const resources=[],seen=new Set(),issues=[];
+function inspectNormals(project,automatic,tintRules){
+ const resources=[],seen=new Set(),issues=[],tintInputs=new Map();let tintCommandCount=0;
  for(const scene of automatic.scenes){const members=project.archive(scene.archiveName),used=new Set(scene.sourcePlacements.map(p=>p.modelId));
   for(const m of scene.sourceModels){if(!used.has(m.id)||!m.nativeBranch.startsWith('static-model'))continue;
    const dot=m.name.lastIndexOf('.'),requested=(dot<0?m.name:m.name.slice(0,dot))+'.nsbmd',matches=nativeAsciiNameCandidates([...members.keys()].map(name=>({name})),requested);
-   if(matches.length!==1){issues.push({archive:scene.archiveName,model:m.name,reason:'Model resource absent/ambiguous'});continue;}const name=matches[0].name,key=scene.archiveName+'/'+name;if(seen.has(key))continue;seen.add(key);
+   if(matches.length!==1){issues.push({archive:scene.archiveName,model:m.name,reason:'Model resource absent/ambiguous'});continue;}const name=matches[0].name,key=scene.archiveName+'/'+name+'/'+m.nativeFlags;if(seen.has(key))continue;seen.add(key);
    try{const bytes=members.get(name),model=readNativeModelInfo(bytes).models[0],shapes=readNativeShapes(bytes,model);let normalCommands=0;
-    for(const shape of shapes){const gx=decodePackedGx(bytes,shape.displayListOffset,shape.displayListBytes);if(gx.unresolved.length)throw Error('Unresolved GX stream');normalCommands+=gx.commands.filter(c=>c.opcode===0x21).length;}
+    for(const shape of shapes){const gx=decodePackedGx(bytes,shape.displayListOffset,shape.displayListBytes);if(gx.unresolved.length)throw Error('Unresolved GX stream');normalCommands+=gx.commands.filter(c=>c.opcode===0x21).length;
+     const flags=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength).getUint32(shape.offset+4,true),enabled=tintRules.initialLoadGate<0&&!(m.nativeFlags&tintRules.modelSkipMask)&&Boolean(flags&tintRules.shapeRequiredMask);
+     if(enabled)for(const command of gx.commands)if(command.opcode===0x20){tintCommandCount++;const color555=command.parameterWords[0]&32767;if(!tintInputs.has(color555))tintInputs.set(color555,{archive:scene.archiveName,member:name,modelId:m.id,shapeIndex:shape.index,color555});}
+    }
     resources.push({archive:scene.archiveName,member:name,shapeCount:shapes.length,normalCommands});
    }catch(e){issues.push({archive:scene.archiveName,member:name,reason:e.message});}
   }
  }
- return {resources,issues,normalCommandCount:resources.reduce((n,r)=>n+r.normalCommands,0)};
+ return {resources,issues,tintInputs:[...tintInputs.values()],tintCommandCount,normalCommandCount:resources.reduce((n,r)=>n+r.normalCommands,0)};
 }
-// Resolves an initial ordinary profile, not the current running game's environment.
-// Unknown time phase is eliminated only by proving all four inherited states equal.
+// Mode1 load-time tint uses a discrete source record, unlike mode2's continuous
+// interpolation. Pin both selection/write graphs and the RGB record accessor.
+function readMode1DiscreteSelectionProof(sdk){
+ const spans=[[0x02052b60,0x350,0xc69619f9],[0x02052eb4,0x344,0x72e9076d],[0x0207c860,0x2c,0x69198ed7]];
+ for(const[address,length,expected]of spans){let hash=2166136261;for(const b of sdk.read(address,length))hash=Math.imul(hash^b,16777619)>>>0;if(hash!==expected)throw Error('Native mode1 discrete record selection differs at '+address.toString(16));}
+ return {kind:'source-mode1-discrete-record-selection',spans,load:0x02052b60,entry:0x02052eb4,rgbAccessor:0x0207c860,ordinaryIndices:[0,1,2,3],interpolatesLoadTimeTint:false};
+}
+// Prove equality of the actual static component inputs, not equality of unrelated
+// source fields. No slot is inferred: the representative is interchangeable for
+// every source ordinary state on every inspected tint-eligible COLOR command.
+export function proveMode1StaticColorInvariance(ordinary,normals,tintRules){
+ if(!Array.isArray(ordinary)||ordinary.length!==4||ordinary.some(r=>!r))throw Error('Four inherited ordinary source color records required');
+ const common=k=>ordinary.every(r=>same(r[k],ordinary[0][k]));
+ const sourceRecordsTimeIndependent=ordinary.every(r=>same(r,ordinary[0]));
+ const commonMaterial=common('fieldsC4'),commonTint=['rgbMultiplier','brightness','contrast'].every(common);
+ const relevant=['rgbMultiplier','brightness','contrast','fieldsC4'],unconsumedVaryingFields=Object.keys(ordinary[0]).filter(k=>!relevant.includes(k)&&!common(k));
+ const colors=[...new Set(normals.tintInputs.map(x=>x.color555))],mismatches=[];
+ if(!commonTint&&normals.resources.length&&normals.issues.length===0)for(const color555 of colors){const outputs=ordinary.map(r=>transformNativeEnvironmentColor555(color555,r,tintRules));if(!outputs.every(x=>x===outputs[0]))mismatches.push({color555,outputs});}
+ const inspectedScene=normals.resources.length>0&&normals.issues.length===0;
+ const ready=commonMaterial&&(commonTint||(inspectedScene&&mismatches.length===0));
+ return {ready,sourceRecordsTimeIndependent,commonMaterial,commonTint,inspectedScene,sourceResourceCount:normals.resources.length,tintCommandCount:normals.tintCommandCount,uniqueTintColors:colors.length,mismatches,unconsumedVaryingFields,
+  kind:sourceRecordsTimeIndependent?'identical-source-records':commonTint&&commonMaterial?'common-static-component-fields':'source-draw-color-equivalence',
+  unproved:['Live script writes and forced/progression selectors','Load-time state retained across later clock changes','Edge/toon state, dynamic objects and other runtime passes'],
+  scope:'Equality of initial static GX COLOR tint and diffuse/ambient inputs for all four ordinary source records. This does not identify the game clock or certify omitted renderer components.'};
+}
+// Resolves an initial ordinary static component, not the running environment.
+// Eliminate time only with identical consumed fields or exhaustive source-draw
+// color equality under the source-proven discrete (not interpolated) selector.
 export function readAutomaticMaterialEnvironment(project,record,automatic){
  const unresolved=[];let progress={};const base={profile:'ROM-initial-ordinary-environment',ready:false,colorReady:false,colorUnresolved:[],fogReady:false,fogUnresolved:[],materialGlobals:null,normalLighting:null,fogParameters:null};
  try{
@@ -114,15 +143,17 @@ export function readAutomaticMaterialEnvironment(project,record,automatic){
   progress={source:{maplist:source,archive:archivePath,member:resource.name,archiveIndex:resource.index},mode:modeCalls.length===1?(modeCalls[0].opcode===0x67?1:2):null,initialSelector:rules.initialSelector};
   if(modeCalls.length!==1||modeCalls[0].opcode!==0x67)throw Error('Only source mode1 static color environment is connected');
   if(calls.some(c=>![0x65,0x67,0x68,0x69].includes(c.opcode)))throw Error('Additional environment callbacks require evaluation');
-  const color=lowerStaticColorRecords(calls),ordinary=color.inherited.slice(0,4),timeIndependent=ordinary.every(r=>same(r,ordinary[0]));
-  if(!timeIndependent)unresolved.push('Environment time slot/phase affects static material color');
+  const color=lowerStaticColorRecords(calls),ordinary=color.inherited.slice(0,4);
   const identity=ordinary.every(r=>r.rgbMultiplier.every(x=>x===1)&&r.brightness===0&&r.contrast===0);
   const tintRules=readStaticTintRules(project.sdk,rules.reader);
   // For the accepted identity transform, the native float32 c/31*31 sequence
   // preserves all32 channel values, including conversion truncation.
   const denominatorBytes=project.sdk.read(0x020520ec,4),denominator=new DataView(denominatorBytes.buffer,denominatorBytes.byteOffset,4).getFloat32(0,true);
   if(denominator!==31||Array.from({length:32},(_,c)=>c).some(c=>Math.trunc(Math.fround(Math.fround(c/denominator)*denominator))!==c))throw Error('Identity color float conversion is not preserved');
-  const normals=inspectNormals(project,automatic);unresolved.push(...normals.issues.map(x=>x.reason));
+  const normals=inspectNormals(project,automatic,tintRules);unresolved.push(...normals.issues.map(x=>x.reason));
+  const timeIndependenceProof=proveMode1StaticColorInvariance(ordinary,normals,tintRules),timeIndependent=timeIndependenceProof.ready;
+  if(timeIndependent&&!timeIndependenceProof.sourceRecordsTimeIndependent)timeIndependenceProof.selection=readMode1DiscreteSelectionProof(project.sdk);
+  if(!timeIndependent)unresolved.push('Environment time slot/phase affects static material color');
   const normalLighting=zeroLightSource(rules.reader);
   const fog=lowerEnvironmentFog(calls),fogUnresolved=fog.issues.map(x=>x.error);let fogParameters=null,fogTimeIndependent=false;
   if(fog.ready){try{const inherited=inheritTimeFogRecords(fog.records,{rules:readTimeFogInheritanceRules(project.sdk)}),states=[0,1,2,3].map(i=>staticMode1FogParameters(inherited.records,i));fogTimeIndependent=states.every(x=>same(x,states[0]));if(fogTimeIndependent)fogParameters=states[0];else fogUnresolved.push('Environment time slot/phase affects fog');}catch(e){fogUnresolved.push(e.message);}}
@@ -131,7 +162,7 @@ export function readAutomaticMaterialEnvironment(project,record,automatic){
   // Other globals retain their SDK initialization in this explicit initial profile.
   const ambientArgument=rules.reader.mov(0x02052cc0,1);if(ambientArgument!==0)throw Error('Environment material setter argument differs');
   const materialGlobals=timeIndependent?{...globals,diffuseAmbient:(ordinary[0].fieldsC4|(ambientArgument<<16))>>>0}:null;
-  return {...base,ready:unresolved.length===0&&fogUnresolved.length===0,colorReady:unresolved.length===0,colorUnresolved:unresolved.slice(),fogReady:fogUnresolved.length===0,source:{maplist:source,archive:archivePath,member:resource.name,archiveIndex:resource.index},mode:1,initialSelector:rules.initialSelector,colorRecords:color,ordinaryTimeIndependent:timeIndependent,colorTransformIdentity:identity,staticColorRecord:timeIndependent?ordinary[0]:null,tintRules,normals,normalLighting,materialGlobals,fogParameters,fogTimeIndependent,fogUnresolved,unresolved:[...unresolved,...fogUnresolved],
+  return {...base,ready:unresolved.length===0&&fogUnresolved.length===0,colorReady:unresolved.length===0,colorUnresolved:unresolved.slice(),fogReady:fogUnresolved.length===0,source:{maplist:source,archive:archivePath,member:resource.name,archiveIndex:resource.index},mode:1,initialSelector:rules.initialSelector,colorRecords:color,ordinaryTimeIndependent:timeIndependent,sourceRecordsTimeIndependent:timeIndependenceProof.sourceRecordsTimeIndependent,timeIndependenceProof,colorTransformIdentity:identity,staticColorRecord:timeIndependent?ordinary[0]:null,tintRules,normals,normalLighting,materialGlobals,fogParameters,fogTimeIndependent,fogUnresolved,unresolved:[...unresolved,...fogUnresolved],
    liveStateDependencies:['Environment manager+90 forced slot; +94/+98 time phase when inherited records differ','Quest/special overrides, later script setters and environment transitions','Game context+418 later changes may disable load-time tint; model flags and shape flags are source-derived','Animated material/DL modifications and scene-dependent rendering state'],
    scope:'Source-proven initial ordinary static-color profile. Static GX COLOR tint follows source load/model/shape guards and float32 operations. NORMAL reduces to emission under source-zero light colors; it is not live environment, animation, fog rasterization or native-pixel parity.'};
  }catch(e){return {...base,...progress,colorUnresolved:[...unresolved,e.message],unresolved:[...unresolved,e.message],scope:'Unresolved source environment; no material, light, color or fog defaults substituted.'};}

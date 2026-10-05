@@ -1,4 +1,4 @@
-import{createInferredMode2GpuRenderer}from'./inferred-mode2-gpu-renderer.mjs?v=map-coverage-20261005-0931';
+import{createInferredMode2GpuRenderer}from'./inferred-mode2-gpu-renderer.mjs?v=recognition-cache-20261005-1007';
 /* One-entry, segment-scoped reuse of a prior environment HYPOTHESIS. Fresh
  * marker bounds + geometry refinement + exact native rendering are mandatory.
  * A hit never means current clock/selector identity or temporal AT evidence.

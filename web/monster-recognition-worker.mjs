@@ -1,9 +1,9 @@
 import {NitroFS} from './vendor/nitro-fs.mjs';
 import {parseMonsterAssetCatalog} from './monster-assets.mjs';
 import {MonsterGeometry} from './monster-geometry.mjs';
-import {createDinoFeatureBackend} from './monster-dinov2.mjs';
+import {createDinoFeatureBackend} from './monster-dinov2.mjs?v=recognition-cache-20261005-1007';
 import {createFeatureBankStore} from './monster-feature-cache.mjs';
-import {recognizeROI,supplementEnemyROIs,prepareDinoPoseBank} from './monster-recognition-engine.mjs';
+import {recognizeROI,supplementEnemyROIs,prepareDinoPoseBank} from './monster-recognition-engine.mjs?v=recognition-cache-20261005-1007';
 let state=null,epoch=0,active=null;
 const post=message=>self.postMessage(message);
 self.onmessage=async({data:m})=>{
@@ -23,7 +23,7 @@ self.onmessage=async({data:m})=>{
   if(!state||state.romEpoch!==romEpoch)throw Error('現在のNDSを読み込み直してください');active?.abort();controller=new AbortController();const mine=epoch;active=controller;
   const runState=state,onProgress=p=>{if(active===controller&&mine===epoch){if(typeof p.phase==='string'&&p.phase)stage=p.phase==='init'?`${m.inferenceBackend??'wasm'}-init`:p.phase;post({type:'progress',id,romEpoch,...p});}};
   const getDino=async({backend:provider='wasm'}={})=>{if(runState.dino?.spec.backend===provider)return runState.dino;const previous=runState.dino,previousStage=stage;runState.dino=null;stage='backend-dispose';await previous?.dispose();stage=`${provider}-init`;const backend=await createDinoFeatureBackend({backend:provider,signal:controller.signal,onProgress});if(active!==controller||mine!==epoch){await backend.dispose();throw new DOMException('中止','AbortError');}runState.dino=backend;stage=previousStage;return backend;};
-  const outcome=await (m.type==='prepare'?prepareDinoPoseBank:m.type==='supplement'?supplementEnemyROIs:recognizeROI)(m,{...runState,signal:controller.signal,onProgress,getDino});
+  const outcome=await (m.type==='prepare'?prepareDinoPoseBank:m.type==='supplement'?supplementEnemyROIs:recognizeROI)(m,{...runState,cacheQuery:true,cachePartialPoses:true,signal:controller.signal,onProgress,getDino});
   const result=m.type==='prepare'?{prepared:true,timings:outcome.timings,cacheWarnings:outcome.cacheWarnings}:outcome;
   if(active!==controller||mine!==epoch)return;active=null;post({type:'result',id,romEpoch,result});
  }catch(error){if(error?.name==='AbortError'||requestEpoch!==epoch||(controller&&active!==controller))return;const detail={name:typeof error?.name==='string'?error.name:'Error',message:String(error?.message??error),stack:typeof error?.stack==='string'?error.stack:'',stage:typeof error?.stage==='string'&&error.stage?error.stage:stage};post({type:'error',id,romEpoch,message:detail.message,error:detail});}
