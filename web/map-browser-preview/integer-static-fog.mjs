@@ -36,6 +36,6 @@ export function renderInitialIntegerFog(project,rom,record,automatic,camera,{app
    diagnostics.fogApplied=true;diagnostics.fog={parameters:{...parameters,density:Array.from(parameters.density)},source:environment.source,changed,fogged,depthSource:'native integer original GX polygon clip/raster/depth24',maskSource:'source polygon owner and accepted opaque/translucent fog flag AND',timeIndependent:true};
   }
   const image=presentStaticRgb({...combined,rgba6665},{profile:'rgb555-expanded'});
-  return{ready:true,...image,diagnostics,scope:diagnostics.scope,stats:{...base.depth.stats,fragments:base.depth.stats.opaqueGeometricFragments+base.depth.stats.binaryGeometricFragments+combined.stats.incoming,rejected:[]}};
+  return{ready:true,...image,rgba:Uint8ClampedArray.from(image.rgba),diagnostics,scope:diagnostics.scope,stats:{...base.depth.stats,fragments:base.depth.stats.opaqueGeometricFragments+base.depth.stats.binaryGeometricFragments+combined.stats.incoming,rejected:[]}};
  }catch(error){return{ready:false,reason:error.message,diagnostics};}
 }

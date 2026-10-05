@@ -1,4 +1,4 @@
-import {renderInitialIntegerFog} from './integer-static-fog.mjs';
+import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=map-integer-fog-clamped-20261005-0324';
 import {CPUTextClient} from '../font-akinator-cpu-client.mjs';
 import {deriveVideoMapNames} from './video-map-name-input.mjs';
 import {MapPositionMatcher} from '../map-position.mjs';
