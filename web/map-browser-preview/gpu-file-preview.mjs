@@ -1,4 +1,4 @@
-import {mountAutomaticGpuPanel} from './gpu-file-panel.mjs?v=gpu-files-b5250623';
+import {mountAutomaticGpuPanel} from './gpu-file-panel.mjs?v=wgsl-keyword-20261005-0834';
 import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=entry-clock-format-20261005-0706';
 import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';

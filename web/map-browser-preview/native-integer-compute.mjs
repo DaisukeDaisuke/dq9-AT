@@ -66,8 +66,8 @@ fn main(@builtin(global_invocation_id) gid:vec3<u32>){
   let trans=(flags&1u)!=0u;
   if(!trans){
    if(alpha==0u){continue;}if(alpha!=31u){errors=errors|64u;continue;}
-   let pass=!covered||select(incomingDepth<depth,incomingDepth<=depth,isFront&&!front);
-   if(pass){covered=true;depth=incomingDepth;depthOwner=index;owner=index;front=isFront;color=vec4<u32>(shaded,31u);fogged=(attr&32768u)!=0u;}
+   let depthPasses=!covered||select(incomingDepth<depth,incomingDepth<=depth,isFront&&!front);
+   if(depthPasses){covered=true;depth=incomingDepth;depthOwner=index;owner=index;front=isFront;color=vec4<u32>(shaded,31u);fogged=(attr&32768u)!=0u;}
    continue;
   }
   if(!covered||unknown){unknown=true;continue;}

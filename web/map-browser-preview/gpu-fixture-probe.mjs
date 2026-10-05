@@ -1,4 +1,4 @@
-import{createNativeIntegerCompute}from'./native-integer-compute.mjs?v=integer-cache-batch-ad1c4f59';
+import{createNativeIntegerCompute}from'./native-integer-compute.mjs?v=wgsl-keyword-20261005-0834';
 const $=id=>document.getElementById(id),events=[];let renderer=null,fixture=null,job=null,result=null;
 const status=value=>{events.push(value);$('state').textContent=value.phase??value.error??String(value);$('result').textContent=JSON.stringify({events,result},null,2);};
 const sha=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))).map(x=>x.toString(16).padStart(2,'0')).join('');

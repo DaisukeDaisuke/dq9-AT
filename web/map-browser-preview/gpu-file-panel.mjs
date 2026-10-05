@@ -1,5 +1,5 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
-import {createNativeIntegerCompute} from './native-integer-compute.mjs?v=integer-cache-batch-ad1c4f59';
+import {createNativeIntegerCompute} from './native-integer-compute.mjs?v=wgsl-keyword-20261005-0834';
 import {renderPreparedIntegerCompute} from './prepare-initial-integer-compute.mjs';
 import {automaticGpuBinding,prepareAutomaticGpuInput,compareAutomaticGpuPixels} from './automatic-gpu-input.mjs';
 
