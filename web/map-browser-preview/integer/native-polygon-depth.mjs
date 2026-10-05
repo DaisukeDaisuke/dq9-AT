@@ -8,7 +8,7 @@
 const S=65536n, I64_MIN=-(1n<<63n), I64_MAX=(1n<<63n)-1n;
 const ceil=x=>Number((x+S-1n)/S);
 const i64=x=>{if(x<I64_MIN||x>I64_MAX)throw Error('Native signed64 overflow outside validated path');return x;};
-function floorDiv(a,b){if(b<=0n)throw Error('Native edge has nonpositive denominator');let q=a/b,r=a%b;if(r<0n){q--;r+=b;}return[q,r];}
+function floorDiv(a,b){if(b<=0n)throw Object.assign(Error('Native edge has nonpositive denominator'),{nativeEdgeSetupFailure:true,numerator:String(a),denominator:String(b)});let q=a/b,r=a%b;if(r<0n){q--;r+=b;}return[q,r];}
 function viewport(v,index){const[x,y,z,w]=v.map(BigInt);if(w<=0n||[x,y,z].some(a=>a < -w||a>w))return null;const zz=(z+w)*(1n<<31n)/(2n*w);return{index,x:(x+w)*(256n*S)/(2n*w),y:192n*S-(y+w)*(192n*S)/(2n*w),z:zz>0x7fffffffn?0x7fffffffn:zz,w};}
 function edge(a,b){
  let x=BigInt(ceil(a.x)),y=ceil(a.y),height=ceil(b.y)-y,width=ceil(b.x)-Number(x),xStep=1n,errorTerm=0n,numerator=0n,denominator=1n,z=a.z*4096n,zStep=0n;
@@ -98,8 +98,8 @@ function rasterizeNativeZPolygon({clipVerticesFx,polygonAttribute,viewportWord,d
  let lv=vs.length,rv=0,left,right,stepLeft=true,stepRight=true;
  for(let runs=0;;runs++){
   if(runs>=2*vs.length)throw Error('Native edge walk did not converge');
-  if(stepLeft)left=edge(vs[lv===vs.length?0:lv],vs[lv-1]);
-  if(stepRight)right=edge(vs[rv],vs[rv+1]);
+  try{if(stepLeft)left=edge(vs[lv===vs.length?0:lv],vs[lv-1]);
+  if(stepRight)right=edge(vs[rv],vs[rv+1]);}catch(error){if(!error.nativeEdgeSetupFailure)throw error;result.nativeEdgeSetupAbort={reason:error.message,numerator:error.numerator,denominator:error.denominator,completedEdgeRuns:result.edgeRuns.length,retainedFragments:result.fragments.length,source:'rasterize.cpp FloorDivMod failure -> _shape_engine return (535f676)'};return result;}
   stepLeft=stepRight=false;
   const count=Math.min(left.height,right.height);result.edgeRuns.push({left:edgeState(left),right:edgeState(right),scanlineCount:count});
   for(let row=0;row<count;row++){

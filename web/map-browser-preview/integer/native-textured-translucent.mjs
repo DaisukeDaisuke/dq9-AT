@@ -12,7 +12,7 @@ import{readNativeModelInfo}from'../native/native-model-info.mjs';
 import{readNativeShapes,decodePackedGx,decodeLocalVertices}from'../native/native-sbc-gx.mjs';
 import{projectNativePrimitiveFx}from'./native-primitive-inputs.mjs';
 import{clipNativePositionPolygon}from'./native-position-clip.mjs';
-import{rasterizeTexturedTranslucentCoverageNativeZPolygon}from'./native-polygon-depth.mjs';
+import{rasterizeTexturedTranslucentCoverageNativeZPolygon}from'./native-polygon-depth.mjs?v=edge-source-return-20261005-0434';
 const expand5=x=>x===0?0:2*x+1,modulate=(a,b)=>((a+1)*(b+1)-1)>>6;
 const i64=n=>{if(n<-(1n<<63n)||n>=(1n<<63n))throw Error('Active signed64 interpolant overflow unsupported');return n;};
 export {readInitialMode1BlendProfile as readInitialTexturedBlendProfile} from './native-mode0-translucent.mjs';
@@ -51,7 +51,7 @@ export function rasterizeNativeTexturedTranslucentMode0(args,input){
  for(const row of geometry.scanlines){const width=BigInt(row.xEndExclusive-row.xStart);if(!width)continue;const current=[],delta=[];for(let c=0;c<6;c++){const values=attributes.map(v=>v[c]);current[c]=edgeValue(row.left,geometry.transformed,values);delta[c]=(edgeValue(row.right,geometry.transformed,values)-current[c])/width;}
   for(let x=row.xStart;x<row.xEndExclusive;x++){const g=geometry.fragments[cursor++];if(!g||g.x!==x||g.y!==row.y||current[0]<=0n)throw Error('Attribute/coverage correspondence differs');const uv=current.slice(1,3).map(v=>Number(v/current[0])),sample=[wrap(uv[0],texture.width,!!(texture.wrapMode&1),!!(texture.wrapMode&4)),wrap(uv[1],texture.height,!!(texture.wrapMode&2),!!(texture.wrapMode&8))],at=(sample[1]*texture.width+sample[0])*4,texel=Array.from(texture.rgba6665.slice(at,at+4)),vertexRgb6=current.slice(3).map(v=>Math.max(0,Math.min(63,Number(v/current[0])))),rgb6=texel.slice(0,3).map((v,c)=>modulate(v,vertexRgb6[c])),alpha5=modulate(expand5(texel[3]),expand5(alpha))>>1;fragments.push({...g,uv,sample,vertexRgb6,textureRgba6665:texel,rgb6,alpha5});for(let c=0;c<6;c++)current[c]=i64(current[c]+delta[c]);}
  }
- if(cursor!==geometry.fragments.length)throw Error('Attribute fragment count differs');return{ready:true,discarded:false,culled:geometry.culled,frontFacing:geometry.facing>=0n,clip,clippedUvFx4,clippedRgb6,fragments};
+ if(cursor!==geometry.fragments.length)throw Error('Attribute fragment count differs');return{ready:true,discarded:false,culled:geometry.culled,nativeEdgeSetupAbort:geometry.nativeEdgeSetupAbort??null,frontFacing:geometry.facing>=0n,clip,clippedUvFx4,clippedRgb6,fragments};
 }
 /** Component overlay on a known opaque/binary static subset. Unknown destination
  * cells remain unavailable. IDs are ROM POLYGON_ATTR IDs, sentinel255 is core's

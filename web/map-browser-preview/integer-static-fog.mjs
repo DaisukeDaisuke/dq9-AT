@@ -4,7 +4,7 @@
  * No previewDepth/RGBA8888 is converted into native raster input.
  */
 import {readInitialMode1RasterProfile,renderInitialMode1IntegerPreview} from './integer/initial-mode1-integer-preview.mjs';
-import {readInitialTexturedBlendProfile,collectInitialMode1TexturedTranslucentInputs,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb} from './integer/native-textured-translucent.mjs';
+import {readInitialTexturedBlendProfile,collectInitialMode1TexturedTranslucentInputs,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb} from './integer/native-textured-translucent.mjs?v=edge-source-return-20261005-0434';
 import {projectNativePrimitiveFx} from './integer/native-primitive-inputs.mjs';
 import {clipNativePositionPolygon} from './integer/native-position-clip.mjs';
 import {presentStaticRgb} from './integer/static-mode0-rgb.mjs';
@@ -27,7 +27,7 @@ export function renderInitialIntegerFog(project,rom,record,automatic,camera,{app
   diagnostics.translucent={eligible:translucent.polygons.length,controls,rejected:translucent.rejected};
   for(const row of translucent.rejected){const p=inventory.polygons[row.index],position=projectNativePrimitiveFx(p.primitive,p.positionMatrixFx,p.projectionFx),clip=clipNativePositionPolygon(position.clipVerticesFx);diagnostics.remaining.push({...row,model:p.model,materialName:p.materialName,positionClipDiscarded:clip.discarded,remainingVertices:clip.positionsFx.length});}
   if(diagnostics.remaining.some(p=>!p.positionClipDiscarded))throw Error('可視範囲に未対応polygonがあります（原形状と拒否理由を保持）');
-  for(const p of translucent.polygons){const r=rasterizeNativeTexturedTranslucentMode0(p.args,p.translucentInput);if(!r.ready)throw Error('半透明raster未対応: '+r.reason);participants.push({index:p.index,frontFacing:Boolean(r.frontFacing),fragments:r.fragments});}
+  diagnostics.nativeEdgeSetupAborts=[];for(const p of translucent.polygons){const r=rasterizeNativeTexturedTranslucentMode0(p.args,p.translucentInput);if(!r.ready)throw Error('半透明raster未対応: '+r.reason);if(r.nativeEdgeSetupAbort)diagnostics.nativeEdgeSetupAborts.push({index:p.index,...r.nativeEdgeSetupAbort});participants.push({index:p.index,frontFacing:Boolean(r.frontFacing),fragments:r.fragments});}
   const combined=compositeTexturedTranslucentOverStaticRgb(base.rgb,translucent,participants,controls);
   diagnostics.translucent.stats=combined.stats;if(combined.stats.unknownDestination||combined.unavailableMask.some(v=>v))throw Error('半透明合成先のnative depth/色が未解決です');
   let rgba6665=combined.rgba6665;
