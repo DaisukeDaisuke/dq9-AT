@@ -1,4 +1,4 @@
-import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs';
+import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=source-anchor-20261005-1344';
 // A cached map is a search hypothesis, never a temporal assertion. Every hit
 // requires a fresh whole-minimap registration and same-frame player/floor proof.
 export class VideoMapContinuity {
@@ -22,10 +22,12 @@ export class VideoMapContinuity {
   for(const candidate of entry.evidence.maps){
    if(!isCurrent())throw new DOMException('Map continuity cancelled','AbortError');
    const record=alignment.records.find(r=>r.key===candidate.key);if(!record)continue;
-   try{const scene=alignment.scene(record),selection=await resolveVideoMinimapCandidates({record,catalog:alignment.catalog,renderer,matcher:alignment.matcher,floors:scene.floors,...input,isCurrent});selections.set(record.key,selection);if(selection.accepted.length)accepted.push(selection);}
+   try{const scene=alignment.scene(record),selection=await resolveVideoMinimapCandidates({record,catalog:alignment.catalog,renderer,matcher:alignment.matcher,floors:scene.floors,...input,isCurrent});selections.set(record.key,selection);if(selection.accepted.length||selection.anchorOnly?.length)accepted.push(selection);}
    catch(error){if(error.name==='AbortError')throw error;this.stats.misses++;return null;}
   }
   if(!isCurrent())throw new DOMException('Map continuity cancelled','AbortError');
+  // Fixed-display-anchor maps remain surviving map alternatives even without
+  // actor XZ. They cannot silently make a physical-coordinate alias unique.
   // Multiple surviving records or non-equivalent references need fresh name
   // evidence. Descriptor aliases in the sole equivalent group stay intact.
   if(accepted.length!==1||!accepted[0].chosen){this.stats.misses++;return null;}
