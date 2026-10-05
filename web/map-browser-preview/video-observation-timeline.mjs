@@ -1,3 +1,4 @@
+import {mapHypothesisProvenance,mapHypothesisSignature} from './map-hypothesis-provenance.mjs';
 // Scheduling/storage limits are resource budgets, never recognition thresholds.
 const copy=x=>structuredClone(x);
 const time=s=>s?.mediaTime??s?.videoTime;
@@ -41,10 +42,10 @@ export class VideoObservationTimeline {
   if(panelPresent===true&&this.previousPanel?.present===false)this.event({kind:'map-entry-or-reload-candidate',cause:'name-panel-reappeared',startPTS:this.previousPanel.sourcePTS,endPTS:pts,alternatives:['map-entry','same-map-return','battle-or-menu-return','missed-panel-detection'],timing:'Name-panel appearance interval only; actual map entry may precede this interval. Not native reset time.'});
   if(typeof panelPresent==='boolean')this.previousPanel={present:panelPresent,sourcePTS:pts};return row;
  }
- maps(frameSerial,candidates){const row=this.frames.find(f=>f.frameSerial===frameSerial);if(!row)return false;row.positionCandidates=copy(candidates);row.mapCandidates=[...new Set(candidates.map(c=>c.recordKey))].sort();
-  const signature=JSON.stringify(candidates.map(c=>[c.recordKey,c.descriptorPath]).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b))));
-  if(candidates.length&&this.previousMap&&this.previousMap.signature!==signature)this.event({kind:'map-entry-or-reload-candidate',cause:'map-candidate-set-changed',startPTS:this.previousMap.sourcePTS,endPTS:row.sourcePTS,previousCandidates:this.previousMap.candidates,currentCandidates:copy(candidates),alternatives:['map-change','candidate-ambiguity','observation-error'],timing:'between observed candidates; exact entry unobserved'});
-  if(candidates.length)this.previousMap={signature,sourcePTS:row.sourcePTS,candidates:copy(candidates)};return true;
+ maps(frameSerial,candidates,metadata={}){const row=this.frames.find(f=>f.frameSerial===frameSerial);if(!row)return false;Object.assign(row,copy(metadata));row.positionCandidates=copy(candidates);row.mapCandidates=[...new Set(candidates.map(c=>c.recordKey))].sort();
+  row.mapHypothesisProvenance=mapHypothesisProvenance(row);const provenance=row.mapHypothesisProvenance,signature=mapHypothesisSignature(provenance);
+  if(provenance.candidates.length&&this.previousMap&&this.previousMap.signature!==signature)this.event({kind:'map-entry-or-reload-candidate',cause:'map-candidate-set-changed',startPTS:this.previousMap.sourcePTS,endPTS:row.sourcePTS,previousCandidates:this.previousMap.candidates,currentCandidates:copy(candidates),previousMapHypotheses:copy(this.previousMap.provenance),currentMapHypotheses:copy(provenance),alternatives:['map-change','candidate-ambiguity','observation-error'],timing:'between observed map hypotheses; exact entry unobserved'});
+  if(provenance.candidates.length)this.previousMap={signature,sourcePTS:row.sourcePTS,candidates:copy(candidates),provenance:copy(provenance)};return true;
  }
  update(frameSerial,patch){const row=this.frames.find(f=>f.frameSerial===frameSerial);if(!row)return false;Object.assign(row,copy(patch));return true;}
  snapshot(){return copy({schema:'video-map-observation-timeline-v1',source:this.source,resetReason:this.reason,resetCount:this.resetCount,totalAnalyzedFrames:this.totalFrames,frames:this.frames,entryCandidates:this.events,unobservedIntervals:this.gaps,retention:{maximumFrames:this.maximumFrames,maximumEvents:this.maximumEvents,maximumGaps:this.maximumGaps,evicted:this.evicted,complete:this.evicted.frames+this.evicted.events+this.evicted.gaps===0},coverage:{everyDecodedFrameObserved:false,continuousRecognitionComplete:false,entryDetectionComplete:false,romLayerResetKnown:false,absenceCertified:false},minimumProvenATCalls:0,currentVideoStateRecovered:false});}
