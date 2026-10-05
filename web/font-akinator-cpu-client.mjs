@@ -1,6 +1,6 @@
 import {snapshotCpuGlyphInput,validateCpuAkinatorRequest} from './font-akinator.mjs';
 import {cpuTextDiagnostic} from './font-akinator-diagnostic.mjs';
-// Explicit one-frame CPU jobs only. Every job owns one disposable Worker.
+// One active CPU frame job. Default is disposable; continuous preview may reuse an idle successful ROM Worker. Cancellation and watchdog always terminate active work.
 const aborted=()=>new DOMException('CPU文字照合を中止しました','AbortError');
 const need=(value,message)=>{if(!value)throw Error(message);};
 const stampKey=stamp=>JSON.stringify(stamp);
@@ -8,8 +8,8 @@ export function cpuUnknownResult(reason='time-budget'){
  return {route:'glyph-akinator',backend:'cpu-reference',cpuOneFrame:true,sequence:'',characters:[],candidates:[],hypotheses:[],evaluated:0,evaluationCountKnown:false,complete:false,reason,searchStopped:reason,hypothesisSearchComplete:false,thresholdSearchComplete:false,textResolved:false,fontIdentityResolved:false,confidenceCalibrated:false,unknownTextPossible:true,unsearchedTextPossible:true,provisional:true,whitespaceUnresolved:true,workerTerminated:true};
 }
 export class CPUTextClient {
- constructor({factory=()=>new Worker(new URL('./font-akinator-cpu-worker.mjs',import.meta.url),{type:'module'}),setTimer=(callback,delay)=>globalThis.setTimeout(callback,delay),clearTimer=timer=>globalThis.clearTimeout(timer),now=()=>performance.now()}={}){
-  Object.assign(this,{factory,setTimer,clearTimer,now,active:null,sequence:0});
+ constructor({reuseWorker=false,factory=()=>new Worker(new URL('./font-akinator-cpu-worker.mjs',import.meta.url),{type:'module'}),setTimer=(callback,delay)=>globalThis.setTimeout(callback,delay),clearTimer=timer=>globalThis.clearTimeout(timer),now=()=>performance.now()}={}){
+  Object.assign(this,{factory,setTimer,clearTimer,now,reuseWorker,idle:null,active:null,sequence:0});
  }
  match(image,{glyphsBySize,romEpoch,stamp,options={}}={}){
   // Snapshot before the first await; source/ROM changes are handled by cancel().
@@ -25,9 +25,9 @@ export class CPUTextClient {
   const captureStamp=structuredClone(stamp),snapshot={width,height,data:Uint8ClampedArray.from(image.data)},config=structuredClone(Object.fromEntries(['threshold','charCount','topN','maxEvaluations','maxMilliseconds','scales','shiftX','shiftY','shiftStep','autoThreshold','sequenceMode'].filter(k=>Object.hasOwn(options,k)).map(k=>[k,options[k]]))),glyphs=snapshotCpuGlyphInput(glyphsBySize);
   this.cancel();
   return new Promise((resolve,reject)=>{
-   const id=`cpu-frame-${++this.sequence}`,started=this.now(),worker=this.factory();
+   const id=`cpu-frame-${++this.sequence}`,started=this.now(),worker=this.idle?.romEpoch===romEpoch&&this.idle?.glyphsBySize===glyphsBySize?this.idle.worker:this.factory(),initialized=this.idle?.worker===worker;if(this.idle&&this.idle.worker!==worker)this.idle.worker.terminate();this.idle=null;
    const token={id,romEpoch,stamp:captureStamp,worker,timer:null,settled:false,reject};this.active=token;
-   const finish=(error,result)=>{if(token.settled)return;token.settled=true;this.clearTimer(token.timer);worker.terminate();if(this.active===token)this.active=null;error?reject(error):resolve(result);};
+   const finish=(error,result,reusable=false)=>{if(token.settled)return;token.settled=true;this.clearTimer(token.timer);if(this.reuseWorker&&reusable&&!error)this.idle={worker,romEpoch,glyphsBySize};else worker.terminate();if(this.active===token)this.active=null;error?reject(error):resolve(result);};
    token.finish=finish;
    worker.onmessage=({data:m})=>{
     if(this.active!==token||token.settled||m?.id!==id||m.romEpoch!==romEpoch)return;
@@ -43,13 +43,13 @@ export class CPUTextClient {
     if(stampKey(m.stamp)!==stampKey(captureStamp)){finish(Error('CPU結果の撮影識別情報が一致しないため破棄しました'));return;}
     if(m.result?.route!=='glyph-akinator'){finish(Error('CPU文字照合の応答形式が不正です'));return;}
     // Exhaustive mathematical subpasses do not establish semantic text identity.
-    finish(null,{...m.result,backend:'cpu-reference',cpuOneFrame:true,unknownTextPossible:true,unsearchedTextPossible:true,fontIdentityResolved:false,textResolved:false,confidenceCalibrated:false});
+    finish(null,{...m.result,backend:'cpu-reference',cpuOneFrame:true,unknownTextPossible:true,unsearchedTextPossible:true,fontIdentityResolved:false,textResolved:false,confidenceCalibrated:false},true);
    };
    worker.onerror=event=>{if(this.active===token)finish(Error(event.message||'CPU Workerを起動できませんでした'));};
    token.timer=this.setTimer(()=>{if(this.active===token)finish(null,cpuUnknownResult());},budget);
-   try{worker.postMessage({type:'init',id,romEpoch,glyphsBySize:glyphs});}catch(error){finish(error);}
+   try{if(initialized)worker.onmessage({data:{type:'ready',id,romEpoch}});else worker.postMessage({type:'init',id,romEpoch,glyphsBySize:glyphs});}catch(error){finish(error);}
   });
  }
  cancel(){this.active?.finish(aborted());}
- destroy(){this.cancel();}
+ destroy(){this.cancel();this.idle?.worker.terminate();this.idle=null;}
 }

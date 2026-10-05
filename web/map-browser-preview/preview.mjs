@@ -1,15 +1,15 @@
-import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=map-result-retained-20261005-0639';
+import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=entry-clock-format-20261005-0706';
 import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
 import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=asset-prepare-20261005-0358';
-import {residualModelPlan,residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs';
-import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=map-result-retained-20261005-0639';
-import {CPUTextClient} from '../font-akinator-cpu-client.mjs';
+import {residualModelPlan,residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs?v=video-entry-timeline-20261005';
+import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=entry-clock-format-20261005-0706';
+import {CPUTextClient} from '../font-akinator-cpu-client.mjs?v=video-entry-timeline-20261005';
 import {deriveVideoMapNames} from './video-map-name-input.mjs';
 import {MapPositionMatcher} from '../map-position.mjs';
 import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
-import {mountMapVideoComparison} from './map-video-comparison.mjs?v=map-result-retained-20261005-0639';
+import {mountMapVideoComparison} from './map-video-comparison.mjs?v=video-entry-timeline-20261005';
 import {openMapRom} from './static-scene.mjs';
 import {buildRomMapCatalog} from './rom-map-catalog.mjs';
 import {nameCatalogMaps} from './rom-map-names.mjs';
@@ -25,14 +25,15 @@ const $=id=>document.getElementById(id),ctx=$('view').getContext('2d'),mapCtx=$(
 let rom,project,catalog,maps=[],record,automatic,floors,image,point,renderer,version=0,loaded=false,renderVersion=0,romSHA256=null,positionMatcher=null,markerInput=null;
 const identity=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
 const residualClient=new ResidualRecognitionClient();let encounterTables=null;
-const nameClient=new CPUTextClient();let nameInput=null,pendingNamedMap=null,automaticSearch=null,automaticRequested=false,automaticMsePhase=null;
-const videoComparison=mountMapVideoComparison({renderBackground:render,derivePlayerBackground:renderFromMarker,deriveMapBackground:renderFromName,classifyResiduals:classifyBackgroundResiduals,cancelSearch:()=>{version++;$('auto-search-status').textContent='自動探索を中止しました。';},cancelPending:()=>{nameClient.cancel();residualClient.cancel();}});
+const nameClient=new CPUTextClient({reuseWorker:true});let nameRomEpoch=0;let nameInput=null,pendingNamedMap=null,automaticSearch=null,automaticMsePhase=null;
+const videoComparison=mountMapVideoComparison({canAnalyze:()=>loaded,getRomIdentity:()=>romSHA256,renderBackground:render,derivePlayerBackground:renderFromMarker,deriveMapBackground:renderFromName,classifyResiduals:classifyBackgroundResiduals,cancelSearch:()=>{version++;$('auto-search-status').textContent='自動探索を中止しました。';},cancelPending:()=>{nameClient.cancel();residualClient.cancel();}});
 function clearView(){automaticMsePhase=null;$('marker-details').textContent='';$('marker-status').textContent='描画入力が変わりました。固定映像の上画面から再計算します。';renderVersion++;videoComparison.invalidate('背景の入力が変わりました。');ctx.clearRect(0,0,256,192);$('draw').disabled=true;point=null;markerInput=null;$('floor').replaceChildren();$('floor').disabled=true;}
 function reportError(e){videoComparison.invalidate('背景の描画に失敗しました。',{resetTracking:true});$('status').textContent='描画できません：'+e.message;console.error(e);}
 function guard(fn){return async event=>{try{await fn(event);}catch(e){reportError(e);}};}
 const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
 async function responseBytes(url){const r=await fetch(url);if(!r.ok)throw Error('必要なファイルを読めません: '+url+' ('+r.status+')');return r;}
 $('rom').onchange=guard(async()=>{
+ videoComparison.resetSource('rom-replacement');nameClient.destroy();nameRomEpoch++;
  nameClient.cancel();residualClient.release();nameInput=null;pendingNamedMap=null;$('name-input-candidates').replaceChildren();$('name-input-details').textContent='';const id=++version,file=$('rom').files[0];clearView();loaded=false;for(const x of['search','map','descriptor'])$(x).disabled=true;if(!file)return;
  $('status').textContent='ROMとマップ一覧を読んでいます…';await frame();const bytes=new Uint8Array(await file.arrayBuffer());if(id!==version)return;
  const p=openMapRom(bytes),c=buildRomMapCatalog(p);let csv='';try{csv=await(await responseBytes('../data/map-id-names.csv')).text();}catch(e){throw Error('既存マップ名一覧の取得に失敗: '+e.message);}
@@ -76,14 +77,16 @@ async function loadNamedMap(candidate,input,evidence){
 async function renderFromName(input){
  if(!loaded||!project){$('name-input-status').textContent='固定映像を保持しています。NDSを選択してください。';return;}
  const id=++version;clearView();nameInput=null;$('name-input-status').textContent='NDSフォントで同じ上画面の名前候補を照合しています（CPU上限10秒）…';await frame();if(id!==version||input.frameId!==videoComparison.frameId())return;
- const evidence=await deriveVideoMapNames({...input,romSHA256,project,records:maps,matchText:(image,args)=>nameClient.match(image,{...args,romEpoch:id,stamp:{romEpoch:id,frameId:input.frameId,...input.frameEvidence}})});
+ const evidence=await deriveVideoMapNames({...input,romSHA256,project,records:maps,matchText:(image,args)=>nameClient.match(image,{...args,romEpoch:nameRomEpoch,stamp:{romEpoch:nameRomEpoch,frameId:input.frameId,...input.frameEvidence}})});
  if(id!==version||input.frameId!==videoComparison.frameId())return;
  $('name-input-details').textContent=JSON.stringify(evidence,null,2);$('name-input-candidates').replaceChildren(...evidence.maps.map(r=>{const button=document.createElement('button');button.textContent=r.displayLabel+'（候補として描画）';button.onclick=guard(()=>loadNamedMap(r,input,evidence));return button;}));
  $('name-input-status').textContent=evidence.maps.length?'映像から地図候補 '+evidence.maps.length+'件: '+evidence.nameCandidates.names.join(' / ')+'。未探索の文字・同名候補を残し、現在地の確定ではありません。':'名前候補は未解決: '+evidence.status+'。既知の地図名は補いません。';
- if(automaticRequested){await runAutomaticSearch(input,evidence,id);return;}if(evidence.maps.length===1)await loadNamedMap(evidence.maps[0],input,evidence);
+ if(input.automaticRecognition){await runAutomaticSearch(input,evidence,id);return;}if(evidence.maps.length===1)await loadNamedMap(evidence.maps[0],input,evidence);
 }
 async function runAutomaticSearch(input,evidence,id){
  if(!automaticSearch)return;const result=await automaticSearch.search({input,names:evidence,isCurrent:()=>id===version&&input.frameId===videoComparison.frameId(),onProgress:async p=>{$('auto-search-status').textContent=p.message;$('comparison-status').textContent=p.message;await frame();}});
+ if(id!==version||input.frameId!==videoComparison.frameId())return;
+ videoComparison.observeMapCandidates(input.frameId,result.located.map(s=>({recordKey:s.record.key,mapId:s.record.mapId,fieldCode:s.record.fieldCode,descriptorPath:s.reference.path,world:s.position.world,floorHeightsFx:s.position.floor.heightsFx,mapIdentityCertified:false,playerIdentityCertified:false})),{mapNameCandidates:evidence.maps.map(m=>({recordKey:m.key,mapId:m.mapId,fieldCode:m.fieldCode})),nameStatus:evidence.status,unsearchedTextPossible:true,backgroundAlternatives:result.diagnostics.backgroundCandidates,mapSearchDiagnostics:result.diagnostics.mapCandidates});
  $('auto-search-details').textContent=JSON.stringify(result.diagnostics,null,2);if(!result.selected){if(result.located.length===1){const s=result.located[0];record=s.record;automatic=s.scene.automatic;floors=s.scene.floors;image=s.reference.image;point={...s.position.world,source:s.position.coordinate};markerInput={evidence:s.reference.result};nameInput=evidence;$('map').replaceChildren(...evidence.maps.map(r=>new Option(r.displayLabel,r.key)));$('map').value=record.key;$('descriptor').replaceChildren(...record.minimapCandidates.map(d=>new Option(d.path,d.path)));$('descriptor').value=s.reference.path;$('descriptor').disabled=false;const c=$('minimap');c.width=image.width;c.height=image.height;markPoint(s.position.image.x,s.position.image.y);$('mapstatus').textContent=record.displayLabel+' / '+s.reference.path+'（地図候補取得済み）';$('marker-details').textContent=JSON.stringify(s.position,null,2);$('marker-status').textContent='地図・位置候補を取得済み: X='+point.xFx+'/4096、Z='+point.zFx+'/4096。';$('floor').replaceChildren(...s.position.floor.heightsFx.map(v=>new Option('ROM床候補 '+(v/4096).toFixed(3),String(v))));$('floor').disabled=s.position.floor.heightsFx.length===1;$('auto-search-status').textContent='地図・位置候補は取得できました。背景描画は未対応の条件があり、位置合わせ・敵特定は未完です。';$('status').textContent=result.diagnostics.backgroundCandidates.map(r=>r.unsupported).filter(Boolean).join('; ');$('comparison-status').textContent='地図探索結果を保持しています。背景条件が未解決のため差分はまだ出していません。';}else{$('auto-search-status').textContent='地図・位置候補を一つに確定できません。候補と未対応の内訳を保持しています。';}return;}
  const s=result.selected;record=s.record;automatic=s.scene.automatic;floors=s.scene.floors;image=s.reference.image;point={...s.position.world,source:s.position.coordinate};nameInput={...evidence,automaticSearch:result.diagnostics};pendingNamedMap=null;const {upper,...positionEvidence}=s.reference.result;markerInput={evidence:positionEvidence,heading:s.heading};$('marker-details').textContent=JSON.stringify(positionEvidence,null,2);$('marker-status').textContent='上画面からROM座標候補を取得: X='+s.point.xFx+'/4096、Z='+s.point.zFx+'/4096。床・向き候補を自動比較済み。';$('mapstatus').textContent=record.displayLabel+' / '+s.reference.path+'（自動選択した背景仮説）';$('status').textContent='ROM背景候補'+result.diagnostics.backgroundCandidates.length+'件を比較し描画しました。';if(upper){const c=$('comparison-upper');c.width=upper.width;c.height=upper.height;c.getContext('2d').putImageData(new ImageData(upper.rgba,upper.width,upper.height),0,0);}const hs=s.row.rotationPolicy.candidates;$('rom-yaw-candidate').replaceChildren(...hs.map(h=>new Option(h.kind??'ROM初期向き',String(h.yawDegrees>180?h.yawDegrees-360:h.yawDegrees))));$('rom-yaw-candidate').value=String(s.point.yawDegrees>180?s.point.yawDegrees-360:s.point.yawDegrees);
  $('map').replaceChildren(...evidence.maps.map(r=>new Option(r.displayLabel,r.key)));$('map').value=record.key;$('descriptor').replaceChildren(...record.minimapCandidates.map(d=>new Option(d.path,d.path)));$('descriptor').value=s.reference.path;$('descriptor').disabled=false;
@@ -92,7 +95,7 @@ async function runAutomaticSearch(input,evidence,id){
  const background={romSHA256,recordKey:record.key,mapId:record.mapId,fieldCode:record.fieldCode,selected:s.point,viewFx:s.camera.viewFx,projectionFx:s.camera.projectionFx,cameraScope:s.camera.scope,renderScope:s.image.scope,stats:s.image.stats,unresolved:s.unresolved,floorUnresolved:floors.unsupported,fogApplied:rendererEvidence.fogApplied,rendererEvidence,liveCameraVerified:false,playerInput:markerInput,nameInput,automaticSearch:result.diagnostics};
  videoComparison.setBackground(s.image,background,input.frameId);$('auto-search-status').textContent=(s.row.accepted?'自動位置合わせを適用しました。':'自動候補を比較しましたが、位置合わせ条件を満たしていません。')+' 比較'+result.diagnostics.backgroundCandidates.length+'件・地図キャッシュ'+result.diagnostics.cache.mapImages+'件。種類は続けて候補比較します。';
 }
-$('auto-map-search').onclick=guard(async()=>{if(!loaded){$('auto-search-status').textContent='先にNDSと動画を選択してください。';return;}automaticRequested=true;$('auto-map-search').disabled=true;$('automatic-map-name').checked=true;$('automatic-player').checked=true;$('apply-translation').checked=true;try{await videoComparison.analyze({automaticLayout:true});if(videoComparison.hasComparison())await videoComparison.classifyTop(32);}finally{automaticRequested=false;$('auto-map-search').disabled=false;}});
+$('auto-map-search').onclick=guard(()=>videoComparison.startAutomatic());
 async function renderFromMarker(input){
  if(!image||!record||!floors||!positionMatcher){$('marker-status').textContent='固定映像を保持しています。ROMとマップを選択してください。';return;}
  clearView();const id=version;await frame();if(id!==version||input.frameId!==videoComparison.frameId())return;
