@@ -58,16 +58,29 @@ export function lowerEnvironmentFog(calls) {
   return {records, mode:modes.at(-1)?.mode ?? null, modes, recordSources, issues, ready:issues.length === 0};
 }
 
-/** Verified branch of 02051d00. Copies fields, NOT the specified flag or padding.
- * No-specified first-four cases are deliberately not guessed: the disassembly has a
- * three-predecessor bound beside a separate density-zero branch. See first-failure ledger.
+/** Verify the instruction graph, not per-map fog values. The apparent zero-density
+ * branch is unreachable: the inner body runs with r5=0..2, but tests r5==3.
+ * Without a specified predecessor, execution falls through to the same copy.
  */
-export function inheritTimeFogRecords(input) {
+export function readTimeFogInheritanceRules(sdk) {
+  const address=0x02051d00, length=0x110, bytes=sdk.read(address,length);
+  let hash=2166136261;
+  for(const byte of bytes) hash=Math.imul(hash^byte,16777619)>>>0;
+  if(bytes.length!==length || hash!==0x2cbcb765) throw new Error('Native fog inheritance instruction graph differs');
+  return {kind:'ydqj-third-predecessor-fallthrough',address,length,hash,
+    evidence:{loopBound:0x02051d9c,zeroBranchTest:0x02051d4c,fallthroughCopy:0x02051da4}};
+}
+
+/** Literal native sequential first-four inheritance. Copies fields, not specified
+ * or padding. No-specified support requires verified ROM instructions explicitly.
+ */
+export function inheritTimeFogRecords(input, {rules=null}={}) {
   if (!(input instanceof Uint8Array) || input.length !== RECORD_BYTES * RECORD_COUNT) {
     throw new RangeError('seven packed 56-byte records required');
   }
   const out = input.slice(), d = new DataView(out.buffer);
-  if (![0,1,2,3].some(i => d.getUint32(i * RECORD_BYTES,true) === 1)) {
+  const noSpecified = ![0,1,2,3].some(i => d.getUint32(i * RECORD_BYTES,true) === 1);
+  if (noSpecified && (rules?.kind!=='ydqj-third-predecessor-fallthrough' || rules.hash!==0x2cbcb765)) {
     throw new RangeError('NO_SPECIFIED_TIME_RECORD: native no-specified branch not accepted; retain raw records');
   }
   const copies = [];
@@ -78,13 +91,13 @@ export function inheritTimeFogRecords(input) {
       previous = (previous + 3) & 3;
       if (d.getUint32(previous * RECORD_BYTES,true) === 1) { found = true; break; }
     }
-    if (!found) throw new Error('No specified predecessor in verified branch');
+    if (!found && !noSpecified) throw new Error('No specified predecessor in verified branch');
     const a = i * RECORD_BYTES, b = previous * RECORD_BYTES;
     out.set(out.slice(b + 4,b + 18),a + 4);
     out.set(out.slice(b + 20,b + RECORD_BYTES),a + 20);
     copies.push({destination:i,source:previous});
   }
-  return {records:out,copies};
+  return {records:out,copies,...(noSpecified?{noSpecifiedBranch:rules.kind,sourceEvidence:rules.evidence}:{})};
 }
 
 /** Reads fields without deciding whether this record is currently selected. */

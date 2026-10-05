@@ -2,7 +2,7 @@
  * ROM source02052714 fog evaluator. No clock, selector or GPU-gate defaults.
  * This pure stage does not discover current state or certify a video match.
  */
-import {readFogRecord} from './fog-records.mjs';
+import {readFogRecord} from './fog-records.mjs?v=map-coverage-20261005-0931';
 const f=x=>{const y=Math.fround(x);if(!Number.isFinite(y)||(y!==0&&Math.abs(y)<2**-126))throw Error('Mode2 fog float subset exceeded');return y;};
 const i=(x,lo,hi,label)=>{if(!Number.isInteger(x)||x<lo||x>hi)throw Error('Explicit '+label+' required');return x;};
 export function readMode2FogWriterRules(sdk){

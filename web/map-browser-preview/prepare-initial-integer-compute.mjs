@@ -6,10 +6,10 @@ import{createSourcePreparationCache}from'./integer/source-preparation-cache.mjs'
  * before GPU submission. Existing ROM profiles and rejection ledgers remain.
  */
 import{readInitialMode1RasterProfile,collectInitialMode1IntegerInputs}from'./integer/initial-mode1-integer-preview.mjs';
-import{collectStaticOpaqueDepthInputs}from'./integer/static-opaque-depth.mjs';
+import{collectStaticOpaqueDepthInputs}from'./integer/static-opaque-depth.mjs?v=mode2-inverse-20261005-0908';
 import{classifyStaticBinaryDepthInputs}from'./integer/static-binary-depth.mjs';
-import{collectStaticMode0ColorInputs}from'./integer/static-mode0-rgb.mjs';
-import{collectInitialMode1TexturedTranslucentInputs,collectInitialMode2TexturedTranslucentInputs,readInitialTexturedBlendProfile}from'./integer/native-textured-translucent.mjs';
+import{collectStaticMode0ColorInputs}from'./integer/static-mode0-rgb.mjs?v=mode2-inverse-20261005-0908';
+import{collectInitialMode1TexturedTranslucentInputs,collectInitialMode2TexturedTranslucentInputs,readInitialTexturedBlendProfile}from'./integer/native-textured-translucent.mjs?v=mode2-inverse-20261005-0908';
 import{automaticBillboardScenes}from'./automatic-billboard-scene.mjs';
 import{buildAutomaticNormalMatrices,applyMode2ToAutomaticScenes}from'./integer/mode2-lighting-adapter.mjs';
 import{projectNativePrimitiveFx}from'./integer/native-primitive-inputs.mjs';

@@ -2,7 +2,7 @@
 import {Narc} from './vendor/narc-source.js';
 import {Compression,BufferReader} from './vendor/nitro-fs.mjs';
 import {parseCalls,decodeNumber,readPoolString,u32} from './vendor/call-stream.mjs';
-import {lowerEnvironmentFog,inheritTimeFogRecords,staticMode1FogParameters} from './native/fog-records.mjs';
+import {lowerEnvironmentFog,inheritTimeFogRecords,readTimeFogInheritanceRules,staticMode1FogParameters} from './native/fog-records.mjs?v=map-coverage-20261005-0931';
 import {readNativeModelInfo} from './native/native-model-info.mjs';
 import {readNativeShapes,decodePackedGx,decodeNativeSbc,decodeLocalVertices} from './native/native-sbc-gx.mjs';
 import {nativeAsciiNameCandidates} from './native/native-file-name.mjs';
@@ -125,7 +125,7 @@ export function readAutomaticMaterialEnvironment(project,record,automatic){
   const normals=inspectNormals(project,automatic);unresolved.push(...normals.issues.map(x=>x.reason));
   const normalLighting=zeroLightSource(rules.reader);
   const fog=lowerEnvironmentFog(calls),fogUnresolved=fog.issues.map(x=>x.error);let fogParameters=null,fogTimeIndependent=false;
-  if(fog.ready){try{const inherited=inheritTimeFogRecords(fog.records),states=[0,1,2,3].map(i=>staticMode1FogParameters(inherited.records,i));fogTimeIndependent=states.every(x=>same(x,states[0]));if(fogTimeIndependent)fogParameters=states[0];else fogUnresolved.push('Environment time slot/phase affects fog');}catch(e){fogUnresolved.push(e.message);}}
+  if(fog.ready){try{const inherited=inheritTimeFogRecords(fog.records,{rules:readTimeFogInheritanceRules(project.sdk)}),states=[0,1,2,3].map(i=>staticMode1FogParameters(inherited.records,i));fogTimeIndependent=states.every(x=>same(x,states[0]));if(fogTimeIndependent)fogParameters=states[0];else fogUnresolved.push('Environment time slot/phase affects fog');}catch(e){fogUnresolved.push(e.message);}}
   const globals=readSdkInitialMaterialGlobals(project.sdk);
   // 02052eb4 sets manager+46 from static record+C4, then020b53cc(value,0,0).
   // Other globals retain their SDK initialization in this explicit initial profile.
