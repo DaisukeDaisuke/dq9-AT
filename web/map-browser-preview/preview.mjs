@@ -32,14 +32,15 @@ function reportError(e){videoComparison.invalidate('背景の描画に失敗し�
 function guard(fn){return async event=>{try{await fn(event);}catch(e){reportError(e);}};}
 const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
 async function responseBytes(url){const r=await fetch(url);if(!r.ok)throw Error('必要なファイルを読めません: '+url+' ('+r.status+')');return r;}
-$('rom').onchange=guard(async()=>{
- videoComparison.resetSource('rom-replacement');nameClient.destroy();nameRomEpoch++;
- nameClient.cancel();residualClient.release();nameInput=null;pendingNamedMap=null;$('name-input-candidates').replaceChildren();$('name-input-details').textContent='';const id=++version,file=$('rom').files[0];clearView();loaded=false;for(const x of['search','map','descriptor'])$(x).disabled=true;if(!file)return;
- $('status').textContent='ROMとマップ一覧を読んでいます…';await frame();const bytes=new Uint8Array(await file.arrayBuffer());if(id!==version)return;
+$('rom').onchange=async()=>{
+ const id=++nameRomEpoch;try{
+ videoComparison.resetSource('rom-replacement');nameClient.destroy();
+ nameClient.cancel();residualClient.release();nameInput=null;pendingNamedMap=null;$('name-input-candidates').replaceChildren();$('name-input-details').textContent='';version++;const file=$('rom').files[0];clearView();loaded=false;for(const x of['search','map','descriptor'])$(x).disabled=true;if(!file)return;
+ $('status').textContent='ROMとマップ一覧を読んでいます…';await frame();const bytes=new Uint8Array(await file.arrayBuffer());if(id!==nameRomEpoch)return;
  const p=openMapRom(bytes),c=buildRomMapCatalog(p);let csv='';try{csv=await(await responseBytes('../data/map-id-names.csv')).text();}catch(e){throw Error('既存マップ名一覧の取得に失敗: '+e.message);}
- const w=await(await responseBytes('../wasm/map_render.wasm')).arrayBuffer(),inst=await WebAssembly.instantiate(w,{});if(id!==version)return;
- romSHA256=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join('');if(id!==version)return;rom=bytes;project=p;catalog=c;const sourceAngles=readRomCameraYawCandidates(p.sdk).candidates.map(h=>h.yawDegrees>180?h.yawDegrees-360:h.yawDegrees);$('yaw').min=String(Math.min(...sourceAngles));$('yaw').max=String(Math.max(...sourceAngles));maps=nameCatalogMaps(c,csv);renderer=new MapRenderer(inst.instance);positionMatcher=new MapPositionMatcher(inst.instance);automaticSearch=new AutomaticVideoAlignment({project,rom,romSHA256,catalog,records:maps,renderer,matcher:positionMatcher,wasm:inst.instance});loaded=true;$('search').disabled=false;$('map').disabled=false;filterMaps();await videoComparison.renderCurrent();
-});
+ const w=await(await responseBytes('../wasm/map_render.wasm')).arrayBuffer(),inst=await WebAssembly.instantiate(w,{});if(id!==nameRomEpoch)return;
+ const romHash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join('');if(id!==nameRomEpoch)return;romSHA256=romHash;rom=bytes;project=p;catalog=c;const sourceAngles=readRomCameraYawCandidates(p.sdk).candidates.map(h=>h.yawDegrees>180?h.yawDegrees-360:h.yawDegrees);$('yaw').min=String(Math.min(...sourceAngles));$('yaw').max=String(Math.max(...sourceAngles));maps=nameCatalogMaps(c,csv);renderer=new MapRenderer(inst.instance);positionMatcher=new MapPositionMatcher(inst.instance);automaticSearch=new AutomaticVideoAlignment({project,rom,romSHA256,catalog,records:maps,renderer,matcher:positionMatcher,wasm:inst.instance});loaded=true;$('search').disabled=false;$('map').disabled=false;filterMaps();await videoComparison.renderCurrent(); }catch(e){if(id===nameRomEpoch)reportError(e);}
+};
 function filterMaps(){if(!loaded)return;const q=$('search').value.trim().toLocaleLowerCase(),old=$('map').value,rows=maps.filter(m=>(m.displayLabel+' '+m.fieldCode).toLocaleLowerCase().includes(q));$('map').replaceChildren(new Option('マップを選択',''),...rows.map(r=>new Option(r.displayLabel,r.key)));if(rows.some(r=>r.key===old))$('map').value=old;else{clearView();record=null;image=null;mapCtx.clearRect(0,0,$('minimap').width,$('minimap').height);$('descriptor').replaceChildren();$('descriptor').disabled=true;}$('mapstatus').textContent=rows.length+'件。マップを選択してください。';}
 $('search').oninput=filterMaps;
 $('map').onchange=guard(async()=>{
