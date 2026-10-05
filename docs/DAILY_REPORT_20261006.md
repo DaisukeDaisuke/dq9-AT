@@ -101,3 +101,33 @@ ROM・SAV・RAM・動画・抽出ゲーム資産はGitに含めていない。�
 - sourceの±25 XYZ lifetime条件は366合成nativeケースと12正式状態観測で一致したが、旧F04の104個のsource配置は範囲内で、誤候補修正にならなかった。追加metadataの[ソースcheckpoint](https://github.com/DaisukeDaisuke/dq9-AT/commit/657669d6201a7765a82857dbeb6e33a71281c066)のみ保存し、本番の候補排除には導入していない。
 
 半透明身体のsource destination/order、予算内の公平な比較、霧の実動画同期、全マップの種類識別からAT確定までの接続は継続中。上記の個別検証を全自動化の完成とは認定しない。
+
+## 03:34 JST — 未到達候補の継続、移動中の位置候補、身体半透明、画素時刻
+
+### native身体比較が同じ先頭だけで終わる問題
+
+- 公開版の実1ninn227.250/227.279秒では128個の領域・モデル対のうち58/60対までで終了し、次回も先頭から始まっていた。真のメタルの対はどちらも未試行だった。
+- 同一の固定画素・背景・環境・候補・姿勢ヒントを照合した継続tokenを使い、対/提案のcursorを維持する最小変更を統合。1500ms/128 work unitsは各sliceで維持し、比較レーンを解放後のidle継続でまず全対の初回結果まで進める。新しい外観要求が来れば古い継続を譲り、frame/ROM/epochが違う結果を流用しない。
+- 親の統合版で同じ227.250画素を再実行し、55→128対に到達（約1513/1469ms）。127対を描画、1対は明示的な配置不明。メタルの先頭native姿勢は−550266のまま。既存+120595の条件付き予測、順位、旧fit、unknown/AT項目は保持した。
+- 固定50/50/28分割は旧一括128提案と、提案・gain・scale・由来・姿勢順序が一致。入力変更13ケース、取消し、古いtoken、新外観優先、保存済みPTS表示などを検証。全対の初回処理は、全姿勢や全cameraの探索完了ではない。
+
+### F04で移動後に背景が途切れる問題
+
+- 旧公開版のcallback表示4205.717秒では、地図登録とslot1 HUDの灰色は確認できていたが、13個の点候補がありprimaryCandidateの一意性で描画前に止まっていた。aggregateのsource-stripes-unavailableはslot2–4についての失敗で、slot1確認まで否定するものではなかった。
+- 同じ既存条件を満たす物理座標の候補を、別の有限背景仮説として比較へ渡す。primaryCandidateはnullのまま。13候補を保持し、対応COL2がない12候補も「playerではない」と排除しない。128枝/30秒は枝間で確認し、未試行も記録する。固定表示点を物理XYZへ変換することはない。
+- 保存ブラウザのfull/gameplay画素hashに完全一致した独立decodeを統合版で再検証。coldは48705比較/447不明、平均差12.559、1枝通過、約12.28秒。warmは別の通過仮説として保持。既存4200/4200.033の一意経路、固定anchor経路、取消し・有限予算の条件も保持した。公開ブラウザでの修正版確認はこれから。
+
+### callback時刻と実際に固定した画素
+
+- 上記callbackラベル4205.717秒の保存画素は、元動画の4205.733秒decodeとfull/gameplay双方のhashが一致し、4205.717秒decodeとは一致しなかった。旧入力を新しい時刻に書き換えていない。
+- 新規captureは保持したVideoFrame自身を同期描画し、その報告timestampを新規画素の時刻に結び付ける。元のcallbackStampは別に保存。VideoFrame不可時のCanvas fallbackは時刻未結合と明記する。地図探索失敗時でも、この区別を記録する。
+- 親の統合版で10個の時刻/取消し/close検証と9個の既存色・hash・capture検証を通過。ブラウザの報告timestampを正式動画PTSやAT時刻の確定へ格上げしてはいない。
+
+### sourceに沿った半透明身体の合成
+
+- map-before-natural-actorのsource呼出しをguardし、霧適用前の色・depth・polygon ID・fog flagを再構成。map/actorの半透明をsource順序で合成した後に霧を適用する。最終RGBへの単純なalpha合成や背景depthの借用ではない。
+- 元C++pixel/blend関数との1000列/12000fragment比較を親の統合版でも通過。opaqueのモーモン/メタル出力は変更なし。MSE、未対応の所有関係、opaque同depth、未確定のrouteは保留。
+- 旧F04の7誤候補のうち4件で試行した自身のgainが負になり、3件は背景不一致画素を含むため不明。現行3件も試行gainは負だが、region25の灰色物体や種類を排除しない。姿勢・配置が不完全な負値を種類判定の閾値に使わない。
+- [source順序の解析注釈](https://github.com/DaisukeDaisuke/dqix-functions/blob/7a794d4414ec11396515c350d7867d4716b1246a/analysis/monster-native-composition-20261006/ordinary-map-actor-order-a2154b20.md)。ヘッドレス再現コードは非公開dots-toolsのc9b8070eへ保存・remote確認。ROM/動画/画素/状態は含めていない。
+
+上記は統合版のsource/headless検証。公開後のブラウザ確認、連続処理の欠測、全マップの身体・種類識別、霧の動画同期、AT特定は引き続き未完。

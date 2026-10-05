@@ -1,4 +1,5 @@
-import {attachResidualNativeSupport,RESIDUAL_NATIVE_BODY_BUDGET} from './residual-native-support.mjs?v=native-body-20261006-0212';
+import {nativeBodyRequestPayload} from './native-body-request.mjs?v=native-continuation-20261006-0333';
+import {attachResidualNativeSupport,RESIDUAL_NATIVE_BODY_BUDGET} from './residual-native-support.mjs?v=native-continuation-20261006-0333';
 import {chooseResidualBackend,residualBackendProvenance,assertResidualBackendResult} from './residual-recognition-backend.mjs';
 import {residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs?v=native-body-20261006-0212';
 // A job is all requested regions and all model batches for one frozen frame.
@@ -8,7 +9,9 @@ export async function runResidualRecognitionJob({input,plan,variant,client,prefe
  const cancellationVersion=client.cancellationVersion,romEpoch=client.epoch;
  const identity=()=>{const v=input.videoEvidence,b=input.backgroundEvidence;return JSON.stringify([b?.romSHA256,b?.recordKey,v?.sourceId,v?.sourceEpoch,v?.timelineSegment,v?.frameSerial,v?.mediaTime??v?.videoTime,v?.fullRGBA_SHA256,input.regionIds]);};
  const frozenIdentity=identity(),frozenBackground=input.backgroundEvidence,frozenVideo=input.nativeVideo,frozenComparison=input.nativeComparison;
- const check=()=>{assertCurrent();if(client.cancellationVersion!==cancellationVersion||client.epoch!==romEpoch||identity()!==frozenIdentity||input.backgroundEvidence!==frozenBackground||input.nativeVideo!==frozenVideo||input.nativeComparison!==frozenComparison)throw new DOMException('領域比較を中止しました','AbortError');};
+ const checkFrozen=()=>{if(client.cancellationVersion!==cancellationVersion||client.epoch!==romEpoch||identity()!==frozenIdentity||input.backgroundEvidence!==frozenBackground||input.nativeVideo!==frozenVideo||input.nativeComparison!==frozenComparison)throw new DOMException('領域比較を中止しました','AbortError');};
+ const check=()=>{assertCurrent();checkFrozen();};
+ const nativeCurrent=()=>{checkFrozen();return input.isNativeCurrent?.()===true;};
  const modelIds=plan.models.map(m=>m.modelId);if(!modelIds.length)throw Error('同frameのmap/table候補からROMモデルを供給できません: '+JSON.stringify(plan.unsupported));
  const selection=await choose({preference,assertCurrent:check});check();let fallback=null;
  const attempt=async backend=>{
@@ -32,14 +35,24 @@ export async function runResidualRecognitionJob({input,plan,variant,client,prefe
  }
  check();
  // All old region partials and the completed appearance bundle are visible
- // before starting this single additive job, including after a GPU restart.
+ // before the first additive native slice, including after a GPU restart.
  input.onPartial?.(appearance);check();
  input.onProgress?.({phase:'native-body-support',message:`全領域まとめてROM身体の条件付き支持を比較します（目安${RESIDUAL_NATIVE_BODY_BUDGET.wallTimeMs} ms / 最大${RESIDUAL_NATIVE_BODY_BUDGET.maxProposals}提案、同期処理の時間上限は保証せず、未探索は不明のまま）。`});
- let nativeResult=null,nativeError=null;
+ let nativeResult=null,nativeError=null,nativeRequest=null,nativeRequestSequence;
  try{
   if(typeof client.nativeBodySupport!=='function')throw Error('Automatic native body worker unavailable');
-  nativeResult=await client.nativeBodySupport({videoEvidence:input.videoEvidence,backgroundEvidence:input.backgroundEvidence,nativeVideo:input.nativeVideo,nativeComparison:input.nativeComparison,regions:input.regionIds.map(id=>input.regions.find(region=>region.id===id)),candidates:plan.models,variant,appearancePoseHints:{romSHA256:input.backgroundEvidence.romSHA256,frame:input.videoEvidence,regions:appearance.sightings.map(s=>({regionId:s.originalProposalId,candidates:(s.classificationEvidence?.[0]?.rankings??[]).map(r=>({modelId:r.modelId,bestPose:r.bestPose}))}))}},input.onProgress,{assertCurrent:check});check();
+  nativeRequest=structuredClone(nativeBodyRequestPayload({videoEvidence:input.videoEvidence,backgroundEvidence:input.backgroundEvidence,nativeVideo:input.nativeVideo,nativeComparison:input.nativeComparison,regions:input.regionIds.map(id=>input.regions.find(region=>region.id===id)),candidates:plan.models,variant,appearancePoseHints:{romSHA256:input.backgroundEvidence.romSHA256,frame:input.videoEvidence,regions:appearance.sightings.map(s=>({regionId:s.originalProposalId,candidates:(s.classificationEvidence?.[0]?.rankings??[]).map(r=>({modelId:r.modelId,bestPose:r.bestPose}))}))}}));
+  const pending=client.nativeBodySupport(nativeRequest,input.onProgress,{assertCurrent:check});nativeRequestSequence=client.sequence;nativeResult=await pending;check();
  }catch(error){check();if(error?.name==='AbortError')throw error;nativeError=error;}
  check();
- return attachResidualNativeSupport(appearance,{input,result:nativeResult,error:nativeError});
+ const first=attachResidualNativeSupport(appearance,{input,result:nativeResult,error:nativeError});
+ if(nativeResult&&typeof input.isNativeCurrent==='function'&&typeof input.onNativePartial==='function'&&typeof client.scheduleNativeContinuation==='function'){
+  // The detached schedule uses the original appearance and exact first-slice
+  // request. Primary lane completion/new playback frames are not invalidation.
+  try{
+  const onNativePartial=input.onNativePartial,retainedAppearance=structuredClone(appearance),retainedInput={regionIds:[...input.regionIds],regions:nativeRequest.regions,videoEvidence:nativeRequest.videoEvidence,backgroundEvidence:nativeRequest.backgroundEvidence};
+  client.scheduleNativeContinuation({request:nativeRequest,result:nativeResult,requestSequence:nativeRequestSequence,isCurrent:nativeCurrent,onResult:result=>{if(nativeCurrent())onNativePartial(attachResidualNativeSupport(retainedAppearance,{input:retainedInput,result}));}});
+  }catch{/* Optional continuation setup cannot discard the successful first slice. */}
+ }
+ return first;
 }

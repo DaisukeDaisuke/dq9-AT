@@ -41,6 +41,7 @@ export function attachResidualNativeSupport(appearance,{input,result=null,error=
  let expected=[],setupError=null;
  try{expected=groupsFromBackground(input);}catch(e){setupError=e.message;}
  const valid=result?.kind==='automatic-source-native-body-support'&&Array.isArray(result.regions);
+ const progress=result?.continuation,workProgress=progress?.kind==='same-frozen-native-job'?{slice:progress.slice,totalAttempts:progress.totalAttempts,pairsWithFirstOutcome:progress.firstSweepServed,totalPairs:progress.jobsTotal,firstSweepComplete:progress.firstSweepComplete===true,hasUntestedPoseDomain:progress.hasMore===true,poseAndCameraCoverageComplete:false}:null;
  const reason=failure??setupError??(valid?'Native body candidate/branch not evaluated':'Automatic source-native body result unavailable');
  const supportByRegion=new Map();
  for(const regionId of input.regionIds){
@@ -70,7 +71,7 @@ export function attachResidualNativeSupport(appearance,{input,result=null,error=
      branchesByModel.get(row.modelId).push(...(support?support.branches.map(branch=>({...branch,recordKey:group.recordKey})):group.branchIds.map(id=>unknown(id,group.recordKey,unavailableReason))));
     }
    }
-   return{...evidence,rankings:rows.map(row=>({...row,sourceNativeSupport:{modelId:row.modelId,kind:'conditional-source-native-own-support',branches:branchesByModel.get(row.modelId),...(expected.length?{}:{unavailableReason:reason}),budget:clone(RESIDUAL_NATIVE_BODY_BUDGET),budgetStopped:result?.budgetStopped===true,complete:false,identityCertified:false,bodyExtentCertified:false,poseAndCameraCoverageComplete:false,unknownNonEnemyPossible:true,noEventPossible:true,minimumProvenATCalls:0}}))};
+   return{...evidence,rankings:rows.map(row=>({...row,sourceNativeSupport:{modelId:row.modelId,kind:'conditional-source-native-own-support',...(workProgress?{workProgress:{...workProgress}}:{}),branches:branchesByModel.get(row.modelId),...(expected.length?{}:{unavailableReason:reason}),budget:clone(RESIDUAL_NATIVE_BODY_BUDGET),budgetStopped:result?.budgetStopped===true,complete:false,identityCertified:false,bodyExtentCertified:false,poseAndCameraCoverageComplete:false,unknownNonEnemyPossible:true,noEventPossible:true,minimumProvenATCalls:0}}))};
   })};
  })};
 }

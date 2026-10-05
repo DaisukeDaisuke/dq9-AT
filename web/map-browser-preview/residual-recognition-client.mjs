@@ -1,23 +1,69 @@
-import {nativeBodyRequestPayload} from './native-body-request.mjs?v=native-body-20261006-0212';
-import {RESIDUAL_NATIVE_BODY_BUDGET,RESIDUAL_NATIVE_BODY_OPTIONAL_WAIT_MS} from './residual-native-support.mjs?v=native-body-20261006-0212';
+import {nativeBodyRequestPayload} from './native-body-request.mjs?v=native-continuation-20261006-0333';
+import {RESIDUAL_NATIVE_BODY_BUDGET,RESIDUAL_NATIVE_BODY_OPTIONAL_WAIT_MS} from './residual-native-support.mjs?v=native-continuation-20261006-0333';
+// First-sweep progress is work coverage, never a recognition/pose certificate.
+const continuationProgress=result=>{
+ const value=result?.continuation;
+ if(value?.kind!=='same-frozen-native-job'||typeof value.token!=='string'||!value.token.length)return null;
+ if(!['firstSweepServed','jobsTotal','slice','totalAttempts'].every(key=>Number.isSafeInteger(value[key])&&value[key]>=0))return null;
+ if(value.firstSweepServed>value.jobsTotal||typeof value.firstSweepComplete!=='boolean'||typeof value.hasMore!=='boolean')return null;
+ return{...value};
+};
+const needsNativeContinuation=p=>p&&p.firstSweepComplete===false&&p.hasMore===true&&p.firstSweepServed<p.jobsTotal;
+const continuationAbort=()=>new DOMException('保持フレームの身体比較を中止しました','AbortError');
 // One ROM worker owns both its appearance cache and optional source preparations.
 export class ResidualRecognitionClient{
- constructor(){this.cancellationVersion=0;this.sequence=0;this.epoch=0;this.worker=null;this.pending=null;this.romSHA=null;this.catalog=null;this.nativeDeadlines=new Map();}
+ constructor(){this.cancellationVersion=0;this.sequence=0;this.epoch=0;this.worker=null;this.pending=null;this.romSHA=null;this.catalog=null;this.nativeDeadlines=new Map();this.nativeContinuation=null;}
+ stopNativeContinuation(state=this.nativeContinuation){
+  if(!state||this.nativeContinuation!==state)return;
+  this.nativeContinuation=null;if(state.timer!==null)clearTimeout(state.timer);
+  const p=this.pending;
+  if(p?.nativeContinuation===state){this.pending=null;this.clearPendingTimers(p);try{this.worker?.postMessage({type:'cancel',id:p.id,romEpoch:p.romEpoch});}catch{}p.reject(continuationAbort());}
+ }
+ scheduleNativeContinuation({request,result,isCurrent,onResult,onProgress,requestSequence=this.sequence}){
+  if(typeof isCurrent!=='function'||typeof onResult!=='function')return false;
+  const progress=continuationProgress(result);
+  if(!needsNativeContinuation(progress)||!(progress.firstSweepServed>0||progress.totalAttempts>0)||this.pending||requestSequence!==this.sequence)return false;
+  let frozenRequest;try{frozenRequest=structuredClone(nativeBodyRequestPayload(request));}catch{return false;}
+  const state={request:frozenRequest,progress,isCurrent,onResult,onProgress,timer:null,cancellationVersion:this.cancellationVersion,romEpoch:this.epoch};
+  const check=()=>{if(this.nativeContinuation!==state||this.cancellationVersion!==state.cancellationVersion||this.epoch!==state.romEpoch||!this.worker||state.isCurrent()!==true)throw continuationAbort();};
+  state.check=check;this.stopNativeContinuation();this.nativeContinuation=state;
+  try{check();this.queueNativeContinuation(state);return true;}catch{this.stopNativeContinuation(state);return false;}
+ }
+ queueNativeContinuation(state){
+  // Each slice yields a task boundary. A foreground request always cancels this
+  // retained schedule and its matching request, leaving shared caches loaded.
+  state.timer=setTimeout(async()=>{
+   state.timer=null;
+   try{
+    state.check();if(this.pending){this.stopNativeContinuation(state);return;}
+    const result=await this.nativeBodySupport({...state.request,continuationToken:state.progress.token},state.onProgress,{assertCurrent:state.check,nativeContinuation:state});
+    state.check();const next=continuationProgress(result),previous=state.progress;
+    if(!next||next.token!==previous.token||next.jobsTotal!==previous.jobsTotal||next.slice<=previous.slice||next.firstSweepServed<previous.firstSweepServed||next.totalAttempts<previous.totalAttempts||!(next.firstSweepServed>previous.firstSweepServed||next.totalAttempts>previous.totalAttempts)){this.stopNativeContinuation(state);return;}
+    state.progress=next;state.onResult(result);state.check();
+    if(needsNativeContinuation(next))this.queueNativeContinuation(state);else this.stopNativeContinuation(state);
+   }catch{this.stopNativeContinuation(state);}
+   // Optional failures end this schedule. Keep the last successful evidence;
+   // do not retry an expired/error slice or terminate the worker for it.
+  },0);
+ }
  clearNativeDeadline(id){const p=this.nativeDeadlines.get(id);if(p){clearTimeout(p.watchdog);this.nativeDeadlines.delete(id);}}
  clearPendingTimers(p){if(p)this.clearNativeDeadline(p.id);if(p?.currentGuard!==undefined)clearInterval(p.currentGuard);}
- forgetWorker(worker=this.worker){if(this.worker!==worker)return;worker?.terminate();for(const id of this.nativeDeadlines.keys())this.clearNativeDeadline(id);this.worker=null;this.romSHA=null;this.catalog=null;}
+ forgetWorker(worker=this.worker){if(this.worker!==worker)return;this.stopNativeContinuation();worker?.terminate();for(const id of this.nativeDeadlines.keys())this.clearNativeDeadline(id);this.worker=null;this.romSHA=null;this.catalog=null;}
  cancel(invalidateJob=true){
   if(invalidateJob)this.cancellationVersion++;
+  this.stopNativeContinuation();
   const p=this.pending;this.pending=null;
   if(p)this.worker?.postMessage({type:'cancel',id:p.id,romEpoch:p.romEpoch});
   if(p){this.clearPendingTimers(p);p.reject(new DOMException('領域比較を中止しました','AbortError'));}
  }
  release(){this.cancel();this.forgetWorker();}
  request(message,transfer=[],onProgress=()=>{},options={}){
-  this.cancel(false);
+  if(!options.nativeContinuation)this.cancel(false);
   return new Promise((resolve,reject)=>{
+   // A queued background callback must never preempt any foreground request.
+   if(options.nativeContinuation&&(this.nativeContinuation!==options.nativeContinuation||this.pending)){reject(continuationAbort());return;}
    if(!this.worker){reject(Error('現在のNDSを読み込み直してください'));return;}
-   const id='residual-compare-'+(++this.sequence),worker=this.worker,p={id,romEpoch:this.epoch,type:message.type,resolve,reject,onProgress};this.pending=p;
+   const id='residual-compare-'+(++this.sequence),worker=this.worker,p={id,romEpoch:this.epoch,type:message.type,resolve,reject,onProgress,nativeContinuation:options.nativeContinuation};this.pending=p;
    const check=()=>{if(this.pending!==p)return;try{options.assertCurrent?.();}catch{this.cancel();}};
    if(options.assertCurrent)p.currentGuard=setInterval(check,50);
    if(options.optionalWaitMs){
@@ -36,8 +82,9 @@ export class ResidualRecognitionClient{
   });
  }
  async load(rom,sha){
+  this.stopNativeContinuation();
   if(this.romSHA===sha&&this.catalog&&this.worker)return this.catalog;
-  this.release();const worker=new Worker(new URL('../monster-recognition-worker.mjs?v=native-body-20261006-0212',import.meta.url),{type:'module'});this.worker=worker;this.epoch++;
+  this.release();const worker=new Worker(new URL('../monster-recognition-worker.mjs?v=native-continuation-20261006-0333',import.meta.url),{type:'module'});this.worker=worker;this.epoch++;
   worker.onmessage=({data:m})=>{
    if(this.worker!==worker)return;
    if(m.romEpoch===this.epoch&&['cancelled','error','result'].includes(m.type))this.clearNativeDeadline(m.id);
@@ -55,9 +102,9 @@ export class ResidualRecognitionClient{
   this.catalog=new Map(answer.catalog.map(r=>[r.modelId,r.speciesCandidates]));this.romSHA=sha;return this.catalog;
  }
  async classify(request,onProgress){const {residualEvidence,...recognitionRequest}=request;const copy={...recognitionRequest,crop:{...request.crop,rgba:request.crop.rgba.slice()}};const answer=await this.request({type:'recognize',...copy},[copy.crop.rgba.buffer],onProgress);return answer.result;}
- async nativeBodySupport(request,onProgress,{assertCurrent=()=>{}}={}){
+ async nativeBodySupport(request,onProgress,{assertCurrent=()=>{},nativeContinuation=null}={}){
   // Clone once for the whole region set. Nothing owned by the UI is transferred.
   assertCurrent();const copy=structuredClone(nativeBodyRequestPayload(request));assertCurrent();
-  const answer=await this.request({type:'native-body-support',request:copy,budget:{...RESIDUAL_NATIVE_BODY_BUDGET}},[],onProgress,{assertCurrent,optionalWaitMs:RESIDUAL_NATIVE_BODY_OPTIONAL_WAIT_MS});assertCurrent();return answer.result;
+  const answer=await this.request({type:'native-body-support',request:copy,budget:{...RESIDUAL_NATIVE_BODY_BUDGET}},[],onProgress,{assertCurrent,nativeContinuation,optionalWaitMs:RESIDUAL_NATIVE_BODY_OPTIONAL_WAIT_MS});assertCurrent();return answer.result;
  }
 }
