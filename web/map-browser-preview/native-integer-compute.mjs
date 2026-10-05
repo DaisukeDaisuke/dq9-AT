@@ -88,10 +88,10 @@ fn main(@builtin(global_invocation_id) gid:vec3<u32>){
 }
 `;
 const need=(x,m)=>{if(!x)throw Error(m);};
-export async function createNativeIntegerCompute({onStatus=()=>{}}={}){
+export async function createNativeIntegerCompute({onStatus=()=>{},forceFallbackAdapter=false}={}){
  if(!globalThis.navigator?.gpu)return{ready:false,reason:'navigator.gpu unavailable'};
- const adapter=await navigator.gpu.requestAdapter();if(!adapter)return{ready:false,reason:'WebGPU adapter unavailable'};
- onStatus({phase:'adapter',info:adapter.info?{vendor:adapter.info.vendor,architecture:adapter.info.architecture,device:adapter.info.device,description:adapter.info.description}:null,limits:{maxStorageBufferBindingSize:adapter.limits.maxStorageBufferBindingSize,maxBufferSize:adapter.limits.maxBufferSize}});
+ onStatus({phase:'requesting-adapter',forceFallbackAdapter});const adapter=await navigator.gpu.requestAdapter({forceFallbackAdapter});if(!adapter)return{ready:false,reason:'WebGPU adapter unavailable'};
+ onStatus({phase:'adapter',info:adapter.info?{vendor:adapter.info.vendor,architecture:adapter.info.architecture,device:adapter.info.device,description:adapter.info.description,isFallbackAdapter:adapter.info.isFallbackAdapter}:null,limits:{maxStorageBufferBindingSize:adapter.limits.maxStorageBufferBindingSize,maxBufferSize:adapter.limits.maxBufferSize}});
  const device=await adapter.requestDevice();device.addEventListener('uncapturederror',e=>onStatus({phase:'device-error',error:e.error.message}));device.lost.then(info=>onStatus({phase:'device-lost',reason:info.reason,message:info.message}));const module=device.createShaderModule({label:'Source integer background pixels',code:NATIVE_INTEGER_COMPUTE_WGSL}),info=await module.getCompilationInfo();const messages=info.messages.map(m=>({type:m.type,line:m.lineNum,column:m.linePos,message:m.message}));onStatus({phase:'compile',messages});
  if(messages.some(m=>m.type==='error')){device.destroy();return{ready:false,reason:'WGSL compilation failed',messages};}
  const pipeline=await device.createComputePipelineAsync({layout:'auto',compute:{module,entryPoint:'main'}});onStatus({phase:'ready'});
