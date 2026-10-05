@@ -52,6 +52,7 @@ export function readNSBCA(bytes){
   }
   if((flags&0xc0)===0){
    if(flags&0x100){obj.rotation={constant:rotation(u16(p))};range(p,4);p+=4;stats.constantRotation++;}
+   // Preserve pivot provenance for the native stored-frame decoder; preview matrices stay unchanged.
    else{const info=curveInfo(u32(p)),offset=base+u32(p+4);p+=8;const sampledPivotFlags=[],samples=Array.from({length:info.count},(_,i)=>{const ref=u16(offset+i*2);sampledPivotFlags.push(Boolean(ref&32768));return rotation(ref);});obj.rotation={samples,sampledPivotFlags};stats.sampledRotation++;}
   }
   if((flags&0x600)===0)for(let axis=0;axis<3;axis++){
