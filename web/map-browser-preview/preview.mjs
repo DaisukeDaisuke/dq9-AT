@@ -1,12 +1,12 @@
 import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=asset-prepare-20261005-0358';
 import {residualModelPlan,residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs';
-import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=residual-small-dimensions-20261005-0359';
+import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=residual-tracking-20261005-0418';
 import {CPUTextClient} from '../font-akinator-cpu-client.mjs';
 import {deriveVideoMapNames} from './video-map-name-input.mjs';
 import {MapPositionMatcher} from '../map-position.mjs';
 import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
-import {mountMapVideoComparison} from './map-video-comparison.mjs?v=residual-small-dimensions-20261005-0359';
+import {mountMapVideoComparison} from './map-video-comparison.mjs?v=residual-tracking-20261005-0418';
 import {openMapRom} from './static-scene.mjs';
 import {buildRomMapCatalog} from './rom-map-catalog.mjs';
 import {nameCatalogMaps} from './rom-map-names.mjs';
@@ -25,7 +25,7 @@ const residualClient=new ResidualRecognitionClient();let encounterTables=null;
 const nameClient=new CPUTextClient();let nameInput=null;
 const videoComparison=mountMapVideoComparison({renderBackground:render,derivePlayerBackground:renderFromMarker,deriveMapBackground:renderFromName,classifyResiduals:classifyBackgroundResiduals,cancelPending:()=>{nameClient.cancel();residualClient.cancel();}});
 function clearView(){$('marker-details').textContent='';$('marker-status').textContent='描画入力が変わりました。固定映像の上画面から再計算します。';renderVersion++;videoComparison.invalidate('背景の入力が変わりました。');ctx.clearRect(0,0,256,192);$('draw').disabled=true;point=null;markerInput=null;$('floor').replaceChildren();$('floor').disabled=true;}
-function reportError(e){videoComparison.invalidate('背景の描画に失敗しました。');$('status').textContent='描画できません：'+e.message;console.error(e);}
+function reportError(e){videoComparison.invalidate('背景の描画に失敗しました。',{resetTracking:true});$('status').textContent='描画できません：'+e.message;console.error(e);}
 function guard(fn){return async event=>{try{await fn(event);}catch(e){reportError(e);}};}
 const frame=()=>new Promise(resolve=>requestAnimationFrame(resolve));
 async function responseBytes(url){const r=await fetch(url);if(!r.ok)throw Error('必要なファイルを読めません: '+url+' ('+r.status+')');return r;}
