@@ -17,9 +17,11 @@ export function annotateResidualRegions(comparison,video){
  if(rows.length!==components.length)throw Error('Raw component count differs');
  return rows.sort((a,b)=>b.pixels-a.pixels||a.id-b.id);
 }
-export function selectResidualDisplay(regions,{minimumPixels=1}={}){
+export function selectResidualDisplay(regions,{minimumPixels=1,maximumSmallWidth=0,maximumSmallHeight=0}={}){
  if(!Number.isSafeInteger(minimumPixels)||minimumPixels<1||minimumPixels>49152)throw Error('表示画素数は1〜49152の整数です');
+ if(![maximumSmallWidth,maximumSmallHeight].every(v=>Number.isSafeInteger(v)&&v>=0&&v<=256))throw Error('小片の幅・高さは0〜256の整数です');
+ const isSmall=r=>r.roi.w<=maximumSmallWidth&&r.roi.h<=maximumSmallHeight;
  const visible=[],withheldForDisplay=[];
- for(const r of regions)(r.pixels>=minimumPixels||r.boundaryRetained?visible:withheldForDisplay).push(r);
- return{minimumPixels,visible,withheldForDisplay,rawCount:regions.length,visibleCount:visible.length,withheldCount:withheldForDisplay.length,retainedSmallBoundaryCount:visible.filter(r=>r.pixels<minimumPixels).length,scope:'Display grouping only. Withheld inner regions can include distant enemies; boundary regions remain visible. No noise/absence/body/species/birth/AT certification.',minimumProvenATCalls:0};
+ for(const r of regions)((r.pixels>=minimumPixels&&!isSmall(r))||r.boundaryRetained?visible:withheldForDisplay).push(r);
+ return{minimumPixels,maximumSmallWidth,maximumSmallHeight,visible,withheldForDisplay,rawCount:regions.length,visibleCount:visible.length,withheldCount:withheldForDisplay.length,retainedSmallBoundaryCount:visible.filter(r=>r.pixels<minimumPixels||isSmall(r)).length,scope:'Display grouping only. Withheld inner regions can include distant enemies; boundary regions remain visible. No noise/absence/body/species/birth/AT certification.',minimumProvenATCalls:0};
 }
