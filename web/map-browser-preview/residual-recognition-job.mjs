@@ -2,6 +2,17 @@ import {nativeBodyRequestPayload} from './native-body-request.mjs?v=native-raste
 import {attachResidualNativeSupport,RESIDUAL_NATIVE_BODY_BUDGET} from './residual-native-support.mjs?v=native-evidence-sharing-20261006-0723';
 import {chooseResidualBackend,residualBackendProvenance,assertResidualBackendResult} from './residual-recognition-backend.mjs';
 import {residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs?v=native-body-20261006-0212';
+// Claim a queued frame's native-only destination while its one-frame mailbox
+// still exists. The background used by appearance/export remains unchanged.
+function nativeBackgroundBinding(payload){
+ const bg=payload.backgroundEvidence,support=bg?.backgroundBranchSupport;
+ const backgroundEvidence=support?{...bg,backgroundBranchSupport:{...support,branches:support.branches.map(({nativeBodyDestinationReuse,...branch})=>branch)}}:bg;
+ return JSON.stringify({videoEvidence:payload.videoEvidence,backgroundEvidence});
+}
+export function captureResidualNativeBackground(input){
+ try{const payload=nativeBodyRequestPayload(input);return{kind:'frozen-residual-native-background-v1',videoEvidence:structuredClone(payload.videoEvidence),backgroundEvidence:structuredClone(payload.backgroundEvidence)};}
+ catch(error){return{kind:'frozen-residual-native-background-v1',error:{name:error?.name??'Error',message:String(error?.message??error)}};}
+}
 // A job is all requested regions and all model batches for one frozen frame.
 // On GPU failure, discard the entire attempt, clear its displayed partials, and
 // start at region zero under WASM. Never sort/merge scores across model hashes.
@@ -18,7 +29,16 @@ export async function runResidualRecognitionJob({input,plan,variant,client,prefe
  // the one-frame mailbox while DINO runs. Keep only this job's exact snapshot;
  // never put its planes into appearance bundles or extend mailbox lifetime.
  let nativeBackgroundEvidence=null,nativeBackgroundCaptureError=null;
- check();try{nativeBackgroundEvidence=structuredClone(nativeBodyRequestPayload({videoEvidence:input.videoEvidence,backgroundEvidence:frozenBackground,nativeComparison:frozenComparison}).backgroundEvidence);}catch(error){if(error.name==='AbortError')throw error;nativeBackgroundCaptureError=error;}check();
+ check();try{
+  const current=nativeBodyRequestPayload({videoEvidence:input.videoEvidence,backgroundEvidence:frozenBackground,nativeComparison:frozenComparison}),snapshot=input.nativeBackgroundSnapshot;
+  if(snapshot){
+   if(snapshot.kind!=='frozen-residual-native-background-v1')throw Error('Frozen native background snapshot kind differs');
+   if(snapshot.error)throw Object.assign(new Error(snapshot.error.message),{name:snapshot.error.name});
+   const retained=nativeBodyRequestPayload({videoEvidence:snapshot.videoEvidence,backgroundEvidence:snapshot.backgroundEvidence,nativeComparison:frozenComparison});
+   if(nativeBackgroundBinding(retained)!==nativeBackgroundBinding(current))throw Error('Frozen native background snapshot differs from appearance input');
+   nativeBackgroundEvidence=structuredClone(retained.backgroundEvidence);
+  }else nativeBackgroundEvidence=structuredClone(current.backgroundEvidence);
+ }catch(error){if(error.name==='AbortError')throw error;nativeBackgroundCaptureError=error;}check();
  const selection=await choose({preference,assertCurrent:check});check();let fallback=null;
  const attempt=async backend=>{
   const classifications=[],provenance=residualBackendProvenance(backend);
