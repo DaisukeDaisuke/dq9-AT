@@ -30,8 +30,9 @@ export function testNativeOpaqueDepth(depth24,frontFacing,previousDepth24,previo
  * polygon in the returned inventory; unavailable polygon counts remain null.
  */
 export function collectStaticOpaqueDepthInputs(project,automatic,input,{viewportWord,depthMode,fragmentSamplingHack}={},sourceCache=null){
- if(input?.ready!==true||!['current-buffer-default-static-map-flush','ROM-initial-mode2-slot-hypothesis'].includes(input.profile)||automatic.plan.recordKey!==input.record.key)throw Error('Matching explicit current-buffer static map input required');
+ if(input?.ready!==true||!['current-buffer-default-static-map-flush','ROM-initial-mode2-slot-hypothesis','ROM-mode2-inverse-source-hypothesis'].includes(input.profile)||automatic.plan.recordKey!==input.record.key)throw Error('Matching explicit current-buffer static map input required');
  if(input.profile==='ROM-initial-mode2-slot-hypothesis'&&(input.hypothesis?.kind!==input.profile||input.hypothesis.recordKey!==input.record.key||input.snapshot?.profile!==input.profile||input.snapshot.timeIndex!==input.hypothesis.timeIndex||input.mode2Evaluation?.selection.index!==input.hypothesis.timeIndex||input.mode2Evaluation.selection.coefficient!==0))throw Error('Initial mode2 source slot/snapshot mismatch');
+ if(input.profile==='ROM-mode2-inverse-source-hypothesis'&&(input.snapshot?.profile!==input.profile||input.mode2Evaluation?.ready!==true||input.mode2Evaluation.mode!==2||input.record.key!==`map:${input.mode2Evaluation.source?.callIndex}:${input.mode2Evaluation.source?.callOffset}`))throw Error('Matching source mode2 inverse hypothesis required');
  if(viewportWord!==0xbfff0000||depthMode!=='Z'||fragmentSamplingHack!==false)throw Error('Explicit full viewport/Z/integer sampling profile required');
  const trig=makeNativeTrig(project.sdk.read(0x020e955c,16384),25736),polygons=[],unresolved=[...automatic.unresolved.map(reason=>({scope:'scene-plan',reason,polygonCount:null}))],counts={sourcePlacements:0,sourceStaticInstances:0,sourceDraws:0,sourcePolygons:0,opaqueEligible:0,rejectedPolygons:0};
  for(const[sceneIndex,scene]of automatic.scenes.entries()){

@@ -14,6 +14,7 @@ import {readNativeShapes,decodePackedGx} from './native/native-sbc-gx.mjs';
 import {fxDiv,lookAtFx} from './native/native-camera-fx.mjs';
 import {buildCameraGeometry} from './camera-geometry.mjs';
 import {retainNativePrimitiveInputs,projectNativePrimitiveFx} from './integer/native-primitive-inputs.mjs';
+import {readMseAlphaMaterialRules,validateMseRenderState} from './native-mse-alpha-material.mjs?v=mode2-mse-20261005-0909';
 const decoded=raw=>raw[0]===16?new Uint8Array(Compression.decompress(new BufferReader(raw.buffer,raw.byteOffset,raw.length))):raw;
 const i32=v=>Number(BigInt.asIntN(32,v)),mul=(a,b)=>i32((BigInt(a)*BigInt(b)+2048n)>>12n);
 const multiply=(a,b)=>Array.from({length:16},(_,k)=>{let s=0n;for(let j=0;j<4;j++)s+=BigInt(a[j*4+k%4])*BigInt(b[(k>>2)*4+j]);return i32(s>>12n);});
@@ -61,11 +62,14 @@ export function readInitialMseLayers(project,plan){
 /** Caller explicitly requests constructor offsets or supplies each layer offset.
  * No video time -> draw-count conversion or phase default is performed.
  */
-export function buildMsePolygonInputs(project,profile,{phase,indexStart,rasterProfile}={}){
+export function buildMsePolygonInputs(project,profile,{phase,indexStart,rasterProfile,renderState}={}){
  if(!Number.isInteger(indexStart)||!rasterProfile||!phase||!['source-constructor','explicit-offsets'].includes(phase.kind))throw Error('Explicit source profile, polygon index, raster profile and phase required');
- const polygons=[],tileEvidence=[];
+ const polygons=[],tileEvidence=[],skippedLayers=[];
+ if(renderState){readMseAlphaMaterialRules(project.sdk);validateMseRenderState(profile,phase,renderState);}
  for(const [layerIndex,l]of profile.layers.entries()){
   const offset=phase.kind==='source-constructor'?[l.offsetSFx,l.offsetTFx]:phase.offsetsFx?.[layerIndex];if(!Array.isArray(offset)||offset.length!==2||!offset.every(Number.isInteger)||offset[0]<0||offset[0]>=l.widthFx||offset[1]<0||offset[1]>=l.heightFx)throw Error('Explicit source-period layer offsets required');
+  const stateAlpha=renderState?renderState.layerAlpha[layerIndex]:null;
+  if(stateAlpha===0){skippedLayers.push({layerIndex,reason:'Source effective-alpha0 model draw gate02035424'});continue;}
   const polygonId=profile.firstPolygonId+layerIndex;if(polygonId>63)throw Error('Source polygon-ID range outside connected subset');
   const bindings=bindAutomaticTextures(l.modelBytes,[]),resource=readNativeTextureResource(l.modelBytes),textures=new Map(),padS=Math.max(0,Math.trunc((l.viewportWidthFx-l.widthFx)/2)),padT=Math.max(0,Math.trunc((l.viewportHeightFx-l.heightFx)/2));
   for(let s=0;s<l.columns;s++)for(let t=0;t<l.rows;t++){
@@ -77,12 +81,12 @@ export function buildMsePolygonInputs(project,profile,{phase,indexStart,rasterPr
     // diffuse/specular globals are not read by this fragment-color path.
     const model=readNativeModelInfo(l.modelBytes).models[0],shape=readNativeShapes(l.modelBytes,model)[draw.shapeIndex],gx=decodePackedGx(l.modelBytes,shape.displayListOffset,shape.displayListBytes),firstVertex=gx.commands.findIndex(c=>c.opcode>=0x23&&c.opcode<=0x28),firstColor=gx.commands.findIndex(c=>c.opcode===0x20);
     if(gx.unresolved.length||firstColor<0||firstVertex<0||firstColor>firstVertex||gx.commands.some(c=>c.opcode===0x21))throw Error('MSE shape color depends on prior material/NORMAL state');
-    const attributeMask=(b.material.polygonAttributeMask&~0x3f000000)>>>0,globalAttribute=((polygonId<<24)|(31<<16)|(3<<6))>>>0,attr=((globalAttribute&~attributeMask)|(b.material.polygonAttribute&attributeMask))>>>0;
-    if((b.material.flags&32)||(attr>>>4&3)!==0||(attr>>>16&31)!==l.alpha5||(attr&0x4800))throw Error('MSE source material outside connected mode0/no-depth-write subset');
+    const attributeMask=(b.material.polygonAttributeMask&~0x3f000000)>>>0,globalAttribute=((polygonId<<24)|(31<<16)|(3<<6))>>>0,materialAttribute=stateAlpha===null?b.material.polygonAttribute:((b.material.polygonAttribute&~0x1f0000)|(stateAlpha<<16))>>>0,attr=((globalAttribute&~attributeMask)|(materialAttribute&attributeMask))>>>0;
+    if((b.material.flags&32)||(attr>>>4&3)!==0||(attr>>>16&31)!==(stateAlpha??l.alpha5)||(attr&0x4800))throw Error('MSE source material outside connected mode0/no-depth-write subset');
     if(!textures.has(draw.materialIndex)){const decoded=unpackNativeTexture(l.modelBytes,resource,resource.textures[b.texture.index],resource.palettes[b.palette.index],'6665'),parameter=(b.material.textureParameter|b.texture.parameter)>>>0;textures.set(draw.materialIndex,{width:decoded.width,height:decoded.height,rgba6665:decoded.pixels,format:b.texture.format,parameter,wrapMode:parameter>>>16&15});}
     for(const primitive of draw.polygons){const projected=projectNativePrimitiveFx(primitive,draw.positionMatrixFx,l.projectionFx),rgb555=primitive.vertexIndices.map(i=>supplied.vertices[i].color555),uvFx4=primitive.vertexIndices.map(i=>supplied.vertices[i].texcoord.map(n=>n*16));polygons.push({index:indexStart+polygons.length,layerIndex,column:s,row:t,primitive,positionMatrixFx:draw.positionMatrixFx,projectionFx:l.projectionFx,materialEvidence:{polygonAttribute:attr},args:{...rasterProfile,clipVerticesFx:projected.clipVerticesFx,polygonAttribute:attr,primitiveMode:primitive.primitiveMode,textureFormat:b.texture.format,textureParameter:textures.get(draw.materialIndex).parameter},translucentInput:{rgb555,texture:{...textures.get(draw.materialIndex),uvFx4}},polygonId});}
    }
   }
  }
- return{polygons,tileEvidence,phase,currentPhaseProven:false,gatesEvaluated:false,scope:'Source constructor alpha and explicit layer offsets; separate orthographic screen layer. Not current environment/fade proof or native framebuffer parity.'};
+ return{polygons,tileEvidence,skippedLayers,phase,renderState:renderState??null,currentPhaseProven:false,gatesEvaluated:!!renderState,scope:'Source constructor or explicit source-state alpha and offsets; alpha0 model draw gate. Initialized model scale31/no external model override subset. Native framebuffer/video parity remains unverified.'};
 }

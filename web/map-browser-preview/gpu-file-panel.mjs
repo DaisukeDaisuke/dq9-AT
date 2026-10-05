@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 import {createNativeIntegerCompute} from './native-integer-compute.mjs?v=wgsl-keyword-20261005-0834';
-import {renderPreparedIntegerCompute} from './prepare-initial-integer-compute.mjs';
+import {renderPreparedIntegerCompute} from './prepare-initial-integer-compute.mjs?v=mode2-mse-20261005-0909';
 import {automaticGpuBinding,prepareAutomaticGpuInput,compareAutomaticGpuPixels} from './automatic-gpu-input.mjs';
 
 // Retain at most the last immutable selected-result object, not a frame library.

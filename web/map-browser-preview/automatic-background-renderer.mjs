@@ -4,7 +4,7 @@
  * remain CPU preparation; a GPU utilisation or acceleration claim is not made.
  */
 import {createNativeIntegerCompute} from './native-integer-compute.mjs?v=wgsl-keyword-20261005-0834';
-import {prepareInitialMode1IntegerCompute,renderPreparedIntegerCompute} from './prepare-initial-integer-compute.mjs';
+import {prepareInitialMode1IntegerCompute,renderPreparedIntegerCompute} from './prepare-initial-integer-compute.mjs?v=mode2-mse-20261005-0909';
 import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=phase-grid-20261005-0620';
 import {createSourcePreparationCache} from './integer/source-preparation-cache.mjs';
 
@@ -16,15 +16,14 @@ export function createAutomaticBackgroundRenderer({initialize=createNativeIntege
   check();let reason=null,result=null;
   // These are source capability gates, not hypotheses that may be filled by a
   // selected ROM slot or elapsed video time. The CPU path keeps its own gates.
-  if(screenEffectPhase)reason='GPU screen-effect polygon preparation is unsupported; the requested phase is retained on CPU.';
-  else if(active.environment?.mode!==1)reason='GPU automatic path supports source time-independent mode1 only; mode2 time/slot remains unresolved.';
+  if(active.environment?.mode!==1)reason='GPU automatic path supports source time-independent mode1 only; mode2 time/slot remains unresolved.';
   else if(!active.environmentApplied)reason='ROM material environment is unresolved.';
   else {
    let at=now();const renderer=await begin();timings.adapterWaitMs=now()-at;check();
    if(!renderer?.ready)reason='GPU unavailable: '+(renderer?.reason??'adapter not ready');
    else try {
     at=now();let job;
-    try {const cache=createCache(project);job=prepare(cache.project,rom,record,active,camera,{applyFog:true});job.evidence??={};job.evidence.automaticSourceCache={...cache.stats};}
+    try {const cache=createCache(project);job=prepare(cache.project,rom,record,active,camera,{applyFog:true,screenEffectPhase});job.evidence??={};job.evidence.automaticSourceCache={...cache.stats};}
     finally {timings.sourcePreparationMs=now()-at;}
     check();at=now();try {result=await renderGpu(renderer,job);} finally {timings.gpuRenderAndDecodeMs=now()-at;}
     check();if(!result?.ready)throw Error('GPU result is not ready');

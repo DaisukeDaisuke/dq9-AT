@@ -1,3 +1,5 @@
+import{readRomMapScreenEffectPlan}from'./rom-map-screen-effect-plan.mjs';
+import{readInitialMseLayers,buildMsePolygonInputs}from'./native-mse-initial-preview.mjs?v=mode2-mse-20261005-0909';
 import{createSourcePreparationCache}from'./integer/source-preparation-cache.mjs';
 /* SPDX-License-Identifier: GPL-2.0-or-later
  * Source geometry/material preparation only. No CPU pixel render is required
@@ -19,13 +21,22 @@ function completeVisibleInventory(inventory,translucent){
  const remaining=translucent.rejected.map(row=>{const p=inventory.polygons[row.index],position=projectNativePrimitiveFx(p.primitive,p.positionMatrixFx,p.projectionFx),clip=clipNativePositionPolygon(position.clipVerticesFx);return{...row,model:p.model,materialName:p.materialName,positionClipDiscarded:clip.discarded,remainingVertices:clip.positionsFx.length};});
  need(remaining.every(p=>p.positionClipDiscarded),'Unsupported source polygon remains in visible clip volume');return remaining;
 }
-export function prepareInitialMode1IntegerCompute(project,rom,record,automatic,camera,{applyFog=true}={}){
+export function prepareInitialMode1IntegerCompute(project,rom,record,automatic,camera,{applyFog=true,screenEffectPhase=null,screenEffectRenderState=null}={}){
  const start=performance.now(),e=automatic.environment;need(e?.mode===1&&e.colorReady&&e.ordinaryTimeIndependent,'Source mode1 independent color required');need(!applyFog||e.fogReady&&e.fogTimeIndependent&&e.fogParameters,'Source independent fog parameters required');
  const raster=readInitialMode1RasterProfile(project,rom),inventory=collectInitialMode1IntegerInputs(project,record,automatic,camera,raster),translucent=collectInitialMode1TexturedTranslucentInputs(project,automatic,inventory),remaining=completeVisibleInventory(inventory,translucent),controls=readInitialTexturedBlendProfile(project,rom);
  // Disabled fog never consumes color/density. Reuse supplied source parameters;
  // an absent source record is not silently filled with guessed light/fog state.
  need(e.fogParameters,'Source fog record required for this first GPU input profile');
- const parameters={...e.fogParameters,enabled:applyFog&&e.fogParameters.enabled},job=prepareNativeIntegerCompute(inventory,translucent,controls,parameters);job.evidence.remaining=remaining;job.evidence.totalGeometryPreparationMs=performance.now()-start;return job;
+ let compositeInputs=translucent;const effectPlan=readRomMapScreenEffectPlan(project,automatic.plan),screenEvidence={plan:effectPlan,requestedPhase:screenEffectPhase,applied:false,currentPhaseProven:false,gatesEvaluated:false};
+ need(!screenEffectRenderState||screenEffectPhase,'MSE render state requires its explicit same-draw phase');
+ if(screenEffectPhase){need(effectPlan.ready,'Source MSE plan unresolved');if(effectPlan.request){
+  const profile=readInitialMseLayers(project,effectPlan),screen=buildMsePolygonInputs(project,profile,{phase:screenEffectPhase,renderState:screenEffectRenderState,indexStart:inventory.polygons.length,rasterProfile:raster});
+  // Same source indices and ordering as CPU: all world translucent polygons,
+  // then source layer/tile/primitive order. No post-fog image overlay.
+  compositeInputs={...translucent,polygons:[...translucent.polygons,...screen.polygons]};
+  Object.assign(screenEvidence,{applied:true,polygonCount:screen.polygons.length,skippedLayers:screen.skippedLayers,phase:screen.phase,renderState:screen.renderState,currentPhaseProven:false,gatesEvaluated:screen.gatesEvaluated,scope:screen.scope});
+ }}
+ const parameters={...e.fogParameters,enabled:applyFog&&e.fogParameters.enabled},job=prepareNativeIntegerCompute(inventory,compositeInputs,controls,parameters);job.evidence.screenEffect=screenEvidence;job.evidence.remaining=remaining;job.evidence.totalGeometryPreparationMs=performance.now()-start;return job;
 }
 function initialLightBasis(project,camera){
  need(Array.isArray(camera?.viewFx)&&camera.viewFx.length===16&&camera.viewFx.every(Number.isInteger)&&Array.isArray(camera.projectionFx)&&camera.projectionFx.length===16&&camera.projectionFx.every(Number.isInteger),'Source FX32 camera matrices required');

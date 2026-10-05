@@ -30,6 +30,10 @@ export function collectInitialMode2TexturedTranslucentInputs(project,automatic,i
  if(automatic?.mode2Applied!==true||automatic.mode2Evaluation?.ready!==true||automatic.plan.recordKey!==inventory.recordKey||inventory.snapshot?.profile!=='ROM-initial-mode2-slot-hypothesis'||automatic.plan.recordKey!==`map:${automatic.mode2Evaluation.source.callIndex}:${automatic.mode2Evaluation.source.callOffset}`)throw Error('Matching explicit initial mode2 slot hypothesis required');
  return collectStaticTexturedTranslucentInputs(project,automatic,inventory,sourceCache);
 }
+export function collectInferredMode2TexturedTranslucentInputs(project,automatic,inventory,sourceCache=null){
+ if(automatic?.mode2Applied!==true||automatic.mode2Evaluation?.ready!==true||automatic.plan.recordKey!==inventory.recordKey||inventory.snapshot?.profile!=='ROM-mode2-inverse-source-hypothesis'||automatic.plan.recordKey!==`map:${automatic.mode2Evaluation.source?.callIndex}:${automatic.mode2Evaluation.source?.callOffset}`)throw Error('Matching source mode2 inverse hypothesis required');
+ return collectStaticTexturedTranslucentInputs(project,automatic,inventory,sourceCache);
+}
 function collectStaticTexturedTranslucentInputs(project,automatic,inventory,sourceCache=null){
  const polygons=[],rejected=[],cache=new Map();for(const p of inventory.polygons){if(p.classification!=='rejected')continue;
   try{
