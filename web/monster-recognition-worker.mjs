@@ -3,7 +3,7 @@ import {parseMonsterAssetCatalog} from './monster-assets.mjs';
 import {MonsterGeometry} from './monster-geometry.mjs?v=field-stream-20261005-1108';
 import {createDinoFeatureBackend} from './monster-dinov2.mjs?v=recognition-cache-20261005-1007';
 import {createFeatureBankStore} from './monster-feature-cache.mjs';
-import {recognizeROI,supplementEnemyROIs,prepareDinoPoseBank} from './monster-recognition-engine.mjs?v=field-stream-20261005-1108';
+import {recognizeROI,supplementEnemyROIs,prepareDinoPoseBank,createRenderedReferenceCache} from './monster-recognition-engine.mjs?v=forward-map-20261005-1138';
 let state=null,epoch=0,active=null;
 const post=message=>self.postMessage(message);
 self.onmessage=async({data:m})=>{
@@ -13,16 +13,16 @@ self.onmessage=async({data:m})=>{
  try{
   if(typeof id!=='string'||!id||!Number.isSafeInteger(romEpoch)||romEpoch<0)throw Error('要求の識別情報が不正です');
   if(m.type==='load'){
-   active?.abort();active=null;const previous=state;state=null;const mine=++epoch;requestEpoch=mine;await previous?.dino?.dispose();
+   active?.abort();active=null;const previous=state;state=null;const mine=++epoch;requestEpoch=mine;previous?.renderedReferenceCache.clear();await previous?.dino?.dispose();
    if(!(m.rom instanceof ArrayBuffer)||m.rom.byteLength<512||m.rom.byteLength>512*1024*1024)throw Error('NDSは512MiB以下のファイルを選んでください');
    if(new TextDecoder().decode(new Uint8Array(m.rom,12,4))!=='YDQJ')throw Error('日本語版DQ9 (YDQJ) のNDSを選んでください');
    const [romDigest,csvResponse,wasmResponse]=await Promise.all([crypto.subtle.digest('SHA-256',m.rom),fetch(new URL('./data/monsters.csv',import.meta.url)),fetch(new URL('./wasm/monster_geometry.wasm',import.meta.url))]);if(!csvResponse.ok||!wasmResponse.ok)throw Error('識別用のコード・カタログを読み込めません');
    const catalog=parseMonsterAssetCatalog(await csvResponse.text()),{instance}=await WebAssembly.instantiate(await wasmResponse.arrayBuffer(),{});if(mine!==epoch)return;
-   state={nitro:NitroFS.fromRom(m.rom),catalog,geometry:new MonsterGeometry(instance),romEpoch,romSHA256:Array.from(new Uint8Array(romDigest),v=>v.toString(16).padStart(2,'0')).join(''),featureStore:createFeatureBankStore()};post({type:'loaded',id,romEpoch,catalog:[...catalog].map(([modelId,speciesCandidates])=>({modelId,speciesCandidates}))});return;
+   state={nitro:NitroFS.fromRom(m.rom),catalog,geometry:new MonsterGeometry(instance),romEpoch,romSHA256:Array.from(new Uint8Array(romDigest),v=>v.toString(16).padStart(2,'0')).join(''),featureStore:createFeatureBankStore(),renderedReferenceCache:createRenderedReferenceCache()};post({type:'loaded',id,romEpoch,catalog:[...catalog].map(([modelId,speciesCandidates])=>({modelId,speciesCandidates}))});return;
   }
   if(!state||state.romEpoch!==romEpoch)throw Error('現在のNDSを読み込み直してください');active?.abort();controller=new AbortController();const mine=epoch;active=controller;
   const runState=state,onProgress=p=>{if(active===controller&&mine===epoch){if(typeof p.phase==='string'&&p.phase)stage=p.phase==='init'?`${m.inferenceBackend??'wasm'}-init`:p.phase;post({type:'progress',id,romEpoch,...p});}};
-  const getDino=async({backend:provider='wasm'}={})=>{if(runState.dino?.spec.backend===provider)return runState.dino;const previous=runState.dino,previousStage=stage;runState.dino=null;stage='backend-dispose';await previous?.dispose();stage=`${provider}-init`;const backend=await createDinoFeatureBackend({backend:provider,signal:controller.signal,onProgress});if(active!==controller||mine!==epoch){await backend.dispose();throw new DOMException('中止','AbortError');}runState.dino=backend;stage=previousStage;return backend;};
+  const getDino=async({backend:provider='wasm'}={})=>{if(runState.dino?.spec.backend===provider)return runState.dino;const previous=runState.dino,previousStage=stage;runState.dino=null;runState.renderedReferenceCache.clear();stage='backend-dispose';await previous?.dispose();stage=`${provider}-init`;const backend=await createDinoFeatureBackend({backend:provider,signal:controller.signal,onProgress});if(active!==controller||mine!==epoch){await backend.dispose();throw new DOMException('中止','AbortError');}runState.dino=backend;stage=previousStage;return backend;};
   const outcome=await (m.type==='prepare'?prepareDinoPoseBank:m.type==='supplement'?supplementEnemyROIs:recognizeROI)(m,{...runState,cacheQuery:true,cachePartialPoses:true,signal:controller.signal,onProgress,getDino});
   const result=m.type==='prepare'?{prepared:true,timings:outcome.timings,cacheWarnings:outcome.cacheWarnings}:outcome;
   if(active!==controller||mine!==epoch)return;active=null;post({type:'result',id,romEpoch,result});
