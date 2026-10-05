@@ -1,3 +1,4 @@
+import {annotateResidualRegions,selectResidualDisplay} from './residual-region-display.mjs';
 import {FileVideoInput} from '../file-video-input.mjs';
 import {gameplayVideoROI,sampleGameplayFrame,compareMapBackground} from './map-video-residual.mjs';
 const $=id=>document.getElementById(id),sha=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join('');
@@ -5,7 +6,7 @@ const draw=(id,image)=>{const canvas=$(id);canvas.width=image.width;canvas.heigh
 export function mountMapVideoComparison({renderBackground,derivePlayerBackground,deriveMapBackground,cancelPending=()=>{}}){
  const video=$('comparison-video');let file=null,frozen=null,background=null,comparison=null,revision=0,captureSerial=0;
  const status=text=>{$('comparison-status').textContent=text;};
- function clearResult(){comparison=null;$('residual-regions').replaceChildren();$('comparison-details').textContent='';for(const id of['comparison-overlay','comparison-residual'])$(id).getContext('2d').clearRect(0,0,256,192);$('compare-background').disabled=true;$('download-comparison').disabled=true;}
+ function clearResult(){comparison=null;$('residual-regions').replaceChildren();$('withheld-residual-regions').replaceChildren();$('residual-display-status').textContent='';$('comparison-details').textContent='';for(const id of['comparison-overlay','comparison-residual'])$(id).getContext('2d').clearRect(0,0,256,192);$('compare-background').disabled=true;$('download-comparison').disabled=true;}
  function invalidate(reason){background=null;clearResult();if(frozen)status(reason+' 固定した映像に対して背景を再描画してください。');}
  function clearFrame(reason){cancelPending();$('name-input-details').textContent='';$('name-input-candidates').replaceChildren();$('name-input-status').textContent='同じ固定上画面の名前を待機しています。';$('comparison-upper').getContext('2d').clearRect(0,0,256,192);$('marker-details').textContent='';$('marker-status').textContent='同じ固定フレームの上画面を待機しています。';revision++;frozen=null;background=null;clearResult();$('comparison-gameplay').getContext('2d').clearRect(0,0,256,192);status(reason);}
  const source=new FileVideoInput(video,()=>{},e=>status(e.message),reason=>clearFrame(reason==='seek'?'シーク中です。到達後に比較フレームを固定してください。':'動画が変わりました。比較フレームを固定してください。'));
@@ -34,17 +35,20 @@ export function mountMapVideoComparison({renderBackground,derivePlayerBackground
  $('cancel-map-name').onclick=()=>{cancelPending();status('名前照合を中止しました。未完候補から背景は選びません。');};
  $('automatic-player').onchange=()=>{invalidate('カメラ供給方式を変更しました。');renderCurrent().catch(e=>status(e.message));};
  function display(){if(!comparison||!frozen)return;const mix=Number($('overlay-mix').value)/100,rgba=new Uint8ClampedArray(frozen.image.rgba);for(let i=0;i<256*192;i++)if(comparison.validMask[i])for(let c=0;c<3;c++)rgba[i*4+c]=frozen.image.rgba[i*4+c]*(1-mix)+comparison.alignedBackground[i*4+c]*mix;draw('comparison-overlay',{width:256,height:192,rgba});draw('comparison-residual',{width:256,height:192,rgba:comparison.heatmap});
+  const displayRegions=selectResidualDisplay(comparison.annotatedRegions,{minimumPixels:Number($('residual-minimum-pixels').value)});
+  $('residual-display-status').textContent=`表示 ${displayRegions.visibleCount}/${displayRegions.rawCount}領域・内部の小領域${displayRegions.withheldCount}件を別欄へ保留・小さい端/未描画境界${displayRegions.retainedSmallBoundaryCount}件は保持。小領域にも遠方の敵が含まれ得ます。`;
+  $('withheld-residual-regions').replaceChildren(...displayRegions.withheldForDisplay.map(c=>{const li=document.createElement('li');li.textContent=`領域${c.id}: (${c.roi.x},${c.roi.y}) ${c.roi.w}×${c.roi.h} / ${c.pixels}画素（存在/種類は未確定）`;return li;}));
   const ctx=$('comparison-overlay').getContext('2d');ctx.strokeStyle='#ffdc68';ctx.lineWidth=1;
   // Every component remains in the record/list. No minimum area, NMS, top-k, or enemy gate.
-  for(const item of comparison.components){const b=item.roi;ctx.strokeRect(b.x+.5,b.y+.5,b.w-1,b.h-1);}
+  for(const item of displayRegions.visible){const b=item.roi;ctx.strokeRect(b.x+.5,b.y+.5,b.w-1,b.h-1);}
  }
- function compare(){try{if(!frozen||!background||background.frameId!==frozen.id)throw Error('現在の固定映像と背景の組がありません。再描画してください');comparison=compareMapBackground(background.image,frozen.image,{applyTranslation:$('apply-translation').checked});display();const a=comparison.alignment,s=comparison.stats;
+ function compare(){try{if(!frozen||!background||background.frameId!==frozen.id)throw Error('現在の固定映像と背景の組がありません。再描画してください');comparison=compareMapBackground(background.image,frozen.image,{applyTranslation:$('apply-translation').checked});comparison.annotatedRegions=annotateResidualRegions(comparison,frozen.image);display();const a=comparison.alignment,s=comparison.stats;
   $('residual-regions').replaceChildren(...comparison.components.map(c=>{const li=document.createElement('li');li.textContent=`未分類領域 ${c.id}: (${c.roi.x}, ${c.roi.y}) ${c.roi.w}×${c.roi.h} / ${c.pixels}画素`;return li;}));
   const state=comparison.state==='alignment-unresolved'?'位置合わせが未成立のため領域仮説を出していません。地図位置・床・向きを確認してください。':comparison.state==='background-unavailable'?'比較できる不透明背景がありません。':`未分類の残差領域 ${comparison.components.length}件。敵・味方・UI・描画誤差の区別は未確定です。`;
   status(`${state}\n小さな平行ずれの推定: (${a.dx}, ${a.dy})px / 既存基準 ${a.reliable?'通過（カメラ一致の証明ではありません）':'不通過'} / 適用 (${a.applied.dx}, ${a.applied.dy})px\n比較 ${s.comparedPixels}/49152画素・未描画/半透明/画像外 ${s.unavailablePixels}画素・RGB平均差 ${s.rgbMAE?.toFixed(3)??'未計算'}。背景はROM初期カメラ仮説、現在のゲームカメラ・色・霧・動的物体は未確認です。`);
-  const record={version:1,kind:'rom-map-video-background-comparison',video:frozen.evidence,background:background.evidence,alignment:comparison.alignment,stats:comparison.stats,state:comparison.state,components:comparison.components,scope:comparison.scope,unknown:true,bodyCertified:false,birthCertified:false,speciesKnown:false,minimumProvenATCalls:0};$('comparison-details').textContent=JSON.stringify(record,null,2);$('download-comparison').disabled=false;
- }catch(e){status('比較できません：'+e.message);}};
- $('compare-background').onclick=compare;$('apply-translation').onchange=()=>{if(background&&frozen)compare();};$('overlay-mix').oninput=display;
+  const record={version:1,kind:'rom-map-video-background-comparison',video:frozen.evidence,background:background.evidence,alignment:comparison.alignment,stats:comparison.stats,state:comparison.state,components:comparison.components,regionDiagnostics:comparison.annotatedRegions,displayOnly:selectResidualDisplay(comparison.annotatedRegions,{minimumPixels:Number($('residual-minimum-pixels').value)}),scope:comparison.scope,unknown:true,bodyCertified:false,birthCertified:false,speciesKnown:false,minimumProvenATCalls:0};$('comparison-details').textContent=JSON.stringify(record,null,2);$('download-comparison').disabled=false;
+ }catch(e){$('download-comparison').disabled=true;status('比較できません：'+e.message);}};
+ $('compare-background').onclick=compare;$('apply-translation').onchange=()=>{if(background&&frozen)compare();};$('overlay-mix').oninput=display;$('residual-minimum-pixels').onchange=()=>{if(background&&frozen)compare();};
  $('download-comparison').onclick=()=>{if(!comparison)return;const url=URL.createObjectURL(new Blob([$('comparison-details').textContent],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='map-video-comparison.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
  return{invalidate,renderCurrent,frameId:()=>frozen?.id??null,setBackground(image,evidence,frameId){if(!frozen||frameId!==frozen.id)return false;background={frameId,image:{width:image.width,height:image.height,rgba:image.rgba.slice()},evidence:structuredClone(evidence)};clearResult();$('compare-background').disabled=false;status('固定した映像と背景が揃いました。重ね表示と差分を比較できます。');compare();return true;}};
 }
