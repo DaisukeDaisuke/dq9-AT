@@ -1,4 +1,4 @@
-import {composeNativeBodyOverSourceDestination} from './monster-native-scene-composition.mjs?v=destination-reuse-20261006-0501';
+import {composeNativeBodyOverSourceDestination} from './monster-native-scene-composition.mjs?v=native-cpu-reuse-20261006-0612';
 /* SPDX-License-Identifier: GPL-2.0-or-later
  * Isolated original-GX body bridge. Reuses existing DeSmuME535f676-derived
  * position/clip/raster/color/depth modules with their original notices.
@@ -15,8 +15,8 @@ import {readNativeTextureResource} from './map-browser-preview/native/native-tex
 import {unpackNativeTexture} from './map-browser-preview/native/native-texture-unpack.mjs';
 import {makeNativeTrig} from './map-browser-preview/native/native-map-records.mjs';
 import {readNSBCA} from './monster-animation.mjs';
-import {rasterizeNativeMode0Rgb,presentStaticRgb} from './map-browser-preview/integer/static-mode0-rgb.mjs?v=destination-reuse-20261006-0501';
-import {compositeBinaryAwareDepth} from './map-browser-preview/integer/native-binary-alpha.mjs?v=destination-reuse-20261006-0501';
+import {rasterizeNativeMode0Rgb,presentStaticRgb} from './map-browser-preview/integer/static-mode0-rgb.mjs?v=native-cpu-reuse-20261006-0612';
+import {compositeBinaryAwareDepth} from './map-browser-preview/integer/native-binary-alpha.mjs?v=native-cpu-reuse-20261006-0612';
 import {rasterizeNativeTexturedTranslucentMode0} from './map-browser-preview/integer/native-textured-translucent.mjs?v=destination-reuse-20261006-0501';
 import {applyFogPixel} from './map-browser-preview/native/fog-raster.mjs';
 const need=(v,m)=>{if(!v)throw Error(m);},i32=v=>Number(BigInt.asIntN(32,BigInt(v))),signed=(x,n)=>(x<<(32-n))>>(32-n);

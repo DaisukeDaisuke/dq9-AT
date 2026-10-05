@@ -6,10 +6,10 @@ import{createSourcePreparationCache}from'./integer/source-preparation-cache.mjs'
  * Source geometry/material preparation only. No CPU pixel render is required
  * before GPU submission. Existing ROM profiles and rejection ledgers remain.
  */
-import{readInitialMode1RasterProfile,collectInitialMode1IntegerInputs}from'./integer/initial-mode1-integer-preview.mjs?v=destination-reuse-20261006-0501';
+import{readInitialMode1RasterProfile,collectInitialMode1IntegerInputs}from'./integer/initial-mode1-integer-preview.mjs?v=native-cpu-reuse-20261006-0612';
 import{collectStaticOpaqueDepthInputs}from'./integer/static-opaque-depth.mjs?v=destination-reuse-20261006-0501';
-import{classifyStaticBinaryDepthInputs}from'./integer/static-binary-depth.mjs?v=destination-reuse-20261006-0501';
-import{collectStaticMode0ColorInputs}from'./integer/static-mode0-rgb.mjs?v=destination-reuse-20261006-0501';
+import{classifyStaticBinaryDepthInputs}from'./integer/static-binary-depth.mjs?v=native-cpu-reuse-20261006-0612';
+import{collectStaticMode0ColorInputs}from'./integer/static-mode0-rgb.mjs?v=native-cpu-reuse-20261006-0612';
 import{collectInitialMode1TexturedTranslucentInputs,collectInitialMode2TexturedTranslucentInputs,readInitialTexturedBlendProfile}from'./integer/native-textured-translucent.mjs?v=destination-reuse-20261006-0501';
 import{automaticBillboardScenes}from'./automatic-billboard-scene.mjs';
 import{buildAutomaticNormalMatrices,applyMode2ToAutomaticScenes}from'./integer/mode2-lighting-adapter.mjs?v=field-stream-20261005-1108';

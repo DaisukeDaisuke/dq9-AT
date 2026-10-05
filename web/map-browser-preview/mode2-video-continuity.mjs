@@ -1,10 +1,10 @@
 import{continueRefinedFloorAlternatives}from'./refined-floor-alternatives.mjs?v=source-scene-20261006-0040';
-import{createInferredMode2GpuRenderer}from'./inferred-mode2-gpu-renderer.mjs?v=destination-reuse-20261006-0501';
+import{createInferredMode2GpuRenderer}from'./inferred-mode2-gpu-renderer.mjs?v=native-cpu-reuse-20261006-0612';
 /* One-entry, segment-scoped reuse of a prior environment HYPOTHESIS. Fresh
  * marker bounds + geometry refinement + exact native rendering are mandatory.
  * A hit never means current clock/selector identity or temporal AT evidence.
  */
-import{inferAutomaticMode2Background}from'./automatic-mode2-background.mjs?v=destination-reuse-20261006-0501';import{prepareMode2InverseModel,renderMode2InverseSource}from'./mode2-inverse-render.mjs?v=destination-reuse-20261006-0501';import{refineGeometryPosition}from'./geometry-position-refinement.mjs?v=map-coverage-20261005-0931';import{automaticPreviewCamera}from'./automatic-preview-camera.mjs';import{floorHeightsAtXZ}from'./rom-floor-candidates.mjs';import{compareMapBackground}from'./map-video-residual.mjs';
+import{inferAutomaticMode2Background}from'./automatic-mode2-background.mjs?v=native-cpu-reuse-20261006-0612';import{prepareMode2InverseModel,renderMode2InverseSource}from'./mode2-inverse-render.mjs?v=native-cpu-reuse-20261006-0612';import{refineGeometryPosition}from'./geometry-position-refinement.mjs?v=map-coverage-20261005-0931';import{automaticPreviewCamera}from'./automatic-preview-camera.mjs';import{floorHeightsAtXZ}from'./rom-floor-candidates.mjs';import{compareMapBackground}from'./map-video-residual.mjs';
 const withoutBodyDestination=image=>{const{bodyDestination,...geometryImage}=image;return geometryImage;};
 export class Mode2VideoContinuity{
  constructor({initializeGpu}={}){this.forwardRenderer=createInferredMode2GpuRenderer({initialize:initializeGpu});this.entry=null;this.stats={coldSolves:0,probes:0,hits:0,misses:0,invalidations:0};}

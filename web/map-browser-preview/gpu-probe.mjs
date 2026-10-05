@@ -1,2 +1,2 @@
 // ROM + video entry; fixed JSON validation lives in gpu-fixture-probe.mjs.
-import './gpu-file-preview.mjs?v=emitted-continuation-20261006-0545';
+import './gpu-file-preview.mjs?v=native-cpu-reuse-20261006-0612';

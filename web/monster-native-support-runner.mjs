@@ -1,10 +1,10 @@
 // Optional bounded worker-side source-native evaluator. No production caller.
 import{readMonsterAssets}from'./monster-assets.mjs';
 import{readNSBCA}from'./monster-animation.mjs';
-import{prepareNativeBodyEnvelope,placeNativeBodyEnvelopeOnFloors}from'./monster-native-body-placement.mjs?v=emitted-continuation-20261006-0545';
+import{prepareNativeBodyEnvelope,placeNativeBodyEnvelopeOnFloors}from'./monster-native-body-placement.mjs?v=native-cpu-reuse-20261006-0612';
 import{readSdkInitialMaterialGlobals}from'./map-browser-preview/rom-sdk-initial-material.mjs';
-import{readInitialMode1RasterProfile}from'./map-browser-preview/integer/initial-mode1-integer-preview.mjs?v=destination-reuse-20261006-0501';
-import{prepareNativeBodyProgram,projectNativeBodyPolygons,rasterNativeBody}from'./monster-native-body.mjs?v=destination-reuse-20261006-0501';
+import{readInitialMode1RasterProfile}from'./map-browser-preview/integer/initial-mode1-integer-preview.mjs?v=native-cpu-reuse-20261006-0612';
+import{prepareNativeBodyProgram,projectNativeBodyPolygons,rasterNativeBody}from'./monster-native-body.mjs?v=native-cpu-reuse-20261006-0612';
 import{createNativeBodyBillboardState}from'./monster-native-billboard.mjs?v=native-body-20261006-0212';
 import{bindFrozenBodyProjection}from'./monster-perspective-input.mjs?v=native-body-20261006-0212';
 import{comparePerspectiveBody}from'./monster-perspective-body.mjs?v=native-body-20261006-0212';
@@ -12,14 +12,33 @@ const need=(v,m)=>{if(!v)throw Error(m);},clone=v=>structuredClone(v),pause=()=>
 const frameKey=f=>JSON.stringify(['romSHA256','recordKey','sourceId','sourceEpoch','timelineSegment','mediaTime','fullRGBA_SHA256'].map(k=>f?.[k]));
 /** Bind this cache to one already verified ROM/project/catalog epoch. Destroy it
  * on any source/revision change. It contains only source programs/animations,
- * never poses projected into a query camera, pixels, fits or identity decisions. */
+ * never pixels, fits or identity decisions. A separately bounded LRU retains
+ * private emitted-envelope seeds, keyed by every projection input. These
+ * source geometry seeds carry no frame scores, region or floor decisions. */
 export function createNativeBodySupportRunner({project,rom,catalog,romSHA256,maxCacheBytes,maxPrograms}){
  need(project?.sdk&&project?.nfs&&rom instanceof Uint8Array&&catalog&&/^[a-f0-9]{64}$/.test(romSHA256),'Explicit verified ROM/project/catalog required');need(Number.isSafeInteger(maxCacheBytes)&&maxCacheBytes>0&&Number.isSafeInteger(maxPrograms)&&maxPrograms>0,'Explicit source preparation cache bounds required');
- const cache=new Map(),materialGlobals=readSdkInitialMaterialGlobals(project.sdk),profile=readInitialMode1RasterProfile(project,rom);let bytes=0,disposed=false,hits=0,misses=0;
+ const cache=new Map(),envelopeSeeds=new Map(),materialGlobals=readSdkInitialMaterialGlobals(project.sdk),profile=readInitialMode1RasterProfile(project,rom);let bytes=0,envelopeBytes=0,disposed=false,hits=0,misses=0,envelopeHits=0,envelopeMisses=0,envelopeEvictions=0;
  function prepared(c){const key=JSON.stringify([c.modelId,c.variant]);if(cache.has(key)){const x=cache.get(key);cache.delete(key);cache.set(key,x);hits++;return x;}misses++;const asset=readMonsterAssets(project.nfs,catalog,[{modelId:c.modelId,variant:c.variant}]).models[0],program=prepareNativeBodyProgram({asset,sdk:project.sdk,materialGlobals,allowTexturedTranslucent:true}),size=asset.model.bytes.byteLength+asset.animations.reduce((n,a)=>n+a.bytes.byteLength,0)+program.materials.reduce((n,m)=>n+(m.texture?.rgba6665.byteLength??0)+(m.texture?.alpha5.byteLength??0),0)+program.nodes.count*512+program.sbc.commands.length*128+program.shapes.reduce((n,s)=>n+s.gx.commands.length*128,0),value={asset,program,animations:new Map(),size};
   need(size<=maxCacheBytes,'Source preparation exceeds explicit worker cache budget');while(cache.size>=maxPrograms||bytes+size>maxCacheBytes){const k=cache.keys().next().value;bytes-=cache.get(k).size;cache.delete(k);}cache.set(key,value);bytes+=size;return value;
  }
  function sourceAnimation(source,pose){if(pose.clip==='bind')return null;if(!source.animations.has(pose.clip)){const a=source.asset.animations.find(a=>a.name===pose.clip);need(a,'Named source clip absent');source.animations.set(pose.clip,readNSBCA(a.bytes));}return source.animations.get(pose.clip);}
+ // Cache only the exact region-independent source replay, never placements.
+ // Non-JSON values are ineligible rather than colliding with null/undefined.
+ function envelopeSeed(source,request,bound,animation){
+  const p=request.pose,b=request.billboardProfile,cacheable=Number.isInteger(p.actorScaleFx)&&Number.isInteger(p.yawFx)&&(p.frame===null||Number.isInteger(p.frame))&&(!source.program.billboardSource||(b?.kind==='conditional-ordinary-ROM-initial-templates'&&Number.isInteger(b.globalFlags)&&Number.isInteger(b.contextFlags)&&b.callbackOverride===false));
+  const key=cacheable?JSON.stringify([request.candidate.modelId,request.candidate.variant,p.clip,p.frame,p.actorScaleFx,p.yawFx,bound.camera.viewFx,bound.camera.projectionFx,bound.alignment.dx,bound.alignment.dy,source.program.billboardSource?[b.kind,b.globalFlags,b.contextFlags,b.callbackOverride]:null]):null;
+  let value=key===null?null:envelopeSeeds.get(key);
+  if(value){envelopeSeeds.delete(key);envelopeSeeds.set(key,value);envelopeHits++;}
+  else{envelopeMisses++;const envelope=prepareNativeBodyEnvelope(source.program,{camera:bound.camera,alignment:bound.alignment,actorScaleFx:p.actorScaleFx,yawFx:p.yawFx,animation,frame:p.frame,billboardProfile:b});
+   // Source programs/animations remain solely in their original bounded cache.
+   envelope.program=null;envelope.nativeInput.animation=null;envelope.billboardProfile=null;
+   const size=4096+envelope.seedVertices.length*768+(key?.length??0)*2;value={envelope,size};
+   // Oversized valid seeds still run, but are never admitted to this LRU.
+   if(key!==null&&size<=maxCacheBytes){while(envelopeSeeds.size>=maxPrograms||envelopeBytes+size>maxCacheBytes){const oldest=envelopeSeeds.keys().next().value;envelopeBytes-=envelopeSeeds.get(oldest).size;envelopeSeeds.delete(oldest);envelopeEvictions++;}envelopeSeeds.set(key,value);envelopeBytes+=size;}
+  }
+  // Each job owns a mutable copy, so outside state mutation cannot poison the LRU.
+  const e=value.envelope;return {...e,nativeInput:{...e.nativeInput,camera:bound.camera},alignment:{...bound.alignment},billboardProfile:b,geometrySource:clone(e.geometrySource),seedVertices:e.seedVertices.map(v=>({clipBase:v.clipBase.slice(),clipResponse:v.clipResponse.map(r=>r.slice())}))};
+ }
  // This continuation is private to one retained frozen request. The source
  // program/animation cache is the same one used by evaluate, never a new cache.
  function proposeNativeEnvelope(request,{state=null,signal,getCurrentFrame,shouldYield}={}){
@@ -31,10 +50,8 @@ export function createNativeBodySupportRunner({project,rom,catalog,romSHA256,max
   const result={state,placements:[],unresolved:[],complete:false,completedSteps:state.completedSteps};
   if(shouldYield())return result;
   if(!state.envelope){const source=prepared(request.candidate),animation=sourceAnimation(source,request.pose);guard();if(shouldYield())return result;
-   state.envelope=prepareNativeBodyEnvelope(source.program,{camera:bound.camera,alignment:bound.alignment,actorScaleFx:request.pose.actorScaleFx,yawFx:request.pose.yawFx,animation,frame:request.pose.frame,billboardProfile:request.billboardProfile});
-   // Retain only the seed geometry across fair visits. Do not keep evicted
-   // programs or parsed animations alive outside the bounded shared cache.
-   state.envelope.program=null;state.envelope.nativeInput.animation=null;state.completedSteps++;guard();result.completedSteps=state.completedSteps;if(shouldYield())return result;
+   state.envelope=envelopeSeed(source,request,bound,animation);
+   state.completedSteps++;guard();result.completedSteps=state.completedSteps;if(shouldYield())return result;
   }
   // Advance through non-intersecting planes until one proposal is available.
   // A plane cursor survives budget yields. Fairness remains one render proposal
@@ -44,7 +61,7 @@ export function createNativeBodySupportRunner({project,rom,catalog,romSHA256,max
   while(state.planeIndex<request.floorPlan.planes.length&&!shouldYield()){guard();const floorPlan={...request.floorPlan,planes:[request.floorPlan.planes[state.planeIndex]]},placed=placeNativeBodyEnvelopeOnFloors(envelope,request.region,floorPlan);state.planeIndex++;state.completedSteps++;guard();result.placements.push(...placed.placements);result.unresolved.push(...placed.unresolved);if(result.placements.length)break;}
   result.completedSteps=state.completedSteps;result.complete=state.planeIndex===request.floorPlan.planes.length;return result;
  }
- return{proposeNativeEnvelope,dispose(){cache.clear();bytes=0;disposed=true;},get stats(){return{entries:cache.size,estimatedBytes:bytes,maxCacheBytes,maxPrograms,hits,misses,disposed};},async evaluate(request,{signal,getCurrentFrame,budget,yieldTask=pause,onProgress=()=>{}}={}){
+ return{proposeNativeEnvelope,dispose(){cache.clear();envelopeSeeds.clear();bytes=envelopeBytes=0;disposed=true;},get stats(){return{entries:cache.size,estimatedBytes:bytes,maxCacheBytes,maxPrograms,hits,misses,disposed,envelopeSeeds:{entries:envelopeSeeds.size,estimatedBytes:envelopeBytes,maxCacheBytes,maxEntries:maxPrograms,hits:envelopeHits,misses:envelopeMisses,evictions:envelopeEvictions}};},async evaluate(request,{signal,getCurrentFrame,budget,yieldTask=pause,onProgress=()=>{}}={}){
   need(!disposed,'Source-native runner disposed');need(request?.frame?.romSHA256===romSHA256&&Array.isArray(request.candidates)&&Array.isArray(request.branches)&&request.branches.length>0,'Source-native request identity/candidates/branches required');need(Number.isFinite(budget?.wallTimeMs)&&budget.wallTimeMs>0&&Number.isSafeInteger(budget?.maxProposals)&&budget.maxProposals>0,'Explicit per-job time and proposal bounds required');need(typeof getCurrentFrame==='function','Current frozen-frame identity guard required');
   need(new Set(request.candidates.map(c=>c.modelId)).size===request.candidates.length&&new Set(request.branches.map(b=>b.branchId)).size===request.branches.length,'Distinct candidates and background branches required');need(request.videoRGBA?.length===49152*4,'Frozen native video RGBA required');const started=performance.now(),key=frameKey(request.frame),branches=[];let attempts=0,budgetStopped=false;
   const guard=()=>{if(disposed||signal?.aborted||frameKey(getCurrentFrame())!==key)throw new DOMException('Source-native body job cancelled or stale','AbortError');};

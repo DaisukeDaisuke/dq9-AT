@@ -1,4 +1,4 @@
-import{createNativeBodyDestinationProvider}from'./monster-native-background-destination.mjs?v=destination-reuse-20261006-0501';
+import{createNativeBodyDestinationProvider}from'./monster-native-background-destination.mjs?v=native-cpu-reuse-20261006-0612';
 import{nativeWorkIdentity}from'./monster-native-work-identity.mjs?v=native-continuation-20261006-0333';
 // Automatic source proposals for the optional bounded native worker job.
 // Static root-on-floor/complete-envelope is a conditional branch, not live Y.
@@ -8,13 +8,13 @@ import{buildRomMapCatalog}from'./map-browser-preview/rom-map-catalog.mjs';
 import{planRomScene}from'./map-browser-preview/rom-scene-plan.mjs';
 import{loadRomFloorInstances}from'./map-browser-preview/rom-floor-candidates.mjs';
 import{readArm9Overlay}from'./map-browser-preview/rom-overlay.mjs';
-import{unpackBranchRGBA,unpackBackgroundMask}from'./map-browser-preview/background-branch-support.mjs?v=destination-reuse-20261006-0501';
+import{unpackBranchRGBA,unpackBackgroundMask}from'./map-browser-preview/background-branch-support.mjs?v=native-cpu-reuse-20261006-0612';
 import{readMonsterAssets}from'./monster-assets.mjs';
 import{readNSBCA,sampleMatrices}from'./monster-animation.mjs';
 import{decodeEncounterStream}from'./encounter-distribution.mjs';
 import{readNaturalMonsterScaleRule,naturalMonsterScaleCandidates}from'./monster-source-scale.mjs?v=native-body-20261006-0212';
 import{sourceFloorPlanes,preparePerspectiveBody,placeCompleteBodyOnFloors}from'./monster-perspective-body.mjs?v=native-body-20261006-0212';
-import{createNativeBodySupportRunner}from'./monster-native-support-runner.mjs?v=emitted-continuation-20261006-0545';
+import{createNativeBodySupportRunner}from'./monster-native-support-runner.mjs?v=native-cpu-reuse-20261006-0612';
 import{readFrozenMonsterMode1Fog}from'./monster-source-mode1-fog.mjs?v=native-body-20261006-0212';
 import{readFrozenMonsterFog}from'./monster-source-fog.mjs?v=native-body-20261006-0212';
 const need=(v,m)=>{if(!v)throw Error(m);},clone=v=>structuredClone(v),pause=()=>new Promise(r=>setTimeout(r,0));

@@ -1,11 +1,11 @@
 import{continueRefinedFloorAlternatives,collectRefinedFloorResults}from'./refined-floor-alternatives.mjs?v=source-scene-20261006-0040';
-import{prepareVariableMode2Basis,renderVariableMode2Basis,inferVariableMode2Photometry}from'./mode2-variable-light-inverse.mjs?v=destination-reuse-20261006-0501';
+import{prepareVariableMode2Basis,renderVariableMode2Basis,inferVariableMode2Photometry}from'./mode2-variable-light-inverse.mjs?v=native-cpu-reuse-20261006-0612';
 import{inferFoggedMode2Photometry}from'./mode2-fog-photometric-inverse.mjs?v=field-stream-20261005-1108';
 /* Same-frame source-bounded geometry refinement then analytic mode2 proposal.
  * Intended for the established supplied OBS video route only. No UI inputs,
  * source video names, map IDs, coordinates, clock constants or capture values.
  */
-import{prepareMode2InverseModel,renderMode2InverseSourceAsync as renderMode2InverseSource}from'./mode2-inverse-render.mjs?v=destination-reuse-20261006-0501';import{refineGeometryPosition}from'./geometry-position-refinement.mjs?v=map-coverage-20261005-0931';import{inferMode2Photometry}from'./mode2-photometric-inverse.mjs?v=map-coverage-20261005-0931';import{automaticPreviewCamera}from'./automatic-preview-camera.mjs';import{floorHeightsAtXZ}from'./rom-floor-candidates.mjs';import{compareMapBackground}from'./map-video-residual.mjs';
+import{prepareMode2InverseModel,renderMode2InverseSourceAsync as renderMode2InverseSource}from'./mode2-inverse-render.mjs?v=native-cpu-reuse-20261006-0612';import{refineGeometryPosition}from'./geometry-position-refinement.mjs?v=map-coverage-20261005-0931';import{inferMode2Photometry}from'./mode2-photometric-inverse.mjs?v=map-coverage-20261005-0931';import{automaticPreviewCamera}from'./automatic-preview-camera.mjs';import{floorHeightsAtXZ}from'./rom-floor-candidates.mjs';import{compareMapBackground}from'./map-video-residual.mjs';
 export async function inferAutomaticMode2Background({project,rom,record,automatic,position,yFx,heading,video,analysisVideo=video,analysisEvidence=null,floors,isCurrent=()=>true,onProgress=async()=>{}}){
  const check=()=>{if(!isCurrent())throw new DOMException('Mode2 background cancelled','AbortError');};check();const model=prepareMode2InverseModel(project,record),initialPoint={...position.world,yFx,yawDegrees:heading.yawDegrees},initialCamera=automaticPreviewCamera(project,rom,record,initialPoint),initial={};let renders=0;
  const render=async(camera,options)=>{check();await onProgress({phase:'background',message:'ROM背景の形状・照明を自動照合中: '+(++renders),completed:renders});await new Promise(r=>setTimeout(r,0));check();return renderMode2InverseSource({project,rom,record,automatic,camera,model,...options,isCurrent});};

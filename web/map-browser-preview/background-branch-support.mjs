@@ -1,4 +1,4 @@
-import{beginNativeBodyDestinationHandoffFrame,retainNativeBodyDestinationHandoff}from'./native-body-destination-handoff.mjs?v=destination-reuse-20261006-0501';
+import{beginNativeBodyDestinationHandoffFrame,retainNativeBodyDestinationHandoff}from'./native-body-destination-handoff.mjs?v=native-cpu-reuse-20261006-0612';
 /* Branch-specific and common residual support in original frozen gameplay pixel
  * coordinates. No branch is selected as true and no different observations are
  * deduplicated. Unknown/shifted boundaries remain unknown in the intersection. */

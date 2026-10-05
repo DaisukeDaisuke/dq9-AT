@@ -36,7 +36,7 @@ function interpolantOnEdge(rowEdge,vertices,attributes,key){
 /** Produces all incoming geometric fragments with exact sampled alpha, then
  * exposes transparent-discard and opaque lists separately. No alpha blending.
  */
-export function rasterizeNativeBinaryAlphaPolygon(args,texture,{textureScalingFactor}={}){
+export function rasterizeNativeBinaryAlphaPolygon(args,texture,{textureScalingFactor,retainGeometry=false}={}){
  if(args.viewportWord!==0xbfff0000||args.depthMode!=='Z'||args.fragmentSamplingHack!==false)throw Error('Explicit full viewport/Z/integer sampling profile required');
  if(!Number.isInteger(args.polygonAttribute)||(args.polygonAttribute>>>16&31)!==31||(args.polygonAttribute>>>4&3)!==0||(args.polygonAttribute&0x4000))throw Error('Opaque mode0 polygon alpha31 and ordinary depth mode required');
  if(!Number.isInteger(args.primitiveMode)||args.primitiveMode<0||args.primitiveMode>3||args.clipVerticesFx?.length!==(args.primitiveMode%2?4:3))throw Error('Matching original GX primitive required');
@@ -59,7 +59,7 @@ export function rasterizeNativeBinaryAlphaPolygon(args,texture,{textureScalingFa
   }
  }
  if(fragments.length!==geometry.fragments.length||fragments.some((f,i)=>f.x!==geometry.fragments[i].x||f.y!==geometry.fragments[i].y||f.depth24!==geometry.fragments[i].depth24))throw Error('UV walk lost native position/depth correspondence');
- return{ready:true,discarded:false,culled:geometry.culled,frontFacing:geometry.facing>=0n,clip,clippedUvFx4,fragments,opaqueFragments,transparentFragments,scope:'Native integer position/UV clip, perspective, nearest wrap/sample and binary alpha only. No RGB/fog/translucent shader or framebuffer acceptance.'};
+ return{...(retainGeometry?{geometry}:{}),ready:true,discarded:false,culled:geometry.culled,frontFacing:geometry.facing>=0n,clip,clippedUvFx4,fragments,opaqueFragments,transparentFragments,scope:'Native integer position/UV clip, perspective, nearest wrap/sample and binary alpha only. No RGB/fog/translucent shader or framebuffer acceptance.'};
 }
 /** Add a proven binary polygon to an explicitly supplied ordered fragment set.
  * Depth rules are reused; alpha0 never claims coverage or changes depth.

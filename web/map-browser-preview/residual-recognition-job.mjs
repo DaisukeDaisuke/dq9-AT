@@ -1,4 +1,4 @@
-import {nativeBodyRequestPayload} from './native-body-request.mjs?v=destination-reuse-20261006-0501';
+import {nativeBodyRequestPayload} from './native-body-request.mjs?v=native-cpu-reuse-20261006-0612';
 import {attachResidualNativeSupport,RESIDUAL_NATIVE_BODY_BUDGET} from './residual-native-support.mjs?v=emitted-continuation-20261006-0545';
 import {chooseResidualBackend,residualBackendProvenance,assertResidualBackendResult} from './residual-recognition-backend.mjs';
 import {residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs?v=native-body-20261006-0212';

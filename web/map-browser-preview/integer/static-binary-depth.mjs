@@ -5,7 +5,7 @@ import {runSourceStepsSync,runSourceStepsAsync} from '../cooperative-source-work
  */
 import {projectNativePrimitiveFx} from './native-primitive-inputs.mjs';
 import {rasterizeNativePositionClippedZPolygon} from './native-position-clip.mjs?v=destination-reuse-20261006-0501';
-import {readNativeBinaryPolygonTexture,rasterizeNativeBinaryAlphaPolygon,compositeBinaryAwareDepth} from './native-binary-alpha.mjs?v=destination-reuse-20261006-0501';
+import {readNativeBinaryPolygonTexture,rasterizeNativeBinaryAlphaPolygon,compositeBinaryAwareDepth} from './native-binary-alpha.mjs?v=native-cpu-reuse-20261006-0612';
 export function* classifyStaticBinaryDepthInputsSteps(project,automatic,opaqueInventory,{viewportWord,depthMode,fragmentSamplingHack,textureScalingFactor}={}){
  if(automatic.plan.recordKey!==opaqueInventory.recordKey)throw Error('Same source map inventory required');
  if(viewportWord!==0xbfff0000||depthMode!=='Z'||fragmentSamplingHack!==false||textureScalingFactor!==1)throw Error('Explicit native viewport/Z/integer/native1x profile required');
