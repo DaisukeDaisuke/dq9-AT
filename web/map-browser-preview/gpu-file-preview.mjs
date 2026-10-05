@@ -2,7 +2,7 @@ import {mountResidualInferencePreparation} from './residual-inference-preparatio
 import {runResidualRecognitionJob} from './residual-recognition-job.mjs?v=field-stream-20261005-1108';
 import {VideoMapContinuity} from './video-map-continuity.mjs?v=source-scene-20261006-0040';
 import {mountAutomaticGpuPanel} from './gpu-file-panel.mjs?v=source-scene-20261006-0040';
-import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=scene-fog-unknown-20261006-0054';
+import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=s04-cache-20261006-0114';
 import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=source-scene-20261006-0040';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
 import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=forward-map-20261005-1138';

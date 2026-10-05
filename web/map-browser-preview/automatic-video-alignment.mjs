@@ -1,5 +1,5 @@
 import{buildBackgroundBranchSupport}from'./background-branch-support.mjs?v=scene-fog-unknown-20261006-0054';
-import{createSourceAnchorSceneInference}from'./source-anchor-scene-inference.mjs?v=source-scene-20261006-0040';
+import{createSourceAnchorSceneInference}from'./source-anchor-scene-inference.mjs?v=s04-cache-20261006-0114';
 import{resolveFrozenInferencePixels}from'./capture-analysis-pixels.mjs?v=video-inference-20261005-1232';
 import{createMode1BackgroundInference}from'./automatic-mode1-background.mjs?v=source-scene-20261006-0040';
 import {Mode2VideoContinuity} from './mode2-video-continuity.mjs?v=source-scene-20261006-0040';
