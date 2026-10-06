@@ -2,7 +2,7 @@ import {mountResidualInferencePreparation} from './residual-inference-preparatio
 import {createVideoTrackingAT,videoATSearchOptions} from './video-tracking-at.mjs?v=map-input-owned-preparation-20261006-1408';
 import {runResidualRecognitionJob} from './residual-recognition-job.mjs?v=map-input-owned-preparation-20261006-1408';
 import {VideoMapContinuity} from './video-map-continuity.mjs?v=complete-registration-reuse-20261006-1523';
-import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=complete-registration-reuse-20261006-1523';
+import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=ready-mode1-geometry-20261006-1907';
 import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=complete-registration-reuse-20261006-1523';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
 import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=native-action-domain-20261006-1723';

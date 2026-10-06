@@ -151,3 +151,6 @@ node --test scripts/test-completed-minimap-registration-reuse.mjs
 
 # ROM-only ordered field table preparation; runtime remains explicit.
 node scripts/test-field-spawn-source.mjs
+
+# Ready mode1 source-bounded fallback only after every original pass failed.
+node scripts/test-ready-mode1-geometry-fallback.mjs
