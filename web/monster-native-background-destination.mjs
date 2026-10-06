@@ -1,9 +1,12 @@
-import {adoptNativeBodyDestinationHandoff} from './map-browser-preview/native-body-destination-handoff.mjs?v=enc-motion-at-20261006-1156';
+import{prepareBoundMode1NativeScene}from'./monster-native-mode1-source.mjs?v=native-yaw-mse-20261006-2101';
+import{renderInitialIntegerFogSteps}from'./map-browser-preview/integer-static-fog.mjs?v=native-yaw-mse-20261006-2101';
+import{captureMode1MseSceneHypothesis}from'./map-browser-preview/mode1-mse-scene-hypothesis.mjs?v=native-yaw-mse-20261006-2101';
+import {adoptNativeBodyDestinationHandoff} from './map-browser-preview/native-body-destination-handoff.mjs?v=native-yaw-mse-20261006-2101';
 // Frame-local lazy source destination reconstruction. No final-RGB inversion,
 // transport parameters, camera search, state search or persistent pixel cache.
 import {loadAutomaticScene} from './map-browser-preview/automatic-scene.mjs';
-import {prepareMode2InverseModel,renderMode2InverseSourceSteps} from './map-browser-preview/mode2-inverse-render.mjs?v=enc-motion-at-20261006-1156';
-import {bindNativeBodyDestination} from './monster-native-scene-composition.mjs?v=automatic-playback-source-cache-20261006-1100';
+import {prepareMode2InverseModel,renderMode2InverseSourceSteps} from './map-browser-preview/mode2-inverse-render.mjs?v=native-yaw-mse-20261006-2101';
+import {bindNativeBodyDestination} from './monster-native-scene-composition.mjs?v=native-yaw-mse-20261006-2101';
 const need=(v,m)=>{if(!v)throw Error(m);};
 const task=()=>globalThis.scheduler?.yield?globalThis.scheduler.yield():new Promise(resolve=>setTimeout(resolve,0));
 /** Advance only this provider's frozen source image. A budget yield is pending,
@@ -14,7 +17,7 @@ export function createNativeBodyDestinationProvider({project,rom,record,branch,f
  let reuseEnvelope=branch.nativeBodyDestinationReuse?structuredClone(branch.nativeBodyDestinationReuse):null;
  frame=structuredClone(frame);branch={branchId:branch.branchId,recordKey:branch.recordKey,viewFx:branch.viewFx.slice(),projectionFx:branch.projectionFx.slice(),alignment:{...branch.alignment},sourceEnvironment:structuredClone(branch.sourceEnvironment),backgroundRGBA:branch.backgroundRGBA.slice(),validMask:branch.validMask.slice()};
  const camera={viewFx:branch.viewFx,projectionFx:branch.projectionFx};
- let state=null,advancing=false,disposed=false;
+ const mode1SceneRequested=branch.sourceEnvironment?.mode1Scene!=null;let state=null,advancing=false,disposed=false;
  const clear=()=>{try{state?.steps?.return?.();}finally{state=null;}};
  const advance=async({assertCurrent:check=assertCurrent,shouldYield=()=>false,yieldTask=task,sliceMilliseconds=8,now=()=>performance.now(),onSegment=null}={})=>{
   const currentCheck=check;check=()=>{if(disposed)throw new DOMException('Source destination provider disposed','AbortError');currentCheck();};
@@ -38,9 +41,11 @@ export function createNativeBodyDestinationProvider({project,rom,record,branch,f
     }
     const phase=state.phase,started=now();let boundary=null;
     if(phase==='validate'){
-     need(branch.sourceEnvironment?.mode2Inputs&&branch.sourceEnvironment.fogApplied===true,'Source scene destination currently admits explicit frozen mode2 only; retained mode1/MSE alternatives remain unknown');
+     need(mode1SceneRequested||branch.sourceEnvironment?.mode2Inputs&&branch.sourceEnvironment.fogApplied===true,'Source scene destination currently admits explicit frozen mode2 only; retained mode1/MSE alternatives remain unknown');
      need(frame.recordKey===record.key&&branch.recordKey===record.key,'Source scene destination record differs');
-     state.phase=reuseEnvelope?'adopt-background-handoff':'load-automatic-scene';
+     state.phase=mode1SceneRequested?'prepare-mode1-source':reuseEnvelope?'adopt-background-handoff':'load-automatic-scene';
+    }else if(phase==='prepare-mode1-source'){
+     state.mode1=prepareBoundMode1NativeScene({project,rom,record,branch,frame});state.steps=renderInitialIntegerFogSteps(project,rom,record,state.mode1.active,state.mode1.camera,{applyFog:true,screenEffectPhase:state.mode1.phase,retainBodyDestination:true});state.phase='render-source';
     }else if(phase==='adopt-background-handoff'){
      const adopted=await adoptNativeBodyDestinationHandoff({envelope:reuseEnvelope,project,rom,record,branch,frame,assertCurrent:check});check();reuseEnvelope=null;
      if(adopted.ready){state.destination=adopted.destination;state.phase='complete';boundary='validated-background-source-reuse';}
@@ -55,9 +60,9 @@ export function createNativeBodyDestinationProvider({project,rom,record,branch,f
      const next=state.steps.next();boundary=next.done?null:next.value;
      if(next.done){state.image=next.value;state.steps=null;state.phase='bind-destination';}
     }else if(phase==='bind-destination'){
-     const image=state.image;need(image.ready&&image.bodyDestination,'Source scene destination reconstruction unavailable');
+     const image=state.image;need(image.ready&&image.bodyDestination,'Source scene destination reconstruction unavailable: '+(image.reason??image.diagnostics?.bodyDestinationRetention?.reason??'source planes absent'));if(mode1SceneRequested)need(JSON.stringify(captureMode1MseSceneHypothesis(image.diagnostics))===JSON.stringify(branch.sourceEnvironment.mode1Scene),'Reconstructed mode1 MSE hypothesis differs');
      state.destination=bindNativeBodyDestination(image.bodyDestination,{frame,camera,alignment:branch.alignment,reconstructedRGBA:image.rgba,backgroundRGBA:branch.backgroundRGBA,validMask:branch.validMask});
-     state.automatic=null;state.model=null;state.image=null;state.phase='complete';
+     state.automatic=null;state.model=null;state.image=null;state.mode1=null;state.phase='complete';
     }else throw Error('Unknown source destination preparation phase');
     const elapsedMs=now()-started;state.completedSteps++;state.maxSegmentMs=Math.max(state.maxSegmentMs,elapsedMs);
     onSegment?.({phase,boundary,elapsedMs,completedSteps:state.completedSteps,maxSegmentMs:state.maxSegmentMs,done:state.phase==='complete'});
@@ -72,6 +77,7 @@ export function createNativeBodyDestinationProvider({project,rom,record,branch,f
    throw error;
   }finally{advancing=false;}
  };
+ advance.mode1SceneRequested=mode1SceneRequested;
  advance.dispose=()=>{disposed=true;reuseEnvelope=null;clear();};
  return advance;
 }

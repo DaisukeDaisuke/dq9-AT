@@ -154,3 +154,12 @@ node scripts/test-field-spawn-source.mjs
 
 # Ready mode1 source-bounded fallback only after every original pass failed.
 node scripts/test-ready-mode1-geometry-fallback.mjs
+
+# Conditional mode1 map/actor/MSE replay and retained isolated results.
+node scripts/test-mode1-mse-composition.mjs
+node scripts/test-native-isolated-support.mjs
+
+# Exact native yaw classes, resumable continuation and lossless evidence.
+node scripts/test-native-yaw-domain.mjs
+node scripts/test-native-yaw-continuation.mjs
+node scripts/test-native-yaw-evidence.mjs
