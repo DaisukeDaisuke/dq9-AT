@@ -59,6 +59,7 @@ node scripts/test-residual-inference-preparation.mjs
 node scripts/test-native-request-branches.mjs
 node --test scripts/test-classification-display-deferred.mjs
 node --test scripts/test-video-pipeline-timing.mjs
+node --test scripts/test-first-gap-timing.mjs
 node --test scripts/test-rejected-camera-evidence.mjs
 node --test scripts/test-paused-local-video-startup.mjs
 node --experimental-vm-modules --test scripts/check-paused-video-startup-panel.mjs
@@ -130,3 +131,6 @@ node scripts/test-f06-origin.mjs
 node scripts/test-geometry-position-refinement.mjs
 
 node scripts/test-original-proposal-support.mjs
+
+# Detached immutable observation ownership, preserving generic clone semantics.
+node --test scripts/test-observation-bundle-ownership.mjs

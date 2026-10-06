@@ -1,3 +1,4 @@
+import {copyObservationBundleForAT} from './observation-bundle-ownership.mjs?v=gap-owned-observation-20261006-1340';
 import {compareCameraBodyAlternative} from '../monster-camera-body-alternative.mjs?v=camera-body-alternative-20261006-1430';
 import {trackingSightingMapProvenance} from './map-hypothesis-provenance.mjs';
 import {deriveCameraBodySingletonAlternatives,appendCameraBodySingletonAlternatives} from '../tracking-camera-body-alternative.mjs?v=proposal-support-20261006-1152';
@@ -55,7 +56,7 @@ export function createVideoTrackingAT({getOptions,getTables=()=>({}),engineRevis
  function cancel(reason='入力が変わりました。',{retainObservation=false}={}){epoch++;session?.cancel();session=null;if(!retainObservation){latest=null;latestNativeBodySupport=null;latestNativeMotionInputs=null;latestReplayInputs=null;}emit({status:'waiting',reason});}
  async function observe(bundle){
   try{assertProductionATInput(bundle);}catch(error){cancel(error.message);return;}
-  const mine=++epoch;session?.cancel();session=null;latest=structuredClone(bundle);latestNativeBodySupport=null;latestNativeMotionInputs=null;latestReplayInputs=null;
+  const mine=++epoch;session?.cancel();session=null;latest=copyObservationBundleForAT(bundle);latestNativeBodySupport=null;latestNativeMotionInputs=null;latestReplayInputs=null;
   const snapshot=latest;emit({status:'waiting',reason:'同じ観測bundleを確認中。種類・出生・AT消費は未確定。',sightings:snapshot.sightings?.length??0});
   try{
    const replayInputs=await searchAutomaticReplayInputs(snapshot,{isCurrent:()=>mine===epoch});if(mine!==epoch)return;latestReplayInputs=replayInputs;

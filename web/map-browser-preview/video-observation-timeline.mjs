@@ -1,3 +1,4 @@
+import {cloneImmutableObservationBundle} from './observation-bundle-ownership.mjs?v=gap-owned-observation-20261006-1340';
 import {mapHypothesisProvenance,mapHypothesisSignature} from './map-hypothesis-provenance.mjs?v=native-body-20261006-0212';
 // Scheduling/storage limits are resource budgets, never recognition thresholds.
 const copy=x=>structuredClone(x);
@@ -56,13 +57,15 @@ export class VideoObservationTimeline {
  // Fast path requires the inspected residual producer's fresh envelope, with
  // no other references to that wrapper inside value. Metadata alone is not
  // proof of this contract. Generic callers retain the legacy alias behavior.
+ // The fast-path callback receives a detached immutable plain graph so AT can
+ // share it safely; built-in mutable values retain full-copy ownership.
  snapshotBundle(value,{unaliasedResidualEnvelope=false}={}){
   const observations=value.videoObservations;
   if(unaliasedResidualEnvelope!==true||value.schema!=='headless-monster-observation-bundle-v1'||value.producer!=='browser-ROM-background-residual'||!Array.isArray(observations)||observations.length!==1||!Object.hasOwn(observations,0)||observations[0]?.kind!=='partial-video-observation-timeline'||Object.getPrototypeOf(observations[0])!==Object.prototype){
    const completed=this.#timed('observation-bundle-clone',()=>copy(value));for(const item of completed.videoObservations??[])item.timeline=this.snapshot();return completed;
   }
   const timeline=this.#snapshotRecord();
-  return this.#timed('observation-bundle-clone',()=>copy({...value,videoObservations:observations.map(item=>({...item,timeline}))}));
+  return this.#timed('observation-bundle-clone',()=>cloneImmutableObservationBundle({...value,videoObservations:observations.map(item=>({...item,timeline}))}));
  }
  // JSON serialization is synchronous, so it needs no detached graph before
  // converting this already-owned state to a string. No live references escape.

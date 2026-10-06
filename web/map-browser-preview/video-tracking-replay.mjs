@@ -1,6 +1,7 @@
 import{EnemyProposalTracker,PROPOSAL_LIMITS}from'../monster-position-proposals.mjs?v=camera-loss-evidence-20261006-1205';
 import{trackingGray,patchTrackingFrame,correspondVideoPatch,videoTrackingFrameKey,videoTrackingSourceKey}from'./video-patch-correspondence.mjs?v=camera-loss-evidence-20261006-1205';
 const clone=x=>structuredClone(x),time=f=>f.stamp.mediaTime??f.stamp.videoTime,scope=b=>JSON.stringify([b?.romSHA256,b?.recordKey,b?.mapId]),pause=()=>new Promise(r=>setTimeout(r,0));
+const diagnosticNow=timing=>{try{const value=timing?.now?.();return Number.isFinite(value)?value:null;}catch{return null;}};
 const frameStamp=(f,trackingObservationSequence)=>({videoTime:time(f),frameSerial:f.stamp.frameSerial??null,trackingSequenceScope:'retained-frame-replay-pair',trackingObservationSequence,sceneContext:{gameplayROI:{x:0,y:0,w:256,h:192}}});
 const failureFrame=f=>({key:f.key,sourcePTS:time(f),stamp:Object.fromEntries(['sourceId','sourceEpoch','timelineSegment','timestampBasis','frameSerial','mediaTime','videoTime','layout','gameplayRGBA_SHA256','fullRGBA_SHA256'].filter(k=>f.stamp[k]!==undefined).map(k=>[k,f.stamp[k]])),pixelTimestampUs:f.stamp.captureTiming?.pixelTimestampUs??null,pixelTimestampBound:f.stamp.captureTiming?.pixelTimestampBound??null});
 function restoredTracker(previous,tracks){const tracker=new EnemyProposalTracker();tracker.tracks=clone(tracks);tracker.previous={captureStamp:frameStamp(previous,0),trackingFrame:patchTrackingFrame(previous,tracks)};return tracker;}
@@ -8,8 +9,8 @@ const trackingRows=rows=>rows.map(r=>({id:r.id,roi:clone(r.roi),firstSeen:r.firs
 /** Fixed-size actual-pixel replay. There are no predicted frames, root
  * propagation, species decisions or inferred birth/death/AT events here. */
 export class VideoTrackingReplay {
- constructor({maximumFrames=256,maximumWorkSliceMs=8,onState=()=>{},yieldTask=pause,timing=null}={}){if(!Number.isSafeInteger(maximumFrames)||maximumFrames<2)throw Error('At least two retained measured frames required');if(!Number.isFinite(maximumWorkSliceMs)||maximumWorkSliceMs<=0)throw Error('Positive cooperative replay work budget required');Object.assign(this,{maximumFrames,maximumWorkSliceMs,onState,yieldTask,timing,generation:0,sequence:0,activeFrames:[]});this.reset('initial');}
- reset(reason='source-reset'){this.generation++;this.frames=[];this.history=new Map();this.classificationAnchors=new Map();this.anchorEvictions=0;this.source=null;this.batch=null;this.evictedFrames=0;this.rejectedFrames=0;this.gaps=[];this.firstLoss=null;this.firstCameraFailure=null;this.recentLosses=[];this.totalLosses=0;this.failurePixelPair=null;this.reason=reason;if(!this.activePromise){this.busy=false;this.activePromise=null;}this.onState(this.snapshot());}
+ constructor({maximumFrames=256,maximumWorkSliceMs=8,onState=()=>{},yieldTask=pause,timing=null}={}){if(!Number.isSafeInteger(maximumFrames)||maximumFrames<2)throw Error('At least two retained measured frames required');if(!Number.isFinite(maximumWorkSliceMs)||maximumWorkSliceMs<=0)throw Error('Positive cooperative replay work budget required');Object.assign(this,{maximumFrames,maximumWorkSliceMs,onState,yieldTask,timing,generation:0,sequence:0,activeFrames:[]});this.gapLongTaskReceiver=this.acceptFirstFrameGapLongTask.bind(this);this.reset('initial');}
+ reset(reason='source-reset'){try{this.gapTimingUnsubscribe?.();}catch{}this.gapTimingUnsubscribe=null;this.generation++;this.frames=[];this.history=new Map();this.classificationAnchors=new Map();this.anchorEvictions=0;this.source=null;this.batch=null;this.evictedFrames=0;this.rejectedFrames=0;this.gaps=[];this.firstLoss=null;this.firstCameraFailure=null;this.recentLosses=[];this.totalLosses=0;this.failurePixelPair=null;this.firstFrameGapTiming=null;this.reason=reason;if(!this.activePromise){this.busy=false;this.activePromise=null;}this.onState(this.snapshot());}
  noteGap(stamp,reason){this.gaps.push({sourcePTS:stamp?.mediaTime??stamp?.videoTime??null,reason,observed:false,absenceCertified:false});if(this.gaps.length>this.maximumFrames)this.gaps.shift();}
  retain({image,stamp}){
   const pts=stamp?.mediaTime??stamp?.videoTime;
@@ -18,7 +19,10 @@ export class VideoTrackingReplay {
   const key=videoTrackingFrameKey(stamp),same=this.frames.find(f=>f.key===key);if(same)return same.key;
   const sameTime=this.frames.find(f=>time(f)===pts);if(sameTime){sameTime.conflicted=true;this.rejectedFrames++;this.generation++;this.history.clear();this.classificationAnchors.clear();if(this.batch){this.batch.tracks=[];this.batch.stopped='same-PTS-different-pixels';}this.noteGap(stamp,'same-PTS-different-pixels');this.onState(this.snapshot());return null;}
   if(this.frames.length===this.maximumFrames&&pts<time(this.frames[0])){this.rejectedFrames++;this.noteGap(stamp,'late-frame-history-evicted');return null;}
-  const pixels=trackingGray(image),f={key,stamp:clone(stamp),...pixels};this.frames.push(f);this.frames.sort((a,b)=>time(a)-time(b));while(this.frames.length>this.maximumFrames){const old=this.frames.shift();this.history.delete(old.key);if(this.classificationAnchors.delete(old.key))this.anchorEvictions++;this.evictedFrames++;}this.schedule();return key;
+  const pixels=trackingGray(image),f={key,stamp:clone(stamp),retainedAtPerformanceMs:diagnosticNow(this.timing),...pixels};this.frames.push(f);this.frames.sort((a,b)=>time(a)-time(b));
+  const at=this.frames.indexOf(f),previous=this.frames[at-1];
+  if(this.timing&&!this.firstFrameGapTiming&&at===this.frames.length-1&&previous&&!previous.conflicted&&time(f)-time(previous)>PROPOSAL_LIMITS.maxGapSeconds)this.pinFirstFrameGapTiming(previous,f);
+  while(this.frames.length>this.maximumFrames){const old=this.frames.shift();this.history.delete(old.key);if(this.classificationAnchors.delete(old.key))this.anchorEvictions++;this.evictedFrames++;}this.schedule();return key;
  }
  seed({stamp,backgroundEvidence,tracking,measuredContinuity=null}){
   const key=videoTrackingFrameKey(stamp),frame=this.frames.find(f=>f.key===key),pts=stamp.mediaTime??stamp.videoTime;
@@ -42,6 +46,7 @@ export class VideoTrackingReplay {
   const remaining=new Set(batch.tracks.map(t=>t.id)),lost=before.filter(t=>!remaining.has(t.id));if(!lost.length)return;
   const record={kind:'measured-replay-track-loss-v1',sequence:++this.totalLosses,batchId:batch.id,mapScope:batch.mapScope,from:failureFrame(previous),to:failureFrame(next),deltaSeconds:time(next)-time(previous),reason:reason??'patch-or-association-rejected',beforeCount:before.length,remainingCount:batch.tracks.length,lostTracks:lost.map(t=>({id:t.id,roi:clone(t.roi),reasons:failures.filter(f=>f.trackId===t.id).map(f=>f.reason)})),rejectedCameraAttempt:trackerResult?.rejectedCameraAttempt?clone(trackerResult.rejectedCameraAttempt):null,diagnosticOnly:true,absenceCertified:false,identityCertified:false,minimumProvenATCalls:0};
   this.firstLoss??=record;this.recentLosses.push(record);if(this.recentLosses.length>8)this.recentLosses.shift();
+  const gap=this.firstFrameGapTiming;if(record.reason==='unobserved-or-conflicted-frame-gap'&&gap?.from.key===record.from.key&&gap.to.key===record.to.key){gap.matchingReplayLossCount++;gap.firstMatchingReplayLoss??={sequence:record.sequence,batchId:record.batchId,reason:record.reason,fromFrameKey:record.from.key,toFrameKey:record.to.key,lostTrackCount:record.lostTracks.length};}
   if(record.rejectedCameraAttempt&&!this.firstCameraFailure){
    this.firstCameraFailure=record;
    // One owned pair only, 2 * (49,152 gray + 49,152 blocked) = 196,608 bytes.
@@ -53,6 +58,32 @@ export class VideoTrackingReplay {
  // Never called by onState/preview. Pixel arrays enter the explicit private
  // comparison download only; normal snapshots contain bounded scalar evidence.
  failurePixelPairSnapshot(){const pair=this.failurePixelPair;if(!pair)return null;const frame=f=>{const {gray,blocked,...metadata}=f;return{...clone(metadata),gray:Array.from(gray),blocked:Array.from(blocked)};};return{kind:'first-rejected-camera-registration-pixels-v1',width:256,height:192,retainedBytes:196608,maximumBytes:196608,previous:frame(pair.previous),current:frame(pair.current),previousTracks:clone(pair.previousTracks),currentProposals:clone(pair.currentProposals),rejectedCameraAttempt:clone(this.firstCameraFailure.rejectedCameraAttempt),pixelDerivation:'trackingGray: (R*77+G*150+B*29)>>8; blocked: alpha!==255. Stamp hashes identify the original sampled RGBA, not these derived gray/blocked arrays. Rebuild masks with patchTrackingFrame and the retained ROI lists.',diagnosticOnly:true,cameraIdentityCertified:false,minimumProvenATCalls:0};}
+ pinFirstFrameGapTiming(previous,next){
+  const window={startedAtMs:previous.retainedAtPerformanceMs,endedAtMs:next.retainedAtPerformanceMs,basis:'actual frame-retention events after pixel hash, not decoded callback delivery'},saved=this.firstFrameGapTiming={schema:'first-retained-frame-gap-timing-v1',from:failureFrame(previous),to:failureFrame(next),deltaSeconds:time(next)-time(previous),existingMaximumGapSeconds:PROPOSAL_LIMITS.maxGapSeconds,capturedAtPerformanceMs:next.retainedAtPerformanceMs,performanceWindow:window,timing:null,timingSnapshotStatus:'unavailable',timingUnavailableReason:null,longTaskWatchStatus:'unavailable',overlappingLongTasks:[],highestLongTaskSequenceSeen:0,droppedOverlappingLongTasks:0,diagnosticRecordErrors:0,maximumOverlappingLongTasks:16,maximumSavedSnapshots:1,additionalPixelBytes:0,matchingReplayLossCount:0,firstMatchingReplayLoss:null,diagnosticOnly:true,scope:'First advancing retention gap only. A later real frame may fill it; no missing frame or cause is inferred. Exact replay-loss linkage is separate. The bounded ledger is frozen here; at most 16 delayed completed long tasks overlapping this original performance window may be appended.',minimumProvenATCalls:0};
+  if(!Number.isFinite(window.startedAtMs)||!Number.isFinite(window.endedAtMs)||window.endedAtMs<window.startedAtMs){saved.timingUnavailableReason='performance-clock-unavailable';return;}
+  try{
+   const record=this.timing.snapshot({flushCompletedLongTasks:true});
+   if(record?.schema!=='video-background-pipeline-timing-v1'||!Array.isArray(record.recent)||record.recent.length>64||!Array.isArray(record.stages)||record.stages.length>32||!record.longest||Object.keys(record.longest).length>4||Object.values(record.longest).some(a=>!Array.isArray(a)||a.length>16))throw Error('Unsupported timing snapshot');
+   saved.timing=clone(record);saved.timingSnapshotStatus='captured';
+   const rows=[...saved.timing.recent,...(saved.timing.longest['browser-main-thread-long-task']??[])].sort((a,b)=>a.sequence-b.sequence);
+   for(const row of rows)this.acceptFirstFrameGapLongTask(row);
+  }catch{saved.timing=null;saved.timingSnapshotStatus='unavailable';saved.timingUnavailableReason='timing-snapshot-unavailable';}
+  // All work above is synchronous. Install after draining/sorting the bounded
+  // snapshot, so later deliveries have increasing sequence IDs and need no set.
+  try{const dispose=this.timing.watchFirstFrameGapLongTasks(window.startedAtMs,window.endedAtMs,this.gapLongTaskReceiver);if(typeof dispose==='function'){this.gapTimingUnsubscribe=dispose;saved.longTaskWatchStatus='watching-original-window';}}catch{/* Optional diagnostics cannot interrupt retain/schedule. */}
+ }
+ acceptFirstFrameGapLongTask(row){
+  const saved=this.firstFrameGapTiming;if(!saved||row.kind!=='browser-main-thread-long-task'||!(row.startedAtMs<saved.performanceWindow.endedAtMs&&row.endedAtMs>saved.performanceWindow.startedAtMs)||!Number.isSafeInteger(row.sequence)||row.sequence<=saved.highestLongTaskSequenceSeen)return;
+  saved.highestLongTaskSequenceSeen=row.sequence;
+  if(saved.overlappingLongTasks.length>=16){saved.droppedOverlappingLongTasks++;return;}
+  try{saved.overlappingLongTasks.push(clone(row));}catch{saved.diagnosticRecordErrors++;}
+ }
+ // Explicit comparison download only; never append this ledger to live preview,
+ // ownership-cloned observation bundles, or each retained frame.
+ firstFrameGapTimingSnapshot(){
+  if(!this.firstFrameGapTiming)return null;let flushStatus='requested';try{this.timing?.flushCompletedLongTasks?.();}catch{flushStatus='unavailable';}
+  const saved=this.firstFrameGapTiming;return clone({...saved,longTaskAttribution:{status:saved.overlappingLongTasks.length?'overlap-observed-function-unattributed':saved.timing?.observerStatus==='observing'?'no-overlap-recorded-not-proof-of-absence':'observer-or-snapshot-unavailable',observerStatusAtGap:saved.timing?.observerStatus??'unavailable',completedRecordFlush:flushStatus,absenceEstablished:false,functionAttributionAvailable:false,delayedCompletedRecordsAccepted:typeof this.gapTimingUnsubscribe==='function',unfinishedTaskAtExportMayBeUnavailable:true}});
+ }
  async drain(mine){
   while(mine===this.generation&&this.batch){const b=this.batch,next=this.frames.find(f=>time(f)>time(b.previous));if(!next)break;const previous=b.previous,before=trackingRows(b.tracks),dt=time(next)-time(previous),failures=[],proposals=[];let trackerResult=null,lossReason=null;this.activeFrames=[previous,next];
    if(previous.conflicted||next.conflicted||!(dt>0&&dt<=PROPOSAL_LIMITS.maxGapSeconds)){b.stopped='unobserved-or-conflicted-frame-gap';lossReason=b.stopped;b.tracks=[];this.classificationAnchors.clear();this.noteGap(next.stamp,b.stopped);}
