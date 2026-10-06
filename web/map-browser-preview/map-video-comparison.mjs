@@ -13,9 +13,9 @@ import {replaceResidualTimelineClassification} from './residual-classification-s
 import {recognitionDisplaySummary,timelineDisplaySummary,comparisonDisplaySummary} from './recognition-display-summary.mjs?v=native-extents-latest-20261006-0843';
 import {VideoObservationPump,VideoObservationTimeline,residualAssociationHints,videoObservationFrameKey} from './video-observation-timeline.mjs?v=map-input-owned-preparation-20261006-1408';
 import {detectMapNameROI} from '../map-name-roi.mjs';
-import {upperVideoROI} from './video-player-map-input.mjs?v=map-input-owned-preparation-20261006-1408';
+import {upperVideoROI} from './video-player-map-input.mjs?v=upper-preparation-reuse-20261006-1428';
 import {parseVideoTimecode,formatVideoTimecode} from './video-timecode.mjs';
-import {inferPairedVideoLayout} from './automatic-video-layout.mjs?v=map-input-owned-preparation-20261006-1408';
+import {inferPairedVideoLayout} from './automatic-video-layout.mjs?v=upper-preparation-reuse-20261006-1428';
 import {ResidualTracker} from './residual-tracking-input.mjs?v=camera-loss-evidence-20261006-1205';
 import {annotateResidualRegions,selectResidualDisplay} from './residual-region-display.mjs';
 import {FileVideoInput} from '../file-video-input.mjs?v=automatic-playback-source-cache-20261006-1100';

@@ -138,3 +138,6 @@ node --test scripts/test-observation-bundle-ownership.mjs
 node --test scripts/test-tracking-preparation-copy.mjs
 
 node --test scripts/test-map-input-timing.mjs
+
+# Reuse only private same-frame upper preparation; preserve per-descriptor outputs.
+node --test scripts/test-video-upper-preparation.mjs

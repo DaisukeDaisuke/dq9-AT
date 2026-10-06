@@ -13,10 +13,24 @@ export function upperVideoROI(width,height,layout){
  if(r.w*3!==r.h*4)throw Error('上画面ROIが4:3ではありません');return r;
 }
 function halfFrame(image){const rgba=new Uint8ClampedArray(128*96*4);for(let y=0;y<96;y++)for(let x=0;x<128;x++)for(let c=0;c<4;c++){let s=0;for(let dy=0;dy<2;dy++)for(let dx=0;dx<2;dx++)s+=image.rgba[((y*2+dy)*256+x*2+dx)*4+c];rgba[(y*128+x)*4+c]=s/4;}return{width:128,height:96,rgba};}
-export function deriveVideoPlayerMapInput({sourceImage,layout,mapImage,mapId,matcher,floors,frameEvidence,measureMapInput=(_phase,run)=>run(),recordKey=null}){
+// Only a call-local opaque handle can reuse this preparation. Descriptor/map
+// state is deliberately absent. Each consumer receives its own deep copy, so
+// mutation of a result or matcher input cannot contaminate another candidate.
+const upperPreparations=new WeakMap();
+const upperFrameBinding=stamp=>JSON.stringify(['sourceId','sourceEpoch','timelineSegment','frameSerial','mediaTime','videoTime','timestampBasis','fullRGBA_SHA256'].map(k=>stamp?.[k]??null));
+export function createVideoUpperPreparation({sourceImage,layout,frameEvidence}){
+ const token=Object.freeze({});upperPreparations.set(token,{sourceImage,rgba:sourceImage?.rgba,width:sourceImage?.width,height:sourceImage?.height,layout,frameEvidence,binding:upperFrameBinding(frameEvidence),value:null});return token;
+}
+function prepareVideoUpper({sourceImage,layout,frameEvidence,upperPreparation,measure}){
+ const candidate=upperPreparations.get(upperPreparation),saved=candidate&&candidate.sourceImage===sourceImage&&candidate.rgba===sourceImage.rgba&&candidate.width===sourceImage.width&&candidate.height===sourceImage.height&&candidate.layout===layout&&candidate.frameEvidence===frameEvidence&&candidate.binding===upperFrameBinding(frameEvidence)?candidate:null;
+ const build=()=>{const roi=upperVideoROI(sourceImage.width,sourceImage.height,layout),upper=sampleGameplayFrame(sourceImage,roi),markers=calibratedPartyMarkerCandidates(upper),frame=halfFrame(upper);return{roi,upper,markers,frame};};
+ if(!saved)return measure('upper-marker-preparation',build);
+ return measure(saved.value?'upper-marker-preparation-reuse':'upper-marker-preparation',()=>{saved.value??=build();return structuredClone(saved.value);});
+}
+export function deriveVideoPlayerMapInput({sourceImage,layout,mapImage,mapId,matcher,floors,frameEvidence,measureMapInput=(_phase,run)=>run(),recordKey=null,upperPreparation=null}){
  if(!frameEvidence?.fullRGBA_SHA256)throw Error('同じ固定フレームの由来が必要です');
  const detail={recordKey,descriptor:mapImage.descriptor.path},measure=(phase,run)=>measureMapInput(phase,run,detail);
- const {roi,upper,markers,frame}=measure('upper-marker-preparation',()=>{const roi=upperVideoROI(sourceImage.width,sourceImage.height,layout),upper=sampleGameplayFrame(sourceImage,roi),markers=calibratedPartyMarkerCandidates(upper),frame=halfFrame(upper);return{roi,upper,markers,frame};});
+ const {roi,upper,markers,frame}=prepareVideoUpper({sourceImage,layout,frameEvidence,upperPreparation,measure});
  const registration=measure('minimap-registration',()=>{matcher.setReference({...mapImage,mapId,descriptor:mapImage.descriptor.path});const excluded=[{x:0,y:0,w:128,h:10},{x:0,y:86,w:128,h:10},...markers.candidates.map(m=>({x:m.bounds.x/2-2,y:m.bounds.y/2-2,w:m.bounds.w/2+4,h:m.bounds.h/2+4}))];return matchVideoMinimapRegistration(matcher,frame,{excluded});}),binding=markerCoordinateBinding(mapImage.descriptor,mapId),candidates=[];
  measure('marker-world-floor-queries',()=>{ 
  for(const [peakIndex,peak]of registration.candidates.entries())for(const marker of markers.candidates){
