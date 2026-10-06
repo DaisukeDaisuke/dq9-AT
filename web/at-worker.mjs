@@ -1,3 +1,4 @@
+import {assertProductionATCommand} from './production-at-input-policy.mjs?v=production-inputs-20261006-1320';
 import {compareCandidateTails,verifyCandidateAssociation} from './at-candidate-forecast.mjs';
 import {replayNpcContinuation,replayNpcFiles} from './npc-at-replay.mjs';
 import {TreasureEntryKernel} from './treasure-entry.mjs';
@@ -7,7 +8,7 @@ import {FieldATKernel} from './field-at.mjs';
 import {FieldScheduler,replaySchedulerTrace} from './field-scheduler.mjs';
 let session=null,kernel=null,tables=null,fieldKernel=null,candidateForecastEpoch=0;
 const ready=(async()=>{const [r,t]=await Promise.all([fetch('./wasm/map_render.wasm'),fetch('./data/enc.json')]);if(!r.ok||!t.ok)throw Error('AT資産の取得に失敗しました');const {instance}=await WebAssembly.instantiate(await r.arrayBuffer(),{});kernel=new ATKernel(instance);fieldKernel=new FieldATKernel(kernel);tables=(await t.json()).main;})();
-self.onmessage=async({data:m})=>{try{await ready;let value;
+self.onmessage=async({data:m})=>{try{assertProductionATCommand(m);await ready;let value;
  switch(m.type){
   case 'start':session=new ATSession(m.seed,kernel);value=session.snapshot();break;
   case 'restore':{const restored=ATSession.restore(m.saved,kernel,tables);session=restored;value=session.snapshot();break;}

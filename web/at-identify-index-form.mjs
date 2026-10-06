@@ -1,4 +1,4 @@
-import {buildFormRequest} from './at-identify-form.mjs';
+import {buildFormRequest} from './at-identify-form.mjs?v=production-inputs-20261006-1320';
 import {parseSeed} from './at-core.mjs';
 import {prepareIndexIdentification,cancelIndexCheckpoint} from './at-identify-index-engine.mjs';
 function decimal(s,label){if(typeof s!=='string'&&typeof s!=='bigint'&&!(typeof s==='number'&&Number.isSafeInteger(s)))throw Error(`${label}: exact string, BigInt or safe-integer input required`);const v=String(s).trim();if(!/^(0|[1-9][0-9]*)$/.test(v))throw Error(`${label}: canonical decimal required`);return v;}

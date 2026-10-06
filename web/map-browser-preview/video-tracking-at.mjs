@@ -1,6 +1,7 @@
+import {assertProductionATInput} from '../production-at-input-policy.mjs?v=production-inputs-20261006-1320';
 import {searchAutomaticReplayInputs} from '../video-replay-factor-search.mjs?v=automatic-entry-factors-20261006-1120';
 import {deriveTrackingEventEvidence,automaticSingletonSearchOptions} from '../tracking-at-event-evidence.mjs?v=enc-motion-at-20261006-1156';
-import {prepareTrackingJob,openTrackingCheckpointStore,startTrackingSession,collectTrackingMotionAssociationInputs} from '../tracking-at-session.mjs?v=native-entry-links-20261006-1240';
+import {prepareTrackingJob,openTrackingCheckpointStore,startTrackingSession,collectTrackingMotionAssociationInputs} from '../tracking-at-session.mjs?v=production-inputs-20261006-1320';
 // This is an execution budget/prior supplied by the user, never inferred from PTS.
 export function videoATSearchOptions(values,tables){
  const {seed,seedProvenance,first,last,indexProvenance}=values;
@@ -17,6 +18,7 @@ export function createVideoTrackingAT({getOptions,getTables=()=>({}),engineRevis
  const emit=(state)=>onState({...scope,...state});
  function cancel(reason='入力が変わりました。',{retainObservation=false}={}){epoch++;session?.cancel();session=null;if(!retainObservation){latest=null;latestNativeBodySupport=null;latestNativeMotionInputs=null;latestReplayInputs=null;}emit({status:'waiting',reason});}
  async function observe(bundle){
+  try{assertProductionATInput(bundle);}catch(error){cancel(error.message);return;}
   const mine=++epoch;session?.cancel();session=null;latest=structuredClone(bundle);latestNativeBodySupport=null;latestNativeMotionInputs=null;latestReplayInputs=null;
   const snapshot=latest;emit({status:'waiting',reason:'同じ観測bundleを確認中。種類・出生・AT消費は未確定。',sightings:snapshot.sightings?.length??0});
   try{

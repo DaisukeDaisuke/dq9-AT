@@ -1,3 +1,4 @@
+import {assertProductionATInput} from './production-at-input-policy.mjs?v=production-inputs-20261006-1320';
 import {searchAutomaticReplayInputs} from './video-replay-factor-search.mjs?v=automatic-entry-factors-20261006-1120';
 import {compileTrackingObservations} from './tracking-at-observation-adapter.mjs?v=enc-motion-at-20261006-1156';
 import {fingerprint} from './tracking-at-runner.mjs?v=field-stream-20261005-1108';
@@ -52,6 +53,7 @@ export function collectTrackingMotionAssociationInputs(bundle,nativeBodySupportE
 // Call directly from the completed, immutable continuous-bundle callback.
 // This hook accepts only explicit bounded search options; it invents no prior.
 export async function prepareTrackingJob(bundle,options,{engineRevision,observationRevision,isCurrent=()=>true,includeReplayInputHypotheses=true}){
+ assertProductionATInput({bundle,options});
  const current=()=>{if(!isCurrent())throw new DOMException('Tracking preparation cancelled or stale','AbortError');};
  current();
  const prepared=compileTrackingObservations(bundle,options),romSHA256=bundle.source?.background?.romSHA256;

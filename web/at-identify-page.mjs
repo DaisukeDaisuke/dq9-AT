@@ -1,11 +1,11 @@
 import {CANDIDATE_FORECAST_KEY,readCandidateResult} from './at-candidate-forecast.mjs';
-import {readSessionObservations,sessionObservationsToForm,SESSION_IDENTIFICATION_KEY} from './at-session-identification.mjs';
+import {readSessionObservations,sessionObservationsToForm,SESSION_IDENTIFICATION_KEY} from './at-session-identification.mjs?v=production-inputs-20261006-1320';
 import {startIdentification} from './at-identify.mjs';
 import {startIndexIdentification} from './at-identify-index.mjs';
-import {createIndexModeController} from './at-identify-index-form.mjs';
+import {createIndexModeController} from './at-identify-index-form.mjs?v=production-inputs-20261006-1320';
 import {indexResultForJSON} from './at-identify-index-engine.mjs';
-import {renderIndexResult} from './at-identify-index-view.mjs';
-import {createSearchController,syntheticExample} from './at-identify-form.mjs';
+import {renderIndexResult} from './at-identify-index-view.mjs?v=production-inputs-20261006-1320';
+import {createSearchController,syntheticExample} from './at-identify-form.mjs?v=production-inputs-20261006-1320';
 export const assetURLs={tables:new URL('./data/enc.json',import.meta.url),wasm:new URL('./wasm/at_identify.wasm',import.meta.url),indexWasm:new URL('./wasm/at_identify_stream.wasm',import.meta.url)};
 const labels={'loading':'データ読込中','running':'探索中','complete':'宣言範囲の処理終了','budget-stopped':'計算予算で停止','cancelled':'中止','failed':'失敗','unresolved':'未解決','unconstrained':'制約なし','invalid':'入力不正','pending':'待機','searching':'探索中'};
 const hex=n=>'0x'+n.toString(16).padStart(8,'0');

@@ -10,7 +10,7 @@ import {detectMapNameROI} from '../map-name-roi.mjs';
 import {upperVideoROI} from './video-player-map-input.mjs';
 import {parseVideoTimecode,formatVideoTimecode} from './video-timecode.mjs';
 import {inferPairedVideoLayout} from './automatic-video-layout.mjs?v=provided-layout-20261005';
-import {ResidualTracker} from './residual-tracking-input.mjs';
+import {ResidualTracker} from './residual-tracking-input.mjs?v=production-inputs-20261006-1320';
 import {annotateResidualRegions,selectResidualDisplay} from './residual-region-display.mjs';
 import {FileVideoInput} from '../file-video-input.mjs?v=automatic-playback-source-cache-20261006-1100';
 import {gameplayVideoROI,sampleGameplayFrame,compareMapBackground} from './map-video-residual.mjs';

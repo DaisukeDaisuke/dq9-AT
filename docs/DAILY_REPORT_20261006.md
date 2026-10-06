@@ -1,3 +1,13 @@
+## 2026-10-06 13:19 JST — 誤りの明記と用途の訂正
+
+DST・メモリから取り出したseedや内部状態をreplayへ渡す実装を、本番の映像認識・ATナビ完成に向けた進捗として扱ったのは、dotの間違いでした。ユーザーが本番入力を変更したのではありません。
+
+「マップ入場時のAT消費にはDSTが必要では」という発言は、「マップ入場時に発生するAT消費をデバッグするためにDSTが必要」という意味でした。dotがその用途を確認せず、本番向けの入力経路へ広げたことが逸脱の原因です。DSTによるデバッグの一致は、映像からモンスターやAT状態を自動特定できた証拠にはなりません。
+
+本来の目的は、映像からマップ・視点を特定してROMから背景を描画し、映像差分からモンスター枠を特定、enc.jsonによる分類・移動追跡の観測をAT総当たりに渡すコードの実装です。本番ではDST・メモリ由来の正解を受け付けず、その値を「保持パラメータ」と呼び換えて使うこともしません。
+
+一時的な概念実証・テストでの手動入力は許可されていますが、本番の全自動化とは区別します。過去のDST実測値はデバッグ記録として保持し、本番の完成実績には数えません。禁止と用途の区別は日報だけでなく、DST読込コード・入力境界・UIにも残します。
+
 # Scope correction — 2026-10-06 13:06 JST
 
 The native DST/WRAM entry replay and observed-memory clock/pose work below is debugging evidence only. Treating it as progress toward video-driven production identification was incorrect. It does not establish the requested workflow.
@@ -400,3 +410,14 @@ All new production source is included in this checkpoint. Reusable authored harn
 - Actual exported A→B observations about19 seconds apart both finish their AT jobs. Their scheduled branch predicates are identical but raw native support changes the full request/key. A controlled3.167-second update experiment interrupts earlier completion after3–4 ACKs; it is not a measurement of live callback cadence. No scheduler change or cross-key ACK reuse was introduced.
 - Prior-pose re-placement is retained only as an experimental source checkpoint under experimental/checkpoints/native-pose-reacquisition-c719b65b. It does not replace production proposal order. At equal budget, scores improve in12 pairs and worsen in2–3, positive supports remain17; detection/species/missed-actor improvement is unproven. All worse runs, source-map rejection/no-op cases and earlier fixed failures remain. The archive contains authored source only, no game pixels/assets.
 - Reusable source/harnesses are backed up in the allowed repositories. Exact native private evidence and original input identities are separately saved in private Library, never Git. Current video AT remains unresolved; this checkpoint does not certify full automatic navigation.
+
+## 2026-10-06 13:17 JST — Video tracking frame identity correction
+
+- Corrected the residual tracker adapter cache: equal pixels are not the same observation when source/epoch/segment, frame serial or PTS changes. Invalid background/alignment clears tracking before cache lookup. The tracker now uses retained mediaTime before playback-time fallbacks and resets across source/scene boundaries.
+- The prior adapter returned the cached 170.312-second observation for an explicitly controlled 170.362-second stamp on the same saved pixels; corrected code records the new stamp. This is a controlled adapter reproduction using real saved pixels/masks, not a newly observed video frame or detection-accuracy improvement.
+- Eighteen focused checks pass. Noncached matcher outputs, the existing 0.5-second discontinuity boundary and original real inputs are unchanged. No DST/RAM data is used.
+
+### Production input boundary implementation
+- Native observed replay, boot trace and NPC runtime/clock upload commands now reject at the worker entry before input processing. The corresponding public trace input is disabled and NPC snapshot upload controls are removed; policy is visible in those panels. Old memory-proof session events/provenance are rejected before restoration or handoff to identification.
+- ROM/video-derived geometry and conditional numerical projections remain permitted. The temporary hand-authored FirstSpawn numerical PoC is explicitly labelled as such, never automatic completion; identifiable DST/RAM provenance is rejected there too. Pure numerical replay functions are retained for isolated tests. No new DST/debug UI or opt-in is added.
+- Provenance guards cannot detect a person retyping a RAM value after removing all origin metadata; that misuse is expressly prohibited by source/UI policy rather than falsely claimed detectable. On a38.4MB saved BODY, a guard scan measured46–83ms locally; duplicate boundary scans add overhead, not a performance improvement.

@@ -1,3 +1,4 @@
+import {assertProductionATInput} from './production-at-input-policy.mjs?v=production-inputs-20261006-1320';
 import {compileExperiment} from './at-observation-compiler.mjs';
 import {prepare,cancelCheckpoint} from './at-identify-engine.mjs';
 const need=(v,m)=>{if(!v)throw Error(m);};
@@ -5,6 +6,7 @@ function number(value,label,min,max){const s=String(value??'').trim();need(/^(0|
 function ids(value,label){const s=String(value??'').trim();if(!s)return [];const a=s.split(/[\s,、]+/).map(x=>number(x,label,0,65535));need(a.length<=32,`${label}: 候補は32個までです`);return [...new Set(a)];}
 export const syntheticExample=()=>({synthetic:true,ordered:true,rows:[{label:'合成例 A',tables:'30',species:'31',gapMode:'unknown',gapMin:'',gapMax:'',gapProvenance:''},{label:'合成例 B',tables:'30',species:'31',gapMode:'range',gapMin:'1',gapMax:'3',gapProvenance:'動作確認用の合成仮定。映像の証拠ではない'}],domainMode:'interval',domainFirst:'0',domainLast:'65535',domainProvenance:'動作確認用の合成範囲',maxStates:'100000',maxMs:'2000',chunkStates:'4096'});
 export function buildFormRequest(form,tables){
+ assertProductionATInput(form);
  need(Array.isArray(form.rows)&&form.rows.length>=1&&form.rows.length<=8,'観測は1〜8行で入力してください');
  const sightings=[],events=[],edges=[],bindings=Object.create(null),observationEdges=[];
  for(let i=0;i<form.rows.length;i++){

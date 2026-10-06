@@ -1,4 +1,4 @@
-import {indexCoverageFraction} from './at-identify-index-form.mjs';
+import {indexCoverageFraction} from './at-identify-index-form.mjs?v=production-inputs-20261006-1320';
 const statusNames={complete:'宣言index範囲の探索完了','budget-stopped':'計算予算で停止',cancelled:'中止',failed:'失敗',searching:'探索中',pending:'待機',unresolved:'未解決',unconstrained:'制約なし',invalid:'入力不正'};
 const hex=n=>'0x'+n.toString(16).padStart(8,'0');
 export function renderIndexResult(checkpoint,{document:doc,container,progress}){

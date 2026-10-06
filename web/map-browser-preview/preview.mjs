@@ -1,5 +1,5 @@
 import {mountResidualInferencePreparation} from './residual-inference-preparation.mjs?v=field-stream-20261005-1108';
-import {createVideoTrackingAT,videoATSearchOptions} from './video-tracking-at.mjs?v=native-entry-links-20261006-1240';
+import {createVideoTrackingAT,videoATSearchOptions} from './video-tracking-at.mjs?v=production-inputs-20261006-1320';
 import {runResidualRecognitionJob} from './residual-recognition-job.mjs?v=enc-motion-at-20261006-1156';
 import {VideoMapContinuity} from './video-map-continuity.mjs?v=native-continuation-20261006-0333';
 import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=enc-motion-at-20261006-1156';
@@ -13,7 +13,7 @@ import {deriveVideoMapNames} from './video-map-name-input.mjs';
 import {MapPositionMatcher} from '../map-position.mjs';
 import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
-import {mountMapVideoComparison} from './map-video-comparison.mjs?v=enc-motion-at-20261006-1156';
+import {mountMapVideoComparison} from './map-video-comparison.mjs?v=production-inputs-20261006-1320';
 import {openMapRom} from './static-scene.mjs';
 import {buildRomMapCatalog} from './rom-map-catalog.mjs';
 import {nameCatalogMaps} from './rom-map-names.mjs';

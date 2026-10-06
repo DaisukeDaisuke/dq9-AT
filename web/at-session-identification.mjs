@@ -1,3 +1,4 @@
+import {assertProductionATInput} from './production-at-input-policy.mjs?v=production-inputs-20261006-1320';
 // Read-only boundary between a saved ATSession and the existing hypothesis form.
 // This never restores a ledger, advances AT, or treats saved bounds as evidence.
 import {parseSeed} from './at-core.mjs';
@@ -6,6 +7,7 @@ const need=(v,m)=>{if(!v)throw Error(m);};
 const clone=x=>structuredClone(x);
 const nativeId=n=>Number.isInteger(n)&&n>=0&&n<=65535;
 export function readSessionObservations(saved){
+ assertProductionATInput(saved);
  need(saved?.format==='dq9-at-session'&&saved.version===1&&Array.isArray(saved.events),'対応するAT追跡セッションJSONが必要です');
  need(saved.origin==='external-known-seed-from-boot','起動時の外部既知seedを記録した追跡セッションが必要です');
  parseSeed(saved.initialSeed);

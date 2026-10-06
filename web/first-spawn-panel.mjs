@@ -1,3 +1,4 @@
+import {PRODUCTION_AT_INPUT_NOTICE,assertProductionATInput} from './production-at-input-policy.mjs?v=production-inputs-20261006-1320';
 import {createFirstSpawnReplay} from './first-spawn-replay.mjs';
 import {parseSeed} from './at-core.mjs';
 const hex=n=>'0x'+(n>>>0).toString(16).padStart(8,'0');
@@ -16,7 +17,7 @@ export function setupFirstSpawnPanel({document,getInputs,redraw,eventTarget=glob
   for(const id of ['spawn-replay-step','spawn-replay-ten','spawn-replay-run'])$(id).disabled=!session||session.stopped||running;
   $('spawn-replay-cancel').disabled=!running;$('spawn-replay-reset').disabled=!session&&!running;
   $('spawn-replay-runtime').disabled=!ready();$('spawn-replay-trajectory').disabled=!ready();
-  $('spawn-replay-inputs').textContent=`初期runtime: ${runtime?'読込済み':'未入力'} / pre-spawn軌跡: ${trajectory?'読込済み':'未入力'}。pool・creator・地形runtime条件はROM/seedから自動確定しません。`;
+  $('spawn-replay-inputs').textContent=`${PRODUCTION_AT_INPUT_NOTICE} 一時PoC・手書き仮説の数値実験です。本番自動認識の完了を意味しません。\n初期runtime: ${runtime?'読込済み':'未入力'} / pre-spawn軌跡: ${trajectory?'読込済み':'未入力'}。pool・creator・地形runtime条件はROM/seedから自動確定しません。`;
   if(session){
    const last=session.events.at(-1),birth=session.birth,coordinate=session.currentCoordinate,conditionalPose=coordinate?.kind==='conditional-source-carried';
    message(`${session.status}: ${session.events.length} 段階 / 条件付きAT prefix ${session.consumed} / prefix seed ${hex(session.seed)} / timer ${session.timer??'未確定'}\n${session.status==='unresolved'?'未解決段階の途中までの既知prefixです。呼出完了・実機の現在seedではありません。\n':''}${birth?`初回生成 species ${birth.species}, slot ${birth.slot}, XYZ ${birth.xyz.join(', ')}\n`:''}${session.actor?`最後の計算actor（段階${(session.actorPhase?.index??-1)+1}/${session.actorPhase?.phase??'unknown'}）: state ${session.actor.state}, body ${session.actor.updateCounter}回, XYZ ${session.actor.xyz.join(', ')}\n`:''}${session.reason||'pre-spawn入力を順に適用中'}${last?.sourceFrame!==null&&last?.sourceFrame!==undefined?`\n${last.conditionalPose?'条件付き計算':'入力'}のsourceFrame ${last.sourceFrame}（呼出回数ではありません）`:''}`);
@@ -34,7 +35,7 @@ export function setupFirstSpawnPanel({document,getInputs,redraw,eventTarget=glob
   try{
    if(file.size>(kind==='runtime'?8*1024*1024:1024*1024))throw Error('runtimeは8MiB、軌跡は1MiBまでです');
    const text=await file.text();if(stamp!==epoch||serial!==reads[kind])return;
-   const value=JSON.parse(text);if(kind==='runtime')runtime=value;else trajectory=value;$('spawn-replay-declared').checked=false;
+   const value=JSON.parse(text);assertProductionATInput(value);if(kind==='runtime')runtime=value;else trajectory=value;$('spawn-replay-declared').checked=false;
    message('JSONを読み込みました。初期runtime条件と入力phaseを確認し、実行宣言をしてください。');update();
   }catch(error){if(stamp===epoch&&serial===reads[kind]){message(error.message);update();}}
  }
@@ -43,6 +44,7 @@ export function setupFirstSpawnPanel({document,getInputs,redraw,eventTarget=glob
   try{
    // The caller's click was enabled only under the declaration. Save that
    // before invalidation, while every import/config change requires it anew.
+   assertProductionATInput({runtime,trajectory});
    session=create({...getInputs(),runtime,trajectory,seed:parseSeed($('seed').value),continueNewborn:$('spawn-replay-newborn').checked});
    update();redraw();
   }catch(error){message(error.message);update();redraw();}
