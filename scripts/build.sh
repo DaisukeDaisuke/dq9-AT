@@ -125,3 +125,5 @@ node scripts/test-f06-origin.mjs
 
 # Source-bounded geometry line search and non-finite/cancellation guards.
 node scripts/test-geometry-position-refinement.mjs
+
+node scripts/test-original-proposal-support.mjs

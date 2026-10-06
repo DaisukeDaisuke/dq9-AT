@@ -1,7 +1,7 @@
 import {nativeBodyRequestPayload} from './native-body-request.mjs?v=native-transport-timing-20261006-1140';
 import {attachResidualNativeSupport,RESIDUAL_NATIVE_BODY_BUDGET} from './residual-native-support.mjs?v=camera-body-alternative-20261006-1430';
 import {chooseResidualBackend,residualBackendProvenance,assertResidualBackendResult} from './residual-recognition-backend.mjs';
-import {residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs?v=native-transport-timing-20261006-1140';
+import {residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs?v=proposal-support-20261006-1152';
 // Claim a queued frame's native-only destination while its one-frame mailbox
 // still exists. The background used by appearance/export remains unchanged.
 function nativeBackgroundBinding(payload){

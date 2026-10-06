@@ -3,7 +3,7 @@ import {parseMonsterAssetCatalog} from './monster-assets.mjs';
 import {MonsterGeometry} from './monster-geometry.mjs?v=field-stream-20261005-1108';
 import {createDinoFeatureBackend} from './monster-dinov2.mjs?v=recognition-cache-20261005-1007';
 import {createFeatureBankStore} from './monster-feature-cache.mjs';
-import {recognizeROI,supplementEnemyROIs,prepareDinoPoseBank,createRenderedReferenceCache} from './monster-recognition-engine.mjs?v=stored-pivot-source-20261006-0800';
+import {recognizeROI,supplementEnemyROIs,prepareDinoPoseBank,createRenderedReferenceCache} from './monster-recognition-engine.mjs?v=proposal-support-20261006-1152';
 let state=null,epoch=0,active=null,nativeBodyModulePromise=null;
 const loadNativeBodyModule=()=>nativeBodyModulePromise??=import('./monster-native-auto-support.mjs?v=native-source-reuse-20261006-1028').catch(error=>{nativeBodyModulePromise=null;throw error;});
 const post=message=>self.postMessage(message);

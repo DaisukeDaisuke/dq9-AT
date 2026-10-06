@@ -1,9 +1,9 @@
 import {compareCameraBodyAlternative} from '../monster-camera-body-alternative.mjs?v=camera-body-alternative-20261006-1430';
 import {trackingSightingMapProvenance} from './map-hypothesis-provenance.mjs';
-import {deriveCameraBodySingletonAlternatives,appendCameraBodySingletonAlternatives} from '../tracking-camera-body-alternative.mjs?v=camera-body-alternative-20261006-1430';
+import {deriveCameraBodySingletonAlternatives,appendCameraBodySingletonAlternatives} from '../tracking-camera-body-alternative.mjs?v=proposal-support-20261006-1152';
 import {assertProductionATInput} from '../production-at-input-policy.mjs?v=production-inputs-20261006-1320';
 import {searchAutomaticReplayInputs} from '../video-replay-factor-search.mjs?v=automatic-entry-factors-20261006-1120';
-import {deriveTrackingEventEvidence,automaticSingletonSearchOptions} from '../tracking-at-event-evidence.mjs?v=enc-motion-at-20261006-1156';
+import {deriveTrackingEventEvidence,automaticSingletonSearchOptions} from '../tracking-at-event-evidence.mjs?v=proposal-support-20261006-1152';
 import {prepareTrackingJob,openTrackingCheckpointStore,startTrackingSession,collectTrackingMotionAssociationInputs} from '../tracking-at-session.mjs?v=production-inputs-20261006-1320';
 // This is an execution budget/prior supplied by the user, never inferred from PTS.
 export function videoATSearchOptions(values,tables){
