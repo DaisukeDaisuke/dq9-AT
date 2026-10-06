@@ -1,4 +1,4 @@
-import {nativeBodyRequestPayload} from './native-body-request.mjs?v=native-raster-reuse-20261006-0637';
+import {nativeBodyRequestPayload} from './native-body-request.mjs?v=automatic-playback-source-cache-20261006-1100';
 import {attachResidualNativeSupport,RESIDUAL_NATIVE_BODY_BUDGET} from './residual-native-support.mjs?v=native-evidence-sharing-20261006-0723';
 import {chooseResidualBackend,residualBackendProvenance,assertResidualBackendResult} from './residual-recognition-backend.mjs';
 import {residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs?v=native-tracking-ownership-20261006-1006';

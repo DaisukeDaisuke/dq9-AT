@@ -3,10 +3,10 @@
  * only the existing exact integer forward renderer may validate that proposal. */
 import{automaticBillboardScenes}from'./automatic-billboard-scene.mjs';
 import{buildAutomaticNormalMatrices,applyMode2ToAutomaticScenes,deriveMode2StaticMaterials}from'./integer/mode2-lighting-adapter.mjs?v=field-stream-20261005-1108';
-import{readInitialMode1RasterProfile}from'./integer/initial-mode1-integer-preview.mjs?v=native-raster-reuse-20261006-0637';
+import{readInitialMode1RasterProfile}from'./integer/initial-mode1-integer-preview.mjs?v=automatic-playback-source-cache-20261006-1100';
 import{collectStaticOpaqueDepthInputs}from'./integer/static-opaque-depth.mjs?v=native-raster-reuse-20261006-0637';
-import{classifyStaticBinaryDepthInputs,renderClassifiedStaticBinaryDepth}from'./integer/static-binary-depth.mjs?v=native-raster-reuse-20261006-0637';
-import{collectStaticMode0ColorInputs,renderStaticMode0Rgb}from'./integer/static-mode0-rgb.mjs?v=native-raster-reuse-20261006-0637';
+import{classifyStaticBinaryDepthInputs,renderClassifiedStaticBinaryDepth}from'./integer/static-binary-depth.mjs?v=automatic-playback-source-cache-20261006-1100';
+import{collectStaticMode0ColorInputs,renderStaticMode0Rgb}from'./integer/static-mode0-rgb.mjs?v=automatic-playback-source-cache-20261006-1100';
 import{collectInferredMode2TexturedTranslucentInputs,readInitialTexturedBlendProfile,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb}from'./integer/native-textured-translucent.mjs?v=native-raster-reuse-20261006-0637';
 import{readFogRecord}from'./native/fog-records.mjs';
 import{minimizeBox}from'./mode2-fog-photometric-inverse.mjs?v=field-stream-20261005-1108';

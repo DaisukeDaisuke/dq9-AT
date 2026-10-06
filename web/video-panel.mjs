@@ -1,5 +1,5 @@
 import {CameraInput} from './camera-input.mjs';
-import {FileVideoInput} from './file-video-input.mjs?v=clock-telemetry-20261006-0923';
+import {FileVideoInput} from './file-video-input.mjs?v=automatic-playback-source-cache-20261006-1100';
 import {createTextMatcher} from './map-name-match.mjs';
 import {CPUTextClient} from './font-akinator-cpu-client.mjs';
 import {formatCpuTextDiagnostic} from './font-akinator-diagnostic.mjs';

@@ -1,19 +1,19 @@
 import {mountResidualInferencePreparation} from './residual-inference-preparation.mjs?v=field-stream-20261005-1108';
-import {runResidualRecognitionJob} from './residual-recognition-job.mjs?v=native-tracking-ownership-20261006-1006';
+import {runResidualRecognitionJob} from './residual-recognition-job.mjs?v=automatic-playback-source-cache-20261006-1100';
 import {VideoMapContinuity} from './video-map-continuity.mjs?v=native-continuation-20261006-0333';
-import {mountAutomaticGpuPanel} from './gpu-file-panel.mjs?v=native-raster-reuse-20261006-0637';
-import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=native-raster-reuse-20261006-0637';
+import {mountAutomaticGpuPanel} from './gpu-file-panel.mjs?v=automatic-playback-source-cache-20261006-1100';
+import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=automatic-playback-source-cache-20261006-1100';
 import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=native-continuation-20261006-0333';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
-import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=native-tracking-ownership-20261006-1006';
+import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=automatic-playback-source-cache-20261006-1100';
 import {residualModelPlan} from './residual-recognition-input.mjs?v=native-tracking-ownership-20261006-1006';
-import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=native-raster-reuse-20261006-0637';
+import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=automatic-playback-source-cache-20261006-1100';
 import {CPUTextClient} from '../font-akinator-cpu-client.mjs?v=video-entry-timeline-20261005';
 import {deriveVideoMapNames} from './video-map-name-input.mjs';
 import {MapPositionMatcher} from '../map-position.mjs';
 import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
-import {mountMapVideoComparison} from './map-video-comparison.mjs?v=native-tracking-ownership-20261006-1006';
+import {mountMapVideoComparison} from './map-video-comparison.mjs?v=automatic-playback-source-cache-20261006-1100';
 import {openMapRom} from './static-scene.mjs';
 import {buildRomMapCatalog} from './rom-map-catalog.mjs';
 import {nameCatalogMaps} from './rom-map-names.mjs';
@@ -34,7 +34,7 @@ mountResidualInferencePreparation(document,window);
 const mapContinuity=new VideoMapContinuity();
 for(const id of ['comparison-file','comparison-layout'])$(id).addEventListener('change',()=>mapContinuity.reset());
 const nameClient=new CPUTextClient({reuseWorker:true});let nameRomEpoch=0;let nameInput=null,pendingNamedMap=null,automaticSearch=null,automaticMsePhase=null;
-const videoComparison=mountMapVideoComparison({canAnalyze:()=>loaded,getRomIdentity:()=>romSHA256,renderBackground:render,derivePlayerBackground:renderFromMarker,deriveMapBackground:renderFromName,classifyResiduals:classifyBackgroundResiduals,cancelSearch:()=>{version++;$('auto-search-status').textContent='自動探索を中止しました。';},cancelPending:()=>{nameClient.cancel();residualClient.cancel();}});
+const videoComparison=mountMapVideoComparison({onAutomaticStart:()=>automaticSearch?.backgroundRenderer?.begin(),canAnalyze:()=>loaded,getRomIdentity:()=>romSHA256,renderBackground:render,derivePlayerBackground:renderFromMarker,deriveMapBackground:renderFromName,classifyResiduals:classifyBackgroundResiduals,cancelSearch:()=>{version++;$('auto-search-status').textContent='自動探索を中止しました。';},cancelPending:()=>{nameClient.cancel();residualClient.cancel();}});
 function clearView(){automaticGpu.invalidate();automaticMsePhase=null;$('marker-details').textContent='';$('marker-status').textContent='描画入力が変わりました。固定映像の上画面から再計算します。';renderVersion++;videoComparison.invalidate('背景の入力が変わりました。');ctx.clearRect(0,0,256,192);$('draw').disabled=true;point=null;markerInput=null;$('floor').replaceChildren();$('floor').disabled=true;}
 function reportError(e){videoComparison.invalidate('背景の描画に失敗しました。',{resetTracking:true});$('status').textContent='描画できません：'+e.message;console.error(e);}
 function guard(fn){return async event=>{try{await fn(event);}catch(e){reportError(e);}};}
@@ -47,7 +47,7 @@ $('rom').onchange=async()=>{
  $('status').textContent='ROMとマップ一覧を読んでいます…';await frame();const bytes=new Uint8Array(await file.arrayBuffer());if(id!==nameRomEpoch)return;
  const p=openMapRom(bytes),c=buildRomMapCatalog(p);let csv='';try{csv=await(await responseBytes('../data/map-id-names.csv')).text();}catch(e){throw Error('既存マップ名一覧の取得に失敗: '+e.message);}
  const w=await(await responseBytes('../wasm/map_render.wasm')).arrayBuffer(),inst=await WebAssembly.instantiate(w,{});if(id!==nameRomEpoch)return;
- const romHash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join('');if(id!==nameRomEpoch)return;romSHA256=romHash;rom=bytes;project=p;catalog=c;const sourceAngles=readRomCameraYawCandidates(p.sdk).candidates.map(h=>h.yawDegrees>180?h.yawDegrees-360:h.yawDegrees);$('yaw').min=String(Math.min(...sourceAngles));$('yaw').max=String(Math.max(...sourceAngles));maps=nameCatalogMaps(c,csv);renderer=new MapRenderer(inst.instance);positionMatcher=new MapPositionMatcher(inst.instance);automaticSearch=new AutomaticVideoAlignment({project,rom,romSHA256,catalog,records:maps,renderer,matcher:positionMatcher,wasm:inst.instance});loaded=true;$('search').disabled=false;$('map').disabled=false;filterMaps();await videoComparison.renderCurrent(); }catch(e){if(id===nameRomEpoch)reportError(e);}
+ const romHash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join('');if(id!==nameRomEpoch)return;romSHA256=romHash;rom=bytes;project=p;catalog=c;const sourceAngles=readRomCameraYawCandidates(p.sdk).candidates.map(h=>h.yawDegrees>180?h.yawDegrees-360:h.yawDegrees);$('yaw').min=String(Math.min(...sourceAngles));$('yaw').max=String(Math.max(...sourceAngles));maps=nameCatalogMaps(c,csv);renderer=new MapRenderer(inst.instance);positionMatcher=new MapPositionMatcher(inst.instance);automaticSearch=new AutomaticVideoAlignment({project,rom,romSHA256,catalog,records:maps,renderer,matcher:positionMatcher,wasm:inst.instance});loaded=true;videoComparison.inputsReady();$('search').disabled=false;$('map').disabled=false;filterMaps();await videoComparison.renderCurrent(); }catch(e){if(id===nameRomEpoch)reportError(e);}
 };
 function filterMaps(){if(!loaded)return;const q=$('search').value.trim().toLocaleLowerCase(),old=$('map').value,rows=maps.filter(m=>(m.displayLabel+' '+m.fieldCode).toLocaleLowerCase().includes(q));$('map').replaceChildren(new Option('マップを選択',''),...rows.map(r=>new Option(r.displayLabel,r.key)));if(rows.some(r=>r.key===old))$('map').value=old;else{clearView();record=null;image=null;mapCtx.clearRect(0,0,$('minimap').width,$('minimap').height);$('descriptor').replaceChildren();$('descriptor').disabled=true;}$('mapstatus').textContent=rows.length+'件。マップを選択してください。';}
 $('search').oninput=filterMaps;
@@ -111,7 +111,7 @@ async function runAutomaticSearch(input,evidence,id,prevalidatedMaps=null){
  videoComparison.setBackground(s.image,background,input.frameId);$('auto-search-status').textContent=(s.row.accepted?'自動位置合わせを適用しました。':'自動候補を比較しましたが、位置合わせ条件を満たしていません。')+' 比較'+result.diagnostics.backgroundCandidates.length+'件・地図キャッシュ'+result.diagnostics.cache.mapImages+'件。種類は続けて候補比較します。';
  await compareGpu();
 }
-$('auto-map-search').onclick=guard(()=>{automaticSearch?.backgroundRenderer?.begin();return videoComparison.startAutomatic();});
+$('auto-map-search').onclick=guard(()=>videoComparison.startAutomatic());
 async function renderFromMarker(input){
  if(!image||!record||!floors||!positionMatcher){$('marker-status').textContent='固定映像を保持しています。ROMとマップを選択してください。';return;}
  clearView();const id=version;await frame();if(id!==version||input.frameId!==videoComparison.frameId())return;

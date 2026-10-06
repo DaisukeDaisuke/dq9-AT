@@ -1,9 +1,9 @@
-import {adoptNativeBodyDestinationHandoff} from './map-browser-preview/native-body-destination-handoff.mjs?v=native-raster-reuse-20261006-0637';
+import {adoptNativeBodyDestinationHandoff} from './map-browser-preview/native-body-destination-handoff.mjs?v=automatic-playback-source-cache-20261006-1100';
 // Frame-local lazy source destination reconstruction. No final-RGB inversion,
 // transport parameters, camera search, state search or persistent pixel cache.
 import {loadAutomaticScene} from './map-browser-preview/automatic-scene.mjs';
-import {prepareMode2InverseModel,renderMode2InverseSourceSteps} from './map-browser-preview/mode2-inverse-render.mjs?v=native-raster-reuse-20261006-0637';
-import {bindNativeBodyDestination} from './monster-native-scene-composition.mjs?v=native-raster-reuse-20261006-0637';
+import {prepareMode2InverseModel,renderMode2InverseSourceSteps} from './map-browser-preview/mode2-inverse-render.mjs?v=automatic-playback-source-cache-20261006-1100';
+import {bindNativeBodyDestination} from './monster-native-scene-composition.mjs?v=automatic-playback-source-cache-20261006-1100';
 const need=(v,m)=>{if(!v)throw Error(m);};
 const task=()=>globalThis.scheduler?.yield?globalThis.scheduler.yield():new Promise(resolve=>setTimeout(resolve,0));
 /** Advance only this provider's frozen source image. A budget yield is pending,

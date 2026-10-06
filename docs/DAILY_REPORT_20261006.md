@@ -318,3 +318,19 @@ The next build 056d387 passed the repaired capture harness, then found the same 
 - These new resource reductions do not establish that error9 is fixed. Combined deployment and real-browser recheck remain pending at this source checkpoint. Body identity, fragmented-body association, all-input recognition, current AT state and proven AT progress remain unconfirmed.
 
 The full source and reusable replay drivers are backed up in the allowed repositories; game input/evidence assets remain outside Git.
+
+## 2026-10-06 11:05 JST — Playback activation, pause evidence and source preparation reuse
+
+### Implemented and locally checked
+- The continuous-observation button now calls video.play in the user gesture. Native video playback activates the same observation pipeline. Late ROM/video readiness preserves that intent; explicit Stop/Cancel clears it. Both preview entry points share the activation hook. Thirteen mounted activation checks and nine existing lifecycle/ownership checks pass on the combined source.
+- Two actual pause/resume exports from runtime c5eb10c establish fresh registered RVFC callbacks with PTS 5312.817→5312.800 and 5319.050→5319.033 while presentedFrames advances by one. This is not evidence of a cancelled callback. The opt-in fix holds only a callback satisfying the recorded pause-boundary/previous-observed-interval conditions, records it as unobserved, and waits for catch-up. It neither retimestamps nor assumes an FPS/tolerance. Continued regression and explicit seeking still reset. Both real sequences and existing default/opt-in clock checks pass. Error9 cause remains unknown.
+- Four coordinated modules now reuse source preparation only under the existing cache lifetime and exact source-byte/identity guards. Completion, error and cancellation dispose the cache. The 8MiB snapshot/alpha admission bound is not a total-heap bound. Mutation, state variants and lifetime checks pass.
+
+### Measured, with unchanged scientific outputs
+- Independent source reconstruction replay: 2168.860→1049.238ms; archive opens156→1. The final cache-revision replay takes1130.930ms and preserves the entire image/destination outputs. RGBA SHA256: 1e742270569960ac11ce129673c3fa9cd3fc164f6c338f35bba288aa65547703. Destination SHA256: 20cb4294c8c2b38ef7ced6693eeeabaa13df3ad1a6e385340d855981112c6c91.
+- Fixed105-job first sweep:4896.564→3024.928ms. Mode1 60-job control:837.549→831.690ms. These bounded Node samples are not a universal/browser speed guarantee. Earlier slower control measurements remain in the source report.
+- Existing pixels, candidate order, scores, thresholds, fixed failures and AT proof boundaries are unchanged. No ROM, video, save, RAM or extracted game assets are included in this commit.
+
+### Still unverified / continuing
+- This checkpoint has passed combined local checks; deployed one-button playback still requires real-browser verification.
+- Playback activation does not establish correct automatic identification of every necessary factor. Automatic map-entry interval and located-position filtering is being connected separately; native FirstSpawnReplay dependencies and current AT state remain unresolved. No all-input automation completion is claimed. Proven minimum AT remains0.

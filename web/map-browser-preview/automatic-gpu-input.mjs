@@ -3,8 +3,8 @@
  */
 import {automaticBillboardScenes} from './automatic-billboard-scene.mjs';
 import {applyAutomaticMaterialEnvironment} from './automatic-material-environment.mjs?v=native-body-20261006-0212';
-import {prepareInitialMode1IntegerCompute} from './prepare-initial-integer-compute.mjs?v=native-raster-reuse-20261006-0637';
-import {createSourcePreparationCache} from './integer/source-preparation-cache.mjs';
+import {prepareInitialMode1IntegerCompute} from './prepare-initial-integer-compute.mjs?v=automatic-playback-source-cache-20261006-1100';
+import {createSourcePreparationCache} from './integer/source-preparation-cache.mjs?v=automatic-playback-source-cache-20261006-1100';
 
 export function automaticGpuBinding(result, frameEvidence) {
  const s=result.selected;

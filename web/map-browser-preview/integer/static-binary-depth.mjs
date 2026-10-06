@@ -5,8 +5,8 @@ import {runSourceStepsSync,runSourceStepsAsync} from '../cooperative-source-work
  */
 import {projectNativePrimitiveFx} from './native-primitive-inputs.mjs';
 import {rasterizeNativePositionClippedZPolygon} from './native-position-clip.mjs?v=native-raster-reuse-20261006-0637';
-import {readNativeBinaryPolygonTexture,rasterizeNativeBinaryAlphaPolygon,compositeBinaryAwareDepth} from './native-binary-alpha.mjs?v=native-raster-reuse-20261006-0637';
-export function* classifyStaticBinaryDepthInputsSteps(project,automatic,opaqueInventory,{viewportWord,depthMode,fragmentSamplingHack,textureScalingFactor}={}){
+import {readNativeBinaryPolygonTexture,rasterizeNativeBinaryAlphaPolygon,compositeBinaryAwareDepth} from './native-binary-alpha.mjs?v=automatic-playback-source-cache-20261006-1100';
+export function* classifyStaticBinaryDepthInputsSteps(project,automatic,opaqueInventory,{viewportWord,depthMode,fragmentSamplingHack,textureScalingFactor}={},sourceCache=null){
  if(automatic.plan.recordKey!==opaqueInventory.recordKey)throw Error('Same source map inventory required');
  if(viewportWord!==0xbfff0000||depthMode!=='Z'||fragmentSamplingHack!==false||textureScalingFactor!==1)throw Error('Explicit native viewport/Z/integer/native1x profile required');
  const archives=new Map(),polygons=[],counts={originalPolygons:opaqueInventory.polygons.length,existingOpaque:0,binaryEligible:0,rejected:0};
@@ -22,7 +22,7 @@ export function* classifyStaticBinaryDepthInputsSteps(project,automatic,opaqueIn
    const instance=scene.instances.find(i=>i.id===p.instanceId),draw=instance?.draws.find(d=>d.sbcOffset===p.sbcOffset);if(!draw||instance.modelName!==p.model||draw.materialIndex!==p.materialIndex)throw Error('Source instance/draw correspondence changed');
    if(!archives.has(p.archive))archives.set(p.archive,project.archive(p.archive));const bytes=archives.get(p.archive).get(p.model);
    if(draw.textureBinding?.decoded?.pixels.some((v,i)=>i%4===3&&v!==0&&v!==255))throw Error('Intermediate texture alpha remains unsupported');
-   const texture=readNativeBinaryPolygonTexture(bytes,p,draw.textureBinding),position=projectNativePrimitiveFx(p.primitive,p.positionMatrixFx,p.projectionFx);
+   const texture=readNativeBinaryPolygonTexture(bytes,p,draw.textureBinding,{sourceCache}),position=projectNativePrimitiveFx(p.primitive,p.positionMatrixFx,p.projectionFx);
    row.classification='binary';row.textureInput=texture;row.args={clipVerticesFx:position.clipVerticesFx,polygonAttribute:material.polygonAttribute,primitiveMode:p.primitive.primitiveMode,viewportWord,depthMode,fragmentSamplingHack};counts.binaryEligible++;
   }catch(e){row.classification='rejected';row.binaryRejection=e.message;counts.rejected++;}
   polygons.push(row);
@@ -47,4 +47,4 @@ export function* renderClassifiedStaticBinaryDepthSteps(inventory){
 export function renderClassifiedStaticBinaryDepth(inventory){return runSourceStepsSync(renderClassifiedStaticBinaryDepthSteps(inventory));}
 export function renderClassifiedStaticBinaryDepthAsync(inventory,options){return runSourceStepsAsync(renderClassifiedStaticBinaryDepthSteps(inventory),options);}
 
-export function classifyStaticBinaryDepthInputs(project,automatic,opaqueInventory,profile={}){return runSourceStepsSync(classifyStaticBinaryDepthInputsSteps(project,automatic,opaqueInventory,profile));}
+export function classifyStaticBinaryDepthInputs(project,automatic,opaqueInventory,profile={},sourceCache=null){return runSourceStepsSync(classifyStaticBinaryDepthInputsSteps(project,automatic,opaqueInventory,profile,sourceCache));}

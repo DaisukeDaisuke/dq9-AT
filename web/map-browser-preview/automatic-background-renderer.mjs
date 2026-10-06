@@ -5,9 +5,9 @@ import {createRendererSourceArchives} from './renderer-source-archives.mjs?v=rec
  * remain CPU preparation; a GPU utilisation or acceleration claim is not made.
  */
 import {createNativeIntegerCompute} from './native-integer-compute.mjs?v=wgsl-keyword-20261005-0834';
-import {prepareInitialMode1IntegerCompute,renderPreparedIntegerCompute} from './prepare-initial-integer-compute.mjs?v=native-raster-reuse-20261006-0637';
-import {renderInitialIntegerFogAsync} from './integer-static-fog.mjs?v=native-raster-reuse-20261006-0637';
-import {createSourcePreparationCache} from './integer/source-preparation-cache.mjs';
+import {prepareInitialMode1IntegerCompute,renderPreparedIntegerCompute} from './prepare-initial-integer-compute.mjs?v=automatic-playback-source-cache-20261006-1100';
+import {renderInitialIntegerFogAsync} from './integer-static-fog.mjs?v=automatic-playback-source-cache-20261006-1100';
+import {createSourcePreparationCache} from './integer/source-preparation-cache.mjs?v=automatic-playback-source-cache-20261006-1100';
 
 export function createAutomaticBackgroundRenderer({initialize=createNativeIntegerCompute,prepare=prepareInitialMode1IntegerCompute,renderGpu=renderPreparedIntegerCompute,renderCpu=renderInitialIntegerFogAsync,createCache=createSourcePreparationCache,now=()=>performance.now()}={}) {
  const sourceArchives=createRendererSourceArchives();

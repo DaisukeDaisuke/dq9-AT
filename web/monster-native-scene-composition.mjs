@@ -3,9 +3,9 @@
  * alphaBlend and fog postprocess. Conditional source scene/body composition.
  * No reconstruction from final RGB; no live actor, MSE or ordering assertion.
  */
-import {compositeBinaryAwareDepth} from './map-browser-preview/integer/native-binary-alpha.mjs?v=native-raster-reuse-20261006-0637';
+import {compositeBinaryAwareDepth} from './map-browser-preview/integer/native-binary-alpha.mjs?v=automatic-playback-source-cache-20261006-1100';
 import {applyFogPixel} from './map-browser-preview/native/fog-raster.mjs';
-import {presentStaticRgb} from './map-browser-preview/integer/static-mode0-rgb.mjs?v=native-raster-reuse-20261006-0637';
+import {presentStaticRgb} from './map-browser-preview/integer/static-mode0-rgb.mjs?v=automatic-playback-source-cache-20261006-1100';
 import {projectNativePrimitiveFx} from './map-browser-preview/integer/native-primitive-inputs.mjs';
 import {clipNativePositionPolygon} from './map-browser-preview/integer/native-position-clip.mjs?v=native-raster-reuse-20261006-0637';
 const N=256*192,need=(ok,why)=>{if(!ok)throw Error(why);};

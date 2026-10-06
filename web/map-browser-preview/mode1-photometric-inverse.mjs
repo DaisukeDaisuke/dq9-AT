@@ -4,15 +4,15 @@ import {runSourceStepsSync,runSourceStepsAsync} from './cooperative-source-work.
  * zero-fog domain delimit the supported photometric observations. */
 import{readMode1OrdinaryHypotheses,applyMode1OrdinaryHypothesis}from'./automatic-material-environment.mjs?v=native-body-20261006-0212';
 import{automaticBillboardScenes}from'./automatic-billboard-scene.mjs';
-import{readInitialMode1RasterProfile,collectInitialMode1IntegerInputsSteps}from'./integer/initial-mode1-integer-preview.mjs?v=native-raster-reuse-20261006-0637';
-import{renderClassifiedStaticBinaryDepthSteps}from'./integer/static-binary-depth.mjs?v=native-raster-reuse-20261006-0637';
-import{renderStaticMode0RgbSteps,presentStaticRgb}from'./integer/static-mode0-rgb.mjs?v=native-raster-reuse-20261006-0637';
+import{readInitialMode1RasterProfile,collectInitialMode1IntegerInputsSteps}from'./integer/initial-mode1-integer-preview.mjs?v=automatic-playback-source-cache-20261006-1100';
+import{renderClassifiedStaticBinaryDepthSteps}from'./integer/static-binary-depth.mjs?v=automatic-playback-source-cache-20261006-1100';
+import{renderStaticMode0RgbSteps,presentStaticRgb}from'./integer/static-mode0-rgb.mjs?v=automatic-playback-source-cache-20261006-1100';
 import{collectInitialMode1TexturedTranslucentInputs,readInitialTexturedBlendProfile,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb}from'./integer/native-textured-translucent.mjs?v=native-raster-reuse-20261006-0637';
 import{projectNativePrimitiveFx}from'./integer/native-primitive-inputs.mjs';
 import{clipNativePositionPolygon}from'./integer/native-position-clip.mjs?v=native-raster-reuse-20261006-0637';
 import{buildFogTable}from'./native/fog-raster.mjs';
 import{prepareNativeIntegerCompute}from'./native-integer-compute-input.mjs?v=native-raster-reuse-20261006-0637';
-import{renderPreparedIntegerCompute}from'./prepare-initial-integer-compute.mjs?v=native-raster-reuse-20261006-0637';
+import{renderPreparedIntegerCompute}from'./prepare-initial-integer-compute.mjs?v=automatic-playback-source-cache-20261006-1100';
 const need=(x,m)=>{if(!x)throw Error(m);},expand=n=>n?2*n+1:0,median=a=>{const b=a.slice().sort((x,y)=>x-y);return b[Math.floor(b.length/2)];};
 function* prepareMode1PhotometricBasisSteps({project,rom,record,automatic,camera}){
  const read=readMode1OrdinaryHypotheses(project,record,automatic);need(read.ready,read.reason);need(read.environment.timeIndependenceProof.commonMaterial,'Variable material globals outside flat-COLOR inverse subset');

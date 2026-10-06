@@ -9,7 +9,7 @@ import {runSourceStepsSync,runSourceStepsAsync} from '../cooperative-source-work
 import {makeNativeTrig} from '../native/native-map-records.mjs';
 import {buildMode2LitGeometry} from './mode2-lighting-adapter.mjs?v=field-stream-20261005-1108';
 import {retainNativePrimitiveInputs} from './native-primitive-inputs.mjs';
-import {readNativeBinaryPolygonTexture,rasterizeNativeBinaryAlphaPolygon,compositeBinaryAwareDepth} from './native-binary-alpha.mjs?v=native-raster-reuse-20261006-0637';
+import {readNativeBinaryPolygonTexture,rasterizeNativeBinaryAlphaPolygon,compositeBinaryAwareDepth} from './native-binary-alpha.mjs?v=automatic-playback-source-cache-20261006-1100';
 const expand5=n=>n===0?0:n*2+1,expand8=n=>(n<<3)|(n>>>2);
 const alphabet=new Map(Array.from({length:32},(_,n)=>[expand8(n),expand5(n)]));
 const eq=(a,b)=>a.length===b.length&&a.every((v,i)=>Array.isArray(v)?eq(v,b[i]):v===b[i]);

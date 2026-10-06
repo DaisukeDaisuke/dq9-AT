@@ -1,10 +1,10 @@
 import{createAmbiguousMarkerBackgroundBudget}from'./physical-marker-background-hypotheses.mjs?v=native-continuation-20261006-0333';
-import{buildBackgroundBranchSupport}from'./background-branch-support.mjs?v=native-raster-reuse-20261006-0637';
-import{createSourceAnchorSceneInference}from'./source-anchor-scene-inference.mjs?v=native-raster-reuse-20261006-0637';
+import{buildBackgroundBranchSupport}from'./background-branch-support.mjs?v=automatic-playback-source-cache-20261006-1100';
+import{createSourceAnchorSceneInference}from'./source-anchor-scene-inference.mjs?v=automatic-playback-source-cache-20261006-1100';
 import{resolveFrozenInferencePixels}from'./capture-analysis-pixels.mjs?v=native-continuation-20261006-0333';
-import{createMode1BackgroundInference}from'./automatic-mode1-background.mjs?v=native-raster-reuse-20261006-0637';
-import {Mode2VideoContinuity} from './mode2-video-continuity.mjs?v=native-raster-reuse-20261006-0637';
-import {inferAutomaticMode2Background} from './automatic-mode2-background.mjs?v=native-raster-reuse-20261006-0637';
+import{createMode1BackgroundInference}from'./automatic-mode1-background.mjs?v=automatic-playback-source-cache-20261006-1100';
+import {Mode2VideoContinuity} from './mode2-video-continuity.mjs?v=automatic-playback-source-cache-20261006-1100';
+import {inferAutomaticMode2Background} from './automatic-mode2-background.mjs?v=automatic-playback-source-cache-20261006-1100';
 import {readRomMapCameraInputGate} from './rom-camera-input-gate.mjs';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
 import {CandidateMapMatcher} from '../map-disambiguation.mjs';
@@ -14,7 +14,7 @@ import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=na
 import {automaticPreviewCamera} from './automatic-preview-camera.mjs';
 import {automaticBillboardScenes} from './automatic-billboard-scene.mjs';
 import {applyAutomaticMaterialEnvironment} from './automatic-material-environment.mjs?v=native-body-20261006-0212';
-import {createAutomaticBackgroundRenderer} from './automatic-background-renderer.mjs?v=native-raster-reuse-20261006-0637';
+import {createAutomaticBackgroundRenderer} from './automatic-background-renderer.mjs?v=automatic-playback-source-cache-20261006-1100';
 import {readRomMapScreenEffectPlan} from './rom-map-screen-effect-plan.mjs';
 import {prepareDrawPackets} from './draw-packets.mjs';
 import {rasterizePreviewPackets} from './cpu-preview.mjs';
