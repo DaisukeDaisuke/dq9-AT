@@ -1,0 +1,59 @@
+{
+  "status": "Draft source-only checkpoint; do not activate",
+  "productionBaseCommit": "dc5a97c785764002342fb02c1211180f1886911d",
+  "requiredOptionalAdapter": "experimental/checkpoints/explicit-phase-83b645d7/source-only.zip",
+  "files": [
+    {
+      "path": "web/monster-native-phase-domain.mjs",
+      "bytes": 9541,
+      "sha256": "dc5653b7a70da70753e684381aca5748d369174067d3a5994073d766de417662",
+      "baseSHA256": null
+    },
+    {
+      "path": "web/monster-native-phase-evidence.mjs",
+      "bytes": 2980,
+      "sha256": "331049a8e0d307fbac102d0760865420a64357ccee934578d6e06dff35812b17",
+      "baseSHA256": null
+    },
+    {
+      "path": "web/monster-native-auto-support.mjs",
+      "bytes": 52361,
+      "sha256": "6ab0eee29e7b920a238175a4dd7ee725d2fc20a65ce1c66fd4bc593a2a3d1e4f",
+      "baseSHA256": "423a7c1b92ed2024c7074f5584ec60e04a376d6a68d8952d2d688da90be07c86"
+    },
+    {
+      "path": "web/monster-native-support-runner.mjs",
+      "bytes": 22077,
+      "sha256": "c227351714d5dec8accc05419c3f8ab70524e26a4838a886859299d955dd8664",
+      "baseSHA256": "3753f471cb129e8b73f1596f32b01729896525d3e6d5855e46c0ec3910b59fad"
+    },
+    {
+      "path": "web/monster-native-body-placement.mjs",
+      "bytes": 9874,
+      "sha256": "c1f41e7406555c948f62a58e519ae76e51e51fd9cfa22f20ba2ebbea81a29c6d",
+      "baseSHA256": "61b0a1157a58a5b4868ec26aa7139e5fbf1ec473850133950faf5c3173b35815"
+    },
+    {
+      "path": "web/monster-native-support.mjs",
+      "bytes": 5614,
+      "sha256": "76ed3145b14af0757871c2569104113486a30ca7c3daacb8a7d334c135bea81e",
+      "baseSHA256": "ad1adf612cae3206d4c5a31217757bb8cfc05ed2943841ca38d3c86a430ec331"
+    },
+    {
+      "path": "scripts/test-native-phase-domain.mjs",
+      "bytes": 13193,
+      "sha256": "711be09342ed080e86988b31d7a0712da66a79e7d59b4f0d81fb5b2f24c4b39a",
+      "baseSHA256": null
+    }
+  ],
+  "validation": {
+    "syntax": "passed",
+    "purePhaseDomainExhaustiveAndOwnership": "passed",
+    "optionalSamplerIntegerAndPlanRegression": "passed",
+    "sharedBudgetScheduler": "not-yet-run",
+    "cacheEvictionPhasePlans": "not-yet-run",
+    "fixedD060secondWindows": "not-yet-run",
+    "standardBuild": "not-run-root-owned"
+  },
+  "automaticProductionChanged": false
+}
