@@ -1,3 +1,11 @@
+# Scope correction — 2026-10-06 13:06 JST
+
+The native DST/WRAM entry replay and observed-memory clock/pose work below is debugging evidence only. Treating it as progress toward video-driven production identification was incorrect. It does not establish the requested workflow.
+
+Production inputs are video, ROM, and retained parameters that reduce brute-force search. Extracted emulator state, actor identities, camera/pose, RNG seeds or observed AT traces must not be supplied as production truth or disguised as retained parameters. DST/native memory may be used only as a separate debugging oracle.
+
+The intended production pipeline remains: infer map/view from video, render ROM background, identify monster body regions from video differences, classify and track observed monsters, then feed those observations into AT brute-force search. ROM-derived geometry and video-derived conditional hypotheses remain valid. Historical measurements below are retained without upgrading them into production capability.
+
 # DQ9 AT / 映像認識 日報 2026-10-06
 
 ## 00:30 JST — native背景・身体描画の接続と動画隣接フレーム
