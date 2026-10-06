@@ -2,7 +2,7 @@
  * No video scale fit, template box, model-ID rule, or ROI-bottom foot anchor.
  * This adds a hypothesis; it does not invalidate the decoded-envelope path.
  */
-import {projectNativeBodyPolygons} from './monster-native-body.mjs?v=native-yaw-mse-20261006-2101';
+import {projectNativeBodyPolygons} from './monster-native-body.mjs?v=native-phase-20261006-2300';
 import {createNativeBodyBillboardState} from './monster-native-billboard.mjs';
 const need=(v,m)=>{if(!v)throw Error(m);};
 function billboard(program,profile){
@@ -19,11 +19,11 @@ function project(envelope,positionFx){return projectNativeBodyPolygons(envelope.
  * Root response is obtained from native replay at the three unit basis roots.
  * Per-vertex responses retain non-normalized NODEMIX weights without treating
  * them as one. This is an affine seed, not exact FX interpolation. */
-export function prepareNativeBodyEnvelope(program,{camera,actorScaleFx,yawFx,animation=null,frame=null,alignment,billboardProfile=null}){
+export function prepareNativeBodyEnvelope(program,{camera,actorScaleFx,yawFx,animation=null,frame=null,jointPlan=null,alignment,billboardProfile=null}){
  need(Number.isInteger(alignment?.dx)&&Number.isInteger(alignment?.dy),'Frozen native integer alignment required');
  const view=camera?.viewFx?.map(x=>x/4096),projection=camera?.projectionFx?.map(x=>x/4096);
  need(view?.length===16&&view[3]===0&&view[7]===0&&view[11]===0&&view[15]===1,'Native affine camera view required');
- const envelope={kind:'conditional-native-emitted-body-envelope',program,nativeInput:{camera,actorScaleFx,yawFx,animation,frame},billboardProfile,alignment:{...alignment}},native=project(envelope,[0,0,0]),base=native.polygons.flatMap(p=>p.vertices),basis=[0,1,2].map(k=>project(envelope,[0,1,2].map(j=>j===k?4096:0)).polygons.flatMap(p=>p.vertices)),unique=new Map();
+ const envelope={kind:'conditional-native-emitted-body-envelope',program,nativeInput:{camera,actorScaleFx,yawFx,animation,frame,...(jointPlan?{jointPlan}:{})},billboardProfile,alignment:{...alignment}},native=project(envelope,[0,0,0]),base=native.polygons.flatMap(p=>p.vertices),basis=[0,1,2].map(k=>project(envelope,[0,1,2].map(j=>j===k?4096:0)).polygons.flatMap(p=>p.vertices)),unique=new Map();
  need(basis.every(b=>b.length===base.length),'Source root changes emitted vertex topology');
  const transform=(m,v)=>[0,1,2,3].map(r=>v.reduce((s,x,c)=>s+x*m[c*4+r],0));
  for(let i=0;i<base.length;i++){const cameraFx=base[i].cameraFx,response=basis.map(b=>b[i].cameraFx.map((x,k)=>(x-cameraFx[k])/4096)),clipBase=transform(projection,cameraFx.map(x=>x/4096)),clipResponse=response.map(v=>transform(projection,v));unique.set(JSON.stringify([cameraFx,response]),{cameraFx,clipBase,clipResponse});}

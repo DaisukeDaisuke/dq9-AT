@@ -1,5 +1,5 @@
 import {nativeBodyRequestPayload} from './native-body-request.mjs?v=native-yaw-mse-20261006-2101';
-import {attachResidualNativeSupport,RESIDUAL_NATIVE_BODY_BUDGET} from './residual-native-support.mjs?v=native-yaw-mse-20261006-2101';
+import {attachResidualNativeSupport,RESIDUAL_NATIVE_BODY_BUDGET} from './residual-native-support.mjs?v=native-phase-20261006-2300';
 import {chooseResidualBackend,residualBackendProvenance,assertResidualBackendResult} from './residual-recognition-backend.mjs';
 import {residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs?v=map-input-owned-preparation-20261006-1408';
 // Claim a queued frame's native-only destination while its one-frame mailbox

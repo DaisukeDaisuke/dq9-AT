@@ -166,3 +166,8 @@ node scripts/test-native-yaw-evidence.mjs
 
 # Conservative final-color ownership for the conditional MSE subset.
 node scripts/test-native-mse-ownership.mjs
+
+# Exact SDK phase-domain cursor, bounded continuation and lossless evidence.
+node scripts/test-native-phase-domain.mjs
+node scripts/test-native-phase-continuation.mjs
+node scripts/test-native-phase-evidence.mjs
