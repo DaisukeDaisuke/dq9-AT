@@ -11,7 +11,7 @@ import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
 import {CandidateMapMatcher} from '../map-disambiguation.mjs';
 import {loadAutomaticScene} from './automatic-scene.mjs';
 import {loadRomFloorInstances} from './rom-floor-candidates.mjs';
-import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=camera-loss-evidence-20261006-1205';
+import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=map-input-owned-preparation-20261006-1408';
 import {automaticPreviewCamera} from './automatic-preview-camera.mjs';
 import {automaticBillboardScenes} from './automatic-billboard-scene.mjs';
 import {applyAutomaticMaterialEnvironment} from './automatic-material-environment.mjs?v=native-body-20261006-0212';

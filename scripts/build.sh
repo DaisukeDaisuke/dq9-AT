@@ -134,3 +134,7 @@ node scripts/test-original-proposal-support.mjs
 
 # Detached immutable observation ownership, preserving generic clone semantics.
 node --test scripts/test-observation-bundle-ownership.mjs
+
+node --test scripts/test-tracking-preparation-copy.mjs
+
+node --test scripts/test-map-input-timing.mjs

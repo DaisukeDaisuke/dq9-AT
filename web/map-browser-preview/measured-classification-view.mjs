@@ -2,7 +2,7 @@
 // Current patch position requires that exact classification seed anchor; a
 // track ID, same model or nearby location alone never establishes this join.
 import{videoTrackingFrameKey}from'./video-patch-correspondence.mjs?v=camera-loss-evidence-20261006-1205';
-import{videoObservationFrameKey}from'./video-observation-timeline.mjs?v=gap-owned-observation-20261006-1340';
+import{videoObservationFrameKey}from'./video-observation-timeline.mjs?v=map-input-owned-preparation-20261006-1408';
 const copy=x=>structuredClone(x),sameROI=(a,b)=>['x','y','w','h'].every(k=>a?.[k]===b?.[k]),age=(now,then)=>Number.isFinite(now)&&Number.isFinite(then)&&now>=then?now-then:null;
 export function measuredClassificationView({completed,replay,anchor=null,playbackPTS=null}){
  const classificationPTS=completed?.evidence?.mediaTime??null,positionPTS=replay?.currentPTS??null,base={kind:'past-classification-current-measured-patch-view-v1',classificationPTS,positionPTS,playbackPTS,classificationAgeSeconds:age(playbackPTS,classificationPTS),positionAgeSeconds:age(playbackPTS,positionPTS),ageBasis:'reported video playback PTS, not a source tick interval',classificationFrameKey:completed?videoObservationFrameKey(completed.evidence):null,positionFrameKey:replay?.currentFrameKey??null,identityCertified:false,bodyExtentCertified:false,speciesCertified:false,birthCertified:false,absenceCertified:false,independentDrawCertified:false,minimumProvenATCalls:0};

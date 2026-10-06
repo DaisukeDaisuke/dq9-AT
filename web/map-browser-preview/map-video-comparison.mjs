@@ -1,30 +1,30 @@
-import {VideoPipelineTiming} from './video-pipeline-timing.mjs?v=gap-owned-observation-20261006-1340';
+import {VideoPipelineTiming} from './video-pipeline-timing.mjs?v=map-input-owned-preparation-20261006-1408';
 import {PausedLocalVideoStartup} from './paused-local-video-startup.mjs?v=paused-video-prime-20261006-1240';
-import{measuredClassificationView}from'./measured-classification-view.mjs?v=gap-owned-observation-20261006-1340';
+import{measuredClassificationView}from'./measured-classification-view.mjs?v=map-input-owned-preparation-20261006-1408';
 import{VideoTrackingReplay,waitForMeasuredReplayFrame}from'./video-tracking-replay.mjs?v=gap-owned-observation-20261006-1340';
 import{videoTrackingFrameKey}from'./video-patch-correspondence.mjs?v=camera-loss-evidence-20261006-1205';
 import{createVideoTrackingCapture}from'./video-tracking-capture.mjs?v=camera-loss-evidence-20261006-1205';
-import {captureResidualNativeBackground} from './residual-recognition-job.mjs?v=gap-owned-observation-20261006-1340';
+import {captureResidualNativeBackground} from './residual-recognition-job.mjs?v=map-input-owned-preparation-20261006-1408';
 import {createFrozenAnalysisCapture} from './capture-analysis-pixels.mjs?v=native-continuation-20261006-0333';
 import {completedClassificationSnapshot,renderClassificationSummary,createDeferredEvidenceJSON} from './completed-classification-display.mjs?v=geometry-display-20261006-1112';
 import {captureAutomaticResidualPolicy,automaticResidualPolicyKey,selectAutomaticResiduals,withAutomaticResidualSelection} from './automatic-residual-policy.mjs?v=video-inference-20261005-1232';
 import {FrozenClassificationLane} from './frozen-classification-lane.mjs?v=native-extents-latest-20261006-0843';
 import {replaceResidualTimelineClassification} from './residual-classification-state.mjs?v=residual-backend-20261005';
 import {recognitionDisplaySummary,timelineDisplaySummary,comparisonDisplaySummary} from './recognition-display-summary.mjs?v=native-extents-latest-20261006-0843';
-import {VideoObservationPump,VideoObservationTimeline,residualAssociationHints,videoObservationFrameKey} from './video-observation-timeline.mjs?v=gap-owned-observation-20261006-1340';
+import {VideoObservationPump,VideoObservationTimeline,residualAssociationHints,videoObservationFrameKey} from './video-observation-timeline.mjs?v=map-input-owned-preparation-20261006-1408';
 import {detectMapNameROI} from '../map-name-roi.mjs';
-import {upperVideoROI} from './video-player-map-input.mjs?v=camera-loss-evidence-20261006-1205';
+import {upperVideoROI} from './video-player-map-input.mjs?v=map-input-owned-preparation-20261006-1408';
 import {parseVideoTimecode,formatVideoTimecode} from './video-timecode.mjs';
-import {inferPairedVideoLayout} from './automatic-video-layout.mjs?v=camera-loss-evidence-20261006-1205';
+import {inferPairedVideoLayout} from './automatic-video-layout.mjs?v=map-input-owned-preparation-20261006-1408';
 import {ResidualTracker} from './residual-tracking-input.mjs?v=camera-loss-evidence-20261006-1205';
 import {annotateResidualRegions,selectResidualDisplay} from './residual-region-display.mjs';
 import {FileVideoInput} from '../file-video-input.mjs?v=automatic-playback-source-cache-20261006-1100';
 import {gameplayVideoROI,sampleGameplayFrame,compareMapBackground} from './map-video-residual.mjs?v=camera-loss-evidence-20261006-1205';
 const $=id=>document.getElementById(id),sha=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join('');
 const draw=(id,image)=>{const canvas=$(id);canvas.width=image.width;canvas.height=image.height;canvas.getContext('2d').putImageData(new ImageData(image.rgba,image.width,image.height),0,0);};
-export function mountMapVideoComparison({renderBackground,derivePlayerBackground,deriveMapBackground,classifyResiduals,cancelPending=()=>{},cancelSearch=()=>{},onAutomaticStart=()=>{},canAnalyze=()=>true,getRomIdentity=()=>null,getRecognitionContext=()=>({}),onObservationBundle=()=>{},onObservationReset=()=>{}}){
+export function mountMapVideoComparison({renderBackground,derivePlayerBackground,deriveMapBackground,classifyResiduals,cancelPending=()=>{},cancelSearch=()=>{},onAutomaticStart=()=>{},canAnalyze=()=>true,getRomIdentity=()=>null,getRecognitionContext=()=>({}),onObservationBundle=()=>{},onObservationReset=()=>{},immutableObservationBundles=false}){
  const classificationJSON=createDeferredEvidenceJSON($('residual-classification-results'),recognitionDisplaySummary);
- const timing=new VideoPipelineTiming(),residualTracker=new ResidualTracker(),timeline=new VideoObservationTimeline({timing});let latestTracking=null;let comparisonCompletion=Promise.resolve();const video=$('comparison-video');let analysisCapture=null;let file=null,frozen=null,background=null,comparison=null,revision=0,captureSerial=0,classification=null,classificationEpoch=0,comparisonRecord=null;
+ const timing=new VideoPipelineTiming(),residualTracker=new ResidualTracker(),timeline=new VideoObservationTimeline({timing,immutableObservationBundles});let latestTracking=null;let comparisonCompletion=Promise.resolve();const video=$('comparison-video');let analysisCapture=null;let file=null,frozen=null,background=null,comparison=null,revision=0,captureSerial=0,classification=null,classificationEpoch=0,comparisonRecord=null;
  const fastReplay=new VideoTrackingReplay({timing}),fastCapture=createVideoTrackingCapture({video,replay:fastReplay,timing}),pausedStartup=new PausedLocalVideoStartup();let fastPreview=null,startupPrepared=null,pendingObservation=null;
  function measuredView(state=fastReplay.snapshot()){const completed=latestCompletedClassification,anchor=completed?fastReplay.classificationAnchorFor({stamp:completed.evidence,backgroundEvidence:completed.background}):null;return measuredClassificationView({completed,replay:state,anchor,playbackPTS:video.currentTime});}
  function renderMeasuredPreview(state=fastReplay.snapshot(),{agesOnly=false}={}){
@@ -177,7 +177,7 @@ export function mountMapVideoComparison({renderBackground,derivePlayerBackground
  async function renderCurrent(){
   if(!frozen)return;const targetFrameId=frozen.id,capture=analysisCapture,romIdentity=getRomIdentity(),getInferencePixels=async({isCurrent=()=>true}={})=>{if(!capture)return{ready:false,reason:'Decoded analysis capture unavailable'};const result=await capture.get({isCurrent:()=>capture===analysisCapture&&targetFrameId===frozen?.id&&romIdentity===getRomIdentity()&&isCurrent()});if(targetFrameId===frozen?.id)frozen.evidence.analysisInput=result.evidence;return result;};
   if($('automatic-map-name').checked){
-   const backgroundFinished=timing.beginElapsed('map-background-elapsed',frozen.evidence);try{await deriveMapBackground({automaticRecognition:frozen.continuous,sourceImage:frozen.sourceImage,layout:frozen.evidence.layout,frameEvidence:frozen.evidence,frameId:frozen.id,getInferencePixels});}
+   const backgroundFinished=timing.beginElapsed('map-background-elapsed',frozen.evidence);try{const frameEvidence=frozen.evidence,timingGeneration=timing.observerGeneration,measureMapInput=(phase,run,detail)=>timingGeneration===timing.observerGeneration?timing.mapInputSync(frameEvidence,phase,detail,run):run();await deriveMapBackground({automaticRecognition:frozen.continuous,sourceImage:frozen.sourceImage,layout:frozen.evidence.layout,frameEvidence,frameId:frozen.id,getInferencePixels,measureMapInput});}
    catch(e){if(frozen?.id!==targetFrameId)return;invalidate('同フレームのマップ候補が未解決です。',{resetTracking:true});$('name-input-status').textContent=e.message;}finally{backgroundFinished();}
   }else if($('automatic-player').checked){
    $('marker-status').textContent='同じ上画面のマーカーとROM地図を照合しています…';

@@ -7,7 +7,9 @@ const need=(v,m)=>{if(!v)throw Error(m);},copy=x=>structuredClone(x);
 export const UNKNOWN_BRANCH='tracking-observation-unknown';
 // Tracks are association hypotheses, never event/birth certificates. Repeated
 // detections contribute alternatives to one latent predicate, not extra draws.
-export function compileTrackingObservations(bundle,{tables={},domain,budget,materialization,chains=[],singleEvents=[],includeBroadSingletons=true}={}){
+// Default callers retain the complete independent snapshot. The video controller
+// already owns its cloneable observation and preparation never uses this copy.
+export function compileTrackingObservations(bundle,{tables={},domain,budget,materialization,chains=[],singleEvents=[],includeBroadSingletons=true}={},{includeBundleSnapshot=true}={}){
  need(bundle?.schema==='headless-monster-observation-bundle-v1','Observation bundle required');
  const rows=[...(bundle.sightings??[])];
  for(const v of bundle.videoObservations??[])for(const f of v.timeline?.frames??[])rows.push(...(f.sightings??[]));
@@ -39,5 +41,5 @@ export function compileTrackingObservations(bundle,{tables={},domain,budget,mate
  const experiment=compileExperiment({sightings,associationAlternatives:alternatives,hypotheses,coverage:{...copy(bundle.coverage??{}),eventHypothesesComplete:false,associationEnumerationComplete:false,deferredAutomaticAlternatives:copy(bundle.automaticATEventEvidence?.deferred??[]),broadTrackingHypothesesDeferred:!includeBroadSingletons}},{tables});
  const request={experiment,domain:copy(domain),budget:copy(budget),...(domain?.kind==='known-origin-terminal-indices'?{materialization:copy(materialization)}:{})};
  const gate=domain?.kind==='known-origin-terminal-indices'?prepareIndexIdentification(request):prepare(request);
- return {nativeBodySupportEvidence:collectNativeTrackingBodySupport(sightings.map(s=>({s,plan:planBySighting.get(s.id),mapProvenance:trackingSightingMapProvenance(bundle,s)}))),request,groups:[...groups.values()].map(g=>({id:g.id,sightingIds:g.sightings.map(s=>s.id)})),gate:gate.checkpoint.branches.map(b=>({branchId:b.branchId,status:b.status,reason:b.reason??null})),minimumProvenATCalls:0,currentVideoStateRecovered:false,missingEvidence:['Automatic native birth/event identification and bounded AT call gaps are not produced by image tracks.','Event-to-current-video propagation is unbounded.'],bundleSnapshot:copy(bundle)};
+ return {nativeBodySupportEvidence:collectNativeTrackingBodySupport(sightings.map(s=>({s,plan:planBySighting.get(s.id),mapProvenance:trackingSightingMapProvenance(bundle,s)}))),request,groups:[...groups.values()].map(g=>({id:g.id,sightingIds:g.sightings.map(s=>s.id)})),gate:gate.checkpoint.branches.map(b=>({branchId:b.branchId,status:b.status,reason:b.reason??null})),minimumProvenATCalls:0,currentVideoStateRecovered:false,missingEvidence:['Automatic native birth/event identification and bounded AT call gaps are not produced by image tracks.','Event-to-current-video propagation is unbounded.'],...(includeBundleSnapshot?{bundleSnapshot:copy(bundle)}:{})};
 }

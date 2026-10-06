@@ -5,7 +5,7 @@ import {deriveCameraBodySingletonAlternatives,appendCameraBodySingletonAlternati
 import {assertProductionATInput} from '../production-at-input-policy.mjs?v=production-inputs-20261006-1320';
 import {searchAutomaticReplayInputs} from '../video-replay-factor-search.mjs?v=automatic-entry-factors-20261006-1120';
 import {deriveTrackingEventEvidence,automaticSingletonSearchOptions} from '../tracking-at-event-evidence.mjs?v=proposal-support-20261006-1152';
-import {prepareTrackingJob,openTrackingCheckpointStore,startTrackingSession,collectTrackingMotionAssociationInputs} from '../tracking-at-session.mjs?v=production-inputs-20261006-1320';
+import {prepareTrackingJob,openTrackingCheckpointStore,startTrackingSession,collectTrackingMotionAssociationInputs} from '../tracking-at-session.mjs?v=map-input-owned-preparation-20261006-1408';
 // This is an execution budget/prior supplied by the user, never inferred from PTS.
 export function videoATSearchOptions(values,tables){
  const {seed,seedProvenance,first,last,indexProvenance}=values;
@@ -80,7 +80,10 @@ export function createVideoTrackingAT({getOptions,getTables=()=>({}),engineRevis
    options.singleEvents=singleEvents;
    // Only an actual automatic producer's explicit conditional evidence is used.
    options.chains=structuredClone(snapshot.conditionalATEventEvidence?.chains??[]);
-   const job=await prepare(snapshot,options,{engineRevision,isCurrent:()=>mine===epoch,includeReplayInputHypotheses:false});if(mine!==epoch)return;
+   // This controller already owns a native-cloned observation; the compiler
+   // snapshot is unused by preparation. Generic compiler/preparation callers
+   // retain their original independent-copy and rejection behavior by default.
+   const job=await prepare(snapshot,options,{engineRevision,isCurrent:()=>mine===epoch,includeReplayInputHypotheses:false,includeCompilerBundleSnapshot:false});if(mine!==epoch)return;
    job.replayInputHypotheses=structuredClone(replayInputs);
    if(job.nativeMotionAssociationInputs)latestNativeMotionInputs=structuredClone(job.nativeMotionAssociationInputs);
    const pending=job.gate.filter(b=>b.status==='pending');

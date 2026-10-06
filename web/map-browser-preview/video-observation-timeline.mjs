@@ -23,7 +23,7 @@ export function residualAssociationHints(tracking,{frameKey,sourcePTS,sourceIden
  return (tracking.observed??[]).map(row=>({kind:'tentative-image-track',frameKey,sourcePTS,sourceIdentity,proposalId:String(row.originalResidualId),trackId:row.id,association:row.association,firstSeen:row.firstSeen,lastSeen:row.lastSeen,sightings:row.sightings,alternatives:['same-entity','different-entity','observation-error'],identityCertified:false,birthCertified:false,independentDrawCertified:false,minimumProvenATCalls:0}));
 }
 export class VideoObservationTimeline {
- constructor({maximumFrames=128,maximumEvents=128,maximumGaps=128,timing=null}={}){if(![maximumFrames,maximumEvents,maximumGaps].every(n=>Number.isInteger(n)&&n>0))throw Error('Positive storage budgets required');Object.assign(this,{maximumFrames,maximumEvents,maximumGaps,timing,resetCount:0});this.reset('initial');}
+ constructor({maximumFrames=128,maximumEvents=128,maximumGaps=128,timing=null,immutableObservationBundles=false}={}){if(![maximumFrames,maximumEvents,maximumGaps].every(n=>Number.isInteger(n)&&n>0))throw Error('Positive storage budgets required');Object.assign(this,{maximumFrames,maximumEvents,maximumGaps,timing,immutableObservationBundles,resetCount:0});this.reset('initial');}
  #timed(stage,run){return this.timing?this.timing.sync(stage,this.current?.stamp??this.source,run):run();}
  reset(reason,source=null){this.resetCount++;this.reason=reason;this.source=source?copy(source):null;this.key=source?stampKey(source):null;this.frames=[];this.events=[];this.gaps=[];this.evicted={frames:0,events:0,gaps:0};this.previousPanel=null;this.previousMap=null;this.lastCallback=null;this.current=null;this.lastGap=null;this.totalFrames=0;}
  append(list,value,maximum,kind){list.push(value);if(list.length>maximum){list.shift();this.evicted[kind]++;}return value;}
@@ -57,15 +57,17 @@ export class VideoObservationTimeline {
  // Fast path requires the inspected residual producer's fresh envelope, with
  // no other references to that wrapper inside value. Metadata alone is not
  // proof of this contract. Generic callers retain the legacy alias behavior.
- // The fast-path callback receives a detached immutable plain graph so AT can
- // share it safely; built-in mutable values retain full-copy ownership.
+ // Only an explicitly AT-connected consumer opts into the detached immutable
+ // graph. Other/default consumers retain the original native-copy cost and
+ // mutable snapshot semantics; built-in mutable values keep full ownership.
  snapshotBundle(value,{unaliasedResidualEnvelope=false}={}){
   const observations=value.videoObservations;
   if(unaliasedResidualEnvelope!==true||value.schema!=='headless-monster-observation-bundle-v1'||value.producer!=='browser-ROM-background-residual'||!Array.isArray(observations)||observations.length!==1||!Object.hasOwn(observations,0)||observations[0]?.kind!=='partial-video-observation-timeline'||Object.getPrototypeOf(observations[0])!==Object.prototype){
    const completed=this.#timed('observation-bundle-clone',()=>copy(value));for(const item of completed.videoObservations??[])item.timeline=this.snapshot();return completed;
   }
   const timeline=this.#snapshotRecord();
-  return this.#timed('observation-bundle-clone',()=>cloneImmutableObservationBundle({...value,videoObservations:observations.map(item=>({...item,timeline}))}));
+  const cloneBundle=this.immutableObservationBundles===true?cloneImmutableObservationBundle:copy;
+  return this.#timed('observation-bundle-clone',()=>cloneBundle({...value,videoObservations:observations.map(item=>({...item,timeline}))}));
  }
  // JSON serialization is synchronous, so it needs no detached graph before
  // converting this already-owned state to a string. No live references escape.

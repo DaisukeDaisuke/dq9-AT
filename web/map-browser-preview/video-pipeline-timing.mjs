@@ -14,6 +14,14 @@ export class VideoPipelineTiming{
   const watcher=this.firstGapLongTaskWatcher;if(kind==='browser-main-thread-long-task'&&watcher&&row.startedAtMs<watcher.end&&row.endedAtMs>watcher.start){try{watcher.receive(row);}catch{/* Diagnostic retention cannot change observation. */}}
  }
  sync(stage,stamp,run){const started=this.now(),generation=this.observerGeneration;let threw=true;try{const value=run();threw=false;return value;}finally{if(generation===this.observerGeneration)this.record(stage,started,this.now(),stamp,{threw});}}
+ // One fixed stage with scalar phases for the measured first-callback map-input
+ // path. The transient hook is never part of frame/evidence/observation objects.
+ mapInputSync(stamp,phase,detail,run){
+  let started=null,generation;try{started=this.now();generation=this.observerGeneration;}catch{}
+  let threw=true;try{const value=run();threw=false;return value;}finally{
+   try{if(generation===this.observerGeneration)this.record('map-input-synchronous',started,this.now(),stamp,{phase,recordKey:detail?.recordKey??null,descriptor:detail?.descriptor??null,threw});}catch{/* Timing failure cannot alter source work. */}
+  }
+ }
  // A finish callback adds no Promise, timer, microtask, or scheduling boundary.
  beginElapsed(stage,stamp){const started=this.now(),generation=this.observerGeneration;return()=>{if(generation===this.observerGeneration)this.record(stage,started,this.now(),stamp,{},'async-elapsed-not-CPU-time');};}
  callbackBoundary(reason){this.lastCallback=null;this.lastCallbackBoundary={reason,atMs:this.now()};}

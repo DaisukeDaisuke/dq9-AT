@@ -1,19 +1,19 @@
 import {mountResidualInferencePreparation} from './residual-inference-preparation.mjs?v=monster-map-cpu-20261006-1005';
-import {runResidualRecognitionJob} from './residual-recognition-job.mjs?v=gap-owned-observation-20261006-1340';
-import {VideoMapContinuity} from './video-map-continuity.mjs?v=camera-loss-evidence-20261006-1205';
+import {runResidualRecognitionJob} from './residual-recognition-job.mjs?v=map-input-owned-preparation-20261006-1408';
+import {VideoMapContinuity} from './video-map-continuity.mjs?v=map-input-owned-preparation-20261006-1408';
 import {mountAutomaticGpuPanel} from './gpu-file-panel.mjs?v=enc-motion-at-20261006-1156';
-import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=camera-loss-evidence-20261006-1205';
-import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=camera-loss-evidence-20261006-1205';
+import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=map-input-owned-preparation-20261006-1408';
+import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=map-input-owned-preparation-20261006-1408';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
 import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=proposal-support-20261006-1152';
-import {residualModelPlan} from './residual-recognition-input.mjs?v=gap-owned-observation-20261006-1340';
+import {residualModelPlan} from './residual-recognition-input.mjs?v=map-input-owned-preparation-20261006-1408';
 import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=enc-motion-at-20261006-1156';
 import {CPUTextClient} from '../font-akinator-cpu-client.mjs?v=video-entry-timeline-20261005';
-import {deriveVideoMapNames} from './video-map-name-input.mjs?v=camera-loss-evidence-20261006-1205';
+import {deriveVideoMapNames} from './video-map-name-input.mjs?v=map-input-owned-preparation-20261006-1408';
 import {MapPositionMatcher} from '../map-position.mjs';
-import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs?v=camera-loss-evidence-20261006-1205';
+import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs?v=map-input-owned-preparation-20261006-1408';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
-import {mountMapVideoComparison} from './map-video-comparison.mjs?v=gap-owned-observation-20261006-1340';
+import {mountMapVideoComparison} from './map-video-comparison.mjs?v=map-input-owned-preparation-20261006-1408';
 import {openMapRom} from './static-scene.mjs?v=native-source-reuse-20261006-1028';
 import {buildRomMapCatalog} from './rom-map-catalog.mjs';
 import {nameCatalogMaps} from './rom-map-names.mjs';
@@ -85,13 +85,13 @@ async function loadNamedMap(candidate,input,evidence){
 }
 async function renderFromName(input){
  if(!loaded||!project){$('name-input-status').textContent='固定映像を保持しています。NDSを選択してください。';return;}
- const id=++version;clearView();nameInput=null;$('name-input-status').textContent='既知マップを先に再照合し、未解決の場合はNDSフォントで名前候補を探索します…';await frame();if(id!==version||input.frameId!==videoComparison.frameId())return;
- const reuse=input.automaticRecognition&&automaticSearch?await mapContinuity.probe({input,alignment:automaticSearch,isCurrent:()=>id===version&&input.frameId===videoComparison.frameId()}):null;
+ const measure=input.measureMapInput??((_phase,run)=>run()),id=++version;measure('render-from-name-prologue',()=>{clearView();nameInput=null;$('name-input-status').textContent='既知マップを先に再照合し、未解決の場合はNDSフォントで名前候補を探索します…';});await frame();if(id!==version||input.frameId!==videoComparison.frameId())return;
+ const reuse=input.automaticRecognition&&automaticSearch?await measure('continuity-call-prologue',()=>mapContinuity.probe({input,alignment:automaticSearch,isCurrent:()=>id===version&&input.frameId===videoComparison.frameId()})):null;
  if(id!==version||input.frameId!==videoComparison.frameId())return;
  if(!reuse)mapContinuity.stats.nameSearches++;
  const evidence=reuse?.evidence??await deriveVideoMapNames({...input,romSHA256,project,records:maps,matchText:(image,args)=>nameClient.match(image,{...args,romEpoch:nameRomEpoch,stamp:{romEpoch:nameRomEpoch,frameId:input.frameId,...input.frameEvidence}})});
  if(id!==version||input.frameId!==videoComparison.frameId())return;
- $('name-input-details').textContent=JSON.stringify(evidence,null,2);$('name-input-candidates').replaceChildren(...evidence.maps.map(r=>{const button=document.createElement('button');button.textContent=r.displayLabel+'（候補として描画）';button.onclick=guard(()=>loadNamedMap(r,input,evidence));return button;}));
+ measure('map-name-display',()=>{$('name-input-details').textContent=JSON.stringify(evidence,null,2);$('name-input-candidates').replaceChildren(...evidence.maps.map(r=>{const button=document.createElement('button');button.textContent=r.displayLabel+'（候補として描画）';button.onclick=guard(()=>loadNamedMap(r,input,evidence));return button;}));});
  $('name-input-status').textContent=reuse?'既知マップを同フレームの地図全体で再照合しました。名前候補・地図別名と未確定性を保持しています。':evidence.maps.length?'映像から地図候補 '+evidence.maps.length+'件: '+evidence.nameCandidates.names.join(' / ')+'。未探索の文字・同名候補を残し、現在地の確定ではありません。':'名前候補は未解決: '+evidence.status+'。既知の地図名は補いません。';
  if(input.automaticRecognition){await runAutomaticSearch(input,evidence,id,reuse?.prevalidatedMaps);return;}if(evidence.maps.length===1)await loadNamedMap(evidence.maps[0],input,evidence);
 }

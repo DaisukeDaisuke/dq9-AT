@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {createHash} from 'node:crypto';
-import {cloneImmutableObservationBundle,copyObservationBundleForAT} from '../web/map-browser-preview/observation-bundle-ownership.mjs?v=gap-owned-observation-20261006-1340';
+import {readFileSync} from 'node:fs';
+const timelineModuleURL=new URL('../web/map-browser-preview/video-observation-timeline.mjs',import.meta.url);
+const ownershipImport=readFileSync(timelineModuleURL,'utf8').match(/import\s*\{\s*cloneImmutableObservationBundle\s*\}\s*from\s*['"]([^'"]+)['"]/);
+assert(ownershipImport,'Production timeline ownership-helper import is required');
+const {cloneImmutableObservationBundle,copyObservationBundleForAT}=await import(new URL(ownershipImport[1],timelineModuleURL).href);
 import {VideoObservationTimeline} from '../web/map-browser-preview/video-observation-timeline.mjs';
 import {createVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs';
 const bundle=extra=>({schema:'headless-monster-observation-bundle-v1',producer:'browser-ROM-background-residual',sightings:[],videoObservations:[{kind:'partial-video-observation-timeline',timeline:{old:true}}],...extra});
@@ -33,8 +37,8 @@ test('producer native cloning still rejects unsupported values and retains acces
  let reads=0;const input=bundle();Object.defineProperty(input,'readOnce',{enumerable:true,get(){reads++;return {unknown:true};}});const owned=cloneImmutableObservationBundle(input);assert.equal(reads,1);assert.deepEqual(owned.readOnce,{unknown:true});assert.equal(Object.getOwnPropertyDescriptor(owned,'readOnce').get,undefined);
 });
 
-test('only the explicit unaliased residual timeline path receives immutable ownership',()=>{
- const timeline=new VideoObservationTimeline();timeline.begin(stamp,{frameSerial:1});const patch={sightings:[{id:'one',unknown:true}]};timeline.update(1,patch);
+test('only the explicitly opted-in unaliased residual timeline path receives immutable ownership',()=>{
+ const timeline=new VideoObservationTimeline({immutableObservationBundles:true});timeline.begin(stamp,{frameSerial:1});const patch={sightings:[{id:'one',unknown:true}]};timeline.update(1,patch);
  const value=bundle({extra:{unknown:true}}),owned=timeline.snapshotBundle(value,{unaliasedResidualEnvelope:true});assert(Object.isFrozen(owned));assert(Object.isFrozen(owned.videoObservations[0].timeline.frames[0]));
  const generic=timeline.snapshotBundle(value);assert(!Object.isFrozen(generic));assert.notStrictEqual(copyObservationBundleForAT(generic).extra,generic.extra);
  const oldHash=hash(owned);value.extra.unknown=false;patch.sightings[0].unknown=false;timeline.update(1,{sightings:[{id:'replacement'}]});assert.equal(hash(owned),oldHash);
@@ -82,4 +86,23 @@ test('camera alternative validation and singleton append accept frozen nested ev
  const owned=cloneImmutableObservationBundle(bundle({source:{video:stamp,background:{romSHA256:frame.romSHA256},modelPlan:plan},sightings:[sighting],videoObservations:[{timeline:{schema:'video-map-observation-timeline-v1',frames:[retained]}}]}));
  const states=[],prepared=[];const at=createVideoTrackingAT({engineRevision:'camera-ownership-test',getTables:()=>({}),getOptions:()=>({}),onState:s=>states.push(s),prepare:async(snapshot,options)=>{prepared.push({snapshot,options});return {gate:[],missingEvidence:[]};}});
  await at.observe(owned);assert.equal(prepared.length,1);assert.equal(prepared[0].snapshot.cameraBodyATAlternatives.singleEvents.length,1);assert.equal(prepared[0].options.singleEvents.length,1);assert.equal(prepared[0].snapshot.cameraBodyATValidationDeferrals,undefined);assert.equal(owned.cameraBodyATAlternatives,undefined);assert.equal(prepared[0].snapshot.cameraBodyATAlternatives.unknownAlternativeRetained,true);
+});
+
+test('default/non-AT timeline skips freezing and retains mutable independent native snapshots',()=>{
+ const input=bundle({left:{unknown:true}});input.alias=input.left;
+ for(const config of [{},{immutableObservationBundles:false},{immutableObservationBundles:'true'}]){
+  const timeline=new VideoObservationTimeline(config);timeline.begin(stamp,{frameSerial:1});timeline.update(1,{sightings:[{id:'one',unknown:true}]});
+  const nativeFreeze=Object.freeze;let freezes=0;Object.freeze=value=>{freezes++;return nativeFreeze(value);};let completed;
+  try{completed=timeline.snapshotBundle(input,{unaliasedResidualEnvelope:true});}finally{Object.freeze=nativeFreeze;}
+  assert.equal(freezes,0);assert(!Object.isFrozen(completed));assert.strictEqual(completed.left,completed.alias);assert.notStrictEqual(completed.left,input.left);
+  completed.left.unknown=false;completed.videoObservations[0].timeline.frames[0].sightings[0].unknown=false;assert.equal(input.left.unknown,true);assert.equal(timeline.frames[0].sightings[0].unknown,true);
+  const atCopy=copyObservationBundleForAT(completed);assert.notStrictEqual(atCopy.left,completed.left);
+ }
+});
+
+test('main AT consumer explicitly opts in while GPU preview uses the default native-copy path',()=>{
+ const main=readFileSync(new URL('../web/map-browser-preview/preview.mjs',import.meta.url),'utf8'),gpu=readFileSync(new URL('../web/map-browser-preview/gpu-file-preview.mjs',import.meta.url),'utf8'),panel=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs',import.meta.url),'utf8');
+ const mount=source=>source.match(/const videoComparison=mountMapVideoComparison\(\{[^\n]+/)[0];
+ assert.match(mount(main),/immutableObservationBundles:true,onObservationBundle:bundle=>trackingAT.observe\(bundle\)/);assert.doesNotMatch(mount(gpu),/immutableObservationBundles|onObservationBundle/);
+ assert.match(panel,/onObservationReset=\(\)=>\{\},immutableObservationBundles=false\}/);assert.match(panel,/timeline=new VideoObservationTimeline\(\{timing,immutableObservationBundles\}\)/);
 });
