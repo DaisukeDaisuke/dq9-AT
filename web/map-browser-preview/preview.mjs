@@ -5,7 +5,7 @@ import {VideoMapContinuity} from './video-map-continuity.mjs?v=monster-map-cpu-2
 import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=monster-map-cpu-20261006-1005';
 import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=field-registration-20261006-0913';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
-import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=camera-body-alternative-20261006-1430';
+import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=native-source-reuse-20261006-1028';
 import {residualModelPlan} from './residual-recognition-input.mjs?v=enc-motion-at-20261006-1156';
 import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=enc-motion-at-20261006-1156';
 import {CPUTextClient} from '../font-akinator-cpu-client.mjs?v=provided-layout-20261005';
@@ -14,7 +14,7 @@ import {MapPositionMatcher} from '../map-position.mjs';
 import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs?v=field-registration-20261006-0913';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
 import {mountMapVideoComparison} from './map-video-comparison.mjs?v=field-registration-20261006-0913';
-import {openMapRom} from './static-scene.mjs';
+import {openMapRom} from './static-scene.mjs?v=native-source-reuse-20261006-1028';
 import {buildRomMapCatalog} from './rom-map-catalog.mjs';
 import {nameCatalogMaps} from './rom-map-names.mjs';
 import {MapRenderer} from './minimap-preview.mjs';

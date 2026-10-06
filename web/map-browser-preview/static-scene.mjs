@@ -7,8 +7,13 @@ import {readArm9SdkImage} from './rom-arm9.mjs';
 import {buildStaticGeometry} from './static-geometry.mjs';
 import {bindStaticTextures} from './texture-binding.mjs';
 import {nativeAsciiNameCandidates} from './native/native-file-name.mjs';
-export function openMapRom(rom){
- const sdk=readArm9SdkImage(rom),nfs=NitroFS.fromRom(rom.buffer.slice(rom.byteOffset,rom.byteOffset+rom.byteLength)),archives=nfs.readDir('data/map').files.filter(n=>n.endsWith('.amdj'));
+export function openMapRom(rom,{nitroFS=null}={}){
+ // The recognition worker already owns the NitroFS parsed from these ROM
+ // bytes. Reuse only that caller-owned source; no pixels or model scores enter.
+ // Other callers keep the original isolated-file behavior.
+ const sdk=readArm9SdkImage(rom),nfs=nitroFS??NitroFS.fromRom(rom.buffer.slice(rom.byteOffset,rom.byteOffset+rom.byteLength));
+ if(typeof nfs?.readFile!=='function'||typeof nfs?.readDir!=='function')throw Error('Parsed source NitroFS required');
+ const archives=nfs.readDir('data/map').files.filter(n=>n.endsWith('.amdj'));
  function archive(name){if(!archives.includes(name))throw Error('Exact ROM archive name required');const z=Narc.load(new Uint8Array(nfs.readFile('data/map/'+name))),members=new Map();
   z.files.forEach((b,i)=>{const key=z.fnt.getFilenameOf(i);if(members.has(key))throw Error('Duplicate member name');members.set(key,b[0]===0x10?new Uint8Array(Compression.decompress(new BufferReader(b.buffer,b.byteOffset,b.byteLength))):b);});return members;}
  function scene(archiveName,streamName,{textureBytes=null,textureResources=null,materialColor=null}={}){const members=archive(archiveName),bytes=members.get(streamName);if(!bytes||!streamName.endsWith('.bmdj'))throw Error('Exact placement stream required');const pool=u32(bytes,4),calls=parseCalls(bytes).map(c=>({...c,args:c.args.map(a=>({...a,value:a.type===0?readPoolString(bytes,pool,a):decodeNumber(a)}))}));

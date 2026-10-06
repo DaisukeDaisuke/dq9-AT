@@ -78,7 +78,7 @@ export class ResidualRecognitionClient{
      // This expires optional evidence only. Main-thread delivery may be late;
      // never destroy the shared DINO/source caches or reject a newer request.
      try{worker.postMessage({type:'cancel',id:p.id,romEpoch:p.romEpoch});}catch{}
-     p.reject(Error('Native body optional response wait expired; unfinished support remains unknown (cooperative work may finish later)'));
+     p.reject(Error('Native body optional response wait expired; cancellation requested, unfinished support remains unknown'));
     },options.optionalWaitMs);
    }
    try{check();if(this.pending===p)worker.postMessage({...message,id,romEpoch:this.epoch},transfer);}catch(error){if(this.pending===p)this.pending=null;this.clearPendingTimers(p);reject(error);}
@@ -87,7 +87,7 @@ export class ResidualRecognitionClient{
  async load(rom,sha){
   this.stopNativeContinuation();
   if(this.romSHA===sha&&this.catalog&&this.worker)return this.catalog;
-  this.release();const worker=new Worker(new URL('../monster-recognition-worker.mjs?v=camera-body-alternative-20261006-1430',import.meta.url),{type:'module'});this.worker=worker;this.epoch++;
+  this.release();const worker=new Worker(new URL('../monster-recognition-worker.mjs?v=native-source-reuse-20261006-1028',import.meta.url),{type:'module'});this.worker=worker;this.epoch++;
   worker.onmessage=({data:m})=>{
    if(this.worker!==worker)return;
    if(m.romEpoch===this.epoch&&['cancelled','error','result'].includes(m.type))this.clearNativeDeadline(m.id);

@@ -5,7 +5,7 @@ import {createDinoFeatureBackend} from './monster-dinov2.mjs?v=recognition-cache
 import {createFeatureBankStore} from './monster-feature-cache.mjs';
 import {recognizeROI,supplementEnemyROIs,prepareDinoPoseBank,createRenderedReferenceCache} from './monster-recognition-engine.mjs?v=stored-pivot-source-20261006-0800';
 let state=null,epoch=0,active=null,nativeBodyModulePromise=null;
-const loadNativeBodyModule=()=>nativeBodyModulePromise??=import('./monster-native-auto-support.mjs?v=camera-body-alternative-20261006-1430').catch(error=>{nativeBodyModulePromise=null;throw error;});
+const loadNativeBodyModule=()=>nativeBodyModulePromise??=import('./monster-native-auto-support.mjs?v=native-source-reuse-20261006-1028').catch(error=>{nativeBodyModulePromise=null;throw error;});
 const post=message=>self.postMessage(message);
 self.onmessage=async({data:m})=>{
  if(!m||!['load','recognize','supplement','prepare','native-body-support','cancel'].includes(m.type))return;
@@ -40,7 +40,7 @@ self.onmessage=async({data:m})=>{
     const {createAutomaticNativeBodySupportService}=await loadNativeBodyModule();
     if(active!==controller||mine!==epoch||controller.signal.aborted)throw new DOMException('中止','AbortError');
     if(performance.now()-started>=budget.wallTimeMs)throw Error('Native optional import exhausted the cooperative job budget; body work remains unknown');
-    runState.nativeBodySupport=createAutomaticNativeBodySupportService({rom:runState.rom,catalog:runState.catalog,geometry:runState.geometry,romSHA256:runState.romSHA256});
+    runState.nativeBodySupport=createAutomaticNativeBodySupportService({rom:runState.rom,catalog:runState.catalog,geometry:runState.geometry,romSHA256:runState.romSHA256,nitro:runState.nitro});
    }
    const service=runState.nativeBodySupport;
    const remaining=budget.wallTimeMs-(performance.now()-started);
