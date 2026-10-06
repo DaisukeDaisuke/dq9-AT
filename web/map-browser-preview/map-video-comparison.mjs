@@ -10,9 +10,9 @@ import {replaceResidualTimelineClassification} from './residual-classification-s
 import {recognitionDisplaySummary,timelineDisplaySummary,comparisonDisplaySummary} from './recognition-display-summary.mjs?v=native-extents-latest-20261006-0843';
 import {VideoObservationPump,VideoObservationTimeline,residualAssociationHints,videoObservationFrameKey} from './video-observation-timeline.mjs?v=native-tracking-ownership-20261006-1006';
 import {detectMapNameROI} from '../map-name-roi.mjs';
-import {upperVideoROI} from './video-player-map-input.mjs?v=capture-gate-reseed-20261006-0850';
+import {upperVideoROI} from './video-player-map-input.mjs?v=field-registration-20261006-0913';
 import {parseVideoTimecode,formatVideoTimecode} from './video-timecode.mjs';
-import {inferPairedVideoLayout} from './automatic-video-layout.mjs?v=capture-gate-reseed-20261006-0850';
+import {inferPairedVideoLayout} from './automatic-video-layout.mjs?v=field-registration-20261006-0913';
 import {ResidualTracker} from './residual-tracking-input.mjs?v=measured-replay-candidate-20261006-0653';
 import {annotateResidualRegions,selectResidualDisplay} from './residual-region-display.mjs';
 import {FileVideoInput} from '../file-video-input.mjs?v=automatic-playback-source-cache-20261006-1100';

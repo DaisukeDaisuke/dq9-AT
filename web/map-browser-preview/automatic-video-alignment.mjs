@@ -10,7 +10,7 @@ import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
 import {CandidateMapMatcher} from '../map-disambiguation.mjs';
 import {loadAutomaticScene} from './automatic-scene.mjs';
 import {loadRomFloorInstances} from './rom-floor-candidates.mjs';
-import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=capture-gate-reseed-20261006-0850';
+import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=field-registration-20261006-0913';
 import {automaticPreviewCamera} from './automatic-preview-camera.mjs';
 import {automaticBillboardScenes} from './automatic-billboard-scene.mjs';
 import {applyAutomaticMaterialEnvironment} from './automatic-material-environment.mjs?v=native-body-20261006-0212';

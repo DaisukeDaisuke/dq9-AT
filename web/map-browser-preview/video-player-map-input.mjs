@@ -4,6 +4,7 @@ import {calibratedPartyMarkerCandidates} from '../party-marker-calibration.mjs';
 import {markerCoordinateBinding,mapMarkerCoordinateCandidate} from '../map-marker-coordinate.mjs';
 import {sampleGameplayFrame} from './map-video-residual.mjs?v=capture-gate-reseed-20261006-0850';
 import {floorHeightsAtXZ} from './rom-floor-candidates.mjs';
+import {matchVideoMinimapRegistration} from './video-minimap-registration.mjs?v=field-registration-20261006-0913';
 export function upperVideoROI(width,height,layout){
  let r;if(layout==='obs-side-1920'&&width===1920&&height===1080)r={x:0,y:0,w:960,h:720};
  else if(layout==='ds-vertical'&&height%2===0)r={x:0,y:0,w:width,h:height/2};
@@ -17,7 +18,7 @@ export function deriveVideoPlayerMapInput({sourceImage,layout,mapImage,mapId,mat
  const roi=upperVideoROI(sourceImage.width,sourceImage.height,layout),upper=sampleGameplayFrame(sourceImage,roi),markers=calibratedPartyMarkerCandidates(upper),frame=halfFrame(upper);
  matcher.setReference({...mapImage,mapId,descriptor:mapImage.descriptor.path});
  const excluded=[{x:0,y:0,w:128,h:10},{x:0,y:86,w:128,h:10},...markers.candidates.map(m=>({x:m.bounds.x/2-2,y:m.bounds.y/2-2,w:m.bounds.w/2+4,h:m.bounds.h/2+4}))];
- const registration=matcher.match(frame,{scales:[.5],excluded,maxMilliseconds:1500}),binding=markerCoordinateBinding(mapImage.descriptor,mapId),candidates=[];
+ const registration=matchVideoMinimapRegistration(matcher,frame,{excluded}),binding=markerCoordinateBinding(mapImage.descriptor,mapId),candidates=[];
  for(const [peakIndex,peak]of registration.candidates.entries())for(const marker of markers.candidates){
   const sx=Math.round(mapImage.width*peak.scale)/mapImage.width,sy=Math.round(mapImage.height*peak.scale)/mapImage.height,x=(marker.x/2-peak.dx)/sx,y=(marker.y/2-peak.dy)/sy;
   const coordinate=mapMarkerCoordinateCandidate({imageX:x,imageY:y,imageBounds:{left:x-((marker.uncertaintyPixels?.x??0)/2+1)/sx,right:x+((marker.uncertaintyPixels?.x??0)/2+1)/sx,top:y-((marker.uncertaintyPixels?.y??0)/2+1)/sy,bottom:y+((marker.uncertaintyPixels?.y??0)/2+1)/sy},originPixel:mapImage.originPixel,scale:mapImage.descriptor.worldToMapScale,mapId,markerIdentity:marker.id},binding);

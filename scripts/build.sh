@@ -66,6 +66,7 @@ node scripts/test-map-recognize-page.mjs
 # Approximate map-coordinate candidates: solo layout, bounded fallback and ranges.
 node scripts/check-ds-screen-synthetic.mjs
 node scripts/test-map-coordinate-fallback.mjs
+node scripts/test-video-minimap-registration.mjs
 node scripts/test-coordinate-range-ui.mjs
 
 # A fixed house display anchor cannot become a physical chunk estimate.
