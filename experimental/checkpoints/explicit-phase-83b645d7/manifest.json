@@ -1,0 +1,47 @@
+{
+  "status": "source-only checkpoint; not integrated into automatic scheduling",
+  "baseCommit": "dc5a97c785764002342fb02c1211180f1886911d",
+  "historicalSourceCommit": "e1104ccd75168bb9d10c2cb27bc4b9307f7c973d",
+  "files": [
+    {
+      "path": "web/monster-native-animation.mjs",
+      "bytes": 5808,
+      "sha256": "82733f986ef2b77ddb71117ea68f0390103e6d0a2ff52452b53302cb90416b48",
+      "baseSHA256": null
+    },
+    {
+      "path": "web/monster-native-joint-blend.mjs",
+      "bytes": 8103,
+      "sha256": "042dd2ae9058f8c7f0350522ff409c17bc93281b9b835de02ed67b92f22a323e",
+      "baseSHA256": null
+    },
+    {
+      "path": "web/monster-native-joint-plan.mjs",
+      "bytes": 2179,
+      "sha256": "509b7cd735305c5c66110e50b52567f31070af65ed425102d528f397e864b580",
+      "baseSHA256": null
+    },
+    {
+      "path": "web/monster-native-body.mjs",
+      "bytes": 21110,
+      "sha256": "7ff444ea407fc936bfa5258ce2d46da840a9a82cbb67f03987617478b7efb7e7",
+      "baseSHA256": "6907d46ae3f89f0c562cfd07ac333475c8786371ac676e7e390242b9a3c5e6e6"
+    },
+    {
+      "path": "scripts/test-native-explicit-phase.mjs",
+      "bytes": 9492,
+      "sha256": "7c9bc6af458bb5d9a65997023a454202c880c0bb2deba1495b1d31cf5ab2e116",
+      "baseSHA256": null
+    }
+  ],
+  "verifiedScope": {
+    "integerPhases": 374,
+    "integerNodes": 4737,
+    "legacyD0Projections": 247,
+    "integerJointPlanProjections": 243,
+    "retainedSparseFailures": 3,
+    "explicitFractionalPhase": "synthetic FX12 2048; not inferred from video"
+  },
+  "standardBuild": "not run for isolated checkpoint",
+  "browserVerified": false
+}
