@@ -59,6 +59,7 @@ node scripts/test-monster-recognize-page.mjs
 # Explicit one-frame CPU glyph fallback; no GPU globals or private fixture inputs.
 node scripts/test-font-akinator-cpu.mjs
 node scripts/test-font-akinator-cpu-client.mjs
+# Shell checks compare module paths independently of cache-query versions.
 node scripts/test-map-recognize-page.mjs
 
 # Approximate map-coordinate candidates: solo layout, bounded fallback and ranges.
