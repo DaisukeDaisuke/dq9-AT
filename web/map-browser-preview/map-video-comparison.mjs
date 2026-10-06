@@ -12,7 +12,7 @@ import {parseVideoTimecode,formatVideoTimecode} from './video-timecode.mjs';
 import {inferPairedVideoLayout} from './automatic-video-layout.mjs?v=provided-layout-20261005';
 import {ResidualTracker} from './residual-tracking-input.mjs';
 import {annotateResidualRegions,selectResidualDisplay} from './residual-region-display.mjs';
-import {FileVideoInput} from '../file-video-input.mjs';
+import {FileVideoInput} from '../file-video-input.mjs?v=clock-telemetry-20261006-0923';
 import {gameplayVideoROI,sampleGameplayFrame,compareMapBackground} from './map-video-residual.mjs';
 const $=id=>document.getElementById(id),sha=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join('');
 const draw=(id,image)=>{const canvas=$(id);canvas.width=image.width;canvas.height=image.height;canvas.getContext('2d').putImageData(new ImageData(image.rgba,image.width,image.height),0,0);};

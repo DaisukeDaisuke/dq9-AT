@@ -277,3 +277,14 @@ e05e06の公開buildは既存feature integration検査で停止。検査側が�
 親側検証：20個の実保存最良試行のスコア/SSE/画素数と既存添付結果が、新extent項目を除いて一致。15所有権条件・7フレーム同一性条件・表示の既存予測数保持を確認。実際のmountedコードの制御試験で、元の最新フレーム消失を再現し、修正後に5356.167の待機処理が自動開始することを確認（画素と分類応答は合成）。実保存の1,407,188byte背景引継ぎも全入力一致。既存継続23・表示保持10・スケジュール12等が通過。最終cache更新後も主要検証を再実行。
 
 未検証：修正版による実ブラウザ再生・全フレーム処理・全マップ認識・身体や種類の確定。欠測128件保持／363件は保持上限により詳細未保持の旧結果、負値、曖昧な候補、AT下限0を保持。閾値合わせ・領域結合・確定個体数の追加はしていない。
+
+
+## 09:23 JST: code backup and pause/resume discontinuity telemetry
+
+- Full current web source: all 373 files matched GitHub blob hashes at eb44154. Complete repository at a413a966 retains all prior files and adds the full unintegrated diagnostic module, baseline and harness; dots-tools 5f3c0104 preserves six historical observer V3 source variants without replacing newer work6. All 69 locally restored tool files have verified remote blob/archive/snapshot coverage. External submodules remain references.
+- The real eb44154 pause/resume run recorded a backward-time reset at callback PTS 5311.3, presentedFrames 289. The preceding clock value was not exported, so the cause is unknown.
+- Diagnostic-only file-video-input change now preserves exact previous/incoming clocks, source epochs/segments, callback registration/cancellation IDs, paused/running/seeking state and bounded lifecycle history in source.inputDiscontinuity. No tolerance, FPS assumption, timestamp correction or reset behavior change.
+- Existing controlled comparison harness: 15 checks passed independently after restoring repository-relative imports. Synthetic cancelled callbacks are distinguishable but are not evidence Chromium delivered one in the real run.
+- Real forward run eventually finished the latest eligible 5355.817 frame, map7401, with 15 sightings; exact BODY/CMP full-pixel hashes match. No actual queued-latest transition was observed, so this does not prove that branch engaged. Map7400 no encfld group remains a failed/unsupported frame, not absence.
+- The transient browser approval-capacity failure was resolved; final BODY/CMP/timeline were exported and the old comparison stopped. No cloud-environment reset was inferred.
+- Telemetry deployed-browser verification and reset-cause determination remain pending at this checkpoint.
