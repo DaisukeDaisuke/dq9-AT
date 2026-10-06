@@ -56,7 +56,13 @@ test('main panel restores a local session through the production Worker without 
    assert(rendered.length<65536);assert.match(rendered,/controllerFlags/);assert.equal(JSON.stringify(actual),before);
    console.log(JSON.stringify({fixtureBytes:Buffer.byteLength(bytes),previewBytes:Buffer.byteLength(rendered),previewElapsedMs:elapsedMs,fullEvidenceUnchanged:true}));
   }
-  const o=origin(),session=new ATSession(o.seed,kernel,{origin:'known-local-checkpoint',epoch:o.epoch});session.setMap({mapId:108});session.setMap({mapId:100},packet());const saved=JSON.parse(JSON.stringify(session.snapshot()));
+  // Preserve the memory-marked synthetic fixture as a rejected production input.
+  const forbiddenOrigin=origin(),forbiddenSession=new ATSession(forbiddenOrigin.seed,kernel,{origin:'known-local-checkpoint',epoch:forbiddenOrigin.epoch});forbiddenSession.setMap({mapId:108});forbiddenSession.setMap({mapId:100},packet());
+  const rejectedInput=nodes.get('at-restore');rejectedInput.files=[{text:async()=>JSON.stringify(forbiddenSession.snapshot())}];await rejectedInput.onchange();
+  assert.match(nodes.get('at-message').textContent,/DST・メモリ/);assert.equal(memory.has('dq9-at-active-session'),false);
+  // Independently authored numerical hypothesis; no memory capture/provenance.
+  const o={schema:'dq9-map-entry-origin-v1',frame:10,mapId:108,seed:123,epoch:'synthetic-hand-authored',story:[7,1,1],modeWord:2,questNibbles:{},storyBits:{},provenance:'Synthetic arithmetic only; not a current video state'};
+  const session=new ATSession(o.seed,kernel,{origin:'known-local-checkpoint',epoch:o.epoch});session.setMap({mapId:108});session.setMap({mapId:100},packet(source(),o));const saved=JSON.parse(JSON.stringify(session.snapshot()));
   const input=nodes.get('at-restore');input.files=[{text:async()=>JSON.stringify(saved)}];await input.onchange();
   assert.match(nodes.get('at-state').textContent,/既知局所checkpoint起点（起動証明なし）/);assert.doesNotMatch(nodes.get('at-state').textContent,/ · 起動起点/);
   assert.equal(nodes.get('at-bound').textContent,'0');assert.equal(nodes.get('at-conditional').textContent,'2');assert.match(nodes.get('at-envelope').textContent,/局所起点から/);
@@ -67,3 +73,4 @@ test('main panel restores a local session through the production Worker without 
   nodes.get('at-seed').value='123';await nodes.get('at-start').onclick();assert.equal(nodes.get('at-state').textContent,'0x0000007b · 起動起点');assert.equal(nodes.get('at-identify-session').title,'');assert.doesNotMatch(nodes.get('at-envelope').textContent,/局所起点から/);
  }finally{await Promise.all(workers.map(w=>w.terminate()));for(const [k,descriptor]of Object.entries(previous))if(descriptor)Object.defineProperty(globalThis,k,descriptor);else delete globalThis[k];}
 });
+

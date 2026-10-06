@@ -27,11 +27,15 @@ worker.on('error',e=>{for(const p of pending.values())p.reject(e);pending.clear(
 const send=(type,args={})=>new Promise((resolve,reject)=>{pending.set(++id,{resolve,reject});worker.postMessage({type,id,...args});});
 try{
  const initial=await send('start',{seed:'1'});
- const projection=await send('npc-continuation',{input});eq(projection.conditionalConsumed,2);eq(projection.bootProof,false);eq(projection.worldResolved,false);
- eq(await send('replay',{trace:input}),projection);eq(await send('export'),initial);
- const out=await send('npc-continuation',{input:unknown});eq(out.resolved,false);eq(out.provedMinimumAT,0);eq(await send('export'),initial);
+ // Synthetic numerical replay above remains valid in isolation. The same
+ // snapshot/clock packets must now be rejected by the production Worker.
+ for(const [type,args] of [['npc-continuation',{input}],['replay',{trace:input}],['npc-continuation',{input:unknown}],['npc-continuation-files',files]]){
+  await assert.rejects(send(type,args),/DST・メモリ/);checks++;eq(await send('export'),initial);
+ }
  const panel=await readFile(new URL('../web/at-panel.mjs',import.meta.url),'utf8');
- assert(panel.includes("trace.format==='dq9-npc-replay-v1'"));checks++;
+ assert(panel.includes('PRODUCTION_AT_INPUT_NOTICE'));checks++;
+ assert(!panel.includes("trace.format==='dq9-npc-replay-v1'"));checks++;
  assert(panel.includes('attachNpcReplayPanel'));checks++;
+
 }finally{await worker.terminate();}
-console.log(JSON.stringify({suite:'npc-replay-production-worker',checks,passed:true,scope:'Portable synthetic entrypoint and actual Worker; native cases verified separately'}));
+console.log(JSON.stringify({suite:'npc-replay-production-worker',checks,passed:true,scope:'Portable synthetic arithmetic and actual Worker rejection; no native state accepted as production input'}));

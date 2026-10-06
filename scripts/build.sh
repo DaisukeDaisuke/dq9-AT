@@ -36,7 +36,8 @@ node scripts/test-at-identify-index-page.mjs
 node scripts/test-at-worker-regressions.mjs
 node scripts/test-at-binary64-regressions.mjs
 
-# Cross-map session predicates retain unknown outcomes without proof increments.
+# Cross-map numerical tests retain unknown outcomes without proof increments.
+# Production UI rejects memory-marked snapshots; isolated synthetic arithmetic remains testable.
 node scripts/test-at-session.mjs
 node --test scripts/test-map-entry-at.mjs
 
@@ -111,4 +112,5 @@ node scripts/test-f06-creator.mjs
 # Explicit bounded F06 fresh-origin keyboard contracts.
 node scripts/test-f06-keyboard.mjs
 node scripts/test-f06-origin.mjs
+
 
