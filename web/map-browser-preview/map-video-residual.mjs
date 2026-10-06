@@ -13,7 +13,23 @@ export function gameplayVideoROI(width,height,layout){
  else throw Error('動画の画面配置を選択してください');
  need(roi.w*3===roi.h*4,'指定したゲーム画面が4:3ではありません');return roi;
 }
-export function sampleGameplayFrame(image,roi){
+function needGameplayROI(width,height,roi){
+ need(['x','y','w','h'].every(k=>Number.isInteger(roi[k]))&&roi.x>=0&&roi.y>=0&&roi.w>0&&roi.h>0&&roi.x+roi.w<=width&&roi.y+roi.h<=height,'ゲーム画面ROIが元画像外です');
+}
+// Keep the global source-coordinate arithmetic/order, even for a cropped read.
+const sampleCoordinate=(origin,span,i,size)=>Math.max(origin,Math.min(origin+span-1,origin+(i+.5)*span/size-.5));
+/** Smallest rectangle containing every source address read by the sampler.
+ * Includes +1 neighbors even when their interpolation coefficient is zero.
+ * Integer in-bounds ROIs are the existing contract; no clipping/rounding of an
+ * invalid or fractional ROI is introduced. No image-layout constants here. */
+export function gameplaySampleReadbackRect(width,height,roi){
+ needGameplayROI(width,height,roi);
+ const x=Math.floor(sampleCoordinate(roi.x,roi.w,0,W)),y=Math.floor(sampleCoordinate(roi.y,roi.h,0,H));
+ const right=Math.min(Math.floor(sampleCoordinate(roi.x,roi.w,W-1,W))+1,roi.x+roi.w-1),bottom=Math.min(Math.floor(sampleCoordinate(roi.y,roi.h,H-1,H))+1,roi.y+roi.h-1);
+ return{x,y,w:right-x+1,h:bottom-y+1};
+}
+export function sampleGameplayFrame(image,roi,{sourceRect=null}={}){
+ if(sourceRect)return sampleGameplayReadback(image,roi,sourceRect);
  const {width,height,rgba}=image;need(rgba?.length===width*height*4,'元RGBA寸法が不正です');
  need(['x','y','w','h'].every(k=>Number.isInteger(roi[k]))&&roi.x>=0&&roi.y>=0&&roi.w>0&&roi.h>0&&roi.x+roi.w<=width&&roi.y+roi.h<=height,'ゲーム画面ROIが元画像外です');
  const out=new Uint8ClampedArray(N*4),clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -21,6 +37,27 @@ export function sampleGameplayFrame(image,roi){
  for(let y=0;y<H;y++)for(let x=0;x<W;x++){
   const fx=clamp(roi.x+(x+.5)*roi.w/W-.5,roi.x,roi.x+roi.w-1),fy=clamp(roi.y+(y+.5)*roi.h/H-.5,roi.y,roi.y+roi.h-1),ix=Math.floor(fx),iy=Math.floor(fy),jx=Math.min(ix+1,roi.x+roi.w-1),jy=Math.min(iy+1,roi.y+roi.h-1),dx=fx-ix,dy=fy-iy;
   for(let c=0;c<4;c++)out[(y*W+x)*4+c]=rgba[(iy*width+ix)*4+c]*(1-dx)*(1-dy)+rgba[(iy*width+jx)*4+c]*dx*(1-dy)+rgba[(jy*width+ix)*4+c]*(1-dx)*dy+rgba[(jy*width+jx)*4+c]*dx*dy;
+ }
+ return{width:W,height:H,rgba:out};
+}
+/** Exact cropped source sampling. Global coordinates and four-term channel
+ * arithmetic are unchanged. Reusing column coordinates/row offsets avoids the
+ * repeated source-origin subtraction introduced by a naive cropped loop. */
+function sampleGameplayReadback(image,roi,r){
+ const {width,height,rgba}=image;need(rgba?.length===r.w*r.h*4,'元RGBA寸法が不正です');needGameplayROI(width,height,roi);
+ const b=gameplaySampleReadbackRect(width,height,roi);
+ need(['x','y','w','h'].every(k=>Number.isInteger(r[k]))&&r.x>=0&&r.y>=0&&r.w>0&&r.h>0&&r.x+r.w<=width&&r.y+r.h<=height&&r.x<=b.x&&r.y<=b.y&&r.x+r.w>=b.x+b.w&&r.y+r.h>=b.y+b.h,'読戻し矩形がサンプル画素を含みません');
+ const left=new Float64Array(W),right=new Float64Array(W),weight=new Float64Array(W),out=new Uint8ClampedArray(N*4);
+ for(let x=0;x<W;x++){
+  const fx=sampleCoordinate(roi.x,roi.w,x,W),ix=Math.floor(fx),jx=Math.min(ix+1,roi.x+roi.w-1);
+  left[x]=ix-r.x;right[x]=jx-r.x;weight[x]=fx-ix;
+ }
+ for(let y=0;y<H;y++){
+  const fy=sampleCoordinate(roi.y,roi.h,y,H),iy=Math.floor(fy),jy=Math.min(iy+1,roi.y+roi.h-1),dy=fy-iy,row0=(iy-r.y)*r.w,row1=(jy-r.y)*r.w;
+  for(let x=0;x<W;x++){
+   const dx=weight[x],a=(row0+left[x])*4,b=(row0+right[x])*4,c=(row1+left[x])*4,d=(row1+right[x])*4,at=(y*W+x)*4;
+   for(let channel=0;channel<4;channel++)out[at+channel]=rgba[a+channel]*(1-dx)*(1-dy)+rgba[b+channel]*dx*(1-dy)+rgba[c+channel]*(1-dx)*dy+rgba[d+channel]*dx*dy;
+  }
  }
  return{width:W,height:H,rgba:out};
 }

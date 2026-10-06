@@ -2,8 +2,8 @@
 import {mineRuntimeFonts} from '../font-core.mjs';
 import {detectMapNameROI} from '../map-name-roi.mjs';
 import {mapCandidatesFromAkinator} from '../map-disambiguation.mjs';
-import {upperVideoROI} from './video-player-map-input.mjs';
-import {sampleGameplayFrame} from './map-video-residual.mjs';
+import {upperVideoROI} from './video-player-map-input.mjs?v=capture-gate-reseed-20261006-0850';
+import {sampleGameplayFrame} from './map-video-residual.mjs?v=capture-gate-reseed-20261006-0850';
 const fontCache=new WeakMap();
 export const MAP_NAME_OPTIONS=Object.freeze({autoThreshold:true,threshold:220,scales:[.95,1,1.05],charCount:16,maxMilliseconds:10000});
 export async function deriveVideoMapNames({sourceImage,layout,frameEvidence,romSHA256,project,records,matchText}){

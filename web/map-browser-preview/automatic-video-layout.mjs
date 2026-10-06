@@ -1,5 +1,5 @@
-import {upperVideoROI} from './video-player-map-input.mjs';
-import {gameplayVideoROI} from './map-video-residual.mjs';
+import {upperVideoROI} from './video-player-map-input.mjs?v=capture-gate-reseed-20261006-0850';
+import {gameplayVideoROI} from './map-video-residual.mjs?v=capture-gate-reseed-20261006-0850';
 // Input contract for the supplied recordings, not a visual/layout classifier.
 // The supplied 1920x1080 recording puts both 960x720 DS screens above the stream HUD.
 // Name visibility, map identity and player position are independently unresolved.

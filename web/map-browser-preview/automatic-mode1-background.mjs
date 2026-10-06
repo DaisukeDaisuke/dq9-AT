@@ -7,7 +7,7 @@ import{automaticBillboardScenes}from'./automatic-billboard-scene.mjs';
 import{applyMode1OrdinaryHypothesis}from'./automatic-material-environment.mjs?v=native-body-20261006-0212';
 import{refineGeometryPosition}from'./geometry-position-refinement.mjs';
 import{floorHeightsAtXZ}from'./rom-floor-candidates.mjs';
-import{compareMapBackground}from'./map-video-residual.mjs';
+import{compareMapBackground}from'./map-video-residual.mjs?v=capture-gate-reseed-20261006-0850';
 import{createRendererSourceArchives}from'./renderer-source-archives.mjs';
 export function createMode1BackgroundInference({backgroundRenderer}){
  const archives=createRendererSourceArchives();

@@ -2,7 +2,7 @@
 // Reuses existing calibration, registration and BMMP coordinate interpretation.
 import {calibratedPartyMarkerCandidates} from '../party-marker-calibration.mjs';
 import {markerCoordinateBinding,mapMarkerCoordinateCandidate} from '../map-marker-coordinate.mjs';
-import {sampleGameplayFrame} from './map-video-residual.mjs';
+import {sampleGameplayFrame} from './map-video-residual.mjs?v=capture-gate-reseed-20261006-0850';
 import {floorHeightsAtXZ} from './rom-floor-candidates.mjs';
 export function upperVideoROI(width,height,layout){
  let r;if(layout==='obs-side-1920'&&width===1920&&height===1080)r={x:0,y:0,w:960,h:720};

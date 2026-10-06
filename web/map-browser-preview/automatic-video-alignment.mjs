@@ -1,16 +1,16 @@
 import{createAmbiguousMarkerBackgroundBudget}from'./physical-marker-background-hypotheses.mjs?v=native-continuation-20261006-0333';
 import{buildBackgroundBranchSupport}from'./background-branch-support.mjs?v=enc-motion-at-20261006-1156';
-import{createSourceAnchorSceneInference}from'./source-anchor-scene-inference.mjs?v=enc-motion-at-20261006-1156';
+import{createSourceAnchorSceneInference}from'./source-anchor-scene-inference.mjs?v=capture-gate-reseed-20261006-0850';
 import{resolveFrozenInferencePixels}from'./capture-analysis-pixels.mjs?v=native-continuation-20261006-0333';
-import{createMode1BackgroundInference}from'./automatic-mode1-background.mjs?v=enc-motion-at-20261006-1156';
-import {Mode2VideoContinuity} from './mode2-video-continuity.mjs?v=enc-motion-at-20261006-1156';
-import {inferAutomaticMode2Background} from './automatic-mode2-background.mjs?v=enc-motion-at-20261006-1156';
+import{createMode1BackgroundInference}from'./automatic-mode1-background.mjs?v=capture-gate-reseed-20261006-0850';
+import {Mode2VideoContinuity} from './mode2-video-continuity.mjs?v=capture-gate-reseed-20261006-0850';
+import {inferAutomaticMode2Background} from './automatic-mode2-background.mjs?v=capture-gate-reseed-20261006-0850';
 import {readRomMapCameraInputGate} from './rom-camera-input-gate.mjs';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
 import {CandidateMapMatcher} from '../map-disambiguation.mjs';
 import {loadAutomaticScene} from './automatic-scene.mjs';
 import {loadRomFloorInstances} from './rom-floor-candidates.mjs';
-import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=native-continuation-20261006-0333';
+import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=capture-gate-reseed-20261006-0850';
 import {automaticPreviewCamera} from './automatic-preview-camera.mjs';
 import {automaticBillboardScenes} from './automatic-billboard-scene.mjs';
 import {applyAutomaticMaterialEnvironment} from './automatic-material-environment.mjs?v=native-body-20261006-0212';
@@ -18,7 +18,7 @@ import {createAutomaticBackgroundRenderer} from './automatic-background-renderer
 import {readRomMapScreenEffectPlan} from './rom-map-screen-effect-plan.mjs';
 import {prepareDrawPackets} from './draw-packets.mjs';
 import {rasterizePreviewPackets} from './cpu-preview.mjs';
-import {sampleGameplayFrame,gameplayVideoROI,compareMapBackground} from './map-video-residual.mjs';
+import {sampleGameplayFrame,gameplayVideoROI,compareMapBackground} from './map-video-residual.mjs?v=capture-gate-reseed-20261006-0850';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
 const identity=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
 export class AutomaticVideoAlignment {

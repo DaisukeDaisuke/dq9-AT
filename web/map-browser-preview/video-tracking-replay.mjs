@@ -70,3 +70,18 @@ export class VideoTrackingReplay {
  currentGray(){const f=this.batch?.previous;return f?{gray:f.gray.slice(),stamp:clone(f.stamp)}:null;}
  async settled(){while(this.activePromise)await this.activePromise;return this.snapshot();}
 }
+
+// Wait only for the target retained frame's measured record, not all future
+// replay work. This creates no correspondence or handoff evidence by itself.
+export async function waitForMeasuredReplayFrame({replay,stamp,isCurrent=()=>true,yieldTask=pause}){
+ const key=videoTrackingFrameKey(stamp),source=videoTrackingSourceKey(stamp),pts=stamp.mediaTime??stamp.videoTime;
+ for(;;){
+  if(!isCurrent())return{recordAvailable:false,reason:'comparison-invalidated',frameKey:key};
+  const state=replay.snapshot();if(state.sourceKey!==source)return{recordAvailable:false,reason:'replay-source-differs',frameKey:key};
+  const frame=replay.frames.find(f=>f.key===key),record=replay.history.get(key);
+  if(!frame||frame.conflicted)return{recordAvailable:false,reason:'target-frame-not-retained-or-conflicted',frameKey:key};
+  if(record&&record.batchId===replay.batch?.id&&!record.previousFrame.conflicted)return{recordAvailable:true,reason:'matching-measured-record-available',frameKey:key};
+  if(!replay.busy||state.currentPTS===null||state.currentPTS>=pts)return{recordAvailable:false,reason:'no-pending-measured-record-for-target',frameKey:key};
+  await yieldTask();
+ }
+}

@@ -1,4 +1,4 @@
-import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=native-continuation-20261006-0333';
+import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=capture-gate-reseed-20261006-0850';
 // A cached map is a search hypothesis, never a temporal assertion. Every hit
 // requires fresh whole-minimap registration and physical-marker/floor hypotheses or fixed-display-anchor evidence.
 export class VideoMapContinuity {
