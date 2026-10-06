@@ -2,7 +2,7 @@
 import {mineRuntimeFonts} from '../font-core.mjs';
 import {detectMapNameROI} from '../map-name-roi.mjs';
 import {mapCandidatesFromAkinator} from '../map-disambiguation.mjs';
-import {upperVideoROI} from './video-player-map-input.mjs?v=upper-preparation-reuse-20261006-1428';
+import {upperVideoROI} from './video-player-map-input.mjs?v=complete-registration-reuse-20261006-1523';
 import {sampleGameplayFrame} from './map-video-residual.mjs?v=camera-loss-evidence-20261006-1205';
 const fontCache=new WeakMap();
 export const MAP_NAME_OPTIONS=Object.freeze({autoThreshold:true,threshold:220,scales:[.95,1,1.05],charCount:16,maxMilliseconds:10000});

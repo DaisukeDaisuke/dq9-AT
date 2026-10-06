@@ -145,3 +145,6 @@ node --test scripts/test-video-upper-preparation.mjs
 
 # Capture/input tasks can run between continuity descriptors; stale work aborts.
 node --test scripts/test-continuity-descriptor-yield.mjs
+
+# Exact request-local completed minimap search reuse; incomplete work reruns.
+node --test scripts/test-completed-minimap-registration-reuse.mjs

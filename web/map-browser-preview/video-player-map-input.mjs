@@ -1,3 +1,4 @@
+import {createCompletedMinimapRegistrationReuse} from './completed-minimap-registration-reuse.mjs?v=complete-registration-reuse-20261006-1523';
 // Same-frame upper-screen marker -> ROM map-coordinate hypotheses.
 // Reuses existing calibration, registration and BMMP coordinate interpretation.
 import {calibratedPartyMarkerCandidates} from '../party-marker-calibration.mjs';
@@ -19,10 +20,11 @@ function halfFrame(image){const rgba=new Uint8ClampedArray(128*96*4);for(let y=0
 const upperPreparations=new WeakMap();
 const upperFrameBinding=stamp=>JSON.stringify(['sourceId','sourceEpoch','timelineSegment','frameSerial','mediaTime','videoTime','timestampBasis','fullRGBA_SHA256'].map(k=>stamp?.[k]??null));
 export function createVideoUpperPreparation({sourceImage,layout,frameEvidence}){
- const token=Object.freeze({});upperPreparations.set(token,{sourceImage,rgba:sourceImage?.rgba,width:sourceImage?.width,height:sourceImage?.height,layout,frameEvidence,binding:upperFrameBinding(frameEvidence),value:null});return token;
+ const token=Object.freeze({});upperPreparations.set(token,{sourceImage,rgba:sourceImage?.rgba,width:sourceImage?.width,height:sourceImage?.height,layout,frameEvidence,binding:upperFrameBinding(frameEvidence),value:null,registrationReuse:createCompletedMinimapRegistrationReuse()});return token;
 }
+function upperPreparationFor({sourceImage,layout,frameEvidence,upperPreparation}){const candidate=upperPreparations.get(upperPreparation);return candidate&&candidate.sourceImage===sourceImage&&candidate.rgba===sourceImage.rgba&&candidate.width===sourceImage.width&&candidate.height===sourceImage.height&&candidate.layout===layout&&candidate.frameEvidence===frameEvidence&&candidate.binding===upperFrameBinding(frameEvidence)?candidate:null;}
 function prepareVideoUpper({sourceImage,layout,frameEvidence,upperPreparation,measure}){
- const candidate=upperPreparations.get(upperPreparation),saved=candidate&&candidate.sourceImage===sourceImage&&candidate.rgba===sourceImage.rgba&&candidate.width===sourceImage.width&&candidate.height===sourceImage.height&&candidate.layout===layout&&candidate.frameEvidence===frameEvidence&&candidate.binding===upperFrameBinding(frameEvidence)?candidate:null;
+ const saved=upperPreparationFor({sourceImage,layout,frameEvidence,upperPreparation});
  const build=()=>{const roi=upperVideoROI(sourceImage.width,sourceImage.height,layout),upper=sampleGameplayFrame(sourceImage,roi),markers=calibratedPartyMarkerCandidates(upper),frame=halfFrame(upper);return{roi,upper,markers,frame};};
  if(!saved)return measure('upper-marker-preparation',build);
  return measure(saved.value?'upper-marker-preparation-reuse':'upper-marker-preparation',()=>{saved.value??=build();return structuredClone(saved.value);});
@@ -31,7 +33,7 @@ export function deriveVideoPlayerMapInput({sourceImage,layout,mapImage,mapId,mat
  if(!frameEvidence?.fullRGBA_SHA256)throw Error('同じ固定フレームの由来が必要です');
  const detail={recordKey,descriptor:mapImage.descriptor.path},measure=(phase,run)=>measureMapInput(phase,run,detail);
  const {roi,upper,markers,frame}=prepareVideoUpper({sourceImage,layout,frameEvidence,upperPreparation,measure});
- const registration=measure('minimap-registration',()=>{matcher.setReference({...mapImage,mapId,descriptor:mapImage.descriptor.path});const excluded=[{x:0,y:0,w:128,h:10},{x:0,y:86,w:128,h:10},...markers.candidates.map(m=>({x:m.bounds.x/2-2,y:m.bounds.y/2-2,w:m.bounds.w/2+4,h:m.bounds.h/2+4}))];return matchVideoMinimapRegistration(matcher,frame,{excluded});}),binding=markerCoordinateBinding(mapImage.descriptor,mapId),candidates=[];
+ const registration=measure('minimap-registration',()=>{matcher.setReference({...mapImage,mapId,descriptor:mapImage.descriptor.path});const excluded=[{x:0,y:0,w:128,h:10},{x:0,y:86,w:128,h:10},...markers.candidates.map(m=>({x:m.bounds.x/2-2,y:m.bounds.y/2-2,w:m.bounds.w/2+4,h:m.bounds.h/2+4}))];const saved=upperPreparationFor({sourceImage,layout,frameEvidence,upperPreparation});return saved?saved.registrationReuse({matcher,frame,excluded,mapImage,mapId}):matchVideoMinimapRegistration(matcher,frame,{excluded});}),binding=markerCoordinateBinding(mapImage.descriptor,mapId),candidates=[];
  measure('marker-world-floor-queries',()=>{ 
  for(const [peakIndex,peak]of registration.candidates.entries())for(const marker of markers.candidates){
   const sx=Math.round(mapImage.width*peak.scale)/mapImage.width,sy=Math.round(mapImage.height*peak.scale)/mapImage.height,x=(marker.x/2-peak.dx)/sx,y=(marker.y/2-peak.dy)/sy;
