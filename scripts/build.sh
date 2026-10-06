@@ -51,6 +51,11 @@ node scripts/test-npc-replay-panel.mjs
 # Capture identity must stay tied to frozen pixels across asynchronous analyses.
 # The panel harness must resolve browser cache-query imports as module URLs.
 node --experimental-vm-modules scripts/check-video-panel-capture.mjs
+# Skip unsupported-by-context monster background work without dropping map evidence.
+node scripts/test-automatic-monster-map-eligibility.mjs
+
+# Explicit CPU/GPU asset preparation, cancellation and cached-only retry.
+node scripts/test-residual-inference-preparation.mjs
 
 # Experimental ROM-derived pose matching: portable CPU/Worker and parser checks.
 node scripts/test-monster-animation.mjs

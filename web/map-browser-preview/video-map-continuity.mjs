@@ -23,6 +23,7 @@ export class VideoMapContinuity {
   for(const candidate of entry.evidence.maps){
    if(!isCurrent())throw new DOMException('Map continuity cancelled','AbortError');
    const record=alignment.records.find(r=>r.key===candidate.key);if(!record){revalidatedMaps.push({recordKey:candidate.key,status:'unknown',unsupported:'ROM record unavailable'});continue;}
+   const eligibility=alignment.monsterWorkflowEligibility?.(record,input);if(eligibility?.skipBackground){revalidatedMaps.push({recordKey:record.key,mapId:record.mapId,status:'background-skipped-for-monster-workflow',monsterWorkflow:eligibility});continue;}
    try{const scene=alignment.scene(record),selection=await resolveVideoMinimapCandidates({record,catalog:alignment.catalog,renderer,matcher:alignment.matcher,floors:scene.floors,...input,isCurrent});selections.set(record.key,selection);const survived=Boolean(selection.accepted.length||selection.anchorOnly?.length||selection.physicalMarkerHypotheses?.length);revalidatedMaps.push({recordKey:record.key,mapId:record.mapId,status:survived?'surviving-map-hypothesis':'no-accepted-map-hypothesis',diagnostics:selection.diagnostics});if(survived)accepted.push(selection);}
    catch(error){if(error.name==='AbortError')throw error;revalidatedMaps.push({recordKey:record.key,mapId:record.mapId,status:'unknown',unsupported:error.message});}
   }

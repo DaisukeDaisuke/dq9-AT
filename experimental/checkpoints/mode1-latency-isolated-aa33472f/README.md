@@ -1,0 +1,3 @@
+# Scope correction for preserved isolated source
+
+The unchanged source-only.zip preserves its original report and measurements. Its README's monster-present long2355 wording is not a verified workflow claim. The saved selected branch is S04/map5400, which has no group in the completely decoded current-ROM encfld stream. The encounter-backed F02/map20002 alternative is separate. The 255.3→118.1ms preparation benchmark and exact three-branch comparisons concern that isolated S04 source path. They do not establish a speed improvement on the current encounter-backed monster workflow. The optimization is not activated in production. Retain historical evidence without promoting it into an urgent or completed recognition claim.
