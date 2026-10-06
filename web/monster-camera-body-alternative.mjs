@@ -1,0 +1,37 @@
+// Video/ROM hypothesis comparison for automatic conditional scheduling, not identity.
+// A fixed-view thumbnail cannot veto this separate camera-conditioned evidence.
+// Legacy outcomes, all unknown/player/background alternatives and AT bounds stay.
+const need=(x,m)=>{if(!x)throw Error(m);},clone=x=>structuredClone(x);
+const frameKeys=['romSHA256','sourceId','sourceEpoch','timelineSegment','mediaTime','fullRGBA_SHA256'];
+function sameFrame(a,b){return a&&b&&frameKeys.every(k=>a[k]!==undefined&&a[k]!==null&&a[k]===b[k]);}
+export function compareCameraBodyAlternative({appearanceFrame,rankings,legacyPrediction,backgroundBranchSupport,sourceBranches,expectedModelIds}){
+ need(Array.isArray(rankings)&&Array.isArray(expectedModelIds)&&expectedModelIds.length>0&&new Set(expectedModelIds).size===expectedModelIds.length&&rankings.length===expectedModelIds.length&&rankings.every(r=>expectedModelIds.includes(r.modelId))&&new Set(rankings.map(r=>r.modelId)).size===rankings.length,'Complete distinct appearance/model domain required');
+ need(backgroundBranchSupport?.kind==='same-frame-background-branch-support-v1'&&backgroundBranchSupport.ready===true&&Array.isArray(backgroundBranchSupport.branches)&&backgroundBranchSupport.branches.length>0&&backgroundBranchSupport.passingBranchCount===backgroundBranchSupport.branches.length,'Complete retained background-branch support required');
+ need(sameFrame(appearanceFrame,{...backgroundBranchSupport.frame,romSHA256:appearanceFrame.romSHA256}),'Background branch support belongs to another frame');
+ const expectedBranches=backgroundBranchSupport.branches.map(b=>{need(b.romSHA256===appearanceFrame.romSHA256&&b.fullRGBA_SHA256===appearanceFrame.fullRGBA_SHA256&&typeof b.recordKey==='string'&&typeof b.branchId==='string','Source background branch identity missing or mismatched');return{branchId:b.branchId,recordKey:b.recordKey,frame:{...appearanceFrame,recordKey:b.recordKey}};});
+ need(new Set(expectedBranches.map(b=>b.branchId)).size===expectedBranches.length,'All retained distinct camera branches required');
+ need(Array.isArray(sourceBranches)&&new Set(sourceBranches.map(b=>b.branchId)).size===sourceBranches.length&&sourceBranches.every(b=>expectedBranches.some(e=>e.branchId===b.branchId)),'Unexpected or duplicate evaluated camera branch');
+ need(/^[a-f0-9]{64}$/.test(appearanceFrame?.romSHA256??'')&&/^[a-f0-9]{64}$/.test(appearanceFrame?.fullRGBA_SHA256??''),'Frozen video/ROM identities required');
+ const appearances=rankings.filter(r=>Number.isFinite(r.similarity)).slice().sort((a,b)=>b.similarity-a.similarity||a.modelId.localeCompare(b.modelId)),appearance=appearances[0],uniqueAppearance=appearances.length===rankings.length&&(!appearances[1]||appearance.similarity>appearances[1].similarity);
+ const branches=expectedBranches.map(expected=>{
+  const row={branchId:expected.branchId,recordKey:expected.recordKey,status:'unknown',bestTestedModelId:null,positiveModelIds:[],candidates:[],reasons:[]},source=sourceBranches.find(b=>b.branchId===expected.branchId);
+  if(!sameFrame(appearanceFrame,expected.frame)||!source||!sameFrame(expected.frame,source.frame)||source.frame.recordKey!==expected.recordKey){row.reasons.push('Missing or mismatched retained camera branch');return row;}
+  if(source.renderer!=='source-integer-original-GX-body-subset'){row.reasons.push('Body scores are not from the expected source renderer');return row;}
+  if(!Array.isArray(source.candidates)||new Set(source.candidates.map(c=>c.modelId)).size!==source.candidates.length||source.candidates.some(c=>!expectedModelIds.includes(c.modelId))){row.reasons.push('Malformed source candidate domain');return row;}
+  for(const modelId of expectedModelIds){const c=source.candidates.find(c=>c.modelId===modelId),best=c?.best,extent=best?.nativeBodyExtent,own=extent?.bodyColorOwnership,fit=best?.fit,reason=[];
+   if(!c||!best||!Number.isSafeInteger(c.testedProposals)||c.testedProposals<1||!Number.isFinite(fit?.pixelErrorReduction)||!Number.isFinite(fit.backgroundSSE)||fit.backgroundSSE<0||!Number.isFinite(fit.bodySSE)||fit.bodySSE<0||fit.pixelErrorReduction!==fit.backgroundSSE-fit.bodySSE||fit.raster!=='source-integer-original-GX-body-subset')reason.push('Candidate has no complete evaluated body proposal');
+   if(!sameFrame(extent?.frame,expected.frame)||extent?.frame?.recordKey!==expected.recordKey)reason.push('Body extent is not from this frame/camera record');
+   if(own?.ready!==true||own.empty!==false||own.completeWithinAdmittedRendererSubset!==true||own.allVisibleContributionsCapturedWithinComposition!==true||!Number.isSafeInteger(own.knownPixels)||own.knownPixels<=0||own.unavailablePixels!==0||own.knownSpatialSupportRank!==2||own.knownBodySpatiallyDegenerate!==false)reason.push('Known nondegenerate complete body-color ownership unavailable');
+   row.candidates.push({modelId,encounterCompatible:c?.candidateSource?.matchesBranchEncounterPlan===true,candidateSource:clone(c?.candidateSource??null),ready:reason.length===0,pixelErrorReduction:Number.isFinite(fit?.pixelErrorReduction)?fit.pixelErrorReduction:null,sourceProposalId:best?.proposalId??null,bodyOwnership:own?clone(own):null,sourcePlacement:best?.sourcePlacement?clone(best.sourcePlacement):null,unsupported:clone(c?.unsupported??[]),reasons:reason});
+  }
+  const available=row.candidates.filter(c=>c.ready);row.positiveModelIds=available.filter(c=>c.pixelErrorReduction>0).map(c=>c.modelId);
+  if(available.length!==expectedModelIds.length){row.reasons.push('Missing/unsupported rival alternatives retained; no branch preference');return row;}
+  available.sort((a,b)=>b.pixelErrorReduction-a.pixelErrorReduction||a.modelId.localeCompare(b.modelId));const best=available[0];
+  if(best.pixelErrorReduction<=0){row.status='tested-background-preferred';row.reasons.push('No tested complete body improves the background');return row;}
+  if(available[1]?.pixelErrorReduction===best.pixelErrorReduction){row.reasons.push('Tied best-tested body alternatives');return row;}
+  if(!best.encounterCompatible){row.reasons.push('Best-tested model is not bound to this branch encounter source; outside-route alternative retained');return row;}
+  row.status='conditional-tested-body-preference';row.bestTestedModelId=best.modelId;return row;
+ });
+ const modelId=uniqueAppearance&&branches.every(b=>b.status==='conditional-tested-body-preference'&&b.bestTestedModelId===appearance.modelId)?appearance.modelId:null;
+ return{kind:'conditional-camera-body-alternative-v1',frame:clone(appearanceFrame),supportedModelId:modelId,speciesCandidates:modelId?clone(appearance.speciesCandidates??[]):[],appearanceModelId:uniqueAppearance?appearance.modelId:null,branches,legacyPrediction:clone(legacyPrediction),legacyPredictionChanged:false,legacyVetoApplied:false,appearanceOrderChanged:false,bodyHypothesisCoverageComplete:false,unknownNonEnemyPossible:true,playerPossible:true,backgroundErrorPossible:true,missingSourceStatePossible:true,identityCertified:false,bodyExtentCertified:false,minimumProvenATCalls:0,noEventPossible:true,certifiedObservation:false,conditionalHypothesisOnly:true,scope:'Separate best-tested video/ROM camera-conditioned alternative. Full retained camera and model domains must be present; unsearched poses and unknown/player/background outcomes remain possible. May be automatically scheduled as a separate conditional AT hypothesis; never an identity decision, replacement gate, hard/current-state constraint or all-input claim.'};
+}

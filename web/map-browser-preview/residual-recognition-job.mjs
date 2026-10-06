@@ -1,5 +1,5 @@
 import {nativeBodyRequestPayload} from './native-body-request.mjs?v=enc-motion-at-20261006-1156';
-import {attachResidualNativeSupport,RESIDUAL_NATIVE_BODY_BUDGET} from './residual-native-support.mjs?v=native-evidence-sharing-20261006-0723';
+import {attachResidualNativeSupport,RESIDUAL_NATIVE_BODY_BUDGET} from './residual-native-support.mjs?v=camera-body-alternative-20261006-1430';
 import {chooseResidualBackend,residualBackendProvenance,assertResidualBackendResult} from './residual-recognition-backend.mjs';
 import {residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs?v=enc-motion-at-20261006-1156';
 // Claim a queued frame's native-only destination while its one-frame mailbox

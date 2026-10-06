@@ -1,4 +1,4 @@
-import{nativeBodyExtentEvidence}from'./monster-native-extent-evidence.mjs?v=enc-motion-at-20261006-1156';
+import{nativeBodyExtentEvidence}from'./monster-native-extent-evidence.mjs?v=camera-body-alternative-20261006-1430';
 // Optional bounded worker-side source-native evaluator. No production caller.
 import{readMonsterAssets}from'./monster-assets.mjs';
 import{readNSBCA}from'./monster-animation.mjs?v=stored-pivot-source-20261006-0800';

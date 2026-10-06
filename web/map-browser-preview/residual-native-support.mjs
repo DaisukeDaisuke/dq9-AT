@@ -1,3 +1,4 @@
+import {compareCameraBodyAlternative} from '../monster-camera-body-alternative.mjs?v=camera-body-alternative-20261006-1430';
 import {attachNativeBodySupport} from '../monster-native-support.mjs?v=native-evidence-sharing-20261006-0723';
 
 // Cooperative work budget for the entire frozen set, including preparation.
@@ -32,7 +33,21 @@ function frameFor(input,recordKey){
 }
 function sameFrame(a,b){return FRAME_KEYS.every(key=>a?.[key]!==null&&a?.[key]!==undefined&&a[key]===b?.[key]);}
 
-// Only the optional sourceNativeSupport field is merged. Reusing the already
+
+// The original prediction, full source fits and every failure stay where they
+// already live. Reference them rather than duplicating them into the timeline.
+function cameraAlternativeAttachment(sighting,{appearance,input,native}){
+ const frame=frameFor(input,undefined);
+ try{
+  if(sighting.classificationEvidence?.length!==1)throw Error('One complete frozen appearance domain required');
+  const rankings=sighting.classificationEvidence[0].rankings,expectedModelIds=appearance.source?.modelPlan?.models?.map(m=>m.modelId),sourceBranches=(native?.groups??[]).flatMap(group=>(group.bundle?.branches??[]).map(branch=>({...branch,frame:group.frame,renderer:group.bundle.renderer})));
+  const result=compareCameraBodyAlternative({appearanceFrame:frame,rankings,legacyPrediction:sighting.conditionalBodyPrediction,backgroundBranchSupport:input.backgroundEvidence?.backgroundBranchSupport,sourceBranches,expectedModelIds});
+  const {legacyPrediction,...attachment}=result;
+  return {...attachment,legacyPredictionReference:'conditionalBodyPrediction',branches:result.branches.map(branch=>({...branch,candidates:branch.candidates.map(candidate=>({modelId:candidate.modelId,ready:candidate.ready,encounterCompatible:candidate.encounterCompatible,pixelErrorReduction:candidate.pixelErrorReduction,sourceProposalId:candidate.sourceProposalId,reasons:candidate.reasons,unsupportedCount:candidate.unsupported.length,sourceEvidenceReference:{kind:'same-sighting-source-native-support-reference',classificationEvidenceIndex:0,modelId:candidate.modelId,branchId:branch.branchId,recordKey:branch.recordKey,field:'sourceNativeSupport'}}))}))};
+ }catch(error){return{kind:'conditional-camera-body-alternative-v1',frame,supportedModelId:null,speciesCandidates:[],appearanceModelId:null,branches:[],unavailableReason:String(error?.message??error),legacyPredictionReference:'conditionalBodyPrediction',legacyPredictionChanged:false,appearanceOrderChanged:false,unknownNonEnemyPossible:true,playerPossible:true,backgroundErrorPossible:true,identityCertified:false,minimumProvenATCalls:0,noEventPossible:true,certifiedObservation:false,conditionalHypothesisOnly:true};}
+}
+
+// Existing sourceNativeSupport and a distinct conditional camera alternative are merged. Reusing the already
 // built observation bundle leaves bodyFit, conditionalBodyPrediction, AT and
 // appearance order byte-for-byte equivalent after this field is removed.
 export function attachResidualNativeSupport(appearance,{input,result=null,error=null}){
@@ -51,7 +66,7 @@ export function attachResidualNativeSupport(appearance,{input,result=null,error=
  return{...appearance,sightings:appearance.sightings.map(sighting=>{
   const region=input.regions.find(row=>String(row.id)===sighting.originalProposalId);
   const native=region?supportByRegion.get(region.id):null;
-  return{...sighting,classificationEvidence:sighting.classificationEvidence.map(evidence=>{
+  const next={...sighting,classificationEvidence:sighting.classificationEvidence.map(evidence=>{
    const rows=evidence.rankings??[];
    const branchesByModel=new Map(rows.map(row=>[row.modelId,[]]));
    for(const group of expected){
@@ -73,5 +88,7 @@ export function attachResidualNativeSupport(appearance,{input,result=null,error=
    }
    return{...evidence,rankings:rows.map(row=>({...row,sourceNativeSupport:{modelId:row.modelId,kind:'conditional-source-native-own-support',...(workProgress?{workProgress:{...workProgress}}:{}),branches:branchesByModel.get(row.modelId),...(expected.length?{}:{unavailableReason:reason}),budget:clone(RESIDUAL_NATIVE_BODY_BUDGET),budgetStopped:result?.budgetStopped===true,complete:false,identityCertified:false,bodyExtentCertified:false,poseAndCameraCoverageComplete:false,unknownNonEnemyPossible:true,noEventPossible:true,minimumProvenATCalls:0}}))};
   })};
+  next.cameraBodyAlternative=cameraAlternativeAttachment(next,{appearance,input,native});
+  return next;
  })};
 }

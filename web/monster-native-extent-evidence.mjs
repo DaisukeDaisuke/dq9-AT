@@ -11,7 +11,7 @@ const validMask=mask=>mask instanceof Uint8Array&&mask.length===PIXELS&&mask.eve
 function summarize(mask,alignment,comparisonMask,coverage=null){
  if(!(mask instanceof Uint8Array)||mask.length!==PIXELS)return {valid:false};
  let outsideCoverage=false;
- let minX=WIDTH,minY=HEIGHT,maxX=-1,maxY=-1,pixels=0,knownPixels=0,outsideFramePixels=0;
+ let minX=WIDTH,minY=HEIGHT,maxX=-1,maxY=-1,pixels=0,knownPixels=0,outsideFramePixels=0,knownSpatialSupportRank=0,first=null,second=null;
  // Read the unaligned source mask and apply its integer alignment once.
  for(let i=0;i<PIXELS;i++){
   const value=mask[i];if(value!==0&&value!==1)return {valid:false};
@@ -19,9 +19,10 @@ function summarize(mask,alignment,comparisonMask,coverage=null){
   const x=i%WIDTH+alignment.dx,y=(i>>8)+alignment.dy;
   if(x<0||y<0||x>=WIDTH||y>=HEIGHT){outsideFramePixels++;continue;}
   const index=y*WIDTH+x;pixels++;knownPixels+=comparisonMask[index];
+  if(comparisonMask[index]){if(!first)first=[x,y];else if(!second){second=[x,y];knownSpatialSupportRank=1;}else if((second[0]-first[0])*(y-first[1])!==(second[1]-first[1])*(x-first[0]))knownSpatialSupportRank=2;}
   minX=Math.min(minX,x);minY=Math.min(minY,y);maxX=Math.max(maxX,x);maxY=Math.max(maxY,y);
  }
- return {valid:true,outsideCoverage,extent:{ready:true,empty:pixels===0,roi:pixels?{x:minX,y:minY,w:maxX-minX+1,h:maxY-minY+1}:null,pixels,knownPixels,unavailablePixels:pixels-knownPixels,outsideFramePixels,clippedByAlignment:outsideFramePixels>0,retainedPixelMask:false}};
+ return {valid:true,outsideCoverage,extent:{ready:true,empty:pixels===0,roi:pixels?{x:minX,y:minY,w:maxX-minX+1,h:maxY-minY+1}:null,pixels,knownPixels,knownSpatialSupportRank,knownBodySpatiallyDegenerate:knownSpatialSupportRank<2,unavailablePixels:pixels-knownPixels,outsideFramePixels,clippedByAlignment:outsideFramePixels>0,retainedPixelMask:false}};
 }
 /** The projected envelope and raster footprint are deliberately separate from
  * body color ownership. In mixed composition, final color ownership does not
