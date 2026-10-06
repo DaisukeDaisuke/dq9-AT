@@ -1,5 +1,5 @@
 import {mountResidualInferencePreparation} from './residual-inference-preparation.mjs?v=field-stream-20261005-1108';
-import {createVideoTrackingAT,videoATSearchOptions} from './video-tracking-at.mjs?v=enc-motion-at-20261006-1156';
+import {createVideoTrackingAT,videoATSearchOptions} from './video-tracking-at.mjs?v=native-entry-links-20261006-1240';
 import {runResidualRecognitionJob} from './residual-recognition-job.mjs?v=enc-motion-at-20261006-1156';
 import {VideoMapContinuity} from './video-map-continuity.mjs?v=native-continuation-20261006-0333';
 import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=enc-motion-at-20261006-1156';

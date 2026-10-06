@@ -1,6 +1,6 @@
 import {searchAutomaticReplayInputs} from '../video-replay-factor-search.mjs?v=automatic-entry-factors-20261006-1120';
 import {deriveTrackingEventEvidence,automaticSingletonSearchOptions} from '../tracking-at-event-evidence.mjs?v=enc-motion-at-20261006-1156';
-import {prepareTrackingJob,openTrackingCheckpointStore,startTrackingSession,collectTrackingMotionAssociationInputs} from '../tracking-at-session.mjs?v=enc-motion-at-20261006-1156';
+import {prepareTrackingJob,openTrackingCheckpointStore,startTrackingSession,collectTrackingMotionAssociationInputs} from '../tracking-at-session.mjs?v=native-entry-links-20261006-1240';
 // This is an execution budget/prior supplied by the user, never inferred from PTS.
 export function videoATSearchOptions(values,tables){
  const {seed,seedProvenance,first,last,indexProvenance}=values;
@@ -25,8 +25,8 @@ export function createVideoTrackingAT({getOptions,getTables=()=>({}),engineRevis
    // fingerprinted AT snapshot. All preexisting automatic fields remain hashed.
    const {nativeBodySupportEvidence,...automatic}=deriveTrackingEventEvidence(snapshot);
    latestNativeBodySupport=nativeBodySupportEvidence??null;
-   latestNativeMotionInputs=collectTrackingMotionAssociationInputs(snapshot,latestNativeBodySupport);
    snapshot.automaticATEventEvidence=automatic;
+   latestNativeMotionInputs=collectTrackingMotionAssociationInputs(snapshot,latestNativeBodySupport);
    const chains=snapshot.conditionalATEventEvidence?.chains??[];
    if(!chains.length&&!automatic.singleEvents.length){emit({status:'waiting',reason:'映像観測を接続済み。身体と種類が一致する条件付き予測はまだありません。残差の順位だけではAT解析を開始せず、候補と未確定の可能性を保持します。',sightings:snapshot.sightings?.length??0,missingEvidence:['supported conditional body/species prediction or explicit finite event evidence'],deferredAlternatives:automatic.deferred.length,unobservedGapsRetained:true});return;}
    const options=chains.length?getOptions():automaticSingletonSearchOptions(getTables());

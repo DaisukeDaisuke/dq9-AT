@@ -3,13 +3,51 @@ import {compileTrackingObservations} from './tracking-at-observation-adapter.mjs
 import {fingerprint} from './tracking-at-runner.mjs?v=field-stream-20261005-1108';
 import {createNativeMotionContinuityIndex} from './tracking-native-motion.mjs?v=enc-motion-at-20261006-1156';
 const need=(v,m)=>{if(!v)throw Error(m);};
+// A predecessor with the same model is not necessarily the prior classified
+// actor. Bind each exact endpoint sighting and its own frame/map/camera evidence.
+// Source-specific pairs remain alternatives; do not intersect actor predicates.
+function indexEndpointSelections(singleEvents,compiledBranches){
+ const bySighting=new Map(),compiledById=new Map((compiledBranches??[]).map(b=>[b.id,b]));
+ for(const event of singleEvents??[]){
+  if(event?.status!=='conditional-source-model-evidence'||typeof event.id!=='string'||typeof event.modelId!=='string'||typeof event.provenance!=='string'||!event.provenance.length)continue;
+  for(const source of event.sourceEvidence??[]){
+   if(typeof source?.sightingId!=='string'||!event.sightingIds?.includes(source.sightingId))continue;
+   if(!bySighting.has(source.sightingId))bySighting.set(source.sightingId,[]);
+   bySighting.get(source.sightingId).push({event,source,compiledBranch:compiledById.get(event.id)});
+  }
+ }
+ return bySighting;
+}
+function bindSelectionEndpoint(candidate,bySighting,nativeFrames,endpoint){
+ const links=[],deferred=[],sightingId=endpoint==='prior'?candidate.fromSightingId:candidate.toSightingId,nativeFrame=nativeFrames.get(sightingId);
+ for(const [hypothesisIndex,h] of candidate.hypotheses.entries()){
+  const reference=endpoint==='prior'?h.from:h.to,entries=bySighting.get(sightingId)??[];
+  for(const {event,source,compiledBranch}of entries){
+   const frame=source.mapHypothesisProvenance?.frame,compatibility=source.mapCompatibility,background=compatibility?.bodyBackground,prediction=source.conditionalBodyPrediction;
+   const sameFrame=frame&&nativeFrame&&frame.frameKey===reference.frameKey&&source.frameKey===reference.frameKey&&source.sourcePTS===reference.sourcePTS&&frame.sourcePTS===reference.sourcePTS&&frame.fullRGBA_SHA256===nativeFrame.fullRGBA_SHA256&&frame.romSHA256===candidate.romSHA256&&['sourceId','sourceEpoch','timelineSegment'].every((k,i)=>frame[k]===candidate.sourceIdentity[i]);
+   const sameBody=event.modelId===h.modelId&&source.modelId===h.modelId&&prediction?.modelId===h.modelId&&prediction.appearanceModelId===h.modelId&&prediction.bodyModelId===h.modelId&&prediction.agreement===true&&Number.isFinite(prediction.pixelErrorReduction)&&prediction.pixelErrorReduction>0&&prediction.spatialSupportRank>=2;
+   const sameBackground=compatibility?.jointlySupported===true&&compatibility.modelId===h.modelId&&background?.frameKey===reference.frameKey&&background.recordKey===h.recordKey&&background.branchId===reference.branchId;
+   const validPair=p=>Number.isInteger(p?.tableId)&&p.tableId>=0&&p.tableId<=65535&&Number.isInteger(p?.monsterId)&&p.monsterId>=0&&p.monsterId<=65535;
+   const pairs=compatibility?.tableSpeciesAlternatives;
+   const exactPairs=Array.isArray(pairs)&&pairs.length>0&&pairs.every(p=>validPair(p)&&event.tableSpeciesAlternatives?.some(e=>e.tableId===p.tableId&&e.monsterId===p.monsterId));
+   if(!sameFrame||!sameBody||!sameBackground||!exactPairs){deferred.push({hypothesisIndex,automaticSingletonId:event.id,reason:!sameFrame?'event-frame-ROM-source-binding-mismatch':!sameBody?'event-model-body-binding-mismatch':!sameBackground?'event-map-camera-binding-unresolved':'event-exact-table-species-pairs-unavailable'});continue;}
+   const compiledEventId=compiledBranch?.sightingEventBindings?.[source.sightingId],compiledEventLinked=typeof compiledEventId==='string'&&compiledBranch.events?.some(e=>e.id===compiledEventId);
+   links.push({endpoint,hypothesisIndex,automaticSingletonId:event.id,atBranchId:compiledEventLinked?compiledBranch.id:null,atEventId:compiledEventLinked?compiledEventId:null,compiledInputLinked:Boolean(compiledEventLinked),sightingId:source.sightingId,fromSightingId:candidate.fromSightingId,toSightingId:candidate.toSightingId,modelId:h.modelId,recordKey:h.recordKey,frameKey:reference.frameKey,branchId:reference.branchId,sourceSpecificTableSpeciesAlternatives:structuredClone(pairs),nativeHypothesisReference:{from:structuredClone(h.from),to:structuredClone(h.to)},associationRemainsConditional:true,sourcePredicatePolicy:'retain-endpoint-pair-alternatives-without-intersection',identityCertified:false,independentDrawCount:null,additionalDrawsCertified:0,noEventPossible:true,unknownAlternativeRetained:true});
+  }
+ }
+ return {links,deferred,missingReason:links.length?null:bySighting.has(sightingId)?'Same-sighting event does not have matching frame/model/map/camera and exact table/species provenance':'No automatic singleton references this exact endpoint sighting; another same-model residual cannot supply its species'};
+}
+function bindRelationSelections(candidate,bySighting,nativeFrames){
+ const prior=bindSelectionEndpoint(candidate,bySighting,nativeFrames,'prior'),incoming=bindSelectionEndpoint(candidate,bySighting,nativeFrames,'incoming');
+ return {...candidate,conditionalATInput:{...candidate.conditionalATInput,priorSelectionLinks:prior.links,incomingSelectionLinks:incoming.links,priorSelectionLinkStatus:prior.links.length?'conditional-prior-selection-linked':'prior-selection-unresolved',priorSourceSpecificTableSpeciesPairsAvailable:prior.links.length>0,incomingSourceSpecificTableSpeciesPairsAvailable:incoming.links.length>0,priorSelectionLinkDeferrals:prior.deferred,incomingSelectionLinkDeferrals:incoming.deferred,priorSelectionLinkMissingReason:prior.missingReason,incomingSelectionLinkMissingReason:incoming.missingReason,endpointPredicatesIntersected:false}};
+}
 // Resolve the actual predecessor consumer against this owned observation.
 // This companion never enters the experiment, fingerprinted bundle or request.
-export function collectTrackingMotionAssociationInputs(bundle,nativeBodySupportEvidence,{identity=null}={}){
+export function collectTrackingMotionAssociationInputs(bundle,nativeBodySupportEvidence,{identity=null,singleEvents=bundle.automaticATEventEvidence?.singleEvents??[],compiledBranches=null}={}){
  const index=createNativeMotionContinuityIndex(nativeBodySupportEvidence,{bundle}),graph=index.snapshot();
  const ids=[...new Set((nativeBodySupportEvidence?.observations??[]).map(o=>o.sightingId).filter(id=>typeof id==='string'))];
- const video=bundle.source?.video??{};
- return {schema:'conditional-tracking-at-motion-inputs-v1',observationIdentity:identity?{...identity}:null,observationSource:{romSHA256:bundle.source?.background?.romSHA256??null,sourceId:video.sourceId??null,sourceEpoch:video.sourceEpoch??null,timelineSegment:video.timelineSegment??null},perSightingPriorCandidates:ids.map(id=>index.resolvePriorKnownMonsterCandidates(id)),enumeration:{budgets:graph.budgets,pairEvaluations:graph.pairEvaluations,budgetStopped:graph.budgetStopped,omittedIncomingSightings:graph.omittedIncomingSightings,associationEnumerationComplete:false},usedForATConstraints:false,additionalDrawsCertified:0,minimumProvenATCalls:0,identityCertified:false,unknownAlternativeRetained:true,currentVideoStateRecovered:false,scope:'Resolved conditional predecessor inputs for this observation snapshot. Exact table/species pairs and same-entity assumptions are still required before any constraint; independent actors are not intersected and repeated sightings create no additional draw.'};
+ const video=bundle.source?.video??{},endpointSelections=indexEndpointSelections(singleEvents,compiledBranches),nativeFrames=new Map((nativeBodySupportEvidence?.observations??[]).map(o=>[o.sightingId,o.frame]));
+ return {schema:'conditional-tracking-at-motion-inputs-v1',observationIdentity:identity?{...identity}:null,observationSource:{romSHA256:bundle.source?.background?.romSHA256??null,sourceId:video.sourceId??null,sourceEpoch:video.sourceEpoch??null,timelineSegment:video.timelineSegment??null},perSightingPriorCandidates:ids.map(id=>{const resolved=index.resolvePriorKnownMonsterCandidates(id);return {...resolved,candidates:resolved.candidates.map(c=>bindRelationSelections(c,endpointSelections,nativeFrames))};}),enumeration:{budgets:graph.budgets,pairEvaluations:graph.pairEvaluations,budgetStopped:graph.budgetStopped,omittedIncomingSightings:graph.omittedIncomingSightings,associationEnumerationComplete:false},usedForATConstraints:false,additionalDrawsCertified:0,minimumProvenATCalls:0,identityCertified:false,unknownAlternativeRetained:true,currentVideoStateRecovered:false,scope:'Resolved conditional predecessor inputs for this observation snapshot. Exact table/species pairs and same-entity assumptions are still required before any constraint; independent actors are not intersected and repeated sightings create no additional draw.'};
 }
 // Call directly from the completed, immutable continuous-bundle callback.
 // This hook accepts only explicit bounded search options; it invents no prior.
@@ -28,7 +66,7 @@ export async function prepareTrackingJob(bundle,options,{engineRevision,observat
  // Omitting this diagnostic copy never changes the request or checkpoint hash.
  const replayInputHypotheses=includeReplayInputHypotheses?await searchAutomaticReplayInputs(bundle,{isCurrent}):null;current();
  const checkpointKey=await fingerprint({request:prepared.request,identity});current();
- const nativeMotionAssociationInputs=collectTrackingMotionAssociationInputs(bundle,prepared.nativeBodySupportEvidence,{identity});current();
+ const nativeMotionAssociationInputs=collectTrackingMotionAssociationInputs(bundle,prepared.nativeBodySupportEvidence,{identity,singleEvents:options.singleEvents??[],compiledBranches:prepared.request.experiment.branches});current();
  return {replayInputHypotheses,nativeBodySupportEvidence:prepared.nativeBodySupportEvidence,nativeMotionAssociationInputs,checkpointKey,request:prepared.request,identity,gate:prepared.gate,missingEvidence:prepared.missingEvidence};
 }
 // Browser transaction completion is the ACK boundary; request success alone is
