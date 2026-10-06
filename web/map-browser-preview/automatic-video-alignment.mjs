@@ -3,9 +3,9 @@ import{createAmbiguousMarkerBackgroundBudget}from'./physical-marker-background-h
 import{buildBackgroundBranchSupport}from'./background-branch-support.mjs?v=enc-motion-at-20261006-1156';
 import{createSourceAnchorSceneInference}from'./source-anchor-scene-inference.mjs?v=capture-gate-reseed-20261006-0850';
 import{resolveFrozenInferencePixels}from'./capture-analysis-pixels.mjs?v=native-continuation-20261006-0333';
-import{createMode1BackgroundInference}from'./automatic-mode1-background.mjs?v=finite-geometry-20261006-1050';
-import {Mode2VideoContinuity} from './mode2-video-continuity.mjs?v=finite-geometry-20261006-1050';
-import {inferAutomaticMode2Background} from './automatic-mode2-background.mjs?v=finite-geometry-20261006-1050';
+import{createMode1BackgroundInference}from'./automatic-mode1-background.mjs?v=geometry-display-20261006-1112';
+import {Mode2VideoContinuity} from './mode2-video-continuity.mjs?v=geometry-display-20261006-1112';
+import {inferAutomaticMode2Background} from './automatic-mode2-background.mjs?v=geometry-display-20261006-1112';
 import {readRomMapCameraInputGate} from './rom-camera-input-gate.mjs';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
 import {CandidateMapMatcher} from '../map-disambiguation.mjs';

@@ -5,7 +5,7 @@ import{prepareMode1PhotometricBasis,renderMode1PhotometricBasis,inferMode1Ordina
 import{automaticPreviewCamera}from'./automatic-preview-camera.mjs';
 import{automaticBillboardScenes}from'./automatic-billboard-scene.mjs';
 import{applyMode1OrdinaryHypothesis}from'./automatic-material-environment.mjs?v=native-body-20261006-0212';
-import{refineGeometryPosition}from'./geometry-position-refinement.mjs?v=finite-geometry-20261006-1050';
+import{refineGeometryPosition}from'./geometry-position-refinement.mjs?v=geometry-display-20261006-1112';
 import{floorHeightsAtXZ}from'./rom-floor-candidates.mjs';
 import{compareMapBackground}from'./map-video-residual.mjs?v=capture-gate-reseed-20261006-0850';
 import{createRendererSourceArchives}from'./renderer-source-archives.mjs';

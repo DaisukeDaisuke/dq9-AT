@@ -5,7 +5,42 @@ function gray(image){const a=new Float64Array(49152);for(let i=0;i<a.length;i++)
 function blur(a,sigma){const radius=Math.ceil(sigma*4),k=Array.from({length:2*radius+1},(_,j)=>Math.exp(-.5*((j-radius)/sigma)**2)),sum=k.reduce((a,b)=>a+b);for(let j=0;j<k.length;j++)k[j]/=sum;let tmp=new Float64Array(a.length),out=new Float64Array(a.length);const reflect=(v,n)=>{while(v<0||v>=n)v=v<0?-v-1:2*n-v-1;return v;};for(let y=0;y<192;y++)for(let x=0;x<256;x++){let s=0;for(let j=-radius;j<=radius;j++)s+=a[y*256+reflect(x+j,256)]*k[j+radius];tmp[y*256+x]=s;}for(let y=0;y<192;y++)for(let x=0;x<256;x++){let s=0;for(let j=-radius;j<=radius;j++)s+=tmp[reflect(y+j,192)*256+x]*k[j+radius];out[y*256+x]=s;}return out;}
 function gradient(a){const x=new Float64Array(a.length),y=new Float64Array(a.length),n=new Float64Array(a.length);for(let py=1;py<191;py++)for(let px=1;px<255;px++){const i=py*256+px;x[i]=a[i-255]+2*a[i+1]+a[i+257]-a[i-257]-2*a[i-1]-a[i+255];y[i]=a[i+255]+2*a[i+256]+a[i+257]-a[i-257]-2*a[i-256]-a[i-255];n[i]=Math.hypot(x[i],y[i]);}return{x,y,n};}
 const sample=(a,x,y)=>{const ix=Math.floor(x),iy=Math.floor(y),u=x-ix,v=y-iy,i=iy*256+ix;return(1-v)*((1-u)*a[i]+u*a[i+1])+v*((1-u)*a[i+256]+u*a[i+257]);};
-function lineMinimum(fn,p,d,bounds){let lo=-Infinity,hi=Infinity;for(let j=0;j<2;j++){if(d[j]===0)continue;let a=(bounds[j][0]-p[j])/d[j],b=(bounds[j][1]-p[j])/d[j];if(a>b)[a,b]=[b,a];lo=Math.max(lo,a);hi=Math.min(hi,b);}if(!Number.isFinite(lo)||!Number.isFinite(hi)||hi<=lo)return{point:p.slice(),value:fn(p)};const ratio=(Math.sqrt(5)-1)/2;let a=lo,b=hi,c=b-ratio*(b-a),e=a+ratio*(b-a),fc=fn(p.map((x,j)=>x+c*d[j])),fe=fn(p.map((x,j)=>x+e*d[j]));for(let k=0;k<48&&b-a>1e-4;k++){if(fc<fe){b=e;e=c;fe=fc;c=b-ratio*(b-a);fc=fn(p.map((x,j)=>x+c*d[j]));}else{a=c;c=e;fc=fe;e=a+ratio*(b-a);fe=fn(p.map((x,j)=>x+e*d[j]));}}const t=fc<fe?c:e,point=p.map((x,j)=>clamp(x+t*d[j],...bounds[j])),value=fn(point),old=fn(p);return value<old?{point,value}:{point:p.slice(),value:old};}
+/** Sample the original bounded line before local refinement. Edge registration
+ * is not unimodal: golden-section elimination over the full interval can discard
+ * a better basin. This is a bounded proposal, never a global-minimum proof.
+ * At most 48 objective calls, below the previous line search ceiling of 52.
+ */
+export function lineMinimum(fn,p,d,bounds){
+ let lo=-Infinity,hi=Infinity;
+ for(let j=0;j<2;j++){
+  if(d[j]===0)continue;
+  let a=(bounds[j][0]-p[j])/d[j],b=(bounds[j][1]-p[j])/d[j];
+  if(a>b)[a,b]=[b,a];lo=Math.max(lo,a);hi=Math.min(hi,b);
+ }
+ let calls=0;
+ const at=t=>({t,point:p.map((x,j)=>clamp(x+t*d[j],...bounds[j]))});
+ const evaluate=t=>{const r=at(t),value=fn(r.point);r.value=Number.isFinite(value)?value:Infinity;calls++;return r;};
+ const initial=evaluate(0);let best=initial;
+ if(!Number.isFinite(lo)||!Number.isFinite(hi)||hi<=lo)return{point:best.point,value:best.value};
+ const samples=[];
+ // Eight equal subdivisions are algorithmic sampling, not input coordinates.
+ for(let i=0;i<=8;i++){
+  const t=lo+(hi-lo)*i/8,r=t===0?initial:evaluate(t);
+  samples.push(r);if(r.value<best.value)best=r;
+ }
+ // Keep the initial point in the candidate set and in the local bracket.
+ if(!samples.some(r=>r.t===0)){samples.push(initial);samples.sort((a,b)=>a.t-b.t);}
+ const index=samples.findIndex(r=>r.t===best.t);
+ let a=samples[Math.max(0,index-1)].t,b=samples[Math.min(samples.length-1,index+1)].t;
+ const ratio=(Math.sqrt(5)-1)/2;
+ let c=b-ratio*(b-a),e=a+ratio*(b-a),fc=evaluate(c),fe=evaluate(e);
+ if(fc.value<best.value)best=fc;if(fe.value<best.value)best=fe;
+ while(calls<48&&b-a>1e-4){
+  if(fc.value<fe.value){b=e;e=c;fe=fc;c=b-ratio*(b-a);fc=evaluate(c);if(fc.value<best.value)best=fc;}
+  else{a=c;c=e;fc=fe;e=a+ratio*(b-a);fe=evaluate(e);if(fe.value<best.value)best=fe;}
+ }
+ return{point:best.point,value:best.value};
+}
 /** image/depth refer to the same original source camera; the result is only a
  * point hypothesis until caller rerenders native geometry and checks the video.
  * depth24 uses the original post-raster DS Z plane; unknown owners stay excluded.

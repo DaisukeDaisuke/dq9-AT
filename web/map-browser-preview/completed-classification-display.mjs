@@ -1,5 +1,31 @@
 // Presentation only: never assigns sightings to another frame or certifies bodies.
 import {nativeSupportDisplaySummary} from './recognition-display-summary.mjs?v=native-extents-latest-20261006-0843';
+// Presentation work only: collapsed branches have no descendant evidence DOM.
+// The original value remains with its owner and is still exported in full.
+function deferredDetails(make,title,fill){
+ const details=make('details');details.append(make('summary',title));let built=false;
+ details.addEventListener('toggle',()=>{if(!details.open||built)return;fill(details);built=true;});
+ return details;
+}
+const renderedSummaries=new WeakMap();
+const evidenceDisplays=new WeakMap();
+// Keep at most one pending display update. Closed JSON details do no projection
+// or serialization, and clearing/cancelling cannot republish an older value.
+export function createDeferredEvidenceJSON(element,project,{schedule=fn=>setTimeout(fn,0),cancel=id=>clearTimeout(id)}={}){
+ evidenceDisplays.get(element)?.dispose();
+ const details=element.closest('details');let value=null,shown=null,pending=null,revision=0,disposed=false;
+ const visible=()=>!details||details.open;
+ function cancelPending(){revision++;if(pending!==null)cancel(pending);pending=null;}
+ function queue(){
+  if(disposed||value===null||value===shown||!visible()||pending!==null)return;
+  const mine=revision;pending=schedule(()=>{if(mine!==revision||disposed)return;pending=null;if(!visible()||value===null)return;const next=value;element.textContent=JSON.stringify(project(next),null,2);shown=next;});
+ }
+ function clear(){if(disposed)return;cancelPending();value=shown=null;element.textContent='';}
+ function toggle(){if(visible())queue();else{cancelPending();shown=null;element.textContent='';}}
+ details?.addEventListener('toggle',toggle);
+ const display={set(next){if(disposed)return;value=next;queue();},clear,dispose(){if(disposed)return;clear();disposed=true;details?.removeEventListener('toggle',toggle);if(evidenceDisplays.get(element)===display)evidenceDisplays.delete(element);}};
+ evidenceDisplays.set(element,display);return display;
+}
 export function completedClassificationSnapshot(value,frame,bg,regions=[]){
  if(value?.classificationJob?.complete!==true||frame?.image?.width!==256||frame?.image?.height!==192)return null;
  return {value,frameId:frame.id,evidence:structuredClone(frame.evidence),background:structuredClone(bg.evidence),image:{width:256,height:192,rgba:frame.image.rgba.slice()},regions:structuredClone(regions)};
@@ -16,8 +42,9 @@ function nativeComparisonLabel(branch){
  }
 }
 function appendNativeSupport(container,ranking,make){
- const support=nativeSupportDisplaySummary(ranking.sourceNativeSupport);if(!support)return;
- const details=make('details');details.append(make('summary',`ROM身体比較 ${ranking.modelId} ${names(ranking)}（条件付き・候補自身と背景のみの比較）`));
+ if(!ranking.sourceNativeSupport)return;
+ const details=deferredDetails(make,`ROM身体比較 ${ranking.modelId} ${names(ranking)}（条件付き・候補自身と背景のみの比較）`,details=>{
+ const support=nativeSupportDisplaySummary(ranking.sourceNativeSupport);
  details.append(make('p','外観候補の順位・条件付き予測は変更しません。種類・身体・姿勢・カメラは未確定。非敵・無イベントの可能性を保持し、AT証明下限は0です。'));
  if(!support.branchCount)details.append(make('p','比較枝なし・不明'));
  for(const b of support.branches){
@@ -31,6 +58,7 @@ function appendNativeSupport(container,ranking,make){
  }
  if(support.omittedBranchCount)details.append(make('p',`比較枝を${support.omittedBranchCount}件省略。全枝はJSONに保持しています。`));
  details.append(make('p','仮定・不明条件の omittedCount は省略件数、detailsOmitted は詳細省略です。全証拠はJSONに保持しています。'));
+ });
  container.append(details);
 }
 // Presentation of the already-tested appearance leader only, never a new rank,
@@ -49,6 +77,9 @@ export function nativeExtentBoxes(sighting,completed){
  return out;
 }
 export function renderClassificationSummary(container,value,{completed=null,document:doc=globalThis.document}={}){
+ // Key by the mounted root, not the long-lived host: clearing the host must
+ // release the old classification and all lazy closures without an extra API.
+ const previous=renderedSummaries.get(container.firstChild);if(previous?.value===value&&previous.completed===completed)return previous.result;
  const make=(tag,text)=>{const n=doc.createElement(tag);if(text!==undefined)n.textContent=text;return n;};
  const rows=value?.sightings??[],predicted=rows.filter(s=>s.conditionalBodyPrediction?.modelId),other=rows.filter(s=>!s.conditionalBodyPrediction?.modelId),visible=[...predicted,...other].slice(0,8),root=make('li');
  root.dataset.completedFrame=completed?String(completed.frameId):'';
@@ -65,6 +96,6 @@ export function renderClassificationSummary(container,value,{completed=null,docu
  root.append(make('p',`比較した残差 ${rows.length}件 / 条件付き予測 ${predicted.length}件 / 比較済み・種類未確定 ${other.length}件 / 未比較 ${(value?.unclassifiedRegionIds??[]).length}件。候補は未確定で、背景・味方・UI・候補外を除外できません。出生・AT加算の証明ではありません。`));
  const list=make('ul');for(const s of visible){const p=s.conditionalBodyPrediction;list.append(make('li',`残差 ${s.originalProposalId}: ${p?.modelId?'条件付き予測 '+(names(p)||p.modelId)+'（未確定）':'種類未確定'}`));}root.append(list);
  if(rows.length>visible.length)root.append(make('p',`概要は${visible.length}件まで表示。残り${rows.length-visible.length}件と全候補順位は詳細にあります。`));
- const details=make('details');details.append(make('summary','全残差・全候補順位・ROM身体比較を見る'));const full=make('ul');for(const s of rows){const li=make('li',`残差 ${s.originalProposalId}`),ranks=make('details');ranks.append(make('summary','候補順位（確定結果ではありません）'));for(const r of s.classificationEvidence?.[0]?.rankings??[]){ranks.append(make('p',`${r.modelId} ${names(r)}: ${r.similarity?.toFixed(4)??r.distance?.toFixed(4)??'値なし'}`));appendNativeSupport(ranks,r,make);}li.append(ranks);full.append(li);}details.append(full);root.append(details);container.replaceChildren(root);
- return {visibleCount:visible.length,predictionCount:predicted.length,completedFrameId:completed?.frameId??null};
+ const details=deferredDetails(make,'全残差・全候補順位・ROM身体比較を見る',details=>{const full=make('ul');for(const s of rows){const li=make('li',`残差 ${s.originalProposalId}`),ranks=deferredDetails(make,'候補順位（確定結果ではありません）',ranks=>{for(const r of s.classificationEvidence?.[0]?.rankings??[]){ranks.append(make('p',`${r.modelId} ${names(r)}: ${r.similarity?.toFixed(4)??r.distance?.toFixed(4)??'値なし'}`));appendNativeSupport(ranks,r,make);}});li.append(ranks);full.append(li);}details.append(full);});root.append(details);container.replaceChildren(root);
+ const result={visibleCount:visible.length,predictionCount:predicted.length,completedFrameId:completed?.frameId??null};renderedSummaries.set(root,{value,completed,result});return result;
 }

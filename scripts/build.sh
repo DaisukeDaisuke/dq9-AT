@@ -56,6 +56,7 @@ node scripts/test-automatic-monster-map-eligibility.mjs
 
 # Explicit CPU/GPU asset preparation, cancellation and cached-only retry.
 node scripts/test-residual-inference-preparation.mjs
+node --test scripts/test-classification-display-deferred.mjs
 
 # Experimental ROM-derived pose matching: portable CPU/Worker and parser checks.
 node scripts/test-monster-animation.mjs
@@ -120,3 +121,5 @@ node scripts/test-f06-keyboard.mjs
 node scripts/test-f06-origin.mjs
 
 
+# Source-bounded geometry line search and non-finite/cancellation guards.
+node scripts/test-geometry-position-refinement.mjs
