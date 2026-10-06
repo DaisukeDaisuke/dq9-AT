@@ -334,3 +334,18 @@ The full source and reusable replay drivers are backed up in the allowed reposit
 ### Still unverified / continuing
 - This checkpoint has passed combined local checks; deployed one-button playback still requires real-browser verification.
 - Playback activation does not establish correct automatic identification of every necessary factor. Automatic map-entry interval and located-position filtering is being connected separately; native FirstSpawnReplay dependencies and current AT state remain unresolved. No all-input automation completion is claimed. Proven minimum AT remains0.
+
+
+## 2026-10-06 11:20 JST — Automatic conditional entry/position filtering
+
+- Playback observations now execute a source-bound conditional replay-input join using the already detected entry signals, map alternatives and located positions. Normal playback requires no added seconds, map, model, JSON, seed or index fields. Advanced explicit-chain controls remain separate.
+- On the retained36-frame timeline,39 combinations produce7 compatible branches and32 map-incompatible combinations. On the retained15-frame timeline,98 produce33 compatible branches,63 map mismatches and2 targets earlier than the selected conditional entry window. These exclusions concern selected assumptions only. The broad unknown branch remains and native loader entry may precede the observed signal.
+-57 binding/filter/cancellation/retention checks pass. Twenty saved native-best outputs remain exact. Actual baseline/patched UI observation identity, AT request, saved-checkpoint lookup and retry are identical on both BODY and BODY-plus-timeline inputs. Normal-flow advanced manual options are called zero times.
+- Parent independently reran the combined post-cache validation script successfully: mounted activation, real tracking handoff, pause and prior clock behavior remain intact. Exactly3 implementation files and2 cache-only parents changed.
+- Native loader/actor state, source update clocks and intervening AT consumers are still missing for native FirstSpawnReplay. This change computes conditional inputs; it does not execute that native replay or recover current AT. Proven lower bound remains0.
+
+### Actual browser check of the preceding activation source
+- Pages run37402925863 succeeded for9eaca6f. Own-cloud browser loaded the exact automatic-playback-source-cache-20261006-1100 module. With only the formal ROM and video selected, one start-button click began playback and observation. No map/model/seconds/layout value was entered; the supported1920x1080 layout was recognized automatically.
+- The native video started at its decoder-reported2.514 seconds, not a manually requested timestamp. At48.781 seconds the UI showed1304 analyzed callbacks. The exported bounded timeline retains128 frames and honestly reports1176 frame evictions; this is not full-video coverage or1304 recognized enemies. Map/name remained unresolved in this early segment.
+- After explicit observation Stop, pressing the video's play control alone switched observation back ON and reached3077 analyzed callbacks at116.527 seconds. This establishes activation, not end-to-end recognition. The screenshot at116 seconds shows a black map-screen area; the system did not invent a map.
+- No claim is made that error9 is fixed. The conditional-entry integration still requires deployed-browser verification.
