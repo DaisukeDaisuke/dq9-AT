@@ -1,7 +1,7 @@
 // Presentation-only join: past candidate labels remain on their source frame.
 // Current patch position requires that exact classification seed anchor; a
 // track ID, same model or nearby location alone never establishes this join.
-import{videoTrackingFrameKey}from'./video-patch-correspondence.mjs?v=measured-replay-candidate-20261006-0653';
+import{videoTrackingFrameKey}from'./video-patch-correspondence.mjs?v=camera-loss-evidence-20261006-1205';
 import{videoObservationFrameKey}from'./video-observation-timeline.mjs?v=native-transport-timing-20261006-1140';
 const copy=x=>structuredClone(x),sameROI=(a,b)=>['x','y','w','h'].every(k=>a?.[k]===b?.[k]),age=(now,then)=>Number.isFinite(now)&&Number.isFinite(then)&&now>=then?now-then:null;
 export function measuredClassificationView({completed,replay,anchor=null,playbackPTS=null}){

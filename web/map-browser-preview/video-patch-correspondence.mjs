@@ -1,4 +1,4 @@
-import{IMAGE_TRANSLATION_LIMITS,PROPOSAL_LIMITS}from'../monster-position-proposals.mjs?v=measured-replay-candidate-20261006-0653';
+import{IMAGE_TRANSLATION_LIMITS,PROPOSAL_LIMITS}from'../monster-position-proposals.mjs?v=camera-loss-evidence-20261006-1205';
 const W=256,H=192,N=W*H,finite=Number.isFinite;
 export const videoTrackingSourceKey=s=>JSON.stringify([s?.sourceId,s?.sourceEpoch,s?.timelineSegment,s?.timestampBasis,s?.layout]);
 export const videoTrackingFrameKey=s=>JSON.stringify([videoTrackingSourceKey(s),s?.mediaTime??s?.videoTime,s?.gameplayRGBA_SHA256]);

@@ -2,7 +2,7 @@
 // Reuses existing calibration, registration and BMMP coordinate interpretation.
 import {calibratedPartyMarkerCandidates} from '../party-marker-calibration.mjs';
 import {markerCoordinateBinding,mapMarkerCoordinateCandidate} from '../map-marker-coordinate.mjs';
-import {sampleGameplayFrame} from './map-video-residual.mjs?v=capture-gate-reseed-20261006-0850';
+import {sampleGameplayFrame} from './map-video-residual.mjs?v=camera-loss-evidence-20261006-1205';
 import {floorHeightsAtXZ} from './rom-floor-candidates.mjs';
 import {matchVideoMinimapRegistration} from './video-minimap-registration.mjs?v=field-registration-20261006-0913';
 export function upperVideoROI(width,height,layout){

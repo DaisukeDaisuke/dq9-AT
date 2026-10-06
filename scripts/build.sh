@@ -59,6 +59,7 @@ node scripts/test-residual-inference-preparation.mjs
 node scripts/test-native-request-branches.mjs
 node --test scripts/test-classification-display-deferred.mjs
 node --test scripts/test-video-pipeline-timing.mjs
+node --test scripts/test-rejected-camera-evidence.mjs
 
 # Experimental ROM-derived pose matching: portable CPU/Worker and parser checks.
 node scripts/test-monster-animation.mjs

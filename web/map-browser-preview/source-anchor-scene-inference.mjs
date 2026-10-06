@@ -16,7 +16,7 @@ import{readSdkInitialMaterialGlobals}from'./rom-sdk-initial-material.mjs';
 import{rasterizePreviewPackets}from'./source-scene-diagnostic-raster.mjs?v=source-scene-20261006-0040';
 import{prepareMode1PhotometricBasisAsync as prepareMode1PhotometricBasis,renderMode1PhotometricBasis,inferMode1OrdinaryColor}from'./mode1-photometric-inverse.mjs?v=enc-motion-at-20261006-1156';
 import{applyMode1OrdinaryHypothesis}from'./automatic-material-environment.mjs?v=native-body-20261006-0212';
-import{compareMapBackground}from'./map-video-residual.mjs?v=capture-gate-reseed-20261006-0850';
+import{compareMapBackground}from'./map-video-residual.mjs?v=camera-loss-evidence-20261006-1205';
 import{createRendererSourceArchives}from'./renderer-source-archives.mjs';
 const identity=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
 const DEFAULT_BUDGET=Object.freeze({maxSeedTriangles:128,maxNativeCandidates:4,maxMilliseconds:30000,proposalFraction:.5});

@@ -1,6 +1,6 @@
 // Diagnostic comparison of a ROM-rendered background and one owned video frame.
 // No appearance/template detector, creature label, birth, or AT inference.
-import {estimateCameraTranslation} from '../monster-position-proposals.mjs';
+import {estimateCameraTranslation} from '../monster-position-proposals.mjs?v=camera-loss-evidence-20261006-1205';
 const W=256,H=192,N=W*H;
 const need=(v,m)=>{if(!v)throw Error(m);};
 export function gameplayVideoROI(width,height,layout){

@@ -1,7 +1,7 @@
 /* Local-only experimental UI. The scoring worker owns ROM parsing and rendering. */
-import { LatestVideoObserver, VIDEO_OBSERVER_LIMITS } from './monster-video-observer.mjs';
+import { LatestVideoObserver, VIDEO_OBSERVER_LIMITS } from './monster-video-observer.mjs?v=camera-loss-evidence-20261006-1205';
 import { getFieldExclusion } from './monster-field-mask.mjs';
-import { proposeEnemyROIs } from './monster-position-proposals.mjs';
+import { proposeEnemyROIs } from './monster-position-proposals.mjs?v=camera-loss-evidence-20261006-1205';
 export const LIMITS = Object.freeze({ romBytes: 512 * 1024 * 1024, sourceSide: 4096, roiSide: 1024, models: 4 });
 export const DEFAULT_MODELS = Object.freeze(['z019b', 'z021a', 'z064a', 'z000c']);
 export const CENTER_MASK = Object.freeze({ x: .42, y: .36, w: .16, h: .24 });

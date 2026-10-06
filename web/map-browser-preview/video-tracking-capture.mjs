@@ -1,5 +1,5 @@
 import{createFrozenAnalysisCapture}from'./capture-analysis-pixels.mjs?v=native-continuation-20261006-0333';
-import{gameplayVideoROI,gameplaySampleReadbackRect,sampleGameplayFrame}from'./map-video-residual.mjs?v=capture-gate-reseed-20261006-0850';
+import{gameplayVideoROI,gameplaySampleReadbackRect,sampleGameplayFrame}from'./map-video-residual.mjs?v=camera-loss-evidence-20261006-1205';
 const sha=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join('');
 const verificationScope='One captured frame compared on the same Canvas after one retained VideoFrame draw. This is not proof for every frame, input, browser or GPU.';
 /** Bounded actual capture: one pending pixel hash, one reusable source canvas.

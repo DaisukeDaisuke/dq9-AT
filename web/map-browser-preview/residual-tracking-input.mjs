@@ -1,6 +1,6 @@
-import{videoTrackingFrameKey,videoTrackingSourceKey}from'./video-patch-correspondence.mjs?v=measured-replay-candidate-20261006-0653';
+import{videoTrackingFrameKey,videoTrackingSourceKey}from'./video-patch-correspondence.mjs?v=camera-loss-evidence-20261006-1205';
 // Adapter to the existing image-space tracker; residuals are not certified enemies.
-import {EnemyProposalTracker} from '../monster-position-proposals.mjs?v=measured-replay-candidate-20261006-0653';
+import {EnemyProposalTracker} from '../monster-position-proposals.mjs?v=camera-loss-evidence-20261006-1205';
 export class ResidualTracker {
  constructor(){this.tracker=new EnemyProposalTracker();this.key=null;this.last=null;}
  reset(){this.tracker.reset();this.key=null;this.last=null;}

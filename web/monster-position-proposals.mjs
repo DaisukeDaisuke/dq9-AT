@@ -239,7 +239,7 @@ export class EnemyProposalTracker {
   reset() { this.previous = null; this.tracks = []; this.nextId = 1; this.generation = (this.generation ?? -1) + 1; }
   update(result) {
     need(result?.captureStamp && Array.isArray(result.proposals), 'A proposal result is required');
-    const t = result.captureStamp.videoTime, prev = this.previous; let resetReason = null, camera = null;
+    const t = result.captureStamp.videoTime, prev = this.previous; let resetReason = null, camera = null, rejectedCameraAttempt = null;
     if (!result.trackingFrame) resetReason = 'out-of-scope-scene';
     else if (!Number.isFinite(t)) resetReason = 'video-time-required-for-tracking';
     else if (prev) {
@@ -252,7 +252,14 @@ export class EnemyProposalTracker {
         const currentOrder=replayOrder?result.captureStamp.trackingObservationSequence:result.captureStamp.frameSerial,previousOrder=replayOrder?prev.captureStamp.trackingObservationSequence:prev.captureStamp.frameSerial;
         if (!(dt > 0 && dt <= .5) || currentOrder <= previousOrder) resetReason = 'time-or-frame-discontinuity';
       }
-      if (!resetReason) { camera = estimateCameraTranslation(prev.trackingFrame, result.trackingFrame); if (!camera.reliable) resetReason = 'camera-registration-unknown'; }
+      if (!resetReason) { camera = estimateCameraTranslation(prev.trackingFrame, result.trackingFrame); if (!camera.reliable) {
+        resetReason = 'camera-registration-unknown';
+        // Keep the already-computed rejected observation separately. The legacy
+        // camera field must remain null and cannot become a continuity fallback.
+        rejectedCameraAttempt = { ...camera, residual: Number.isFinite(camera.residual) ? camera.residual : String(camera.residual), residualFinite: Number.isFinite(camera.residual), reason: resetReason,
+          failedGates: [camera.texture < IMAGE_TRANSLATION_LIMITS.minimumTexture ? 'texture-below-existing-minimum' : null, !Number.isFinite(camera.residual) ? 'nonfinite-registration-residual' : null, Number.isFinite(camera.residual) && camera.residual > IMAGE_TRANSLATION_LIMITS.maximumResidual ? 'residual-above-existing-maximum' : null, Math.abs(camera.dx) >= IMAGE_TRANSLATION_LIMITS.radius ? 'horizontal-search-boundary' : null, Math.abs(camera.dy) >= IMAGE_TRANSLATION_LIMITS.radius ? 'vertical-search-boundary' : null].filter(Boolean),
+          limits: { minimumTexture: IMAGE_TRANSLATION_LIMITS.minimumTexture, maximumResidual: IMAGE_TRANSLATION_LIMITS.maximumResidual, radius: IMAGE_TRANSLATION_LIMITS.radius, minimumSamples: IMAGE_TRANSLATION_LIMITS.minimumSamples }, diagnosticOnly: true, cameraIdentityCertified: false };
+      } }
     }
     if (resetReason) { this.reset(); camera = null; }
     const proposals = result.proposals, matches = [], game = result.captureStamp.sceneContext?.gameplayROI;
@@ -286,6 +293,6 @@ export class EnemyProposalTracker {
     this.tracks = observed.map(({ id, roi, firstSeen, lastSeen, sightings }) => ({ id, roi: copy(roi), firstSeen, lastSeen, sightings })).slice(0, 32);
     // Own the compact state: serializing/discarding a caller's buffers must not corrupt the next update.
     this.previous = result.trackingFrame && Number.isFinite(t) ? { captureStamp: copy(result.captureStamp), trackingFrame: copy(result.trackingFrame) } : null;
-    return { observed, unobserved, camera, resetReason, unknown: unknown(), nativeIdentityCertified: false, birthCertified: false, ATDrawsCertified: 0 };
+    return { observed, unobserved, camera, resetReason, ...(rejectedCameraAttempt ? { rejectedCameraAttempt } : {}), unknown: unknown(), nativeIdentityCertified: false, birthCertified: false, ATDrawsCertified: 0 };
   }
 }

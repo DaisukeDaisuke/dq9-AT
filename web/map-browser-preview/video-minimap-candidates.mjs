@@ -1,6 +1,6 @@
 import{physicalMarkerBackgroundHypotheses}from'./physical-marker-background-hypotheses.mjs?v=native-continuation-20261006-0333';
 import{fixedDisplayAnchorCandidates}from'./fixed-display-anchor-candidates.mjs?v=source-scene-20261006-0040';
-import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs?v=field-registration-20261006-0913';
+import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs?v=camera-loss-evidence-20261006-1205';
 // Compare every source-linked minimap using the same frozen upper-screen pixels.
 // Unique positions and ambiguous physical-marker background hypotheses stay separate.
 export async function resolveVideoMinimapCandidates({record,catalog,renderer,matcher,floors,sourceImage,layout,frameEvidence,onCandidate=async()=>{},isCurrent=()=>true}){

@@ -1,6 +1,6 @@
 /* Bounded latest-frame observation scheduling. Ranks are historical candidate observations,
  * never accepted enemies, native tracks, births or AT facts. No frames are queued. */
-import {proposeEnemyROIs,EnemyProposalTracker,proposalRecognitionRequest} from './monster-position-proposals.mjs';
+import {proposeEnemyROIs,EnemyProposalTracker,proposalRecognitionRequest} from './monster-position-proposals.mjs?v=camera-loss-evidence-20261006-1205';
 import {validateRGBA} from './monster-roi-descriptor.mjs';
 export const VIDEO_OBSERVER_LIMITS=Object.freeze({cpuIntervalMs:250,classifyIntervalMs:500,trackRefreshMs:5000,denseIntervalMs:3000,denseMaxFrameAgeMs:1500,maxSourcePixels:2097152,maxProposals:8,maxAttemptRecords:32});
 const need=(v,m)=>{if(!v)throw Error(m);},clone=v=>structuredClone(v);
