@@ -60,6 +60,8 @@ node scripts/test-native-request-branches.mjs
 node --test scripts/test-classification-display-deferred.mjs
 node --test scripts/test-video-pipeline-timing.mjs
 node --test scripts/test-rejected-camera-evidence.mjs
+node --test scripts/test-paused-local-video-startup.mjs
+node --experimental-vm-modules --test scripts/check-paused-video-startup-panel.mjs
 
 # Experimental ROM-derived pose matching: portable CPU/Worker and parser checks.
 node scripts/test-monster-animation.mjs

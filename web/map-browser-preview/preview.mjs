@@ -13,7 +13,7 @@ import {deriveVideoMapNames} from './video-map-name-input.mjs?v=camera-loss-evid
 import {MapPositionMatcher} from '../map-position.mjs';
 import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs?v=camera-loss-evidence-20261006-1205';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
-import {mountMapVideoComparison} from './map-video-comparison.mjs?v=camera-loss-evidence-20261006-1205';
+import {mountMapVideoComparison} from './map-video-comparison.mjs?v=paused-video-prime-20261006-1240';
 import {openMapRom} from './static-scene.mjs?v=native-source-reuse-20261006-1028';
 import {buildRomMapCatalog} from './rom-map-catalog.mjs';
 import {nameCatalogMaps} from './rom-map-names.mjs';

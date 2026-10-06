@@ -1,6 +1,8 @@
 import {VideoPipelineTiming} from './video-pipeline-timing.mjs?v=native-transport-timing-20261006-1140';
+import {PausedLocalVideoStartup} from './paused-local-video-startup.mjs?v=paused-video-prime-20261006-1240';
 import{measuredClassificationView}from'./measured-classification-view.mjs?v=camera-loss-evidence-20261006-1205';
 import{VideoTrackingReplay,waitForMeasuredReplayFrame}from'./video-tracking-replay.mjs?v=camera-loss-evidence-20261006-1205';
+import{videoTrackingFrameKey}from'./video-patch-correspondence.mjs?v=camera-loss-evidence-20261006-1205';
 import{createVideoTrackingCapture}from'./video-tracking-capture.mjs?v=camera-loss-evidence-20261006-1205';
 import {captureResidualNativeBackground} from './residual-recognition-job.mjs?v=proposal-support-20261006-1152';
 import {createFrozenAnalysisCapture} from './capture-analysis-pixels.mjs?v=native-continuation-20261006-0333';
@@ -23,7 +25,7 @@ const draw=(id,image)=>{const canvas=$(id);canvas.width=image.width;canvas.heigh
 export function mountMapVideoComparison({renderBackground,derivePlayerBackground,deriveMapBackground,classifyResiduals,cancelPending=()=>{},cancelSearch=()=>{},onAutomaticStart=()=>{},canAnalyze=()=>true,getRomIdentity=()=>null,getRecognitionContext=()=>({}),onObservationBundle=()=>{},onObservationReset=()=>{}}){
  const classificationJSON=createDeferredEvidenceJSON($('residual-classification-results'),recognitionDisplaySummary);
  const timing=new VideoPipelineTiming(),residualTracker=new ResidualTracker(),timeline=new VideoObservationTimeline({timing});let latestTracking=null;let comparisonCompletion=Promise.resolve();const video=$('comparison-video');let analysisCapture=null;let file=null,frozen=null,background=null,comparison=null,revision=0,captureSerial=0,classification=null,classificationEpoch=0,comparisonRecord=null;
- const fastReplay=new VideoTrackingReplay({timing}),fastCapture=createVideoTrackingCapture({video,replay:fastReplay,timing});let fastPreview=null;
+ const fastReplay=new VideoTrackingReplay({timing}),fastCapture=createVideoTrackingCapture({video,replay:fastReplay,timing}),pausedStartup=new PausedLocalVideoStartup();let fastPreview=null,startupPrepared=null,pendingObservation=null;
  function measuredView(state=fastReplay.snapshot()){const completed=latestCompletedClassification,anchor=completed?fastReplay.classificationAnchorFor({stamp:completed.evidence,backgroundEvidence:completed.background}):null;return measuredClassificationView({completed,replay:state,anchor,playbackPTS:video.currentTime});}
  function renderMeasuredPreview(state=fastReplay.snapshot(),{agesOnly=false}={}){
   const status=$('residual-tracking-status'),view=measuredView(state);if(status?.dataset){status.dataset.measuredReplayRevision='measured-replay-candidate-20261006-0653';status.dataset.measuredVideoTracking=JSON.stringify(state);status.dataset.measuredClassificationView=JSON.stringify(view);}
@@ -85,7 +87,7 @@ export function mountMapVideoComparison({renderBackground,derivePlayerBackground
  }
  function timelineStatus(){const row=timeline.current,last=timeline.events.at(-1);$('video-timeline-status').textContent=`${pump.enabled?'連続観測ON':'連続観測OFF'} / ${pump.busy?'処理中（後続フレームは未観測として保持）':'次フレーム待機'} / 種類比較 ${classificationLane.busy?'過去の固定フレームを処理中（新しい残差は未比較として保持）':'待機'} / 観測 ${timeline.totalFrames}件・欠測区間 ${timeline.gaps.length}件。${row?'最終観測 '+formatVideoTimecode(row.sourcePTS):''}${last?' / 入場手掛かり観測 '+formatVideoTimecode(last.startPTS)+'〜'+formatVideoTimecode(last.endPTS):''}。入場確定・ROM reset・AT消費は未確定。`;$('stop-video-observation').disabled=!pump.enabled&&!automaticPlaybackRequested;$('download-video-timeline').disabled=!timeline.frames.length;}
  const pump=new VideoObservationPump({process:async(stamp,isCurrent)=>{if(!canAnalyze()){timeline.gap(stamp,'rom-not-ready');return;}const id=await analyze({automaticLayout:true,continuous:true,sample:stamp});if(!isCurrent()||id!==frozen?.id)return;if(comparison?.components?.length)queueClassification();if(!isCurrent()||id!==frozen?.id)return;timeline.update(id,{analysisState:'finished',backgroundState:comparison?.state??'background-unresolved'});$('video-timeline-details').textContent=JSON.stringify(timelineDisplaySummary(timeline),null,2);},onSkipped:(stamp,reason)=>{timeline.gap(stamp,reason);timelineStatus();},onError:error=>status('連続観測の一場面が未完: '+error.message),onState:()=>timelineStatus()});
- function stopAutomatic(reason='連続観測を停止しました。',{pausePlayback=true}={}){timing.disconnect();timing.callbackBoundary('automatic-stop');fastCapture.cancel(reason);automaticActivationEpoch++;automaticPlaybackRequested=false;if(pausePlayback)video.pause();onObservationReset(reason);pump.cancel();cancelSearch();cancelClassifications();residualTracker.reset();if(timeline.current?.analysisState==='pending')timeline.update(timeline.current.frameSerial,{analysisState:'interrupted'});clearFrame(reason);timelineStatus();}
+ function stopAutomatic(reason='連続観測を停止しました。',{pausePlayback=true}={}){pausedStartup.cancel();startupPrepared=null;timing.disconnect();timing.callbackBoundary('automatic-stop');fastCapture.cancel(reason);automaticActivationEpoch++;automaticPlaybackRequested=false;if(pausePlayback)video.pause();onObservationReset(reason);pump.cancel();cancelSearch();cancelClassifications();residualTracker.reset();if(timeline.current?.analysisState==='pending')timeline.update(timeline.current.frameSerial,{analysisState:'interrupted'});clearFrame(reason);timelineStatus();}
  function resetSource(reason,stamp=null){const pendingPlayback=automaticPlaybackRequested&&['rom-replacement','seek','backward-time'].includes(reason);stopAutomatic(reason,{pausePlayback:false});automaticPlaybackRequested=pendingPlayback;timeline.reset(reason,stamp);timing.reset(reason);latestTracking=null;$('video-timeline-details').textContent='';timelineStatus();}
  const status=text=>{$('comparison-status').textContent=text;};
  function discardFrameClassification({notify=true}={}){if(notify)onObservationReset('観測の種類候補を更新しています。');replaceResidualTimelineClassification(timeline,frozen?.id,null,comparison?.components?.map(r=>r.id)??[]);$('video-timeline-details').textContent=JSON.stringify(timelineDisplaySummary(timeline),null,2);}
@@ -103,13 +105,19 @@ export function mountMapVideoComparison({renderBackground,derivePlayerBackground
  };
  // Decoded input dimensions only, never element/CSS presentation dimensions.
  // Invalidate pending slow comparisons/classifications as well as fast pixels.
- const source=new FileVideoInput(video,(_now,stamp)=>{if(pump.enabled){timing.callback(stamp);const size=frozen?.evidence.sourceSize;if(size&&(size.width!==video.videoWidth||size.height!==video.videoHeight)){resetSource('video-dimensions-changed',stamp);timing.start();pump.start();}timing.sync('fast-capture-offer',stamp,()=>fastCapture.offer(stamp,{layout:frozen?.evidence.layout}));timeline.callback(stamp);return timing.sync('slow-observation-prologue',stamp,()=>pump.offer(stamp));}},e=>status(e.message),(reason,stamp)=>{const resume=pump.enabled;resetSource(reason,stamp);if(resume){timing.start();pump.start();}},{holdPauseResumeReplay:true,onUnobserved:noteUnobservedPresentation});
+ // Layout availability is the existing decoded-dimension input contract; it
+ // need not wait for an asynchronous frozen-frame hash/background result.
+ function captureLayout(){return frozen?.evidence.layout??inferPairedVideoLayout({width:video.videoWidth,height:video.videoHeight}).layout;}
+ function retainedStartupFrame(){return frozen?.evidence.captureTiming?.pixelTimestampBound===true&&fastReplay.frames.some(f=>!f.conflicted&&f.key===videoTrackingFrameKey(frozen.evidence));}
+ function offerObservation(stamp){const wasBusy=pump.busy,pending=pump.offer(stamp);if(!wasBusy){pendingObservation=pending;const clear=()=>{if(pendingObservation===pending)pendingObservation=null;};void pending.then(clear,clear);}return pending;}
+ const source=new FileVideoInput(video,(_now,stamp)=>{if(pump.enabled){timing.callback(stamp);const size=frozen?.evidence.sourceSize;if(size&&(size.width!==video.videoWidth||size.height!==video.videoHeight)){resetSource('video-dimensions-changed',stamp);timing.start();pump.start();}timing.sync('fast-capture-offer',stamp,()=>fastCapture.offer(stamp,{layout:captureLayout()}));timeline.callback(stamp);return timing.sync('slow-observation-prologue',stamp,()=>offerObservation(stamp));}},e=>{pausedStartup.cancel();status(e.message);},(reason,stamp)=>{const resume=pump.enabled;resetSource(reason,stamp);if(resume){timing.start();pump.start();}},{holdPauseResumeReplay:true,onUnobserved:noteUnobservedPresentation});
  source.interval=0;
- video.addEventListener('pause',()=>timing.callbackBoundary('video-pause'));
- window.addEventListener('pagehide',()=>timing.disconnect());
+ video.addEventListener('pause',()=>{pausedStartup.cancel();timing.callbackBoundary('video-pause');});
+ for(const event of ['emptied','abort','error'])video.addEventListener(event,()=>pausedStartup.cancel());
+ window.addEventListener('pagehide',()=>{pausedStartup.cancel();timing.disconnect();});
  window.addEventListener('pageshow',()=>{if(pump.enabled)timing.start();});
- // Both entry points activate the same ROM-derived workflow. Starting playback
- // must happen in the button gesture, before asynchronous frame analysis.
+ // The button may prepare an already-paused decoded local frame before play.
+ // Native Play and not-yet-decoded/ROM-not-ready paths retain their old flow.
  function enableAutomatic(){
   if(!canAnalyze()||!source.url)throw Error('先にNDSと動画を選択してください');
   if(!pump.enabled){cancelClassifications('automatic-start');onAutomaticStart();}
@@ -125,13 +133,31 @@ export function mountMapVideoComparison({renderBackground,derivePlayerBackground
   if(canAnalyze())enableAutomatic();else{timelineStatus();status('動画の再生要求を保持しています。NDSの読込完了後に連続観測を開始します。');}
  }
  async function startAutomatic(){
-  requestAutomatic();const epoch=automaticActivationEpoch,sourceId=source.sourceId;
+  pausedStartup.cancel();requestAutomatic();const epoch=automaticActivationEpoch,sourceId=source.sourceId,sourceEpoch=source.generation,segment=source.segment;
+  const current=()=>epoch===automaticActivationEpoch&&sourceId===source.sourceId&&sourceEpoch===source.generation&&segment===source.segment&&automaticPlaybackRequested&&!video.seeking&&!video.error;
+  if(pump.enabled&&video.paused&&video.readyState>=2&&!video.seeking){
+   const playbackTime=video.currentTime;
+   const ready=()=>current()&&retainedStartupFrame()&&startupPrepared?.frameId===frozen.id&&startupPrepared.frameKey===videoTrackingFrameKey(frozen.evidence)&&startupPrepared.sourceId===sourceId&&startupPrepared.sourceEpoch===sourceEpoch&&startupPrepared.segment===segment&&startupPrepared.playbackTime===playbackTime&&video.currentTime===playbackTime;
+   status('再生開始の準備中です。動画を停止したまま、この実フレームの配置と背景を準備します。種類・連続追跡の完成を意味しません。');
+   const result=await pausedStartup.start({isCurrent:current,isPaused:()=>video.paused,isReady:ready,prepare:async()=>{
+    if(pendingObservation)await pendingObservation;if(!current()||!video.paused||video.currentTime!==playbackTime)return;
+    if(ready())return;const before=captureSerial,stamp=source.snapshot(),finished=timing.beginElapsed('paused-startup-preparation-elapsed',stamp);
+    // Prime the real capture/readback gate while the playback clock is held.
+    // Hash completion retains only this actual frame; no intervening PTS exists.
+    fastCapture.offer(stamp,{layout:captureLayout()});timeline.callback(stamp);
+    try{await offerObservation(stamp);}finally{finished();}
+    if(current()&&video.paused&&video.currentTime===playbackTime&&frozen?.id>before&&frozen.evidence.sourceId===sourceId&&frozen.evidence.sourceEpoch===sourceEpoch&&frozen.evidence.timelineSegment===segment&&frozen.evidence.layout&&retainedStartupFrame()){startupPrepared={frameId:frozen.id,frameKey:videoTrackingFrameKey(frozen.evidence),sourceId,sourceEpoch,segment,playbackTime};}
+   },play:()=>video.play()});
+   if(result.error&&current())status('動画の開始準備または再生に失敗しました：'+result.error.message);
+   else if(result.reason==='startup-frame-unavailable'&&current())status('開始用の実フレームを準備できませんでした。再生は開始していません。入力と画面配置を確認してください。');
+   return result;
+  }
   let playback;
   try{playback=Promise.resolve(video.play());}catch(error){playback=Promise.reject(error);}
   const playing=playback.then(()=>null,error=>error);
   // loadeddata / the first decoded callback will supply the frame when play
   // was requested before decode completed. Do not clear a frame as a load error.
-  if(pump.enabled&&video.readyState>=2&&!video.seeking){const stamp=source.snapshot();timeline.callback(stamp);await pump.offer(stamp);}
+  if(pump.enabled&&video.readyState>=2&&!video.seeking){const stamp=source.snapshot();timeline.callback(stamp);await offerObservation(stamp);}
   const error=await playing;if(error&&epoch===automaticActivationEpoch&&sourceId===source.sourceId&&automaticPlaybackRequested)status('動画を再生できません。再生または開始ボタンで再試行できます：'+error.message);
  }
  video.addEventListener('play',()=>{if(video.paused||pump.enabled)return;try{requestAutomatic();}catch(error){status(error.message);}});
