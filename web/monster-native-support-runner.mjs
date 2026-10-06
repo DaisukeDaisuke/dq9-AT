@@ -1,4 +1,4 @@
-import{nativeBodyExtentEvidence}from'./monster-native-extent-evidence.mjs?v=native-yaw-mse-20261006-2101';
+import{nativeBodyExtentEvidence}from'./monster-native-extent-evidence.mjs?v=mse-ownership-20261006-2143';
 // Optional bounded worker-side source-native evaluator. No production caller.
 import{readMonsterAssets}from'./monster-assets.mjs';
 import{readNSBCA}from'./monster-animation.mjs?v=stored-pivot-source-20261006-0800';

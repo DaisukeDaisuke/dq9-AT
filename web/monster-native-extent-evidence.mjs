@@ -44,12 +44,12 @@ function collectNativeBodyExtentEvidence({projected,rendered,alignment,compariso
  evidence.rasterFootprint={...footprint,kind:'source-alpha-positive-raster-footprint',bodyColorContributionImplied:false};
  if(rendered.sourceAcceptedSubset==='isolated-opaque-binary-body-polygons'&&rendered.sceneOcclusionApplied===false){
   evidence.bodyColorOwnership={...footprint,roi:footprint.roi?{...footprint.roi}:null,kind:'isolated-source-opaque-binary-body-coverage',completeWithinAdmittedRendererSubset:true,allSceneOcclusionReconstructed:false,allVisibleContributionsCapturedWithinComposition:true,observedBodyCertified:false};
- }else if(rendered.sourceAcceptedSubset==='known-source-destination-mixed-body'&&rendered.sceneOcclusionApplied===true){
+ }else if(['known-source-destination-mixed-body','conditional-source-map-actor-MSE-body'].includes(rendered.sourceAcceptedSubset)&&rendered.sceneOcclusionApplied===true){
   const ownership=rendered.nativeState?.colorOwnerIsBody;
   const ownershipSummary=summarize(ownership,alignment,comparisonValidMask,rendered.sourceCoverage);
   if(!ownershipSummary.valid){evidence.bodyColorOwnership=unsupported('Accepted mixed-body final-color ownership mask unavailable; composite alpha is not substituted');return evidence;}
   if(ownershipSummary.outsideCoverage){evidence.bodyColorOwnership=unsupported('Body color ownership outside accepted source footprint');return evidence;}
-  evidence.bodyColorOwnership={...ownershipSummary.extent,kind:'source-final-body-color-ownership',completeWithinAdmittedRendererSubset:true,allVisibleContributionsCapturedWithinComposition:false,mayOmitEarlierBodyContributionThroughLaterMapBlending:true,observedBodyCertified:false,scope:'Pixels whose final accepted source color writer is the body. Earlier body contribution through later map blending is not reconstructed by this ownership mask.'};
+  evidence.bodyColorOwnership={...ownershipSummary.extent,kind:'source-final-body-color-ownership',completeWithinAdmittedRendererSubset:true,allVisibleContributionsCapturedWithinComposition:false,mayOmitEarlierBodyContributionThroughLaterMapBlending:true,observedBodyCertified:false,scope:rendered.sourceAcceptedSubset==='conditional-source-map-actor-MSE-body'?'Pixels whose final accepted source color writer is the body. Earlier body contribution through later map/MSE blending is not reconstructed by this ownership mask.':'Pixels whose final accepted source color writer is the body. Earlier body contribution through later map blending is not reconstructed by this ownership mask.'};
  }else evidence.bodyColorOwnership=unsupported('Renderer subset has no admitted body-color ownership contract');
  return evidence;
 }

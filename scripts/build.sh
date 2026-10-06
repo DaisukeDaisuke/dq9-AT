@@ -163,3 +163,6 @@ node scripts/test-native-isolated-support.mjs
 node scripts/test-native-yaw-domain.mjs
 node scripts/test-native-yaw-continuation.mjs
 node scripts/test-native-yaw-evidence.mjs
+
+# Conservative final-color ownership for the conditional MSE subset.
+node scripts/test-native-mse-ownership.mjs
