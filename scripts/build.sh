@@ -48,6 +48,7 @@ node scripts/test-npc-at-replay.mjs
 node scripts/test-npc-replay-panel.mjs
 
 # Capture identity must stay tied to frozen pixels across asynchronous analyses.
+# The panel harness must resolve browser cache-query imports as module URLs.
 node --experimental-vm-modules scripts/check-video-panel-capture.mjs
 
 # Experimental ROM-derived pose matching: portable CPU/Worker and parser checks.
@@ -109,3 +110,4 @@ node scripts/test-f06-creator.mjs
 # Explicit bounded F06 fresh-origin keyboard contracts.
 node scripts/test-f06-keyboard.mjs
 node scripts/test-f06-origin.mjs
+

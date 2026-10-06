@@ -14,7 +14,9 @@ const source=await readFile(panel,'utf8');
 const imported={};
 for(const spec of [...source.matchAll(/^import .+ from '([^']+)';$/gm)].map(m=>m[1])){
  if(['./map-name-match.mjs','./map-name-roi.mjs','./party-marker-calibration.mjs'].includes(spec))continue;
- imported[spec]=await import(pathToFileURL(resolve(dependencies,spec)));
+ // Keep URL queries as URL syntax; fixtures also address the canonical module path.
+ imported[spec]=await import(new URL(spec,pathToFileURL(dependencies+'/')));
+ imported[spec.split('?')[0]]=imported[spec];
 }
 const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return {promise,resolve,reject};};
 const result={route:'glyph-akinator',sequence:'TEST MAP',candidates:[],characters:[],evaluated:1,textResolved:true,reason:'test'};
@@ -447,3 +449,4 @@ await run('missing optional coordinate metadata leaves ordinary recognition inta
 
 const summary={passed:cases.every(c=>c.passed),checks,cases,scope:'Node fake DOM/canvas/Worker control-flow test; real capture coordinator and input adapters; synthetic pixels and deferred OCR/layout; no browser/WebGPU/video-decoder accuracy claim'};
 console.log(JSON.stringify(summary,null,2));if(!summary.passed)process.exitCode=1;
+

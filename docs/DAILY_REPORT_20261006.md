@@ -288,3 +288,7 @@ e05e06の公開buildは既存feature integration検査で停止。検査側が�
 - Real forward run eventually finished the latest eligible 5355.817 frame, map7401, with 15 sightings; exact BODY/CMP full-pixel hashes match. No actual queued-latest transition was observed, so this does not prove that branch engaged. Map7400 no encfld group remains a failed/unsupported frame, not absence.
 - The transient browser approval-capacity failure was resolved; final BODY/CMP/timeline were exported and the old comparison stopped. No cloud-environment reset was inferred.
 - Telemetry deployed-browser verification and reset-cause determination remain pending at this checkpoint.
+
+### 09:29 JST: publication harness compatibility repair
+
+The first telemetry build d457d81 failed in the existing check-video-panel-capture.mjs loader before executing the relevant cases: pathToFileURL(resolve(..., spec)) encoded the browser cache query as part of the filesystem name. Local reproduction matched ERR_MODULE_NOT_FOUND. Loading through new URL(spec, directoryURL), while retaining both exact and canonical fixture lookup keys, restored all 417 existing checks. No fixture inputs or assertions were weakened. A build-script comment documents the URL-loading requirement; no workflow configuration was changed. The next full Pages build remains to be verified.
