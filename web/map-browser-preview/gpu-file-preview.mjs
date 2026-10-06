@@ -1,6 +1,6 @@
 import {mountResidualInferencePreparation} from './residual-inference-preparation.mjs?v=monster-map-cpu-20261006-1005';
 import {runResidualRecognitionJob} from './residual-recognition-job.mjs?v=map-input-owned-preparation-20261006-1408';
-import {VideoMapContinuity} from './video-map-continuity.mjs?v=upper-preparation-reuse-20261006-1428';
+import {VideoMapContinuity} from './video-map-continuity.mjs?v=continuity-yield-local-evidence-20261006-1458';
 import {mountAutomaticGpuPanel} from './gpu-file-panel.mjs?v=enc-motion-at-20261006-1156';
 import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=upper-preparation-reuse-20261006-1428';
 import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=upper-preparation-reuse-20261006-1428';
@@ -13,7 +13,7 @@ import {deriveVideoMapNames} from './video-map-name-input.mjs?v=upper-preparatio
 import {MapPositionMatcher} from '../map-position.mjs';
 import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs?v=upper-preparation-reuse-20261006-1428';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
-import {mountMapVideoComparison} from './map-video-comparison.mjs?v=upper-preparation-reuse-20261006-1428';
+import {mountMapVideoComparison} from './map-video-comparison.mjs?v=continuity-yield-local-evidence-20261006-1458';
 import {openMapRom} from './static-scene.mjs?v=native-source-reuse-20261006-1028';
 import {buildRomMapCatalog} from './rom-map-catalog.mjs';
 import {nameCatalogMaps} from './rom-map-names.mjs';

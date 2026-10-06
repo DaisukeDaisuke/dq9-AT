@@ -61,6 +61,7 @@ node --test scripts/test-classification-display-deferred.mjs
 node --test scripts/test-video-pipeline-timing.mjs
 node --test scripts/test-first-gap-timing.mjs
 node --test scripts/test-rejected-camera-evidence.mjs
+node --test scripts/test-rejected-local-patch-evidence.mjs
 node --test scripts/test-paused-local-video-startup.mjs
 node --experimental-vm-modules --test scripts/check-paused-video-startup-panel.mjs
 
@@ -141,3 +142,6 @@ node --test scripts/test-map-input-timing.mjs
 
 # Reuse only private same-frame upper preparation; preserve per-descriptor outputs.
 node --test scripts/test-video-upper-preparation.mjs
+
+# Capture/input tasks can run between continuity descriptors; stale work aborts.
+node --test scripts/test-continuity-descriptor-yield.mjs

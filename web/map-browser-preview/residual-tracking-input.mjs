@@ -1,4 +1,4 @@
-import{videoTrackingFrameKey,videoTrackingSourceKey}from'./video-patch-correspondence.mjs?v=camera-loss-evidence-20261006-1205';
+import{videoTrackingFrameKey,videoTrackingSourceKey}from'./video-patch-correspondence.mjs?v=continuity-yield-local-evidence-20261006-1458';
 // Adapter to the existing image-space tracker; residuals are not certified enemies.
 import {EnemyProposalTracker} from '../monster-position-proposals.mjs?v=camera-loss-evidence-20261006-1205';
 export class ResidualTracker {

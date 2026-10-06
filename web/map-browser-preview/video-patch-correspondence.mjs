@@ -12,22 +12,27 @@ export function patchTrackingFrame(frame,tracks){
 }
 function registerPatch(previous,current,roi,{maximumSamples=1024}={}){
  const limits=IMAGE_TRANSLATION_LIMITS,r={x:Math.round(roi.x),y:Math.round(roi.y),w:Math.round(roi.w),h:Math.round(roi.h)};
- const fail=reason=>({ready:false,reason,identityCertified:false,calibrated:false});
+ // Diagnostic properties never participate in the registration decision. Keep
+ // nonfinite residuals explicit in JSON and do not reevaluate any pixel costs.
+ const fail=(reason,details)=>{const result={ready:false,reason,identityCertified:false,calibrated:false};try{result.rejectedPatchAttempt={method:'bounded-clipped-SAD-translation',roi:r,...details,limits:{...limits},diagnosticOnly:true,identityCertified:false};}catch{/* Optional evidence must not turn a failed registration into a thrown observation. */}return result;};
  if(![r.x,r.y,r.w,r.h].every(finite)||r.w<=0||r.h<=0)return fail('patch-bounds-unavailable');
  // This limits work, not object size or identity confidence. The source
  // registration's unchanged minimum known-sample count still applies.
  const stride=Math.max(1,Math.ceil(Math.sqrt(r.w*r.h/maximumSamples))),samples=[];let texture=0,textureCount=0;
  for(let y=Math.max(0,r.y);y<Math.min(H,r.y+r.h);y+=stride)for(let x=Math.max(0,r.x);x<Math.min(W,r.x+r.w);x+=stride){const i=y*W+x;if(previous.blocked[i])continue;samples.push(i);if(x+1<Math.min(W,r.x+r.w)&&!previous.blocked[i+1]){texture+=Math.abs(previous.gray[i]-previous.gray[i+1]);textureCount++;}if(y+1<Math.min(H,r.y+r.h)&&!previous.blocked[i+W]){texture+=Math.abs(previous.gray[i]-previous.gray[i+W]);textureCount++;}}
- texture=textureCount?texture/textureCount:0;if(samples.length<limits.minimumSamples)return fail('insufficient-known-patch-samples');if(texture<limits.minimumTexture)return fail('patch-texture-unresolved');
- const costs=new Map();
- function cost(dx,dy){const k=dx+','+dy;if(costs.has(k))return costs.get(k);let sum=0,count=0;const offset=dy*W+dx;for(const i of samples){const x=i%W+dx,y=Math.floor(i/W)+dy;if(x<0||x>=W||y<0||y>=H||current.blocked[i+offset])continue;sum+=Math.min(limits.residualClip,Math.abs(previous.gray[i]-current.gray[i+offset]));count++;}const value=count>=limits.minimumSamples?sum/count:Infinity;costs.set(k,value);return value;}
+ texture=textureCount?texture/textureCount:0;
+ const sampleEvidence={samples:samples.length,texture,textureCount,stride,maximumSamples,searchPerformed:false};
+ if(samples.length<limits.minimumSamples)return fail('insufficient-known-patch-samples',sampleEvidence);if(texture<limits.minimumTexture)return fail('patch-texture-unresolved',sampleEvidence);
+ const costs=new Map();let lowestCost=Infinity,bestKnownSamples=0;
+ function cost(dx,dy){const k=dx+','+dy;if(costs.has(k))return costs.get(k);let sum=0,count=0;const offset=dy*W+dx;for(const i of samples){const x=i%W+dx,y=Math.floor(i/W)+dy;if(x<0||x>=W||y<0||y>=H||current.blocked[i+offset])continue;sum+=Math.min(limits.residualClip,Math.abs(previous.gray[i]-current.gray[i+offset]));count++;}const value=count>=limits.minimumSamples?sum/count:Infinity;costs.set(k,value);if(costs.size===1||value<lowestCost){lowestCost=value;bestKnownSamples=count;}return value;}
  let best={dx:0,dy:0,residual:cost(0,0)};
  for(let dy=-limits.radius;dy<=limits.radius;dy+=2)for(let dx=-limits.radius;dx<=limits.radius;dx+=2){const residual=cost(dx,dy);if(residual<best.residual)best={dx,dy,residual};}
  const rough={...best};for(let dy=Math.max(-limits.radius,rough.dy-1);dy<=Math.min(limits.radius,rough.dy+1);dy++)for(let dx=Math.max(-limits.radius,rough.dx-1);dx<=Math.min(limits.radius,rough.dx+1);dx++){const residual=cost(dx,dy);if(residual<best.residual)best={dx,dy,residual};}
- if(!finite(best.residual)||best.residual>limits.maximumResidual||Math.abs(best.dx)>=limits.radius||Math.abs(best.dy)>=limits.radius)return fail('patch-registration-outside-existing-gates');
+ const rejectedSearch=()=>({...sampleEvidence,searchPerformed:true,dx:best.dx,dy:best.dy,residual:finite(best.residual)?best.residual:String(best.residual),residualFinite:finite(best.residual),knownSamples:bestKnownSamples,testedOffsets:costs.size,failedGates:[!finite(best.residual)?'nonfinite-registration-residual':null,finite(best.residual)&&best.residual>limits.maximumResidual?'residual-above-existing-maximum':null,Math.abs(best.dx)>=limits.radius?'horizontal-search-boundary':null,Math.abs(best.dy)>=limits.radius?'vertical-search-boundary':null].filter(Boolean)});
+ if(!finite(best.residual)||best.residual>limits.maximumResidual||Math.abs(best.dx)>=limits.radius||Math.abs(best.dy)>=limits.radius)return fail('patch-registration-outside-existing-gates',rejectedSearch());
  // An exact tied minimum is unresolved. This adds a conservative ambiguity
  // rejection, never a fitted score margin or an identity certificate.
- if([...costs.values()].filter(v=>v===best.residual).length!==1)return fail('patch-registration-tied');
+ const tiedBestOffsets=[...costs.values()].filter(v=>v===best.residual).length;if(tiedBestOffsets!==1)return fail('patch-registration-tied',{...rejectedSearch(),tiedBestOffsets,failedGates:['exact-tied-minimum']});
  const knownSamples=samples.filter(i=>{const x=i%W+best.dx,y=Math.floor(i/W)+best.dy;return x>=0&&x<W&&y>=0&&y<H&&!current.blocked[y*W+x];}).length;
  const partialPatch=r.x<0||r.y<0||r.x+r.w>W||r.y+r.h>H||r.x+best.dx<0||r.y+best.dy<0||r.x+r.w+best.dx>W||r.y+r.h+best.dy>H;
  return{ready:true,...best,texture,samples:samples.length,knownSamples,partialPatch,roi:r,calibrated:false,searchComplete:false,identityCertified:false};
