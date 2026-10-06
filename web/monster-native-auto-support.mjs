@@ -14,7 +14,7 @@ import{readNSBCA,sampleMatrices}from'./monster-animation.mjs?v=stored-pivot-sour
 import{decodeEncounterStream}from'./encounter-distribution.mjs';
 import{readNaturalMonsterScaleRule,naturalMonsterScaleCandidates}from'./monster-source-scale.mjs?v=native-body-20261006-0212';
 import{sourceFloorPlanes,preparePerspectiveBody,placeCompleteBodyOnFloors}from'./monster-perspective-body.mjs?v=native-body-20261006-0212';
-import{createNativeBodySupportRunner}from'./monster-native-support-runner.mjs?v=native-extents-latest-20261006-0843';
+import{createNativeBodySupportRunner}from'./monster-native-support-runner.mjs?v=native-tracking-ownership-20261006-1006';
 import{readFrozenMonsterMode1Fog}from'./monster-source-mode1-fog.mjs?v=native-body-20261006-0212';
 import{readFrozenMonsterFog}from'./monster-source-fog.mjs?v=native-body-20261006-0212';
 const need=(v,m)=>{if(!v)throw Error(m);},clone=v=>structuredClone(v),pause=()=>new Promise(r=>setTimeout(r,0));

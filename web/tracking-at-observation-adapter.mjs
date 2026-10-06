@@ -1,3 +1,5 @@
+import {collectNativeTrackingBodySupport} from './tracking-native-body-support.mjs?v=native-tracking-ownership-20261006-1006';
+import {trackingSightingMapProvenance} from './map-browser-preview/map-hypothesis-provenance.mjs?v=native-body-20261006-0212';
 import {compileExperiment} from './at-observation-compiler.mjs?v=field-stream-20261005-1108';
 import {prepare} from './at-identify-engine.mjs';
 import {prepareIndexIdentification} from './at-identify-index-engine.mjs';
@@ -37,5 +39,5 @@ export function compileTrackingObservations(bundle,{tables={},domain,budget,mate
  const experiment=compileExperiment({sightings,associationAlternatives:alternatives,hypotheses,coverage:{...copy(bundle.coverage??{}),eventHypothesesComplete:false,associationEnumerationComplete:false,deferredAutomaticAlternatives:copy(bundle.automaticATEventEvidence?.deferred??[]),broadTrackingHypothesesDeferred:!includeBroadSingletons}},{tables});
  const request={experiment,domain:copy(domain),budget:copy(budget),...(domain?.kind==='known-origin-terminal-indices'?{materialization:copy(materialization)}:{})};
  const gate=domain?.kind==='known-origin-terminal-indices'?prepareIndexIdentification(request):prepare(request);
- return {request,groups:[...groups.values()].map(g=>({id:g.id,sightingIds:g.sightings.map(s=>s.id)})),gate:gate.checkpoint.branches.map(b=>({branchId:b.branchId,status:b.status,reason:b.reason??null})),minimumProvenATCalls:0,currentVideoStateRecovered:false,missingEvidence:['Automatic native birth/event identification and bounded AT call gaps are not produced by image tracks.','Event-to-current-video propagation is unbounded.'],bundleSnapshot:copy(bundle)};
+ return {nativeBodySupportEvidence:collectNativeTrackingBodySupport(sightings.map(s=>({s,plan:planBySighting.get(s.id),mapProvenance:trackingSightingMapProvenance(bundle,s)}))),request,groups:[...groups.values()].map(g=>({id:g.id,sightingIds:g.sightings.map(s=>s.id)})),gate:gate.checkpoint.branches.map(b=>({branchId:b.branchId,status:b.status,reason:b.reason??null})),minimumProvenATCalls:0,currentVideoStateRecovered:false,missingEvidence:['Automatic native birth/event identification and bounded AT call gaps are not produced by image tracks.','Event-to-current-video propagation is unbounded.'],bundleSnapshot:copy(bundle)};
 }

@@ -48,5 +48,22 @@ export class VideoObservationTimeline {
   if(provenance.candidates.length)this.previousMap={signature,sourcePTS:row.sourcePTS,candidates:copy(candidates),provenance:copy(provenance)};return true;
  }
  update(frameSerial,patch){const row=this.frames.find(f=>f.frameSerial===frameSerial);if(!row)return false;Object.assign(row,copy(patch));return true;}
- snapshot(){return copy({schema:'video-map-observation-timeline-v1',source:this.source,resetReason:this.reason,resetCount:this.resetCount,totalAnalyzedFrames:this.totalFrames,frames:this.frames,entryCandidates:this.events,unobservedIntervals:this.gaps,retention:{maximumFrames:this.maximumFrames,maximumEvents:this.maximumEvents,maximumGaps:this.maximumGaps,evicted:this.evicted,complete:this.evicted.frames+this.evicted.events+this.evicted.gaps===0},coverage:{everyDecodedFrameObserved:false,continuousRecognitionComplete:false,entryDetectionComplete:false,romLayerResetKnown:false,absenceCertified:false},minimumProvenATCalls:0,currentVideoStateRecovered:false});}
+ #snapshotRecord(){return {schema:'video-map-observation-timeline-v1',source:this.source,resetReason:this.reason,resetCount:this.resetCount,totalAnalyzedFrames:this.totalFrames,frames:this.frames,entryCandidates:this.events,unobservedIntervals:this.gaps,retention:{maximumFrames:this.maximumFrames,maximumEvents:this.maximumEvents,maximumGaps:this.maximumGaps,evicted:this.evicted,complete:this.evicted.frames+this.evicted.events+this.evicted.gaps===0},coverage:{everyDecodedFrameObserved:false,continuousRecognitionComplete:false,entryDetectionComplete:false,romLayerResetKnown:false,absenceCertified:false},minimumProvenATCalls:0,currentVideoStateRecovered:false};}
+ snapshot(){return copy(this.#snapshotRecord());}
+ // Compose the current timeline before the single ownership clone. The old
+ // observation's timeline would otherwise be cloned and immediately discarded.
+ // Fast path requires the inspected residual producer's fresh envelope, with
+ // no other references to that wrapper inside value. Metadata alone is not
+ // proof of this contract. Generic callers retain the legacy alias behavior.
+ snapshotBundle(value,{unaliasedResidualEnvelope=false}={}){
+  const observations=value.videoObservations;
+  if(unaliasedResidualEnvelope!==true||value.schema!=='headless-monster-observation-bundle-v1'||value.producer!=='browser-ROM-background-residual'||!Array.isArray(observations)||observations.length!==1||!Object.hasOwn(observations,0)||observations[0]?.kind!=='partial-video-observation-timeline'||Object.getPrototypeOf(observations[0])!==Object.prototype){
+   const completed=copy(value);for(const item of completed.videoObservations??[])item.timeline=this.snapshot();return completed;
+  }
+  const timeline=this.#snapshotRecord();
+  return copy({...value,videoObservations:observations.map(item=>({...item,timeline}))});
+ }
+ // JSON serialization is synchronous, so it needs no detached graph before
+ // converting this already-owned state to a string. No live references escape.
+ stringifySnapshot(space=2){return JSON.stringify(this.#snapshotRecord(),null,space);}
 }

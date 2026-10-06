@@ -1,4 +1,4 @@
-import {compileTrackingObservations} from './tracking-at-observation-adapter.mjs?v=field-stream-20261005-1108';
+import {compileTrackingObservations} from './tracking-at-observation-adapter.mjs?v=native-tracking-ownership-20261006-1006';
 import {fingerprint} from './tracking-at-runner.mjs?v=field-stream-20261005-1108';
 const need=(v,m)=>{if(!v)throw Error(m);};
 // Call directly from the completed, immutable continuous-bundle callback.
@@ -7,7 +7,7 @@ export async function prepareTrackingJob(bundle,options,{engineRevision,observat
  const prepared=compileTrackingObservations(bundle,options),romSHA256=bundle.source?.background?.romSHA256;
  need(/^[a-f0-9]{64}$/.test(romSHA256??''),'ROM identity missing');need(typeof engineRevision==='string'&&engineRevision.length,'Engine revision missing');
  const identity={bundleSHA256:await fingerprint(bundle),romSHA256,engineRevision,observationRevision,tablesSHA256:await fingerprint(options.tables??{})};
- return {checkpointKey:await fingerprint({request:prepared.request,identity}),request:prepared.request,identity,gate:prepared.gate,missingEvidence:prepared.missingEvidence};
+ return {nativeBodySupportEvidence:prepared.nativeBodySupportEvidence,checkpointKey:await fingerprint({request:prepared.request,identity}),request:prepared.request,identity,gate:prepared.gate,missingEvidence:prepared.missingEvidence};
 }
 // Browser transaction completion is the ACK boundary; request success alone is
 // not ACK. IndexedDB availability/quota failure is surfaced, never hidden.

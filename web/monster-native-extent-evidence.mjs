@@ -5,16 +5,23 @@ import {nativeProjectedBodyEnvelope} from './monster-native-body-placement.mjs?v
 const WIDTH=256,HEIGHT=192,PIXELS=WIDTH*HEIGHT;
 const unsupported=reason=>({ready:false,empty:null,roi:null,pixels:null,reason});
 const validMask=mask=>mask instanceof Uint8Array&&mask.length===PIXELS&&mask.every(x=>x===0||x===1);
-function summarize(mask,alignment,comparisonMask){
+// Keep comparison validity first in the caller. Each source mask is then
+// validated and summarized in one pass. Ownership subset checking shares its
+// pass, but a later nonbinary value still takes precedence over that failure.
+function summarize(mask,alignment,comparisonMask,coverage=null){
+ if(!(mask instanceof Uint8Array)||mask.length!==PIXELS)return {valid:false};
+ let outsideCoverage=false;
  let minX=WIDTH,minY=HEIGHT,maxX=-1,maxY=-1,pixels=0,knownPixels=0,outsideFramePixels=0;
  // Read the unaligned source mask and apply its integer alignment once.
- for(let i=0;i<PIXELS;i++)if(mask[i]){
+ for(let i=0;i<PIXELS;i++){
+  const value=mask[i];if(value!==0&&value!==1)return {valid:false};
+  if(!value)continue;if(coverage&&!coverage[i])outsideCoverage=true;
   const x=i%WIDTH+alignment.dx,y=(i>>8)+alignment.dy;
   if(x<0||y<0||x>=WIDTH||y>=HEIGHT){outsideFramePixels++;continue;}
   const index=y*WIDTH+x;pixels++;knownPixels+=comparisonMask[index];
   minX=Math.min(minX,x);minY=Math.min(minY,y);maxX=Math.max(maxX,x);maxY=Math.max(maxY,y);
  }
- return {ready:true,empty:pixels===0,roi:pixels?{x:minX,y:minY,w:maxX-minX+1,h:maxY-minY+1}:null,pixels,knownPixels,unavailablePixels:pixels-knownPixels,outsideFramePixels,clippedByAlignment:outsideFramePixels>0,retainedPixelMask:false};
+ return {valid:true,outsideCoverage,extent:{ready:true,empty:pixels===0,roi:pixels?{x:minX,y:minY,w:maxX-minX+1,h:maxY-minY+1}:null,pixels,knownPixels,unavailablePixels:pixels-knownPixels,outsideFramePixels,clippedByAlignment:outsideFramePixels>0,retainedPixelMask:false}};
 }
 /** The projected envelope and raster footprint are deliberately separate from
  * body color ownership. In mixed composition, final color ownership does not
@@ -30,16 +37,18 @@ function collectNativeBodyExtentEvidence({projected,rendered,alignment,compariso
  }
  if(rendered?.ready!==true)return evidence;
  if(!validMask(comparisonValidMask)){evidence.bodyColorOwnership=unsupported('Frozen comparison-validity mask unavailable');return evidence;}
- if(!validMask(rendered.sourceCoverage)){evidence.bodyColorOwnership=unsupported('Binary source raster footprint unavailable; composite alpha is not substituted');return evidence;}
- const footprint=summarize(rendered.sourceCoverage,alignment,comparisonValidMask);
+ const footprintSummary=summarize(rendered.sourceCoverage,alignment,comparisonValidMask);
+ if(!footprintSummary.valid){evidence.bodyColorOwnership=unsupported('Binary source raster footprint unavailable; composite alpha is not substituted');return evidence;}
+ const footprint=footprintSummary.extent;
  evidence.rasterFootprint={...footprint,kind:'source-alpha-positive-raster-footprint',bodyColorContributionImplied:false};
  if(rendered.sourceAcceptedSubset==='isolated-opaque-binary-body-polygons'&&rendered.sceneOcclusionApplied===false){
   evidence.bodyColorOwnership={...footprint,roi:footprint.roi?{...footprint.roi}:null,kind:'isolated-source-opaque-binary-body-coverage',completeWithinAdmittedRendererSubset:true,allSceneOcclusionReconstructed:false,allVisibleContributionsCapturedWithinComposition:true,observedBodyCertified:false};
  }else if(rendered.sourceAcceptedSubset==='known-source-destination-mixed-body'&&rendered.sceneOcclusionApplied===true){
   const ownership=rendered.nativeState?.colorOwnerIsBody;
-  if(!validMask(ownership)){evidence.bodyColorOwnership=unsupported('Accepted mixed-body final-color ownership mask unavailable; composite alpha is not substituted');return evidence;}
-  if(ownership.some((x,i)=>x&&!rendered.sourceCoverage[i])){evidence.bodyColorOwnership=unsupported('Body color ownership outside accepted source footprint');return evidence;}
-  evidence.bodyColorOwnership={...summarize(ownership,alignment,comparisonValidMask),kind:'source-final-body-color-ownership',completeWithinAdmittedRendererSubset:true,allVisibleContributionsCapturedWithinComposition:false,mayOmitEarlierBodyContributionThroughLaterMapBlending:true,observedBodyCertified:false,scope:'Pixels whose final accepted source color writer is the body. Earlier body contribution through later map blending is not reconstructed by this ownership mask.'};
+  const ownershipSummary=summarize(ownership,alignment,comparisonValidMask,rendered.sourceCoverage);
+  if(!ownershipSummary.valid){evidence.bodyColorOwnership=unsupported('Accepted mixed-body final-color ownership mask unavailable; composite alpha is not substituted');return evidence;}
+  if(ownershipSummary.outsideCoverage){evidence.bodyColorOwnership=unsupported('Body color ownership outside accepted source footprint');return evidence;}
+  evidence.bodyColorOwnership={...ownershipSummary.extent,kind:'source-final-body-color-ownership',completeWithinAdmittedRendererSubset:true,allVisibleContributionsCapturedWithinComposition:false,mayOmitEarlierBodyContributionThroughLaterMapBlending:true,observedBodyCertified:false,scope:'Pixels whose final accepted source color writer is the body. Earlier body contribution through later map blending is not reconstructed by this ownership mask.'};
  }else evidence.bodyColorOwnership=unsupported('Renderer subset has no admitted body-color ownership contract');
  return evidence;
 }

@@ -294,3 +294,27 @@ e05e06の公開buildは既存feature integration検査で停止。検査側が�
 The first telemetry build d457d81 failed in the existing check-video-panel-capture.mjs loader before executing the relevant cases: pathToFileURL(resolve(..., spec)) encoded the browser cache query as part of the filesystem name. Local reproduction matched ERR_MODULE_NOT_FOUND. Loading through new URL(spec, directoryURL), while retaining both exact and canonical fixture lookup keys, restored all 417 existing checks. No fixture inputs or assertions were weakened. A build-script comment documents the URL-loading requirement; no workflow configuration was changed. The next full Pages build remains to be verified.
 
 The next build 056d387 passed the repaired capture harness, then found the same cache-version assumption in the existing map-recognize shell import assertion. Its comparison now removes the cache query while retaining the exact two expected module paths; 50 existing checks pass. Local execution also passed the preceding suites, but cannot establish a full production build because the checked-in map WASM is a build-time placeholder lacking map_registration; the CI-generated WASM must be verified by the next complete build.
+
+
+## 10:08 JST: lossless body-support and observation handoff improvements
+
+### Implemented
+- Native body extent validation and summary now share their source-mask scans. Existing comparison-first and malformed-mask failure precedence is preserved. No proposal, score, source raster, pose, root, model order or certification rule changes.
+- Compact native body support now reaches event-evidence derivation, observation compilation, prepared jobs and a separately owned controller companion. Original sighting/frame/model/branch/proposal identities and negative/unsupported alternatives remain. Shared model IDs or overlapping boxes do not merge actors or certify an actor count.
+- The new tracking-only companion is separated before the existing UI AT snapshot fingerprint. Every prior automatic event field remains hashed. Actual UI observationRevision, request, stored-checkpoint lookup and retry retain the original checkpoint identity on the fixed input. No broad hash exemption or AT constraint is added.
+- Observation publication composes the current timeline before one ownership clone instead of cloning an old timeline that is immediately discarded. Only the four inspected producer paths opt in to the unaliased-envelope contract; generic calls preserve the old alias behavior. Full timeline download serializes synchronously without the redundant pre-serialization graph clone. Existing evidence and eviction counters remain available.
+
+### Measured independently
+- 208 + 88 saved real-ROM proposals: exact pixels, scores, extents and unchanged input buffers. Extent-only alternating measurements over 20 repetitions:3.895→1.864s and1.353→0.752s. Instrumented mask visits:36,569,088→22,413,312 and12,976,128→8,650,752. These are extent-helper results, not full-video throughput. An earlier short whole-service sample was slower after the change; no universal end-to-end speedup is claimed.
+- Existing extent contracts and baseline equality checks pass. Current20-case source replay,31 tracking propagation guards, compiled AT request/gates/groups, and actual controller checkpoint lookup/retry checks pass. The105 native alternatives remain105 alternatives, not105 actors.
+- The saved three-frame/69-sighting timeline still exports exactly23,939,054 bytes with SHA256 cddad96c395b765e089a078841312a7b1d0cd84309c75bfa96ad18be27d0c53e. Its pre-serialization clone is eliminated.
+- Saved BODY + later timeline publication uses one clone instead of two; measured reconstructed clone input13,968,863→13,783,119 bytes. A separate structural replay containing the saved prior history measures19,594,867→13,783,119 bytes. That structural case is not the unrecovered live crash snapshot. Parsed JSON loses live object aliases; these are Node reconstructed-graph measurements, not Chromium heap or crash-cause proof.
+- Live producer/transform identity checks establish the explicit fast-path envelope contract. Generic alias fallback, returned-copy isolation, latest-pending, seek/stop/policy/ROM cancellation and exact downloaded JSON pass.
+
+### Browser evidence and remaining limits
+- Runtime37357aa completed the original5306.5 frame with the same full pixel hash,21 sightings and original raw regions. First pause/resume retained source epoch2/segment1 without a backward-time reset; the three-frame timeline was saved.
+- Second pause/resume was observed paused at5324.089227 seconds, but its timeline export was not recovered. Own-cloud Chromium then displayed error code9. The cause is unknown. The user reported recovery by reloading; a subsequent own-cloud screenshot and tab reattachment confirmed the initial page was responsive again. No environment loss was observed.
+- Earlier tab disappearance without a crash screen remains an interruption, not a confirmed crash. The diagnostic timestamp patch remains available, but this run did not recover the old backward-time cause.
+- These new resource reductions do not establish that error9 is fixed. Combined deployment and real-browser recheck remain pending at this source checkpoint. Body identity, fragmented-body association, all-input recognition, current AT state and proven AT progress remain unconfirmed.
+
+The full source and reusable replay drivers are backed up in the allowed repositories; game input/evidence assets remain outside Git.

@@ -1,6 +1,6 @@
 import {bindConditionalBodyPrediction} from './conditional-body-map-compatibility.mjs?v=native-body-20261006-0212';
 import {conditionalBodyPrediction} from '../monster-body-support.mjs?v=field-stream-20261005-1108';
-import {residualAssociationHints,videoObservationFrameKey} from './video-observation-timeline.mjs?v=native-body-20261006-0212';
+import {residualAssociationHints,videoObservationFrameKey} from './video-observation-timeline.mjs?v=native-tracking-ownership-20261006-1006';
 // Background residuals are geometry hypotheses, never certified detections/draws.
 import {decodeEncounterContexts,contextsForMap} from '../encounter-context.mjs';
 import {decodeCalls} from './minimap-preview.mjs';

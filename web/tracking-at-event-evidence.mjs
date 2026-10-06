@@ -1,3 +1,4 @@
+import {collectNativeTrackingBodySupport} from './tracking-native-body-support.mjs?v=native-tracking-ownership-20261006-1006';
 import {sightingBodyMapCompatibility} from './map-browser-preview/conditional-body-map-compatibility.mjs?v=native-body-20261006-0212';
 import {trackingSightingMapProvenance} from './map-browser-preview/map-hypothesis-provenance.mjs?v=native-body-20261006-0212';
 // Automatic *conditional* source-model predicates, never native event certificates.
@@ -18,7 +19,7 @@ export function collectTrackingSightings(bundle){
  return {rows:[...seen.values()],groups:[...groups.values()]};
 }
 export function deriveTrackingEventEvidence(bundle){
- const {groups}=collectTrackingSightings(bundle),singleEvents=[],tracks=[],deferred=[];
+ const {groups,rows}=collectTrackingSightings(bundle),singleEvents=[],tracks=[],deferred=[];
  for(const [index,group]of groups.entries()){
   const candidates=new Map();
   for(const {s,plan,mapProvenance}of group.rows){
@@ -42,6 +43,6 @@ export function deriveTrackingEventEvidence(bundle){
   }
  }
  singleEvents.sort((a,b)=>Number(b.sourceEvidence.some(s=>s.conditionalBodyPrediction?.modelId===b.modelId))-Number(a.sourceEvidence.some(s=>s.conditionalBodyPrediction?.modelId===a.modelId)));
- return {schema:'automatic-tracking-event-evidence-v1',producer:'ROM-body-prediction-singleton-v2',singleEvents,tracks,deferred,chains:[],eventOrderKnown:false,interEventCalls:{min:'1',max:null},interEventGapScope:'Only if distinct latent weighted events exist; both orders remain possible, no draw count inferred from PTS.',eventToObservationCalls:{min:'0',max:null},unknownAlternativeRetained:true,minimumProvenATCalls:0,currentVideoStateRecovered:false,coverage:{eventHypothesesComplete:false,associationEnumerationComplete:false},scope:'Only supported conditional body predictions are scheduled. Other ranks are deferred and retained, not hard-pruned. Each scheduled branch is one conditional latent event boundary. It is not an intersection across tracks and never narrows the no-event/error/current-state universe.'};
+ return {nativeBodySupportEvidence:collectNativeTrackingBodySupport(rows),schema:'automatic-tracking-event-evidence-v1',producer:'ROM-body-prediction-singleton-v2',singleEvents,tracks,deferred,chains:[],eventOrderKnown:false,interEventCalls:{min:'1',max:null},interEventGapScope:'Only if distinct latent weighted events exist; both orders remain possible, no draw count inferred from PTS.',eventToObservationCalls:{min:'0',max:null},unknownAlternativeRetained:true,minimumProvenATCalls:0,currentVideoStateRecovered:false,coverage:{eventHypothesesComplete:false,associationEnumerationComplete:false},scope:'Only supported conditional body predictions are scheduled. Other ranks are deferred and retained, not hard-pruned. Each scheduled branch is one conditional latent event boundary. It is not an intersection across tracks and never narrows the no-event/error/current-state universe.'};
 }
 export function automaticSingletonSearchOptions(tables){return {tables:clone(tables??{}),includeBroadSingletons:false,domain:{kind:'all-output-classes'},budget:{maxInspectedStates:0,maxWallTimeMs:2000,chunkStates:4096}};}
