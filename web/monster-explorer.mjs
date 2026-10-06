@@ -7,7 +7,7 @@ import {projectMonsterOuterReset} from './monster-lifecycle.mjs';
 import {ATKernel, parseSeed} from './at-core.mjs';
 import {FieldATKernel} from './field-at.mjs';
 import {markerCoordinateBinding} from './map-marker-coordinate.mjs';
-import {setupFirstSpawnPanel} from './first-spawn-panel.mjs?v=production-inputs-20261006-1320';
+import {setupFirstSpawnPanel} from './first-spawn-panel.mjs?v=field-source-preparation-20261006-1806';
 
 export const EXPLORER_SCHEMA = 'dq9-monster-explorer-initial-config-v1';
 const PROFILE = 'hypothetical-state2-7402-v1';

@@ -5,7 +5,7 @@ import {bindF06CreatorOrigin} from './f06-creator.mjs';
 // carries only internally created actors under explicit phase/runtime inputs.
 import {prepareMapTransitions,advanceMapTransition} from './map-transition.mjs';
 import {prepareF06Continuation,advanceF06Continuation} from './f06-continuation.mjs';
-import {decodeEncounterStream} from './encounter-distribution.mjs';
+import {prepareFieldSpawnTables} from './field-spawn-source.mjs?v=field-source-preparation-20261006-1806';
 import {mineCreatorResources,bindCreatorResources} from './monster-creation-resources.mjs';
 import {FieldScheduler} from './field-scheduler.mjs';
 import {queryPreferredFieldNode,preferredNodeTrigFromRom} from './field-preferred-node.mjs';
@@ -103,16 +103,16 @@ export function createFirstSpawnReplay({project,rom,kernel,fieldKernel,atKernel,
   check(!context.fields.some(f=>overlaps(f.pointer,0x314))&&!parties.some(p=>p.pointer&&overlaps(p.pointer,0x250))&&!overlaps(context.controllerPointer,0x4220)&&!overlaps(0x020f33d8,0x3b0)&&!overlaps(0x020eee90,4)&&!overlaps(0x020fed44,4)&&!overlaps(0x021d7a94,2),'pool resetと保持runtimeのaliasは未対応です');
  }
  if(continueNewborn){const pointers=[];for(const slot of inventory.slots){const d=describeInventorySlot(slot);check(d.allocated!==null&&(d.allocated===false||(d.allocatorFree===true&&d.active===false)),'継続の初期状態には他の自然actor不在が必要です');if(d.allocated)pointers.push(d.pointer);}check(new Set(pointers).size===pointers.length,'registry別slotの同一object aliasは継続区間で未対応です');}
- const decoded=decodeEncounterStream(new Uint8Array(project.nitro.readFile('data/prm/encfld.bin'))),groups=decoded.groups.filter(g=>g.mapId===runtime.mapId);
+ const preparedTables=prepareFieldSpawnTables(project.nitro,runtime.mapId),groups=preparedTables.groups;
  check(groups.length===1&&groups[0].conditions.every(n=>n===0),'ROMのmap/table runtime条件は未対応です');
  const rows=[],distributions={},romTableRows=[];
  for(const id of groups[0].tableIds){
-  const t=decoded.tables.find(t=>t.tableId===id);check(t&&t.totalWeight>0&&t.rows.every(r=>(r.packedRaw&0x8000)===0&&!r.isTrapSpecies),'special/trap/空tableは未対応です');
-  rows.push({tableId:id,flags:t.flagsRaw});distributions[id]={maxRand:t.totalWeight,data:t.rows.map(r=>({monsterId:r.speciesId,start:r.start,end:r.end}))};
+  const t=preparedTables.tables.find(t=>t.tableId===id);check(t&&t.totalWeight>0&&t.rows.every(r=>(r.packedRaw&0x8000)===0&&!r.isTrapSpecies),'special/trap/空tableは未対応です');
+  rows.push(copy(t.schedulerRow));distributions[id]=copy(t.distribution);
   // The reached7402 resource has unit scales. Its native opcode103 conversion
   // produces4096; other scale/constructor cases stay outside this small slice.
   check(t.rows.every(r=>r.scaleArgument.type===1&&r.scaleArgument.value===1),'ROM tableのinteger unit scale以外は未対応です');
-  const mined={id,declaredCount:t.rows.length,items:t.rows.map(r=>({speciesWord:r.packedRaw,scale:4096}))};romTableRows.push(mined);
+  const mined=copy(t.creatorTable);romTableRows.push(mined);
   if(field.tables!==undefined){const bound=field.tables?.rows?.find(r=>r.id===id);check(bound&&bound.declaredCount===mined.declaredCount&&dense(bound.items)&&bound.items.length===mined.items.length&&bound.items.every((r,i)=>r.speciesWord===mined.items[i].speciesWord&&r.scale===mined.items[i].scale),'creatorのtable項目とROM数値が一致しません');}
  }
  if(field.tables!==undefined)check(field.tables?.containerPointer===field.pointer+0x5c&&field.tables?.declaredCount===rows.length&&field.tables.rows.length===rows.length,'creatorのtable一覧/bindingとROMが一致しません');

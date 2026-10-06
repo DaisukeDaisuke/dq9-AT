@@ -148,3 +148,6 @@ node --test scripts/test-continuity-descriptor-yield.mjs
 
 # Exact request-local completed minimap search reuse; incomplete work reruns.
 node --test scripts/test-completed-minimap-registration-reuse.mjs
+
+# ROM-only ordered field table preparation; runtime remains explicit.
+node scripts/test-field-spawn-source.mjs
