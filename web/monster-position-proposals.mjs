@@ -5,6 +5,7 @@
 import { normalizeSceneContext, getFieldExclusion } from './monster-field-mask.mjs';
 import { validateRGBA, cropRGBA } from './monster-roi-descriptor.mjs';
 
+export const IMAGE_TRANSLATION_LIMITS=Object.freeze({radius:16,minimumSamples:150,minimumTexture:2,maximumResidual:14,residualClip:40});
 export const PROPOSAL_REVISION = 'shrine-components-v2-recall-ui-contract';
 export const PROPOSAL_LIMITS = Object.freeze({ width: 256, height: 192, maxProposals: 8, maxGapSeconds: .5, maxTracks: 32 });
 const need = (v, m) => { if (!v) throw new Error(m); };
@@ -221,15 +222,15 @@ export function estimateCameraTranslation(previous, current) {
     for (let y = 18; y < 174; y += 6) for (let x = 18; x < 238; x += 6) {
       const a = y * 256 + x, b = (y + dy) * 256 + x + dx;
       if (previous.blocked[a] || current.blocked[b] || previous.mask[a] || current.mask[b]) continue;
-      sum += Math.min(40, Math.abs(previous.gray[a] - current.gray[b])); count++;
+      sum += Math.min(IMAGE_TRANSLATION_LIMITS.residualClip, Math.abs(previous.gray[a] - current.gray[b])); count++;
     }
-    return count >= 150 ? sum / count : Infinity;
+    return count >= IMAGE_TRANSLATION_LIMITS.minimumSamples ? sum / count : Infinity;
   };
   let best = { dx: 0, dy: 0, residual: cost(0, 0) };
   for (let dy = -16; dy <= 16; dy += 2) for (let dx = -16; dx <= 16; dx += 2) { const residual = cost(dx, dy); if (residual < best.residual) best = { dx, dy, residual }; }
   const rough = { ...best };
   for (let dy = Math.max(-16, rough.dy - 1); dy <= Math.min(16, rough.dy + 1); dy++) for (let dx = Math.max(-16, rough.dx - 1); dx <= Math.min(16, rough.dx + 1); dx++) { const residual = cost(dx, dy); if (residual < best.residual) best = { dx, dy, residual }; }
-  return { ...best, texture, reliable: texture >= 2 && Number.isFinite(best.residual) && best.residual <= 14 && Math.abs(best.dx) < 16 && Math.abs(best.dy) < 16, method: 'bounded-clipped-SAD-translation', calibrated: false };
+  return { ...best, texture, reliable: texture >= IMAGE_TRANSLATION_LIMITS.minimumTexture && Number.isFinite(best.residual) && best.residual <= IMAGE_TRANSLATION_LIMITS.maximumResidual && Math.abs(best.dx) < IMAGE_TRANSLATION_LIMITS.radius && Math.abs(best.dy) < IMAGE_TRANSLATION_LIMITS.radius, method: 'bounded-clipped-SAD-translation', calibrated: false };
 }
 
 /** Short, conservative image-space associations; track IDs are never native entities. */
@@ -244,8 +245,14 @@ export class EnemyProposalTracker {
     else if (prev) {
       const dt = t - prev.captureStamp.videoTime;
       if (result.trackingFrame.identity !== prev.trackingFrame.identity) resetReason = 'source-or-scene-change';
-      else if (!(dt > 0 && dt <= .5) || result.captureStamp.frameSerial <= prev.captureStamp.frameSerial) resetReason = 'time-or-frame-discontinuity';
-      else { camera = estimateCameraTranslation(prev.trackingFrame, result.trackingFrame); if (!camera.reliable) resetReason = 'camera-registration-unknown'; }
+      else {
+        // The replay lane orders two actually retained observations internally.
+        // This counter is not a decoded/source frame number or a source tick.
+        const replayOrder=result.captureStamp.trackingSequenceScope==='retained-frame-replay-pair'&&prev.captureStamp.trackingSequenceScope==='retained-frame-replay-pair'&&Number.isSafeInteger(result.captureStamp.trackingObservationSequence)&&result.captureStamp.trackingObservationSequence>=0&&Number.isSafeInteger(prev.captureStamp.trackingObservationSequence)&&prev.captureStamp.trackingObservationSequence>=0;
+        const currentOrder=replayOrder?result.captureStamp.trackingObservationSequence:result.captureStamp.frameSerial,previousOrder=replayOrder?prev.captureStamp.trackingObservationSequence:prev.captureStamp.frameSerial;
+        if (!(dt > 0 && dt <= .5) || currentOrder <= previousOrder) resetReason = 'time-or-frame-discontinuity';
+      }
+      if (!resetReason) { camera = estimateCameraTranslation(prev.trackingFrame, result.trackingFrame); if (!camera.reliable) resetReason = 'camera-registration-unknown'; }
     }
     if (resetReason) { this.reset(); camera = null; }
     const proposals = result.proposals, matches = [], game = result.captureStamp.sceneContext?.gameplayROI;
