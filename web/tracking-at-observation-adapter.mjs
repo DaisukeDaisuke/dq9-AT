@@ -1,4 +1,4 @@
-import {collectNativeTrackingBodySupport} from './tracking-native-body-support.mjs?v=native-tracking-ownership-20261006-1006';
+import {collectNativeTrackingBodySupport} from './tracking-native-body-support.mjs?v=enc-motion-at-20261006-1156';
 import {trackingSightingMapProvenance} from './map-browser-preview/map-hypothesis-provenance.mjs?v=native-body-20261006-0212';
 import {compileExperiment} from './at-observation-compiler.mjs?v=field-stream-20261005-1108';
 import {prepare} from './at-identify-engine.mjs';

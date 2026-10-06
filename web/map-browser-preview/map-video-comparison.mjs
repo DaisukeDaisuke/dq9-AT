@@ -1,4 +1,4 @@
-import {captureResidualNativeBackground} from './residual-recognition-job.mjs?v=automatic-playback-source-cache-20261006-1100';
+import {captureResidualNativeBackground} from './residual-recognition-job.mjs?v=enc-motion-at-20261006-1156';
 import {createFrozenAnalysisCapture} from './capture-analysis-pixels.mjs?v=native-continuation-20261006-0333';
 import {completedClassificationSnapshot,renderClassificationSummary} from './completed-classification-display.mjs?v=native-extents-latest-20261006-0843';
 import {captureAutomaticResidualPolicy,automaticResidualPolicyKey,selectAutomaticResiduals,withAutomaticResidualSelection} from './automatic-residual-policy.mjs?v=video-inference-20261005-1232';

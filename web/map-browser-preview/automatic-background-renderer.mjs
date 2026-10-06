@@ -5,8 +5,8 @@ import {createRendererSourceArchives} from './renderer-source-archives.mjs?v=rec
  * remain CPU preparation; a GPU utilisation or acceleration claim is not made.
  */
 import {createNativeIntegerCompute} from './native-integer-compute.mjs?v=wgsl-keyword-20261005-0834';
-import {prepareInitialMode1IntegerCompute,renderPreparedIntegerCompute} from './prepare-initial-integer-compute.mjs?v=automatic-playback-source-cache-20261006-1100';
-import {renderInitialIntegerFogAsync} from './integer-static-fog.mjs?v=automatic-playback-source-cache-20261006-1100';
+import {prepareInitialMode1IntegerComputeAsync as prepareInitialMode1IntegerCompute,renderPreparedIntegerCompute} from './prepare-initial-integer-compute.mjs?v=enc-motion-at-20261006-1156';
+import {renderInitialIntegerFogAsync} from './integer-static-fog.mjs?v=enc-motion-at-20261006-1156';
 import {createSourcePreparationCache} from './integer/source-preparation-cache.mjs?v=automatic-playback-source-cache-20261006-1100';
 
 export function createAutomaticBackgroundRenderer({initialize=createNativeIntegerCompute,prepare=prepareInitialMode1IntegerCompute,renderGpu=renderPreparedIntegerCompute,renderCpu=renderInitialIntegerFogAsync,createCache=createSourcePreparationCache,now=()=>performance.now()}={}) {
@@ -14,7 +14,7 @@ export function createAutomaticBackgroundRenderer({initialize=createNativeIntege
  let initialization=null,gpu=null,generation=0;
  const begin=()=>{if(initialization)return initialization;const mine=generation;return initialization=(async()=>{try{const value=await initialize();if(mine!==generation){value?.destroy?.();return{ready:false,reason:'renderer session released'};}return gpu=value;}catch(error){return{ready:false,reason:error.message};}})();};
  async function render({project,rom,record,active,camera,screenEffectPhase=null,isCurrent=()=>true}) {
-  const start=now(),timings={adapterWaitMs:0,sourcePreparationMs:0,gpuRenderAndDecodeMs:0,cpuFallbackMs:0},check=()=>{if(!isCurrent())throw new DOMException('自動背景描画を中止しました','AbortError');};
+  const mine=generation,start=now(),timings={adapterWaitMs:0,sourcePreparationMs:0,gpuRenderAndDecodeMs:0,cpuFallbackMs:0},check=()=>{if(mine!==generation||!isCurrent())throw new DOMException('自動背景描画を中止しました','AbortError');};
   check();const sourceProject=sourceArchives.forProject(project,rom);let reason=null,result=null;
   // These are source capability gates, not hypotheses that may be filled by a
   // selected ROM slot or elapsed video time. The CPU path keeps its own gates.
@@ -24,16 +24,16 @@ export function createAutomaticBackgroundRenderer({initialize=createNativeIntege
    let at=now();const renderer=await begin();timings.adapterWaitMs=now()-at;check();
    if(!renderer?.ready)reason='GPU unavailable: '+(renderer?.reason??'adapter not ready');
    else try {
-    at=now();let job;
-    try {const cache=createCache(sourceProject);job=prepare(cache.project,rom,record,active,camera,{applyFog:true,screenEffectPhase});job.evidence??={};job.evidence.automaticSourceCache={...cache.stats};job.evidence.rendererSourceArchives={...sourceArchives.stats};}
-    finally {timings.sourcePreparationMs=now()-at;}
+    at=now();let job,cache;
+    try {cache=createCache(sourceProject);job=await prepare(cache.project,rom,record,active,camera,{applyFog:true,screenEffectPhase,isCurrent:()=>mine===generation&&isCurrent()});job.evidence??={};job.evidence.automaticSourceCache={...cache.stats};job.evidence.rendererSourceArchives={...sourceArchives.stats};}
+    finally {cache?.dispose?.();timings.sourcePreparationMs=now()-at;}
     check();at=now();try {result=await renderGpu(renderer,job);} finally {timings.gpuRenderAndDecodeMs=now()-at;}
     check();if(!result?.ready)throw Error('GPU result is not ready');
     const counts=result.diagnostics?.counts;
     if(!counts||counts.covered!==counts.known||counts.unknownTranslucentDestinationFragments!==0)throw Error('GPU translucent destination/native color remains unresolved');
    } catch(error) {if(error.name==='AbortError')throw error;reason='GPU source/compute rejected: '+error.message;result=null;}
   }
-  if(!result){check();const at=now();try {result=await renderCpu(project,rom,record,active,camera,{applyFog:true,screenEffectPhase,isCurrent});}finally {timings.cpuFallbackMs=now()-at;}}
+  if(!result){check();const at=now();try {result=await renderCpu(project,rom,record,active,camera,{applyFog:true,screenEffectPhase,isCurrent:()=>mine===generation&&isCurrent()});}finally {timings.cpuFallbackMs=now()-at;}}
   check();const pipeline={backend:reason?'cpu-fallback':'webgpu-source-integer-pixels',fallbackReason:reason,timings:{...timings,totalMs:now()-start},cpuReferenceRendered:false,gpuTimingScope:'Wall time includes upload, compute, readback and decode; not a GPU timestamp or utilisation metric.',scope:'Existing candidate only; no position, phase, time, slot or model sweep. Dynamic state and native parity remain unproven.'};
   return {...result,diagnostics:{...result.diagnostics,automaticBackgroundPipeline:pipeline}};
  }

@@ -1,4 +1,4 @@
-import {bindConditionalBodyPrediction} from './conditional-body-map-compatibility.mjs?v=native-body-20261006-0212';
+import {bindConditionalBodyPrediction} from './conditional-body-map-compatibility.mjs?v=enc-motion-at-20261006-1156';
 import {conditionalBodyPrediction} from '../monster-body-support.mjs?v=field-stream-20261005-1108';
 import {residualAssociationHints,videoObservationFrameKey} from './video-observation-timeline.mjs?v=native-tracking-ownership-20261006-1006';
 // Background residuals are geometry hypotheses, never certified detections/draws.
@@ -13,8 +13,8 @@ export function residualModelPlan(project,mapIds,{catalog,tables,variant}){
  for(const[modelId,aliases]of catalog)for(const alias of aliases){if(!inverse.has(alias.monsterId))inverse.set(alias.monsterId,[]);inverse.get(alias.monsterId).push(modelId);}
  for(const mapId of [...new Set(mapIds)]){const found=contextsForMap(contexts,mapId);if(!found.length)unsupported.push({mapId,reason:'No encfld group; map candidate retained'});
   for(const[groupIndex,g]of found.entries()){groups.push({mapId,groupIndex,condition:clone(g.condition),source:g.source,rows:clone(g.rows),timeAndAreaKnown:false});
-   for(const row of g.rows){if(row.flags===null){unsupported.push({mapId,groupIndex,tableId:row.tableId,reason:'Table selection flags missing'});continue;}const table=tables[String(row.tableId)];if(!table?.data){unsupported.push({mapId,groupIndex,tableId:row.tableId,reason:'Existing enc table missing'});continue;}
-    for(const entry of table.data){const monsterId=Number(entry.monsterId),origin={mapId,groupIndex,tableId:row.tableId,tableFlags:row.flags,condition:clone(g.condition),trapRuleUnresolved:Boolean(entry.trapMonster)};if(!species.has(monsterId))species.set(monsterId,{monsterId,origins:[]});species.get(monsterId).origins.push(origin);
+   for(const [tableRowIndex,row] of g.rows.entries()){if(row.flags===null){unsupported.push({mapId,groupIndex,tableId:row.tableId,reason:'Table selection flags missing'});continue;}const table=tables[String(row.tableId)];if(!table?.data){unsupported.push({mapId,groupIndex,tableId:row.tableId,reason:'Existing enc table missing'});continue;}
+    for(const [entryIndex,entry] of table.data.entries()){const monsterId=Number(entry.monsterId),origin={mapId,groupIndex,tableRowIndex,tableId:row.tableId,entryIndex,monsterId,tableFlags:row.flags,condition:clone(g.condition),trapRuleUnresolved:Boolean(entry.trapMonster)};if(!species.has(monsterId))species.set(monsterId,{monsterId,origins:[]});species.get(monsterId).origins.push(origin);
      const ids=inverse.get(monsterId);if(!ids?.length){unsupported.push({...origin,monsterId,reason:'Model absent from existing CSV'});continue;}
      for(const modelId of ids){if(!models.has(modelId))models.set(modelId,{modelId,variant,speciesCandidates:clone(catalog.get(modelId)),matchedSpeciesIds:[],origins:[]});const model=models.get(modelId);if(!model.matchedSpeciesIds.includes(monsterId))model.matchedSpeciesIds.push(monsterId);model.origins.push(origin);}
     }

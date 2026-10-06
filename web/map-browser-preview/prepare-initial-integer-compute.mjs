@@ -1,3 +1,4 @@
+import{runSourceStepsSync,runSourceStepsAsync}from'./cooperative-source-work.mjs?v=native-body-20261006-0212';
 import{isSupportedMode1ColorEnvironment,isSupportedMode1FogEnvironment}from'./automatic-material-environment.mjs?v=native-body-20261006-0212';
 import{readRomMapScreenEffectPlan}from'./rom-map-screen-effect-plan.mjs';
 import{readInitialMseLayers,buildMsePolygonInputs}from'./native-mse-initial-preview.mjs?v=mode2-mse-20261005-0909';
@@ -6,25 +7,26 @@ import{createSourcePreparationCache}from'./integer/source-preparation-cache.mjs?
  * Source geometry/material preparation only. No CPU pixel render is required
  * before GPU submission. Existing ROM profiles and rejection ledgers remain.
  */
-import{readInitialMode1RasterProfile,collectInitialMode1IntegerInputs}from'./integer/initial-mode1-integer-preview.mjs?v=automatic-playback-source-cache-20261006-1100';
+import{readInitialMode1RasterProfile,collectInitialMode1IntegerInputs,collectInitialMode1IntegerInputsSteps}from'./integer/initial-mode1-integer-preview.mjs?v=automatic-playback-source-cache-20261006-1100';
 import{collectStaticOpaqueDepthInputs}from'./integer/static-opaque-depth.mjs?v=native-raster-reuse-20261006-0637';
 import{classifyStaticBinaryDepthInputs}from'./integer/static-binary-depth.mjs?v=automatic-playback-source-cache-20261006-1100';
 import{collectStaticMode0ColorInputs}from'./integer/static-mode0-rgb.mjs?v=automatic-playback-source-cache-20261006-1100';
-import{collectInitialMode1TexturedTranslucentInputs,collectInitialMode2TexturedTranslucentInputs,readInitialTexturedBlendProfile}from'./integer/native-textured-translucent.mjs?v=native-raster-reuse-20261006-0637';
+import{collectInitialMode1TexturedTranslucentInputs,collectInitialMode1TexturedTranslucentInputsSteps,collectInitialMode2TexturedTranslucentInputs,readInitialTexturedBlendProfile}from'./integer/native-textured-translucent.mjs?v=enc-motion-at-20261006-1156';
 import{automaticBillboardScenes}from'./automatic-billboard-scene.mjs';
 import{buildAutomaticNormalMatrices,applyMode2ToAutomaticScenes}from'./integer/mode2-lighting-adapter.mjs?v=field-stream-20261005-1108';
 import{projectNativePrimitiveFx}from'./integer/native-primitive-inputs.mjs';
 import{clipNativePositionPolygon}from'./integer/native-position-clip.mjs?v=native-raster-reuse-20261006-0637';
-import{prepareNativeIntegerCompute}from'./native-integer-compute-input.mjs?v=native-raster-reuse-20261006-0637';
+import{prepareNativeIntegerCompute,prepareNativeIntegerComputeSteps}from'./native-integer-compute-input.mjs?v=enc-motion-at-20261006-1156';
 const need=(x,m)=>{if(!x)throw Error(m);};
-function completeVisibleInventory(inventory,translucent){
+function* completeVisibleInventorySteps(inventory,translucent){
  need(inventory.unresolved.every(x=>typeof x.reason==='string'&&x.reason.startsWith('name-char3-A / ')),'Unresolved source drawable instance');
- const remaining=translucent.rejected.map(row=>{const p=inventory.polygons[row.index],position=projectNativePrimitiveFx(p.primitive,p.positionMatrixFx,p.projectionFx),clip=clipNativePositionPolygon(position.clipVerticesFx);return{...row,model:p.model,materialName:p.materialName,positionClipDiscarded:clip.discarded,remainingVertices:clip.positionsFx.length};});
+ const remaining=[];for(const row of translucent.rejected){yield 'native-gpu-remaining-polygon';const p=inventory.polygons[row.index],position=projectNativePrimitiveFx(p.primitive,p.positionMatrixFx,p.projectionFx),clip=clipNativePositionPolygon(position.clipVerticesFx);remaining.push({...row,model:p.model,materialName:p.materialName,positionClipDiscarded:clip.discarded,remainingVertices:clip.positionsFx.length});}
  need(remaining.every(p=>p.positionClipDiscarded),'Unsupported source polygon remains in visible clip volume');return remaining;
 }
-export function prepareInitialMode1IntegerCompute(project,rom,record,automatic,camera,{applyFog=true,screenEffectPhase=null,screenEffectRenderState=null}={}){
+function completeVisibleInventory(...args){return runSourceStepsSync(completeVisibleInventorySteps(...args));}
+export function* prepareInitialMode1IntegerComputeSteps(project,rom,record,automatic,camera,{applyFog=true,screenEffectPhase=null,screenEffectRenderState=null}={}){
  const start=performance.now(),e=automatic.environment;need(isSupportedMode1ColorEnvironment(e,record.key),'Source mode1 invariant or discrete color hypothesis required');need(!applyFog||isSupportedMode1FogEnvironment(e,record.key),'Source invariant or discrete fog hypothesis required');
- const raster=readInitialMode1RasterProfile(project,rom),inventory=collectInitialMode1IntegerInputs(project,record,automatic,camera,raster),translucent=collectInitialMode1TexturedTranslucentInputs(project,automatic,inventory),remaining=completeVisibleInventory(inventory,translucent),controls=readInitialTexturedBlendProfile(project,rom);
+ const raster=readInitialMode1RasterProfile(project,rom),inventory=yield*collectInitialMode1IntegerInputsSteps(project,record,automatic,camera,raster),translucent=yield*collectInitialMode1TexturedTranslucentInputsSteps(project,automatic,inventory),remaining=yield*completeVisibleInventorySteps(inventory,translucent),controls=readInitialTexturedBlendProfile(project,rom);
  // Disabled fog never consumes color/density. Reuse supplied source parameters;
  // an absent source record is not silently filled with guessed light/fog state.
  need(e.fogParameters,'Source fog record required for this first GPU input profile');
@@ -37,8 +39,10 @@ export function prepareInitialMode1IntegerCompute(project,rom,record,automatic,c
   compositeInputs={...translucent,polygons:[...translucent.polygons,...screen.polygons]};
   Object.assign(screenEvidence,{applied:true,polygonCount:screen.polygons.length,skippedLayers:screen.skippedLayers,phase:screen.phase,renderState:screen.renderState,currentPhaseProven:false,gatesEvaluated:screen.gatesEvaluated,scope:screen.scope});
  }}
- const parameters={...e.fogParameters,enabled:applyFog&&e.fogParameters.enabled},job=prepareNativeIntegerCompute(inventory,compositeInputs,controls,parameters);job.evidence.screenEffect=screenEvidence;job.evidence.remaining=remaining;job.evidence.totalGeometryPreparationMs=performance.now()-start;return job;
+ const parameters={...e.fogParameters,enabled:applyFog&&e.fogParameters.enabled},job=yield*prepareNativeIntegerComputeSteps(inventory,compositeInputs,controls,parameters);job.evidence.screenEffect=screenEvidence;job.evidence.remaining=remaining;job.evidence.totalGeometryPreparationMs=performance.now()-start;return job;
 }
+export function prepareInitialMode1IntegerCompute(project,rom,record,automatic,camera,options={}){return runSourceStepsSync(prepareInitialMode1IntegerComputeSteps(project,rom,record,automatic,camera,options));}
+export function prepareInitialMode1IntegerComputeAsync(project,rom,record,automatic,camera,options={}){return runSourceStepsAsync(prepareInitialMode1IntegerComputeSteps(project,rom,record,automatic,camera,options),options);}
 function initialLightBasis(project,camera){
  need(Array.isArray(camera?.viewFx)&&camera.viewFx.length===16&&camera.viewFx.every(Number.isInteger)&&Array.isArray(camera.projectionFx)&&camera.projectionFx.length===16&&camera.projectionFx.every(Number.isInteger),'Source FX32 camera matrices required');
  const checks=[[0x020b52a0,0x17101610],[0x020b51a4,0xe3a02002],[0x020b51ac,0xe5812048],[0x020b52a8,0x32323232],[0x020b51b4,0xe581007c],[0x020b52b8,0x02109d14],[0x020b52a4,0x02109cc8],[0x020b52f0,0xe2811004],[0x020b52f4,0xe3a0203e],[0x02016d6c,0xe3510000],[0x02016d70,0x1a000004],[0x02016d74,0xeb027959]];

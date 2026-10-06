@@ -7,7 +7,7 @@ import{readInitialMode1RasterProfile}from'./integer/initial-mode1-integer-previe
 import{collectStaticOpaqueDepthInputs}from'./integer/static-opaque-depth.mjs?v=native-raster-reuse-20261006-0637';
 import{classifyStaticBinaryDepthInputs,renderClassifiedStaticBinaryDepth}from'./integer/static-binary-depth.mjs?v=automatic-playback-source-cache-20261006-1100';
 import{collectStaticMode0ColorInputs,renderStaticMode0Rgb}from'./integer/static-mode0-rgb.mjs?v=automatic-playback-source-cache-20261006-1100';
-import{collectInferredMode2TexturedTranslucentInputs,readInitialTexturedBlendProfile,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb}from'./integer/native-textured-translucent.mjs?v=native-raster-reuse-20261006-0637';
+import{collectInferredMode2TexturedTranslucentInputs,readInitialTexturedBlendProfile,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb}from'./integer/native-textured-translucent.mjs?v=enc-motion-at-20261006-1156';
 import{readFogRecord}from'./native/fog-records.mjs';
 import{minimizeBox}from'./mode2-fog-photometric-inverse.mjs?v=field-stream-20261005-1108';
 const rgb=w=>[w&31,w>>>5&31,w>>>10&31],dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0),clamp=x=>Math.max(0,Math.min(1,x));

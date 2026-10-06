@@ -1,14 +1,35 @@
 import {searchAutomaticReplayInputs} from './video-replay-factor-search.mjs?v=automatic-entry-factors-20261006-1120';
-import {compileTrackingObservations} from './tracking-at-observation-adapter.mjs?v=native-tracking-ownership-20261006-1006';
+import {compileTrackingObservations} from './tracking-at-observation-adapter.mjs?v=enc-motion-at-20261006-1156';
 import {fingerprint} from './tracking-at-runner.mjs?v=field-stream-20261005-1108';
+import {createNativeMotionContinuityIndex} from './tracking-native-motion.mjs?v=enc-motion-at-20261006-1156';
 const need=(v,m)=>{if(!v)throw Error(m);};
+// Resolve the actual predecessor consumer against this owned observation.
+// This companion never enters the experiment, fingerprinted bundle or request.
+export function collectTrackingMotionAssociationInputs(bundle,nativeBodySupportEvidence,{identity=null}={}){
+ const index=createNativeMotionContinuityIndex(nativeBodySupportEvidence,{bundle}),graph=index.snapshot();
+ const ids=[...new Set((nativeBodySupportEvidence?.observations??[]).map(o=>o.sightingId).filter(id=>typeof id==='string'))];
+ const video=bundle.source?.video??{};
+ return {schema:'conditional-tracking-at-motion-inputs-v1',observationIdentity:identity?{...identity}:null,observationSource:{romSHA256:bundle.source?.background?.romSHA256??null,sourceId:video.sourceId??null,sourceEpoch:video.sourceEpoch??null,timelineSegment:video.timelineSegment??null},perSightingPriorCandidates:ids.map(id=>index.resolvePriorKnownMonsterCandidates(id)),enumeration:{budgets:graph.budgets,pairEvaluations:graph.pairEvaluations,budgetStopped:graph.budgetStopped,omittedIncomingSightings:graph.omittedIncomingSightings,associationEnumerationComplete:false},usedForATConstraints:false,additionalDrawsCertified:0,minimumProvenATCalls:0,identityCertified:false,unknownAlternativeRetained:true,currentVideoStateRecovered:false,scope:'Resolved conditional predecessor inputs for this observation snapshot. Exact table/species pairs and same-entity assumptions are still required before any constraint; independent actors are not intersected and repeated sightings create no additional draw.'};
+}
 // Call directly from the completed, immutable continuous-bundle callback.
 // This hook accepts only explicit bounded search options; it invents no prior.
-export async function prepareTrackingJob(bundle,options,{engineRevision,observationRevision}){
+export async function prepareTrackingJob(bundle,options,{engineRevision,observationRevision,isCurrent=()=>true,includeReplayInputHypotheses=true}){
+ const current=()=>{if(!isCurrent())throw new DOMException('Tracking preparation cancelled or stale','AbortError');};
+ current();
  const prepared=compileTrackingObservations(bundle,options),romSHA256=bundle.source?.background?.romSHA256;
  need(/^[a-f0-9]{64}$/.test(romSHA256??''),'ROM identity missing');need(typeof engineRevision==='string'&&engineRevision.length,'Engine revision missing');
- const identity={bundleSHA256:await fingerprint(bundle),romSHA256,engineRevision,observationRevision,tablesSHA256:await fingerprint(options.tables??{})};
- return {replayInputHypotheses:await searchAutomaticReplayInputs(bundle),nativeBodySupportEvidence:prepared.nativeBodySupportEvidence,checkpointKey:await fingerprint({request:prepared.request,identity}),request:prepared.request,identity,gate:prepared.gate,missingEvidence:prepared.missingEvidence};
+ const bundleSHA256=await fingerprint(bundle);current();
+ // The controller's revision has always been the complete owned snapshot hash.
+ // Compute it once, without a cross-observation cache or a reduced identity.
+ if(observationRevision===undefined)observationRevision=bundleSHA256;
+ const tablesSHA256=await fingerprint(options.tables??{});current();
+ const identity={bundleSHA256,romSHA256,engineRevision,observationRevision,tablesSHA256};
+ // The mounted controller already owns the companion from its earlier search.
+ // Omitting this diagnostic copy never changes the request or checkpoint hash.
+ const replayInputHypotheses=includeReplayInputHypotheses?await searchAutomaticReplayInputs(bundle,{isCurrent}):null;current();
+ const checkpointKey=await fingerprint({request:prepared.request,identity});current();
+ const nativeMotionAssociationInputs=collectTrackingMotionAssociationInputs(bundle,prepared.nativeBodySupportEvidence,{identity});current();
+ return {replayInputHypotheses,nativeBodySupportEvidence:prepared.nativeBodySupportEvidence,nativeMotionAssociationInputs,checkpointKey,request:prepared.request,identity,gate:prepared.gate,missingEvidence:prepared.missingEvidence};
 }
 // Browser transaction completion is the ACK boundary; request success alone is
 // not ACK. IndexedDB availability/quota failure is surfaced, never hidden.

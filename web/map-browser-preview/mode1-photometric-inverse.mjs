@@ -7,12 +7,12 @@ import{automaticBillboardScenes}from'./automatic-billboard-scene.mjs';
 import{readInitialMode1RasterProfile,collectInitialMode1IntegerInputsSteps}from'./integer/initial-mode1-integer-preview.mjs?v=automatic-playback-source-cache-20261006-1100';
 import{renderClassifiedStaticBinaryDepthSteps}from'./integer/static-binary-depth.mjs?v=automatic-playback-source-cache-20261006-1100';
 import{renderStaticMode0RgbSteps,presentStaticRgb}from'./integer/static-mode0-rgb.mjs?v=automatic-playback-source-cache-20261006-1100';
-import{collectInitialMode1TexturedTranslucentInputs,readInitialTexturedBlendProfile,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb}from'./integer/native-textured-translucent.mjs?v=native-raster-reuse-20261006-0637';
+import{collectInitialMode1TexturedTranslucentInputs,readInitialTexturedBlendProfile,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb}from'./integer/native-textured-translucent.mjs?v=enc-motion-at-20261006-1156';
 import{projectNativePrimitiveFx}from'./integer/native-primitive-inputs.mjs';
 import{clipNativePositionPolygon}from'./integer/native-position-clip.mjs?v=native-raster-reuse-20261006-0637';
 import{buildFogTable}from'./native/fog-raster.mjs';
-import{prepareNativeIntegerCompute}from'./native-integer-compute-input.mjs?v=native-raster-reuse-20261006-0637';
-import{renderPreparedIntegerCompute}from'./prepare-initial-integer-compute.mjs?v=automatic-playback-source-cache-20261006-1100';
+import{prepareNativeIntegerCompute}from'./native-integer-compute-input.mjs?v=enc-motion-at-20261006-1156';
+import{renderPreparedIntegerCompute}from'./prepare-initial-integer-compute.mjs?v=enc-motion-at-20261006-1156';
 const need=(x,m)=>{if(!x)throw Error(m);},expand=n=>n?2*n+1:0,median=a=>{const b=a.slice().sort((x,y)=>x-y);return b[Math.floor(b.length/2)];};
 function* prepareMode1PhotometricBasisSteps({project,rom,record,automatic,camera}){
  const read=readMode1OrdinaryHypotheses(project,record,automatic);need(read.ready,read.reason);need(read.environment.timeIndependenceProof.commonMaterial,'Variable material globals outside flat-COLOR inverse subset');

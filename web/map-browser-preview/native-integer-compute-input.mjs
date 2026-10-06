@@ -1,3 +1,4 @@
+import{runSourceStepsSync}from'./cooperative-source-work.mjs?v=native-body-20261006-0212';
 /* SPDX-License-Identifier: GPL-2.0-or-later
  * DeSmuME535f676 integer attribute preparation. Existing source clip/edge
  * functions are reused; packed pixel work is consumed by WebGPU without floats.
@@ -15,7 +16,7 @@ function edgeValue(e,vs,values){const a=vs[e.topIndex],b=vs[e.bottomIndex],dn=b.
  * Exact scanline-only edge entry avoids CPU per-pixel depth materialization;
  * source clip/edge/attribute preparation remains CPU work.
  */
-export function prepareNativeIntegerCompute(inventory,translucent,controls,fogParameters){
+export function* prepareNativeIntegerComputeSteps(inventory,translucent,controls,fogParameters){
  const started=performance.now();need(inventory?.recordKey===translucent?.recordKey&&JSON.stringify(inventory.snapshot)===JSON.stringify(translucent.snapshot),'Same scene/snapshot required');
  need(inventory.textureScalingFactor===1,'Native1x profile required');
  need(typeof controls?.alphaBlendEnabled==='boolean'&&typeof controls.alphaTestEnabled==='boolean'&&controls.translucentSortMode==='manual-source-order','Explicit alpha controls required');
@@ -23,14 +24,14 @@ export function prepareNativeIntegerCompute(inventory,translucent,controls,fogPa
  const opaque=inventory.polygons.filter(p=>p.classification!=='rejected');need(opaque.every(p=>p.colorInput),'GPU subset cannot conceal a depth owner without RGB');
  const ordered=[...opaque.map(p=>({...p,sort:nativeOpaqueSortBounds(p.args.clipVerticesFx),gpuTranslucent:false})).sort(compareNativeOpaqueOrder),...translucent.polygons.map(p=>({...p,gpuTranslucent:true})).sort((a,b)=>a.index-b.index)];
  const rows=[],textureWords=[],textureCache=new Map(),counts=new Uint32Array(49152),ledger=[];
- for(const p of ordered){
+ for(const p of ordered){yield 'native-gpu-polygon';
   const input=p.gpuTranslucent?p.translucentInput:p.colorInput,t=input.texture,args=p.args,attr=args.polygonAttribute,alpha=attr>>>16&31;
   need(args.viewportWord===0xbfff0000&&args.depthMode==='Z'&&args.fragmentSamplingHack===false,'Full viewport/Z/integer sampling required');
   need((attr>>>4&3)===0&&!(attr&0x4000)&&alpha>0&&alpha<=31,'Mode0 ordinary depth required');
   need(p.gpuTranslucent?!(attr&0x800)&&[1,3,6].includes(t.format)&&(alpha<31||[1,6].includes(t.format)):alpha===31&&[2,3,4,7].includes(t.format),'Source opaque/translucent classification differs');
   need(t.parameter>>>30===0&&t.uvFx4.length===args.clipVerticesFx.length&&input.rgb555.length===args.clipVerticesFx.length,'Source TexGen0 position/UV/RGB required');
   need(t.width>=8&&t.height>=8&&!(t.width&(t.width-1))&&!(t.height&(t.height-1))&&t.rgba6665?.length===t.width*t.height*4,'Source texture dimensions differ');
-  let textureOffset=textureCache.get(t.rgba6665);if(textureOffset===undefined){textureOffset=textureWords.length;for(let i=0;i<t.rgba6665.length;i+=4){const v=t.rgba6665.subarray(i,i+4);need(v[0]<=63&&v[1]<=63&&v[2]<=63&&v[3]<=31,'RGBA6665 texture required');if(!p.gpuTranslucent)need(v[3]===0||v[3]===31,'Opaque-list texture alpha must be binary');textureWords.push(pack(v));}textureCache.set(t.rgba6665,textureOffset);}
+  let textureOffset=textureCache.get(t.rgba6665);if(textureOffset===undefined){textureOffset=textureWords.length;for(let i=0;i<t.rgba6665.length;i+=4){if((i&4095)===0)yield 'native-gpu-texture';const v=t.rgba6665.subarray(i,i+4);need(v[0]<=63&&v[1]<=63&&v[2]<=63&&v[3]<=31,'RGBA6665 texture required');if(!p.gpuTranslucent)need(v[3]===0||v[3]===31,'Opaque-list texture alpha must be binary');textureWords.push(pack(v));}textureCache.set(t.rgba6665,textureOffset);}
   const clip=clipNativePositionPolygon(args.clipVerticesFx),uvs=new Map(t.uvFx4.map((v,i)=>[i,v.slice()])),rgb=new Map(input.rgb555.map((v,i)=>{need(Number.isInteger(v)&&v>=0&&v<=32767,'Source RGB555 required');return[i,[0,5,10].map(s=>{const n=v>>>s&31;return n?2*n+1:0;})];}));
   for(const q of clip.intersections){const a=uvs.get(q.insideId),b=uvs.get(q.outsideId),c=rgb.get(q.insideId),d=rgb.get(q.outsideId);uvs.set(q.id,a.map((v,k)=>Number(i64(BigInt(v)*4096n+i64(BigInt(b[k]-v)*BigInt(q.ratioFx)))/4096n)));rgb.set(q.id,c.map((v,k)=>Number(BigInt.asUintN(8,BigInt.asUintN(64,(BigInt(v)<<12n)+BigInt.asUintN(64,BigInt(d[k]-v))*BigInt(q.ratioFx))>>12n))));}
   const entry={index:p.index,translucent:p.gpuTranslucent,clipDiscarded:clip.discarded,rows:0};ledger.push(entry);if(clip.discarded)continue;
@@ -43,9 +44,11 @@ export function prepareNativeIntegerCompute(inventory,translucent,controls,fogPa
    rows.push(values);entry.rows++;for(let x=row.xStart;x<row.xEndExclusive;x++)counts[row.y*256+x]++;
   }
  }
- const starts=new Uint32Array(49153);for(let i=0;i<49152;i++)starts[i+1]=starts[i]+counts[i];const references=new Uint32Array(starts.length+starts[49152]),cursor=starts.slice(0,49152);references.set(starts);
- rows.forEach((r,i)=>{for(let x=r[7];x<r[7]+r[8];x++)references[49153+cursor[r[9]*256+x]++]=i;});
- const packedRows=new Uint32Array(rows.length*40);rows.forEach((r,i)=>packedRows.set(r,i*40));const texels=Uint32Array.from(textureWords),fogTable=Uint32Array.from(buildFogTable(fogParameters));
+ const starts=new Uint32Array(49153);for(let i=0;i<49152;i++){if((i&4095)===0)yield 'native-gpu-reference-prefix';starts[i+1]=starts[i]+counts[i];}const references=new Uint32Array(starts.length+starts[49152]),cursor=starts.slice(0,49152);references.set(starts);
+ for(let i=0;i<rows.length;i++){if((i&255)===0)yield 'native-gpu-references';const r=rows[i];for(let x=r[7];x<r[7]+r[8];x++)references[49153+cursor[r[9]*256+x]++]=i;}
+ const packedRows=new Uint32Array(rows.length*40);for(let i=0;i<rows.length;i++){if((i&255)===0)yield 'native-gpu-pack-rows';packedRows.set(rows[i],i*40);}const texels=Uint32Array.from(textureWords),fogTable=Uint32Array.from(buildFogTable(fogParameters));
  const config=Uint32Array.from([256,192,rows.length,0,Number(controls.alphaBlendEnabled),Number(controls.alphaTestEnabled),controls.alphaTestEnabled?controls.alphaTestRef:0,0,Number(fogParameters.enabled),Number(fogParameters.alphaOnly),pack(rgb555To6665(fogParameters.color)),0,40,texels.length,49153,0]);
  return{config,rows:packedRows,references,texels,fogTable,evidence:{recordKey:inventory.recordKey,snapshot:inventory.snapshot,controls,sourcePolygons:inventory.polygons.length,participatingPolygons:ordered.length,scanlines:rows.length,incomingReferences:starts[49152],textureCount:textureCache.size,unresolved:inventory.unresolved,excluded:translucent.rejected,ledger,preparationMs:performance.now()-started,scope:'CPU clip/edge/NORMAL, GPU integer perspective/sample/depth/ID/blend/fog. No full native framebuffer or all-map claim.'}};
 }
+
+export function prepareNativeIntegerCompute(inventory,translucent,controls,fogParameters){return runSourceStepsSync(prepareNativeIntegerComputeSteps(inventory,translucent,controls,fogParameters));}

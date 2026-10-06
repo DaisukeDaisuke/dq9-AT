@@ -1,7 +1,6 @@
 import {searchAutomaticReplayInputs} from '../video-replay-factor-search.mjs?v=automatic-entry-factors-20261006-1120';
-import {deriveTrackingEventEvidence,automaticSingletonSearchOptions} from '../tracking-at-event-evidence.mjs?v=native-tracking-ownership-20261006-1006';
-import {fingerprint} from '../tracking-at-runner.mjs?v=field-stream-20261005-1108';
-import {prepareTrackingJob,openTrackingCheckpointStore,startTrackingSession} from '../tracking-at-session.mjs?v=automatic-entry-factors-20261006-1120';
+import {deriveTrackingEventEvidence,automaticSingletonSearchOptions} from '../tracking-at-event-evidence.mjs?v=enc-motion-at-20261006-1156';
+import {prepareTrackingJob,openTrackingCheckpointStore,startTrackingSession,collectTrackingMotionAssociationInputs} from '../tracking-at-session.mjs?v=enc-motion-at-20261006-1156';
 // This is an execution budget/prior supplied by the user, never inferred from PTS.
 export function videoATSearchOptions(values,tables){
  const {seed,seedProvenance,first,last,indexProvenance}=values;
@@ -14,11 +13,11 @@ const scope={minimumProvenATCalls:0,currentVideoStateRecovered:false,unknownAlte
 // Conditional ROM-body/species predictions can produce single-event filters.
 // Multi-event search still needs explicit event/order/gap evidence; PTS is not calls.
 export function createVideoTrackingAT({getOptions,getTables=()=>({}),engineRevision,onState=()=>{},prepare=prepareTrackingJob,openStore=openTrackingCheckpointStore,startSession=startTrackingSession,loadWasm=async(kind)=>{const file=kind==='known-origin-terminal-indices'?'at_identify_stream.wasm':'at_identify.wasm';const r=await fetch(new URL('../wasm/'+file,import.meta.url));if(!r.ok)throw Error('AT WASM HTTP '+r.status);return new Uint8Array(await r.arrayBuffer());}}){
- let epoch=0,session=null,latest=null,latestNativeBodySupport=null,latestReplayInputs=null,storePromise=null,wasmPromises=new Map();
+ let epoch=0,session=null,latest=null,latestNativeBodySupport=null,latestNativeMotionInputs=null,latestReplayInputs=null,storePromise=null,wasmPromises=new Map();
  const emit=(state)=>onState({...scope,...state});
- function cancel(reason='入力が変わりました。',{retainObservation=false}={}){epoch++;session?.cancel();session=null;if(!retainObservation){latest=null;latestNativeBodySupport=null;latestReplayInputs=null;}emit({status:'waiting',reason});}
+ function cancel(reason='入力が変わりました。',{retainObservation=false}={}){epoch++;session?.cancel();session=null;if(!retainObservation){latest=null;latestNativeBodySupport=null;latestNativeMotionInputs=null;latestReplayInputs=null;}emit({status:'waiting',reason});}
  async function observe(bundle){
-  const mine=++epoch;session?.cancel();session=null;latest=structuredClone(bundle);latestNativeBodySupport=null;latestReplayInputs=null;
+  const mine=++epoch;session?.cancel();session=null;latest=structuredClone(bundle);latestNativeBodySupport=null;latestNativeMotionInputs=null;latestReplayInputs=null;
   const snapshot=latest;emit({status:'waiting',reason:'同じ観測bundleを確認中。種類・出生・AT消費は未確定。',sightings:snapshot.sightings?.length??0});
   try{
    const replayInputs=await searchAutomaticReplayInputs(snapshot,{isCurrent:()=>mine===epoch});if(mine!==epoch)return;latestReplayInputs=replayInputs;
@@ -26,6 +25,7 @@ export function createVideoTrackingAT({getOptions,getTables=()=>({}),engineRevis
    // fingerprinted AT snapshot. All preexisting automatic fields remain hashed.
    const {nativeBodySupportEvidence,...automatic}=deriveTrackingEventEvidence(snapshot);
    latestNativeBodySupport=nativeBodySupportEvidence??null;
+   latestNativeMotionInputs=collectTrackingMotionAssociationInputs(snapshot,latestNativeBodySupport);
    snapshot.automaticATEventEvidence=automatic;
    const chains=snapshot.conditionalATEventEvidence?.chains??[];
    if(!chains.length&&!automatic.singleEvents.length){emit({status:'waiting',reason:'映像観測を接続済み。身体と種類が一致する条件付き予測はまだありません。残差の順位だけではAT解析を開始せず、候補と未確定の可能性を保持します。',sightings:snapshot.sightings?.length??0,missingEvidence:['supported conditional body/species prediction or explicit finite event evidence'],deferredAlternatives:automatic.deferred.length,unobservedGapsRetained:true});return;}
@@ -33,7 +33,9 @@ export function createVideoTrackingAT({getOptions,getTables=()=>({}),engineRevis
    options.singleEvents=automatic.singleEvents;
    // Only an actual automatic producer's explicit conditional evidence is used.
    options.chains=structuredClone(snapshot.conditionalATEventEvidence?.chains??[]);
-   const job=await prepare(snapshot,options,{engineRevision,observationRevision:await fingerprint(snapshot)});if(mine!==epoch)return;
+   const job=await prepare(snapshot,options,{engineRevision,isCurrent:()=>mine===epoch,includeReplayInputHypotheses:false});if(mine!==epoch)return;
+   job.replayInputHypotheses=structuredClone(replayInputs);
+   if(job.nativeMotionAssociationInputs)latestNativeMotionInputs=structuredClone(job.nativeMotionAssociationInputs);
    const pending=job.gate.filter(b=>b.status==='pending');
    if(!pending.length){emit({status:'waiting',reason:'有限の抽選イベント列・順序・AT消費間隔の自動根拠を待っています。候補順位や同一追跡を別の抽選に数えません。',gate:job.gate,missingEvidence:job.missingEvidence});return;}
    // Store completion, not Worker progress, is the durable ACK boundary.
@@ -57,5 +59,5 @@ export function createVideoTrackingAT({getOptions,getTables=()=>({}),engineRevis
    emit({status:result.status,reason:result.status==='complete'?'条件付きイベント状態の解析終了。誤観測・現在ATの全状態は残り、映像のAT特定完了ではありません。':'計算予算で中断。未探索範囲が残ります。',summary:result.summary});
   }catch(e){if(mine===epoch)emit({status:'waiting',reason:e.message,error:e.name!=='Error'?e.name:undefined});}
  }
- return {observe,cancel,get replayInputHypotheses(){return latestReplayInputs?structuredClone(latestReplayInputs):null;},get nativeBodySupportEvidence(){return latestNativeBodySupport?structuredClone(latestNativeBodySupport):null;},retry(){if(latest)return observe(latest);emit({status:'waiting',reason:'先に動画の観測bundleを作成してください。'});}};
+ return {observe,cancel,get replayInputHypotheses(){return latestReplayInputs?structuredClone(latestReplayInputs):null;},get nativeBodySupportEvidence(){return latestNativeBodySupport?structuredClone(latestNativeBodySupport):null;},get nativeMotionAssociationInputs(){return latestNativeMotionInputs?structuredClone(latestNativeMotionInputs):null;},retry(){if(latest)return observe(latest);emit({status:'waiting',reason:'先に動画の観測bundleを作成してください。'});}};
 }

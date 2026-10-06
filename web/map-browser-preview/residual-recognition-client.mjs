@@ -1,4 +1,4 @@
-import {nativeBodyRequestPayload} from './native-body-request.mjs?v=automatic-playback-source-cache-20261006-1100';
+import {nativeBodyRequestPayload} from './native-body-request.mjs?v=enc-motion-at-20261006-1156';
 import {RESIDUAL_NATIVE_BODY_BUDGET,RESIDUAL_NATIVE_BODY_OPTIONAL_WAIT_MS} from './residual-native-support.mjs?v=native-evidence-sharing-20261006-0723';
 // First-sweep progress is work coverage, never a recognition/pose certificate.
 const continuationProgress=result=>{
@@ -87,7 +87,7 @@ export class ResidualRecognitionClient{
  async load(rom,sha){
   this.stopNativeContinuation();
   if(this.romSHA===sha&&this.catalog&&this.worker)return this.catalog;
-  this.release();const worker=new Worker(new URL('../monster-recognition-worker.mjs?v=automatic-playback-source-cache-20261006-1100',import.meta.url),{type:'module'});this.worker=worker;this.epoch++;
+  this.release();const worker=new Worker(new URL('../monster-recognition-worker.mjs?v=enc-motion-at-20261006-1156',import.meta.url),{type:'module'});this.worker=worker;this.epoch++;
   worker.onmessage=({data:m})=>{
    if(this.worker!==worker)return;
    if(m.romEpoch===this.epoch&&['cancelled','error','result'].includes(m.type))this.clearNativeDeadline(m.id);

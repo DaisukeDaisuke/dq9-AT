@@ -1,7 +1,7 @@
 /* SPDX-License-Identifier: GPL-2.0-or-later */
 import {createNativeIntegerCompute} from './native-integer-compute.mjs?v=wgsl-keyword-20261005-0834';
-import {renderPreparedIntegerCompute} from './prepare-initial-integer-compute.mjs?v=automatic-playback-source-cache-20261006-1100';
-import {automaticGpuBinding,prepareAutomaticGpuInput,compareAutomaticGpuPixels} from './automatic-gpu-input.mjs?v=automatic-playback-source-cache-20261006-1100';
+import {renderPreparedIntegerCompute} from './prepare-initial-integer-compute.mjs?v=enc-motion-at-20261006-1156';
+import {automaticGpuBinding,prepareAutomaticGpuInput,compareAutomaticGpuPixels} from './automatic-gpu-input.mjs?v=enc-motion-at-20261006-1156';
 
 // Retain at most the last immutable selected-result object, not a frame library.
 export function createAutomaticGpuSession({initialize=createNativeIntegerCompute,prepare=prepareAutomaticGpuInput,render=renderPreparedIntegerCompute,publish=()=>{}}={}) {

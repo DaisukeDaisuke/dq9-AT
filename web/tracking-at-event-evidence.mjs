@@ -1,5 +1,5 @@
-import {collectNativeTrackingBodySupport} from './tracking-native-body-support.mjs?v=native-tracking-ownership-20261006-1006';
-import {sightingBodyMapCompatibility} from './map-browser-preview/conditional-body-map-compatibility.mjs?v=native-body-20261006-0212';
+import {collectNativeTrackingBodySupport} from './tracking-native-body-support.mjs?v=enc-motion-at-20261006-1156';
+import {sightingBodyMapCompatibility} from './map-browser-preview/conditional-body-map-compatibility.mjs?v=enc-motion-at-20261006-1156';
 import {trackingSightingMapProvenance} from './map-browser-preview/map-hypothesis-provenance.mjs?v=native-body-20261006-0212';
 // Automatic *conditional* source-model predicates, never native event certificates.
 // A visible entity's selection can precede its first sighting by an unknown time.
@@ -28,18 +28,18 @@ export function deriveTrackingEventEvidence(bundle){
    const alias=supported?(s.modelAliases??[]).find(a=>a.modelId===prediction.modelId):null;
    const model=alias?plan?.models?.find(m=>m.modelId===alias.modelId):null;
    const species=prediction?.speciesCandidates?.map(a=>a.monsterId)??[];
-   const canRun=Boolean(mapCompatibility.jointlySupported&&model&&species.length&&species.every(n=>Number.isInteger(n)&&(alias.speciesCandidates??[]).some(a=>a.monsterId===n))&&(model.origins??[]).some(o=>Number.isInteger(o.tableId)));
+   const canRun=Boolean(mapCompatibility.jointlySupported&&model&&species.length&&species.every(n=>Number.isInteger(n)&&(alias.speciesCandidates??[]).some(a=>a.monsterId===n))&&mapCompatibility.tableSpeciesAlternatives.length);
    deferred.push({sightingId:s.id,mapHypothesisProvenance:clone(mapProvenance),mapCompatibility:clone(mapCompatibility),sourcePTS:s.sourcePTS??null,modelIds:(s.modelAliases??[]).map(a=>a.modelId).filter(id=>!canRun||id!==prediction.modelId),reason:!mapCompatibility.jointlySupported&&mapCompatibility.modelId?'Joint body/species/table evidence deferred: '+mapCompatibility.status+'. Model, failed/unsearched map and other spawn-route alternatives remain unknown.':canRun?'Other ranked aliases retained as deferred alternatives, not rejected.':'No supported conditional ROM-body/species prediction with matching own-frame model/table provenance.',noEventPossible:true,unclassifiedRanksPreserved:true});
    if(!canRun)continue;
    if(!candidates.has(alias.modelId))candidates.set(alias.modelId,{pairs:new Map(),sources:[]});const c=candidates.get(alias.modelId);
-   for(const origin of mapCompatibility.matchingOrigins)for(const monsterId of species)if(Number.isInteger(origin.tableId)&&Number.isInteger(monsterId))c.pairs.set(`${origin.tableId}/${monsterId}`,{tableId:origin.tableId,monsterId});
+   for(const pair of mapCompatibility.tableSpeciesAlternatives)c.pairs.set(`${pair.tableId}/${pair.monsterId}`,clone(pair));
    c.sources.push({sightingId:s.id,mapHypothesisProvenance:clone(mapProvenance),mapCompatibility:clone(mapCompatibility),sourcePTS:s.sourcePTS??null,frameKey:s.frameKey??null,modelId:alias.modelId,mapIds:clone(plan.mapIds??s.mapCandidates??[]),origins:clone(model.origins??[]),conditionalBodyPrediction:s.conditionalBodyPrediction?{modelId:s.conditionalBodyPrediction.modelId??null,appearanceModelId:s.conditionalBodyPrediction.appearanceModelId??null,bodyModelId:s.conditionalBodyPrediction.bodyModelId??null,agreement:s.conditionalBodyPrediction.agreement??null,pixelErrorReduction:s.conditionalBodyPrediction.bodyFit?.pixelErrorReduction??null,spatialSupportRank:s.conditionalBodyPrediction.bodyFit?.spatialSupportRank??null,identityCertified:false,noEventPossible:true}:null});
   }
   const sightingIds=group.rows.map(r=>r.s.id);
   tracks.push({sightingIds,sourceIdentity:group.sourceIdentity,trackId:group.trackId,firstVisibilityIsBirth:false,independentDrawCertified:false,latentEventCountConditional:1,eventToSightingCalls:{min:'0',max:null}});
   for(const [modelId,c]of [...candidates].sort(([a],[b])=>String(a).localeCompare(String(b)))){
    if(!c.pairs.size)continue;
-   singleEvents.push({id:`automatic-body-event-${index}-${encodeURIComponent(modelId)}`,status:'conditional-source-model-evidence',sightingIds,modelId,tableSpeciesAlternatives:[...c.pairs.values()].sort((a,b)=>a.tableId-b.tableId||a.monsterId-b.monsterId),provenance:'Conditional weighted selection of the ROM-body/DINO-agreement model and predicted species; no-event/error alternatives remain; per-frame map/table alternatives are unioned, scores are not truth and sightings do not establish birth.',sourceEvidence:c.sources,nativeBirthObserved:false,independentDrawCertified:false,observationErrorPossible:true});
+   singleEvents.push({id:`automatic-body-event-${index}-${encodeURIComponent(modelId)}`,status:'conditional-source-model-evidence',sightingIds,modelId,tableSpeciesAlternatives:[...c.pairs.values()].sort((a,b)=>a.tableId-b.tableId||a.monsterId-b.monsterId),provenance:'Conditional weighted selection of the ROM-body/DINO-agreement model and enc.json-joined predicted species; no-event/error alternatives remain; exact per-frame map/group/table/species alternatives are unioned, scores are not truth and sightings do not establish birth.',sourceEvidence:c.sources,nativeBirthObserved:false,independentDrawCertified:false,observationErrorPossible:true});
   }
  }
  singleEvents.sort((a,b)=>Number(b.sourceEvidence.some(s=>s.conditionalBodyPrediction?.modelId===b.modelId))-Number(a.sourceEvidence.some(s=>s.conditionalBodyPrediction?.modelId===a.modelId)));

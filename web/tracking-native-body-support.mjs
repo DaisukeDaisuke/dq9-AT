@@ -1,7 +1,9 @@
+import {buildNativeMotionContinuity} from './tracking-native-motion.mjs?v=enc-motion-at-20261006-1156';
 // Compact machine-readable native support for tracking, not an entity merger.
 // The caller supplies each sighting's OWN model plan and map/frame provenance.
 // Scores remain descriptive. No overlap/IoU threshold, source-pose search,
 // identity selection, track assignment, event count, or AT predicate is added.
+// Bound source roots also feed conditional cross-frame predecessor candidates.
 const finite=Number.isFinite,integer=Number.isSafeInteger;
 const scalar=v=>v===null||['string','boolean'].includes(typeof v)||(typeof v==='number'&&finite(v));
 const fields=(v,keys)=>v?Object.fromEntries(keys.filter(k=>scalar(v[k])).map(k=>[k,v[k]])):null;
@@ -75,5 +77,5 @@ export function collectNativeTrackingBodySupport(rows){
   const h=s.tentativeImageTrack;
   observations.push({sightingId:s.id,frameKey:typeof s.frameKey==='string'?s.frameKey:null,sourcePTS:finite(s.sourcePTS)?s.sourcePTS:null,originalProposalId:typeof s.originalProposalId==='string'?s.originalProposalId:null,frame,...(alternatives.length?{}:{nativeSupportUnavailableReason:'No per-candidate native support records in sighting'}),tentativeImageTrack:h?{...fields(h,['kind','trackId','association','frameKey','sourcePTS','proposalId']),sameObservationBinding:Boolean(frame&&h.frameKey===s.frameKey&&h.sourcePTS===s.sourcePTS&&h.proposalId===s.originalProposalId&&Array.isArray(h.sourceIdentity)&&h.sourceIdentity.length===3&&h.sourceIdentity.every((x,i)=>x===[frame.sourceId,frame.sourceEpoch,frame.timelineSegment][i])),sourceIdentity:Array.isArray(h.sourceIdentity)&&h.sourceIdentity.length===3&&h.sourceIdentity.every(scalar)?h.sourceIdentity.slice():null}:null,alternatives,associationAlternatives:['same-entity','different-entity','observation-error'],identityCertified:false,actorMembershipCertified:false,independentDrawCertified:false,minimumProvenATCalls:0});
  }
- return{schema:'conditional-native-tracking-body-support-v1',observations,originalSightingsPreserved:true,sourceHypothesisKeysPreserved:true,sameModelImpliesSameActor:false,boxOverlapImpliesSameActor:false,actorCount:null,associationCertified:false,identityCertified:false,minimumProvenATCalls:0,usedForATConstraints:false,complete:false,scope:'Per-sighting conditional tested native extents for later tracking. Shared models, overlapping envelopes and separate residual tracks neither merge actors nor prove distinct actors. No native score selects species or creates an AT event. Unsupported bindings stay explicit; original full evidence remains in the observation bundle.'};
+ return{schema:'conditional-native-tracking-body-support-v1',observations,motionContinuity:buildNativeMotionContinuity(observations),originalSightingsPreserved:true,sourceHypothesisKeysPreserved:true,sameModelImpliesSameActor:false,boxOverlapImpliesSameActor:false,actorCount:null,associationCertified:false,identityCertified:false,minimumProvenATCalls:0,usedForATConstraints:false,complete:false,scope:'Per-sighting conditional tested native extents for later tracking. Shared models, overlapping envelopes and separate residual tracks neither merge actors nor prove distinct actors. No native score selects species or creates an AT event. Unsupported bindings stay explicit; original full evidence remains in the observation bundle.'};
 }

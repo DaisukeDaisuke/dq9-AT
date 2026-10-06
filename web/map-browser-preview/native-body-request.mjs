@@ -1,4 +1,4 @@
-import{projectNativeBodyDestinationHandoff}from'./native-body-destination-handoff.mjs?v=automatic-playback-source-cache-20261006-1100';
+import{projectNativeBodyDestinationHandoff}from'./native-body-destination-handoff.mjs?v=enc-motion-at-20261006-1156';
 // Transport projection only. The owner keeps full original search/comparison
 // evidence. Include every branch/model; never rank/filter from a transport limit.
 const pick=(value,keys)=>value?Object.fromEntries(keys.map(k=>[k,value[k]])):null;
