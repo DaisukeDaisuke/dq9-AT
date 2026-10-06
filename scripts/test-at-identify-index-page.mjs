@@ -62,15 +62,20 @@ const live=new ATSession('0x12345678',kernel);live.setMap({mapId:7402,source:'sy
 for(const id of ['human:A','human:B','human:C'])live.observeMonster({id,tableIds:[30],monsterId:31,source:'synthetic arithmetic fixture; not a native sighting',naturalConfirmed:true},tables,100);
 live.noteUnresolvedConsumption({id:'unknown:gap',consumer:'NPC-movement',source:'synthetic UI fixture'});
 live.observeMonster({id:'human:D',tableIds:[30,65535],monsterId:31,source:'synthetic alternative-table fixture'},tables,100);
+// Keep a permitted observation-only fixture before adding the synthetic native-proof event.
+const observationOnly=JSON.parse(JSON.stringify(live.snapshot()));
 let seed=0x12345678n;const updates=Array.from({length:100},(_,i)=>{const before=seed,[after,random]=ARand(seed);seed=after;return{sequence:String(i+1),before:String(before),after:String(after),random:String(random)};});
 live.ingestBootTrace({origin:'boot-known-initial',initialSeed:0x12345678,startPosition:'0',source:'synthetic arithmetic prefix recorded AFTER the observations',updates});
-const saved=JSON.parse(JSON.stringify(live.snapshot())),unchanged=JSON.stringify(live.snapshot());
-check(ATSession.restore(saved,kernel,tables).snapshot().lowerBound==='100');
+const nativeProofFixture=JSON.parse(JSON.stringify(live.snapshot())),unchanged=JSON.stringify(live.snapshot());
+check(ATSession.restore(nativeProofFixture,kernel,tables).snapshot().lowerBound==='100');
+assert.throws(()=>sessionObservationsToForm(nativeProofFixture,['human:A']),e=>e.name==='ProductionATInputPolicyError');assertions++;
+assert.throws(()=>storeSessionIdentification(nativeProofFixture,{setItem(){throw Error('must not store native proof');}}),e=>e.name==='ProductionATInputPolicyError');assertions++;
+const saved=observationOnly;
 const imported=sessionObservationsToForm(saved,['human:C','human:A','human:B']);
 check(imported.rows.map(r=>r.sightingId).join(',')==='human:A,human:B,human:C','preserve recorded order, not selection argument order');
 check(imported.firstIndex===''&&imported.lastIndex==='','a later prefix is never an earlier observation floor');
 check(imported.rows.every(r=>r.gapMode==='unknown'&&r.gapMax===''));check(imported.sessionContext.consumerUncertainty.some(e=>e.id==='unknown:gap'));
-check(imported.sessionContext.savedLowerBound==='100'&&!imported.sessionContext.savedBoundsUsedAsIndexLimits);
+check(imported.sessionContext.savedLowerBound===saved.lowerBound&&!imported.sessionContext.savedBoundsUsedAsIndexLimits);
 check(sessionObservationsToForm(saved,['human:D']).rows[0].tables==='30, 65535');
 for(const ids of [['human:A','human:A'],['missing'],[]]){assert.throws(()=>sessionObservationsToForm(saved,ids));assertions++;}
 const duplicate=structuredClone(saved);duplicate.events.push(duplicate.events.find(e=>e.id==='human:A'));assert.throws(()=>readSessionObservations(duplicate));assertions++;
@@ -79,7 +84,7 @@ const localCheckpoint=new ATSession('0x12345678',kernel,{origin:'known-local-che
 assert.throws(()=>storeSessionIdentification(localCheckpoint.snapshot(),{setItem:()=>{throw Error('must not write local-origin handoff');}}),/起動時/);assertions++;
 const memory=new Map(),storage={setItem:(k,v)=>memory.set(k,v),getItem:k=>memory.get(k)??null};storeSessionIdentification(saved,storage);check(JSON.parse(storage.getItem(SESSION_IDENTIFICATION_KEY)).initialSeed===saved.initialSeed);
 const sessionUI=mountIdentificationPage({document:doc,fetchImpl,startSearch,startIndexSearch,storage,locationSearch:'?session=handoff'});await sessionUI.ready;
-check(sessionUI.getSessionChoices().length===4);check(!$('session-use').disabled);check($('session-status').textContent.includes('100'));
+check(sessionUI.getSessionChoices().length===4);check(!$('session-use').disabled);check($('session-status').textContent.includes(saved.lowerBound));
 sessionUI.getSessionChoices()[3].box.checked=false;$('session-use').click();check(sessionUI.snapshot().rows.length===3);check(sessionUI.snapshot().initialSeed==='0x12345678');check(sessionUI.snapshot().firstIndex==='');check(sessionUI.getRows()[0].sourceMetadata.sourceObservation.event.id==='human:A');
 await submit();check($('status').textContent.includes('canonical decimal'),'missing domain is explicit, not silently supplied');
 $('first-index').value='1';$('last-index').value='100000';$('index-provenance').value='Synthetic demonstration range only; no measured finite upper bound';$('max-ms').value='10000';
@@ -94,8 +99,8 @@ $('max-states').value='1000';await submit();check(sessionUI.getResult().status==
 $('session-file').files=[{text:async()=>'{'}];await $('session-file').onchange();check($('session-status').textContent.includes('読込失敗'));check(sessionUI.snapshot().rows.length===2);
 let finishRead;$('session-file').files=[{text:()=>new Promise(r=>finishRead=r)}];const staleRead=$('session-file').onchange();$('clear').click();finishRead(JSON.stringify(saved));await staleRead;check(sessionUI.getSessionChoices().length===0);check(sessionUI.snapshot().sessionContext===undefined);check($('session-use').disabled);
 $('session-file').files=[{text:async()=>JSON.stringify(saved)}];await $('session-file').onchange();check(sessionUI.getSessionChoices().length===4);$('session-use').click();check(sessionUI.snapshot().rows.length===4);check(sessionUI.snapshot().rows[3].sourceObservation.event.tableIds.includes(65535));
-$('clear').click();check(sessionUI.getResult()===null&&$('export').disabled);check(JSON.stringify(live.snapshot())===unchanged,'all import/search/result paths leave the live session and proved prefix byte-for-byte unchanged');check(JSON.parse(storage.getItem(SESSION_IDENTIFICATION_KEY)).lowerBound==='100');
-const sessionDemo={fixture:'synthetic saved-format ATSession, not native data',domain:'1..100000',twoObservations:String(twoCount),threeObservations:String(threeCount),unknownGapStatus:'unresolved',lateBootPrefix:'100, not used as past index floor',liveSessionUnchanged:true};
+$('clear').click();check(sessionUI.getResult()===null&&$('export').disabled);check(JSON.stringify(live.snapshot())===unchanged,'all import/search/result paths leave the live session and proved prefix byte-for-byte unchanged');check(JSON.parse(storage.getItem(SESSION_IDENTIFICATION_KEY)).lowerBound===saved.lowerBound);
+const sessionDemo={fixture:'synthetic saved-format ATSession, not native data',domain:'1..100000',twoObservations:String(twoCount),threeObservations:String(threeCount),unknownGapStatus:'unresolved',lateBootPrefix:'100 remains in isolated arithmetic fixture; production handoff rejects it',liveSessionUnchanged:true};
 console.log(JSON.stringify({passed:true,assertions,indexWorkers,legacyWorkers,sessionDemo,scope:'real Node Workers and minimal DOM; not browser visual/download completion',checks:['mode isolation','explicit seed/provenance and uint64 range','no index0 or overwide range','unknown and single-event unresolved','actual state per index','output alias at another index','index-only coverage','capped candidate handoff','export JSON arrays and truncation','immutable input','budget','cancel loading/search','restart','hash/fetch failures','legacy return','subdirectory paths']},null,2));
 
 // Candidate return/import and the existing main-panel comparison component.
@@ -134,7 +139,7 @@ $('at-candidate-min').value='0';$('at-candidate-max').value='1';$('at-candidate-
 const changed=$('at-candidate-compare').click();panelUI.invalidate('対象変更');compareResolve(completed);await changed;check($('at-candidate-results').children.length===0);check($('at-candidate-status').textContent==='対象変更');
 let finishCandidateFile;$('at-candidate-file').files=[{text:()=>new Promise(resolve=>finishCandidateFile=resolve)}];const reading=$('at-candidate-file').onchange();$('at-candidate-clear').click();finishCandidateFile(JSON.stringify(candidateResult));await reading;check(panelUI.getResult()===null,'stale file cannot restore cleared candidates');
 panelUI.load(candidateResult);liveSession={...saved,initialSeed:'0x00000001'};panelUI.invalidate();check($('at-candidate-compare').disabled&&$('at-candidate-status').textContent.includes('seed'));liveSession=saved;panelUI.invalidate();check(!$('at-candidate-compare').disabled);
-check(JSON.stringify(live.snapshot())===unchanged);check(candidateResult.inputForm.sessionContext.savedLowerBound==='100');
+check(JSON.stringify(live.snapshot())===unchanged);check(candidateResult.inputForm.sessionContext.savedLowerBound===saved.lowerBound);
 // Exercise the actual main AT Worker operation with production WASM and session
 // restore, without introducing a separate test runner or ledger implementation.
 const workerRoot=new URL('../web/',import.meta.url).href;
@@ -142,3 +147,4 @@ const mainWorker=new Worker(`const {parentPort}=require('node:worker_threads');c
 let mainId=0;const mainPending=new Map();mainWorker.on('message',m=>{const p=mainPending.get(m.id);mainPending.delete(m.id);m.ok?p.resolve(m.value):p.reject(Error(m.error));});const mainSend=(type,args={})=>new Promise((resolve,reject)=>{const id=++mainId;mainPending.set(id,{resolve,reject});mainWorker.postMessage({type,id,...args});});
 try{await mainSend('restore',{saved});const before=await mainSend('export');const real=await mainSend('candidate-forecast',{result:candidateResult,options});check(real.status==='budget-stopped'&&real.evaluations===50);check(JSON.stringify(await mainSend('export'))===JSON.stringify(before),'actual Worker candidate operation never mutates ledger');const late=mainSend('candidate-forecast',{result:candidateResult,options:{...options,budget:{...options.budget,maxEvaluations:50000}}});await mainSend('candidate-forecast-cancel');const stopped=await late;check(stopped.status==='cancelled');check(JSON.stringify(await mainSend('export'))===JSON.stringify(before));}finally{await mainWorker.terminate();}
 console.log(JSON.stringify({passed:true,assertions,scope:'Existing page checks extended: synthetic session association, read-only real main Worker, candidate coverage/budget/cancel, minimal DOM return/import/stale-result lifecycle. No browser or native-origin claim.'},null,2));
+
