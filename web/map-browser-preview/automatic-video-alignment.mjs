@@ -15,7 +15,7 @@ import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=fi
 import {automaticPreviewCamera} from './automatic-preview-camera.mjs';
 import {automaticBillboardScenes} from './automatic-billboard-scene.mjs';
 import {applyAutomaticMaterialEnvironment} from './automatic-material-environment.mjs?v=native-body-20261006-0212';
-import {createAutomaticBackgroundRenderer} from './automatic-background-renderer.mjs?v=enc-motion-at-20261006-1156';
+import {createAutomaticBackgroundRenderer} from './automatic-background-renderer.mjs?v=native-transport-timing-20261006-1140';
 import {readRomMapScreenEffectPlan} from './rom-map-screen-effect-plan.mjs';
 import {prepareDrawPackets} from './draw-packets.mjs';
 import {rasterizePreviewPackets} from './cpu-preview.mjs';

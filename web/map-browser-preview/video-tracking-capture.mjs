@@ -4,15 +4,16 @@ const sha=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA
 const verificationScope='One captured frame compared on the same Canvas after one retained VideoFrame draw. This is not proof for every frame, input, browser or GPU.';
 /** Bounded actual capture: one pending pixel hash, one reusable source canvas.
  * The cadence is a work budget. Skipped callbacks are not invented frames. */
-export function createVideoTrackingCapture({video,replay,document:doc=globalThis.document,minimumCaptureIntervalSeconds=.1,makeCapture=createFrozenAnalysisCapture,hash=sha}){
+export function createVideoTrackingCapture({video,replay,document:doc=globalThis.document,minimumCaptureIntervalSeconds=.1,makeCapture=createFrozenAnalysisCapture,hash=sha,timing=null}){
  let generation=0,busy=false,lastSource=null,lastIdentity=null,lastPTS=-Infinity,canvas=null,readback=null;
  function reset(reason){generation++;lastSource=null;lastIdentity=null;lastPTS=-Infinity;readback=null;replay.reset(reason);}
  function snapshot(){return readback?structuredClone(readback):{kind:'same-canvas-readback-gate-v1',mode:'unverified',reason:'waiting-for-valid-capture',verification:null,scope:verificationScope};}
  function readImage(context,width,height,roi,sourceRect,bound,stamp,layout){
   if(!readback)readback={kind:'same-canvas-readback-gate-v1',mode:'pending',reason:'first-valid-frame',source:{sourceId:stamp.sourceId,sourceEpoch:stamp.sourceEpoch,timelineSegment:stamp.timelineSegment,width,height,layout},sourceRect:{...sourceRect},fullReadbacks:0,croppedReadbacks:0,returnedReadbackBytes:0,verification:null,scope:verificationScope};
   const state=readback,fullBytes=width*height*4,croppedBytes=sourceRect.w*sourceRect.h*4;
-  const readFull=()=>{state.fullReadbacks++;const pixels=context.getImageData(0,0,width,height);state.returnedReadbackBytes+=pixels.data.byteLength;return sampleGameplayFrame({width,height,rgba:pixels.data},roi);};
-  const readCrop=()=>{state.croppedReadbacks++;const pixels=context.getImageData(sourceRect.x,sourceRect.y,sourceRect.w,sourceRect.h);state.returnedReadbackBytes+=pixels.data.byteLength;return sampleGameplayFrame({width,height,rgba:pixels.data},roi,{sourceRect});};
+  const measured=(stage,run)=>timing?timing.sync(stage,stamp,run):run();
+  const readFull=()=>{state.fullReadbacks++;const pixels=measured('fast-full-readback',()=>context.getImageData(0,0,width,height));state.returnedReadbackBytes+=pixels.data.byteLength;return measured('fast-gameplay-sample',()=>sampleGameplayFrame({width,height,rgba:pixels.data},roi));};
+  const readCrop=()=>{state.croppedReadbacks++;const pixels=measured('fast-cropped-readback',()=>context.getImageData(sourceRect.x,sourceRect.y,sourceRect.w,sourceRect.h));state.returnedReadbackBytes+=pixels.data.byteLength;return measured('fast-gameplay-sample',()=>sampleGameplayFrame({width,height,rgba:pixels.data},roi,{sourceRect}));};
   const fallback=reason=>{state.mode='full';state.reason=reason;};
   // No speculative second read when it cannot save any returned bytes.
   if(state.mode==='pending'&&croppedBytes===fullBytes)fallback('full-frame-rectangle-no-byte-saving');
@@ -48,11 +49,11 @@ export function createVideoTrackingCapture({video,replay,document:doc=globalThis
   const mine=generation;let image,bound,capture,state,probe;
   try{
    const roi=gameplayVideoROI(width,height,layout);canvas??=doc.createElement('canvas');canvas.width=width;canvas.height=height;const context=canvas.getContext('2d',{willReadFrequently:true});
-   capture=makeCapture(video);capture.draw(context,width,height);bound=capture.stamp(stamp);
+   capture=makeCapture(video);if(timing)timing.sync('fast-capture-draw',stamp,()=>capture.draw(context,width,height));else capture.draw(context,width,height);bound=capture.stamp(stamp);
    if(bound.captureTiming?.pixelTimestampBound!==true){replay.noteGap(bound,'fast-pixel-timestamp-unbound');capture.close();return false;}
    ({image,state,probe}=readImage(context,width,height,roi,gameplaySampleReadbackRect(width,height,roi),bound,stamp,layout));capture.close();capture=null;
    bound={...bound,layout,roi};lastPTS=bound.mediaTime;busy=true;
-   void hash(image.rgba).then(gameplayRGBA_SHA256=>{if(mine===generation){if(probe&&readback===state&&state.verification===probe)probe.sampleSHA256=gameplayRGBA_SHA256;replay.retain({image,stamp:{...bound,gameplayRGBA_SHA256}});}},error=>{if(mine===generation)replay.noteGap(bound,'fast-capture-hash-failed: '+error.message);}).finally(()=>{busy=false;});return true;
+   const hashStarted=timing?.now();void hash(image.rgba).then(gameplayRGBA_SHA256=>{if(mine===generation){if(timing)timing.record('fast-pixel-hash-elapsed',hashStarted,timing.now(),bound,{},'async-elapsed-not-CPU-time');if(probe&&readback===state&&state.verification===probe)probe.sampleSHA256=gameplayRGBA_SHA256;replay.retain({image,stamp:{...bound,gameplayRGBA_SHA256}});}},error=>{if(mine===generation)replay.noteGap(bound,'fast-capture-hash-failed: '+error.message);}).finally(()=>{busy=false;});return true;
   }catch(error){capture?.close();busy=false;replay.noteGap(stamp,'fast-capture-unavailable: '+error.message);return false;}
  }
  return{offer,reset,cancel:reset,snapshot,get busy(){return busy;}};

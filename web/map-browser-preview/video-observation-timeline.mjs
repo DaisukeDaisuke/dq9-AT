@@ -22,7 +22,8 @@ export function residualAssociationHints(tracking,{frameKey,sourcePTS,sourceIden
  return (tracking.observed??[]).map(row=>({kind:'tentative-image-track',frameKey,sourcePTS,sourceIdentity,proposalId:String(row.originalResidualId),trackId:row.id,association:row.association,firstSeen:row.firstSeen,lastSeen:row.lastSeen,sightings:row.sightings,alternatives:['same-entity','different-entity','observation-error'],identityCertified:false,birthCertified:false,independentDrawCertified:false,minimumProvenATCalls:0}));
 }
 export class VideoObservationTimeline {
- constructor({maximumFrames=128,maximumEvents=128,maximumGaps=128}={}){if(![maximumFrames,maximumEvents,maximumGaps].every(n=>Number.isInteger(n)&&n>0))throw Error('Positive storage budgets required');Object.assign(this,{maximumFrames,maximumEvents,maximumGaps,resetCount:0});this.reset('initial');}
+ constructor({maximumFrames=128,maximumEvents=128,maximumGaps=128,timing=null}={}){if(![maximumFrames,maximumEvents,maximumGaps].every(n=>Number.isInteger(n)&&n>0))throw Error('Positive storage budgets required');Object.assign(this,{maximumFrames,maximumEvents,maximumGaps,timing,resetCount:0});this.reset('initial');}
+ #timed(stage,run){return this.timing?this.timing.sync(stage,this.current?.stamp??this.source,run):run();}
  reset(reason,source=null){this.resetCount++;this.reason=reason;this.source=source?copy(source):null;this.key=source?stampKey(source):null;this.frames=[];this.events=[];this.gaps=[];this.evicted={frames:0,events:0,gaps:0};this.previousPanel=null;this.previousMap=null;this.lastCallback=null;this.current=null;this.lastGap=null;this.totalFrames=0;}
  append(list,value,maximum,kind){list.push(value);if(list.length>maximum){list.shift();this.evicted[kind]++;}return value;}
  acceptSource(stamp){const key=stampKey(stamp);if(this.key!==null&&key!==this.key)this.reset('source-epoch-changed',stamp);if(this.key===null){this.key=key;this.source=copy(stamp);}}
@@ -47,9 +48,9 @@ export class VideoObservationTimeline {
   if(provenance.candidates.length&&this.previousMap&&this.previousMap.signature!==signature)this.event({kind:'map-entry-or-reload-candidate',cause:'map-candidate-set-changed',startPTS:this.previousMap.sourcePTS,endPTS:row.sourcePTS,previousCandidates:this.previousMap.candidates,currentCandidates:copy(candidates),previousMapHypotheses:copy(this.previousMap.provenance),currentMapHypotheses:copy(provenance),alternatives:['map-change','candidate-ambiguity','observation-error'],timing:'between observed map hypotheses; exact entry unobserved'});
   if(provenance.candidates.length)this.previousMap={signature,sourcePTS:row.sourcePTS,candidates:copy(candidates),provenance:copy(provenance)};return true;
  }
- update(frameSerial,patch){const row=this.frames.find(f=>f.frameSerial===frameSerial);if(!row)return false;Object.assign(row,copy(patch));return true;}
+ update(frameSerial,patch){const row=this.frames.find(f=>f.frameSerial===frameSerial);if(!row)return false;Object.assign(row,this.timing?this.timing.sync('timeline-update-clone',row.stamp,()=>copy(patch)):copy(patch));return true;}
  #snapshotRecord(){return {schema:'video-map-observation-timeline-v1',source:this.source,resetReason:this.reason,resetCount:this.resetCount,totalAnalyzedFrames:this.totalFrames,frames:this.frames,entryCandidates:this.events,unobservedIntervals:this.gaps,retention:{maximumFrames:this.maximumFrames,maximumEvents:this.maximumEvents,maximumGaps:this.maximumGaps,evicted:this.evicted,complete:this.evicted.frames+this.evicted.events+this.evicted.gaps===0},coverage:{everyDecodedFrameObserved:false,continuousRecognitionComplete:false,entryDetectionComplete:false,romLayerResetKnown:false,absenceCertified:false},minimumProvenATCalls:0,currentVideoStateRecovered:false};}
- snapshot(){return copy(this.#snapshotRecord());}
+ snapshot(){return this.#timed('timeline-snapshot-clone',()=>copy(this.#snapshotRecord()));}
  // Compose the current timeline before the single ownership clone. The old
  // observation's timeline would otherwise be cloned and immediately discarded.
  // Fast path requires the inspected residual producer's fresh envelope, with
@@ -58,12 +59,12 @@ export class VideoObservationTimeline {
  snapshotBundle(value,{unaliasedResidualEnvelope=false}={}){
   const observations=value.videoObservations;
   if(unaliasedResidualEnvelope!==true||value.schema!=='headless-monster-observation-bundle-v1'||value.producer!=='browser-ROM-background-residual'||!Array.isArray(observations)||observations.length!==1||!Object.hasOwn(observations,0)||observations[0]?.kind!=='partial-video-observation-timeline'||Object.getPrototypeOf(observations[0])!==Object.prototype){
-   const completed=copy(value);for(const item of completed.videoObservations??[])item.timeline=this.snapshot();return completed;
+   const completed=this.#timed('observation-bundle-clone',()=>copy(value));for(const item of completed.videoObservations??[])item.timeline=this.snapshot();return completed;
   }
   const timeline=this.#snapshotRecord();
-  return copy({...value,videoObservations:observations.map(item=>({...item,timeline}))});
+  return this.#timed('observation-bundle-clone',()=>copy({...value,videoObservations:observations.map(item=>({...item,timeline}))}));
  }
  // JSON serialization is synchronous, so it needs no detached graph before
  // converting this already-owned state to a string. No live references escape.
- stringifySnapshot(space=2){return JSON.stringify(this.#snapshotRecord(),null,space);}
+ stringifySnapshot(space=2){return JSON.stringify({...this.#snapshotRecord(),...(this.timing?{videoPipelineTiming:this.timing.snapshot()}:{})},null,space);}
 }

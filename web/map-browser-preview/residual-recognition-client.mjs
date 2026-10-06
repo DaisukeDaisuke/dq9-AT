@@ -1,4 +1,4 @@
-import {nativeBodyRequestPayload} from './native-body-request.mjs?v=enc-motion-at-20261006-1156';
+import {nativeBodyRequestPayload} from './native-body-request.mjs?v=native-transport-timing-20261006-1140';
 import {RESIDUAL_NATIVE_BODY_BUDGET,RESIDUAL_NATIVE_BODY_OPTIONAL_WAIT_MS} from './residual-native-support.mjs?v=camera-body-alternative-20261006-1430';
 // First-sweep progress is work coverage, never a recognition/pose certificate.
 const continuationProgress=result=>{
