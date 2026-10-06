@@ -6,7 +6,7 @@ import {createRendererSourceArchives} from './renderer-source-archives.mjs?v=rec
  */
 import {createNativeIntegerCompute} from './native-integer-compute.mjs?v=wgsl-keyword-20261005-0834';
 import {prepareInitialMode1IntegerComputeAsync as prepareInitialMode1IntegerCompute,renderPreparedIntegerCompute} from './prepare-initial-integer-compute.mjs?v=enc-motion-at-20261006-1156';
-import {renderInitialIntegerFogAsync} from './integer-static-fog.mjs?v=native-yaw-mse-20261006-2101';
+import {renderInitialIntegerFogAsync} from './integer-static-fog.mjs?v=footprint-rgb-20261006-2328';
 import {createSourcePreparationCache} from './integer/source-preparation-cache.mjs?v=automatic-playback-source-cache-20261006-1100';
 
 export function createAutomaticBackgroundRenderer({initialize=createNativeIntegerCompute,prepare=prepareInitialMode1IntegerCompute,renderGpu=renderPreparedIntegerCompute,renderCpu=renderInitialIntegerFogAsync,createCache=createSourcePreparationCache,now=()=>performance.now()}={}) {

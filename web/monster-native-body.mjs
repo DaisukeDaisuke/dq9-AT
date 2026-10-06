@@ -1,6 +1,6 @@
 import {openNativeBodyJointPlan} from './monster-native-joint-plan.mjs?v=native-phase-20261006-2300';
 import {fieldNativeNormalize} from './field-preferred-node.mjs';
-import {composeNativeBodyOverSourceDestination} from './monster-native-scene-composition.mjs?v=native-yaw-mse-20261006-2101';
+import {composeNativeBodyOverSourceDestination} from './monster-native-scene-composition.mjs?v=footprint-rgb-20261006-2328';
 /* SPDX-License-Identifier: GPL-2.0-or-later
  * Isolated original-GX body bridge. Reuses existing DeSmuME535f676-derived
  * position/clip/raster/color/depth modules with their original notices.

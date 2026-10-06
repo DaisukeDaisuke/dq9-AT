@@ -1,4 +1,4 @@
-import{prepareMode1NativeBodyDestination}from'./mode1-native-body-destination.mjs?v=native-yaw-mse-20261006-2101';
+import{prepareMode1NativeBodyDestination}from'./mode1-native-body-destination.mjs?v=footprint-rgb-20261006-2328';
 import {runSourceStepsSync,runSourceStepsAsync} from './cooperative-source-work.mjs?v=native-body-20261006-0212';
 import{isSupportedMode1ColorEnvironment,isSupportedMode1FogEnvironment}from'./automatic-material-environment.mjs?v=native-body-20261006-0212';
 import {readRomMapScreenEffectPlan} from './rom-map-screen-effect-plan.mjs';

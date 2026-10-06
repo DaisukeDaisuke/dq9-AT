@@ -5,7 +5,6 @@
  */
 import {compositeBinaryAwareDepth} from './map-browser-preview/integer/native-binary-alpha.mjs?v=automatic-playback-source-cache-20261006-1100';
 import {applyFogPixel} from './map-browser-preview/native/fog-raster.mjs';
-import {presentStaticRgb} from './map-browser-preview/integer/static-mode0-rgb.mjs?v=automatic-playback-source-cache-20261006-1100';
 import {projectNativePrimitiveFx} from './map-browser-preview/integer/native-primitive-inputs.mjs';
 import {clipNativePositionPolygon} from './map-browser-preview/integer/native-position-clip.mjs?v=native-raster-reuse-20261006-0637';
 const N=256*192,need=(ok,why)=>{if(!ok)throw Error(why);};
@@ -71,8 +70,12 @@ export function composeNativeBodyOverSourceDestination(projected,participants,{d
  for(let i=0;i<N;i++){stats.bodyFootprintPixels+=footprint[i];stats.unknownDestinationPixels+=Number(Boolean(unknownMask[i]&1));stats.unknownOrderPixels+=Number(Boolean(unknownMask[i]&2));stats.opaqueDepthTiePixels+=Number(Boolean(unknownMask[i]&4));}
  if(unknownMask.some(Boolean))return{ready:false,reason:'Source body footprint intersects unknown destination, map/MSE order or equal-depth opaque ownership',unsupportedDestination:true,partialBodyNotScored:true,stats,unknownReasons:destination.unknownReasons,unknownMask};
  const beforeFog=rgba6665.slice();if(fog)for(let i=0;i<N;i++)if(footprint[i])rgba6665.set(applyFogPixel(rgba6665.subarray(i*4,i*4+4),depth24[i],Boolean(isFogged[i]),fog.parameters,fog.table),i*4);
- const image=presentStaticRgb({width:256,height:192,rgba6665},{profile:'rgb555-expanded'}),rgba=new Uint8ClampedArray(N*4);
- for(let i=0;i<N;i++)if(footprint[i]){const x=i%256+alignment.dx,y=(i>>8)+alignment.dy;if(x>=0&&y>=0&&x<256&&y<192){const o=(y*256+x)*4;rgba.set(image.rgba.subarray(i*4,i*4+3),o);rgba[o+3]=255;}}
+ const rgba=new Uint8ClampedArray(N*4);
+ // The composite exposes RGB only on its source footprint. Apply the exact
+ // presentStaticRgb rgb555-expanded conversion there, avoiding a full-frame
+ // temporary whose other pixels were discarded. Preserve Uint8 byte wrapping
+ // before storing into the clamped output; native planes remain unchanged.
+ for(let i=0;i<N;i++)if(footprint[i]){const x=i%256+alignment.dx,y=(i>>8)+alignment.dy;if(x>=0&&y>=0&&x<256&&y<192){const o=(y*256+x)*4;for(let c=0;c<3;c++){const v=rgba6665[i*4+c]>>>1;rgba[o+c]=((v<<3)|(v>>>2))&255;}rgba[o+3]=255;}}
  return{ready:true,width:256,height:192,rgba,sourceDepth24:depth24,sourceOwner:colorOwner,sourceCoverage:footprint,sourceAcceptedSubset:destination.postActorEffect?'conditional-source-map-actor-MSE-body':'known-source-destination-mixed-body',raster:'source-integer-original-GX-body-composition-subset',sceneOcclusionApplied:true,clippedTriangles:null,originalPolygons:projected.polygons.length,stats,nativeState:{preFogRGBA6665:beforeFog,depth24,depthOwner,colorOwner,frontFacing,isFogged,opaqueId,translucentId,isTranslucentPoly,changedMask,colorOwnerIsBody,depthOwnerIsBody},scope:'Conditional same-source pre-fog scene/body composition; retained depth/IDs/fog flags follow native fragment writes. Complete known footprint only; unknown map/MSE order, opaque depth ties, live bindings and other actors remain unproved.'};
 }
 

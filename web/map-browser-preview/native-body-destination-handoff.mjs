@@ -1,6 +1,6 @@
 // Same-frame CPU source-render handoff only. No final-RGB inversion, cross-frame
 // source cache, GPU substitution or exported raw planes in appearance evidence.
-import {bindNativeBodyDestination} from '../monster-native-scene-composition.mjs?v=native-yaw-mse-20261006-2101';
+import {bindNativeBodyDestination} from '../monster-native-scene-composition.mjs?v=footprint-rgb-20261006-2328';
 import {readNaturalBodySceneOrder} from '../monster-native-scene-order.mjs';
 import {readFrozenMonsterFog} from '../monster-source-fog.mjs';
 import {readArm9Overlay} from './rom-overlay.mjs';
