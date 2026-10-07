@@ -194,3 +194,7 @@ node scripts/test-original-component-mask-binding.mjs
 
 # Exact typed source-plane bytes remain bound without per-index JSON expansion.
 node scripts/test-native-work-identity-bytes.mjs
+
+# Camera-relative ordering retains the original source domain even after hint failure.
+node scripts/test-native-reference-camera.mjs
+node scripts/test-relative-hint-preparation-failure.mjs

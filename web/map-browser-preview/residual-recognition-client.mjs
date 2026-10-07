@@ -6,7 +6,7 @@ function retainRequestEnvelope(value,p,status,entryAtMs=null,workerEnvelope=null
  value.classificationEnvelopeTiming=structuredClone({...(workerEnvelope??value.classificationEnvelopeTiming??{}),main:{...p.classificationEnvelope,status,...(Number.isFinite(entryAtMs)?{replyHandlerEntryAtMs:entryAtMs,requestToReplyHandlerEntryElapsedMs:classificationDuration(p.classificationEnvelope.requestStartedAtMs,entryAtMs)}:{}),snapshotElapsedMs:classificationDuration(p.classificationEnvelope.requestStartedAtMs)}});
  }catch{}return value;}
 import {nativeBodyRequestPayload} from './native-body-request.mjs?v=mode1-source-reuse-20261007-0435';
-import {RESIDUAL_NATIVE_BODY_BUDGET,RESIDUAL_NATIVE_BODY_OPTIONAL_WAIT_MS} from './residual-native-support.mjs?v=mode1-source-reuse-20261007-0435';
+import {RESIDUAL_NATIVE_BODY_BUDGET,RESIDUAL_NATIVE_BODY_OPTIONAL_WAIT_MS} from './residual-native-support.mjs?v=camera-relative-hint-20261007-0546';
 // First-sweep progress is work coverage, never a recognition/pose certificate.
 const continuationProgress=result=>{
  const value=result?.continuation;
@@ -96,7 +96,7 @@ export class ResidualRecognitionClient{
  async load(rom,sha){
   this.stopNativeContinuation();
   if(this.romSHA===sha&&this.catalog&&this.worker)return this.catalog;
-  this.release();const worker=new Worker(new URL('../monster-recognition-worker.mjs?v=native-byte-identity-20261007-0502',import.meta.url),{type:'module'});this.worker=worker;this.epoch++;
+  this.release();const worker=new Worker(new URL('../monster-recognition-worker.mjs?v=camera-relative-hint-20261007-0546',import.meta.url),{type:'module'});this.worker=worker;this.epoch++;
   worker.onmessage=({data:m})=>{
    const handlerEntryAtMs=classificationNow();
    if(this.worker!==worker)return;

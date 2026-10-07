@@ -1,5 +1,5 @@
 import {compareCameraBodyAlternative} from '../monster-camera-body-alternative.mjs?v=mode1-source-reuse-20261007-0435';
-import {attachNativeBodySupport} from '../monster-native-support.mjs?v=native-phase-20261006-2300';
+import {attachNativeBodySupport} from '../monster-native-support.mjs?v=camera-relative-hint-20261007-0546';
 
 // Cooperative work budget for the entire frozen set, including preparation.
 // Synchronous source work cannot be preempted, so this is not a hard elapsed-
