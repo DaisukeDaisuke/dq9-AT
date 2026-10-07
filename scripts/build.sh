@@ -183,3 +183,5 @@ node scripts/test-background-search-interruption.mjs
 node scripts/test-background-interruption-retention.mjs
 
 node scripts/test-source-message-yield.mjs
+
+node scripts/test-conditional-ui-competition.mjs
