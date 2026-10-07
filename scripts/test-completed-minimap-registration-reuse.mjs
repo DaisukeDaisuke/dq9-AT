@@ -1,5 +1,10 @@
 import assert from 'node:assert/strict';import {test} from 'node:test';import {readFile} from 'node:fs/promises';
-import {MapPositionMatcher} from '../web/map-position.mjs';
+// Resolve the exact matcher module owned by the production reuse guard. Browser
+// cache revisions create distinct Node module identities, not custom matchers.
+const reuseModuleURL=new URL('../web/map-browser-preview/completed-minimap-registration-reuse.mjs',import.meta.url);
+const reuseModuleSource=await readFile(reuseModuleURL,'utf8');
+const matcherSpecifier=reuseModuleSource.match(/from ['"]([^'"]*map-position\.mjs[^'"]*)['"]/)[1];
+const {MapPositionMatcher}=await import(new URL(matcherSpecifier,reuseModuleURL));
 import {matchVideoMinimapRegistration} from '../web/map-browser-preview/video-minimap-registration.mjs';
 import {createCompletedMinimapRegistrationReuse} from '../web/map-browser-preview/completed-minimap-registration-reuse.mjs';
 const {instance}=await WebAssembly.instantiate(await readFile(new URL('../web/wasm/map_render.wasm',import.meta.url)),{});

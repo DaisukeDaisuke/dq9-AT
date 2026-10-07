@@ -8,7 +8,7 @@ export const CENTER_MASK = Object.freeze({ x: .42, y: .36, w: .16, h: .24 });
 const VIDEO_PREVIEW_BOX_LIMIT = 2;
 const STAMP_KEYS = ['sourceId', 'sourceEpoch', 'timelineSegment', 'frameSerial', 'romEpoch', 'sourceFrame', 'videoTime', 'timestampBasis', 'capturedAt', 'enemyROI', 'featureMethod', 'inferenceBackend', 'sceneContext'];
 const abortError = () => Object.assign(new Error('処理を中止しました。'), { name: 'AbortError' });
-const defaultProbeWebGPU = options => import('../../monster-dinov2.mjs').then(m => m.probeDinoWebGPU(options));
+const defaultProbeWebGPU = options => import('../../monster-dinov2.mjs?v=registration-timing-20261007-0020').then(m => m.probeDinoWebGPU(options));
 const defaultClearFeatureCache = () => import('../../monster-feature-cache.mjs').then(m => m.createFeatureBankStore().clear());
 const defaultEnsureInferenceAssets = async options => (await import('../../monster-inference-assets.mjs')).ensureInferenceAssets(options);
 const cloneValue = value => value === null || typeof value !== 'object' ? value : Object.fromEntries(Object.entries(value).map(([key, item]) => [key, cloneValue(item)]));
@@ -84,7 +84,7 @@ export class RequestGate {
 
 /** Termination also invalidates File.arrayBuffer reads that have not completed yet. */
 export class RecognitionWorkerClient {
-  constructor({ factory = () => new Worker(new URL('./monster-recognition-worker.mjs?v=stored-pivot-source-20261006-0800', import.meta.url), { type: 'module' }), onProgress = () => {} } = {}) {
+  constructor({ factory = () => new Worker(new URL('./monster-recognition-worker.mjs?v=registration-timing-20261007-0020', import.meta.url), { type: 'module' }), onProgress = () => {} } = {}) {
     this.factory = factory; this.onProgress = onProgress; this.worker = null; this.generation = 0; this.pending = new Map(); this.loadedRomEpoch = null;
   }
   createWorker() {

@@ -20,6 +20,8 @@ MEMORY_EXPORT=()
 if "$LD" --help | grep -- '--export-memory' >/dev/null; then MEMORY_EXPORT+=(--export-memory); fi
 "$LD" --no-entry "${MEMORY_EXPORT[@]}" --export=__heap_base --initial-memory=33554432 --max-memory=134217728 "${OBJECTS[@]}" -o web/wasm/map_render.wasm
 printf 'Built '; wc -c < web/wasm/map_render.wasm
+CLANG="$CLANG" WASM_LD="$LD" bash scripts/build-map-kernel-simd.sh
+node scripts/test-map-kernel-loader.mjs
 bash scripts/build-monster.sh
 CLANG="$CLANG" WASM_LD="$LD" bash scripts/build-monster-movement.sh
 
@@ -171,3 +173,5 @@ node scripts/test-native-mse-ownership.mjs
 node scripts/test-native-phase-domain.mjs
 node scripts/test-native-phase-continuation.mjs
 node scripts/test-native-phase-evidence.mjs
+
+node scripts/test-monster-classification-timing.mjs

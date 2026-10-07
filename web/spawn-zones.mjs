@@ -38,7 +38,7 @@ function setup(){
  async function load(file){if(!file)return;if(!/\.nds$/i.test(file.name)){status('NDSファイルを選択してください',true);return;}release();const id=epoch;$('release').disabled=false;status('NDSをブラウザ内で読み込み中');try{
   const csvResponse=await fetch('./data/map-id-names.csv');if(!csvResponse.ok)throw Error('マップ名CSVを取得できません');const csv=await csvResponse.text(),buffer=await file.arrayBuffer();if(id!==epoch)return;
   let trigWarning='';try{trig=preferredNodeTrigFromRom(buffer);}catch(e){trigWarning=e.message;}
-  worker=new Worker(new URL('./worker.mjs',import.meta.url),{type:'module'});worker.onerror=e=>{if(id===epoch)status('Worker: '+e.message,true);};
+  worker=new Worker(new URL('./worker.mjs?v=registration-timing-20261007-0020',import.meta.url),{type:'module'});worker.onerror=e=>{if(id===epoch)status('Worker: '+e.message,true);};
   worker.onmessage=({data:m})=>{if(id!==epoch)return;if(m.type==='progress')status(m.message);if(m.type==='error')status(m.message,true);if(m.type==='loaded'){metadata=m.metadata;$('maps').disabled=false;$('release').disabled=false;list();const choice=metadata.records.find(r=>r.mapId===7402)||metadata.records[0];if(choice){$('maps').value=choice.key;select(choice.key);}status(`ローカル読込完了：${metadata.records.length} maps / ${metadata.fieldGraphs.summary.graphs}静的グラフ${trigWarning?'。向き計算は未対応ROMのため保留':''}`);}if(m.type==='image'&&m.requestId===request){image=m.image;draw();}};
   worker.postMessage({type:'load',buffer,csv},[buffer]);
  }catch(e){if(id===epoch)status(e.message,true);}}

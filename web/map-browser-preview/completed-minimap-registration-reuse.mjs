@@ -1,4 +1,4 @@
-import {MapPositionMatcher} from '../map-position.mjs';
+import {MapPositionMatcher} from '../map-position.mjs?v=registration-timing-20261007-0020';
 import {matchVideoMinimapRegistration} from './video-minimap-registration.mjs?v=field-registration-20261006-0913';
 const sameBytes=(a,b)=>a.length===b.length&&a.every((v,i)=>v===b[i]);
 const complete=result=>result?.kind==='video-map-registration'&&result.search?.planComplete===true&&result.search.budgetExhausted===false&&(!result.fallback||complete(result.fallback.initialRegistration));

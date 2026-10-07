@@ -7,7 +7,7 @@ import {detectMapNameROI} from './map-name-roi.mjs';
 import {markerColorCandidates,playerSampleATObservation} from './player-position.mjs';
 import {PlayerCaptureCoordinator} from './player-capture.mjs';
 import {mapMarkerCoordinateCandidate} from './map-marker-coordinate.mjs';
-import {mapCandidatesFromAkinator} from './map-disambiguation.mjs';
+import {mapCandidatesFromAkinator} from './map-disambiguation.mjs?v=registration-timing-20261007-0020';
 import {compatibleVideoObservation} from './video-observation.mjs';
 import {factorPartyMapCandidates,previewPartyMapCandidates} from './party-map-candidates.mjs';
 import {coordinateIndexFor} from './map-coordinate-index.mjs';
@@ -46,7 +46,7 @@ let records=[],matcher=null,busy=false,pendingRead=false,generation=0,romEpoch=0
 let roi={screen:{x:0,y:0,w:1,h:1},name:{x:.35,y:0,w:.65,h:.22}};
 try{const saved=JSON.parse(localStorage.getItem('dq9-at-video-roi')||'null');if(saved)for(const key of ['screen','name']){const r=saved[key];if(r&&[r.x,r.y,r.w,r.h].every(Number.isFinite)&&r.x>=0&&r.y>=0&&r.w>0&&r.h>0&&r.x+r.w<=1.001&&r.y+r.h<=1.001)roi[key]=r;}}catch{}
 
-const positionWorker=new Worker(new URL('./position-worker.mjs',import.meta.url),{type:'module'}),small=document.createElement('canvas');small.width=128;small.height=96;const smallCtx=small.getContext('2d',{willReadFrequently:true});
+const positionWorker=new Worker(new URL('./position-worker.mjs?v=registration-timing-20261007-0020',import.meta.url),{type:'module'}),small=document.createElement('canvas');small.width=128;small.height=96;const smallCtx=small.getContext('2d',{willReadFrequently:true});
 let positionEpoch=0,positionPending=false,positionSample=null,positionHasReference=false,positionReady=false,frameSerial=0,lastPosition=null,lastPositionSignature='';
 let sameFrameMarkers=null,activeFrameSerial=0,lastPlayerStamp=null,playerPick=false,playerProfiles=defaultPartyProfiles(),playerReference=null;
 function defaultPartyProfiles(){return [{id:'nominal-first-gray-hypothesis',rgb:[66,66,66]}];}

@@ -1,4 +1,4 @@
-import {MapPositionMatcher} from './map-position.mjs';
+import {MapPositionMatcher} from './map-position.mjs?v=registration-timing-20261007-0020';
 import {markerCoordinateBinding} from './map-marker-coordinate.mjs';
 const normalizeName=s=>String(s??'').normalize('NFKC').replace(/\s+/g,'');
 /** Only returned Akinator paths/character alternatives nominate names. No fuzzy search. */

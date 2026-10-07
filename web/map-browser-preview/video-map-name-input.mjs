@@ -1,8 +1,8 @@
 // Existing ROM-font matcher -> same-frame map candidates; no name injected by caller.
 import {mineRuntimeFonts} from '../font-core.mjs';
 import {detectMapNameROI} from '../map-name-roi.mjs';
-import {mapCandidatesFromAkinator} from '../map-disambiguation.mjs';
-import {upperVideoROI} from './video-player-map-input.mjs?v=complete-registration-reuse-20261006-1523';
+import {mapCandidatesFromAkinator} from '../map-disambiguation.mjs?v=registration-timing-20261007-0020';
+import {upperVideoROI} from './video-player-map-input.mjs?v=registration-timing-20261007-0020';
 import {sampleGameplayFrame} from './map-video-residual.mjs?v=camera-loss-evidence-20261006-1205';
 const fontCache=new WeakMap();
 export const MAP_NAME_OPTIONS=Object.freeze({autoThreshold:true,threshold:220,scales:[.95,1,1.05],charCount:16,maxMilliseconds:10000});

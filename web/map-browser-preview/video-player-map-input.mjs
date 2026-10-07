@@ -1,4 +1,4 @@
-import {createCompletedMinimapRegistrationReuse} from './completed-minimap-registration-reuse.mjs?v=complete-registration-reuse-20261006-1523';
+import {createCompletedMinimapRegistrationReuse} from './completed-minimap-registration-reuse.mjs?v=registration-timing-20261007-0020';
 // Same-frame upper-screen marker -> ROM map-coordinate hypotheses.
 // Reuses existing calibration, registration and BMMP coordinate interpretation.
 import {calibratedPartyMarkerCandidates} from '../party-marker-calibration.mjs';

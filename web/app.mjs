@@ -14,7 +14,7 @@ function clearPreview(message){image=null;window.dispatchEvent(new CustomEvent('
 function release(){loadSerial++;exitPending=null;worker?.terminate();worker=null;metadata=null;selection=null;selectedAsset=null;requestId++;ui.release.disabled=true;ui['rom-name'].textContent='ファイルをドロップ';for(const id of ['export-all','export-csv','export-exits','export-one','export-asset'])ui[id].disabled=true;ui.descriptor.replaceChildren(new Option('未選択',''));ui.descriptor.disabled=true;ui.facts.replaceChildren();ui.raw.textContent='';ui.summary.textContent='NDS未読込';ui.errors.textContent='なし';ui.title.textContent='NDS未選択';ui.identity.textContent='既存の日本語マップ名を表示できます。';clearPreview('NDSをここへドロップ');window.dispatchEvent(new CustomEvent('dq9-rom-release'));renderList();}
 async function loadROM(file){if(!file)return;if(!/\.nds$/i.test(file.name)){status('NDSファイルを選択してください。',true);return;}release();const serial=loadSerial;status('NDSを読込中');ui['rom-name'].textContent=file.name;ui.release.disabled=false;
  try{await namesReady;const buffer=await file.arrayBuffer();if(serial!==loadSerial)return;
-  worker=new Worker(new URL('./worker.mjs',import.meta.url),{type:'module'});worker.onerror=e=>status('Worker: '+e.message,true);
+  worker=new Worker(new URL('./worker.mjs?v=registration-timing-20261007-0020',import.meta.url),{type:'module'});worker.onerror=e=>status('Worker: '+e.message,true);
   worker.onmessage=({data:m})=>{
    if(serial!==loadSerial)return;
    if(m.type==='progress')status(m.message);

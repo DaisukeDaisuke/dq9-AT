@@ -9,10 +9,10 @@ import {Mode2VideoContinuity} from './mode2-video-continuity.mjs?v=footprint-rgb
 import {inferAutomaticMode2Background} from './automatic-mode2-background.mjs?v=footprint-rgb-20261006-2328';
 import {readRomMapCameraInputGate} from './rom-camera-input-gate.mjs';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
-import {CandidateMapMatcher} from '../map-disambiguation.mjs';
+import {CandidateMapMatcher} from '../map-disambiguation.mjs?v=registration-timing-20261007-0020';
 import {loadAutomaticScene} from './automatic-scene.mjs';
 import {loadRomFloorInstances} from './rom-floor-candidates.mjs';
-import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=complete-registration-reuse-20261006-1523';
+import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=registration-timing-20261007-0020';
 import {automaticPreviewCamera} from './automatic-preview-camera.mjs';
 import {automaticBillboardScenes} from './automatic-billboard-scene.mjs';
 import {applyAutomaticMaterialEnvironment} from './automatic-material-environment.mjs?v=native-body-20261006-0212';

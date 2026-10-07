@@ -1,7 +1,8 @@
+import {loadMapKernel} from './map-kernel-loader.mjs?v=registration-timing-20261007-0020';
 import {mineMapExits} from './map-exits.mjs';
 import {readTreasureSource} from './treasure-entry.mjs';
 import {MapProject,MapRenderer} from './map-core.mjs';
-import {CandidateMapMatcher} from './map-disambiguation.mjs';
+import {CandidateMapMatcher} from './map-disambiguation.mjs?v=registration-timing-20261007-0020';
 import {mineRuntimeFonts} from './font-core.mjs';
 import {parseMonsterAssetCatalog,readMonsterAssets,monsterAssetTransfers} from './monster-assets.mjs';
 import {MonsterGeometry,monsterPreviewTransfers} from './monster-geometry.mjs';
@@ -10,7 +11,7 @@ const monsterGeometry=()=>monsterGeometryPromise??=MonsterGeometry.create().catc
 let project=null,renderer=null,wasmInstance=null,candidateMatcher=null;
 let monsterCatalogPromise=null;
 const monsterCatalog=()=>monsterCatalogPromise??=(fetch('./data/monsters.csv').then(r=>{if(!r.ok)throw Error('Monster catalogue unavailable');return r.text();}).then(parseMonsterAssetCatalog).catch(error=>{monsterCatalogPromise=null;throw error;}));
-const boot=(async()=>{const response=await fetch('./wasm/map_render.wasm');if(!response.ok)throw Error('WASMを取得できません');const {instance}=await WebAssembly.instantiate(await response.arrayBuffer(),{});wasmInstance=instance;renderer=new MapRenderer(instance);})();
+const boot=(async()=>{const {instance}=await loadMapKernel({readBytes:async path=>{const response=await fetch(path);if(!response.ok)throw Error('WASMを取得できません');return response.arrayBuffer();},scalarURL:'./wasm/map_render.wasm',simdURL:'./wasm/map_render_simd.wasm?v=registration-simd-20261007-0020'});wasmInstance=instance;renderer=new MapRenderer(instance);})();
 self.onmessage=async({data:m})=>{try{await boot;
  if(m.type==='load'){project=new MapProject(m.buffer,m.csv,s=>postMessage({type:'progress',message:s}));candidateMatcher=new CandidateMapMatcher(wasmInstance,project,renderer);postMessage({type:'loaded',metadata:project.metadata()});}
  else if(m.type==='map-exits'){try{if(!project)throw Error('NDSを先に選択してください');const result=mineMapExits(project.nitro);postMessage({type:'map-exits',requestId:m.requestId,result});}catch(error){postMessage({type:'map-exits-error',requestId:m.requestId,message:error.message});}}

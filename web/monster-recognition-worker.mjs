@@ -1,9 +1,9 @@
 import {NitroFS} from './vendor/nitro-fs.mjs';
 import {parseMonsterAssetCatalog} from './monster-assets.mjs';
 import {MonsterGeometry} from './monster-geometry.mjs?v=field-stream-20261005-1108';
-import {createDinoFeatureBackend} from './monster-dinov2.mjs?v=recognition-cache-20261005-1007';
+import {createDinoFeatureBackend} from './monster-dinov2.mjs?v=registration-timing-20261007-0020';
 import {createFeatureBankStore} from './monster-feature-cache.mjs';
-import {recognizeROI,supplementEnemyROIs,prepareDinoPoseBank,createRenderedReferenceCache} from './monster-recognition-engine.mjs?v=proposal-support-20261006-1152';
+import {recognizeROI,supplementEnemyROIs,prepareDinoPoseBank,createRenderedReferenceCache} from './monster-recognition-engine.mjs?v=registration-timing-20261007-0020';
 let state=null,epoch=0,active=null,nativeBodyModulePromise=null;
 const loadNativeBodyModule=()=>nativeBodyModulePromise??=import('./monster-native-auto-support.mjs?v=footprint-rgb-20261006-2328').catch(error=>{nativeBodyModulePromise=null;throw error;});
 const post=message=>self.postMessage(message);
@@ -48,7 +48,7 @@ self.onmessage=async({data:m})=>{
    const result=await service.evaluate(m.request,{signal:controller.signal,getCurrentFrame:()=>active===controller&&mine===epoch&&!controller.signal.aborted?{...m.request.videoEvidence,romSHA256:runState.romSHA256}:null,budget:{wallTimeMs:remaining,maxProposals:budget.maxProposals},onProgress});
    if(active!==controller||mine!==epoch||controller.signal.aborted)return;active=null;post({type:'result',id,romEpoch,result});return;
   }
-  const getDino=async({backend:provider='wasm'}={})=>{if(runState.dino?.spec.backend===provider)return runState.dino;const previous=runState.dino,previousStage=stage;runState.dino=null;runState.renderedReferenceCache.clear();stage='backend-dispose';await previous?.dispose();stage=`${provider}-init`;const backend=await createDinoFeatureBackend({backend:provider,signal:controller.signal,onProgress});if(active!==controller||mine!==epoch){await backend.dispose();throw new DOMException('中止','AbortError');}runState.dino=backend;stage=previousStage;return backend;};
+  const getDino=async({backend:provider='wasm',onAcquisitionTiming}={})=>{if(runState.dino?.spec.backend===provider){try{onAcquisitionTiming?.({reused:true});}catch{}return runState.dino;}const previous=runState.dino,previousStage=stage;runState.dino=null;runState.renderedReferenceCache.clear();stage='backend-dispose';await previous?.dispose();stage=`${provider}-init`;const backend=await createDinoFeatureBackend({backend:provider,signal:controller.signal,onProgress});if(active!==controller||mine!==epoch){await backend.dispose();throw new DOMException('中止','AbortError');}runState.dino=backend;stage=previousStage;try{onAcquisitionTiming?.({reused:false});}catch{}return backend;};
   const outcome=await (m.type==='prepare'?prepareDinoPoseBank:m.type==='supplement'?supplementEnemyROIs:recognizeROI)(m,{...runState,cacheQuery:true,cachePartialPoses:true,signal:controller.signal,onProgress,getDino});
   const result=m.type==='prepare'?{prepared:true,timings:outcome.timings,cacheWarnings:outcome.cacheWarnings}:outcome;
   if(active!==controller||mine!==epoch)return;active=null;post({type:'result',id,romEpoch,result});

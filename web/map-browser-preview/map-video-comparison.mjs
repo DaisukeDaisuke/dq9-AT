@@ -1,10 +1,11 @@
+import {recordClassificationTiming} from '../monster-classification-timing.mjs?v=registration-timing-20261007-0020';
 import {VideoPipelineTiming} from './video-pipeline-timing.mjs?v=map-input-owned-preparation-20261006-1408';
 import {PausedLocalVideoStartup} from './paused-local-video-startup.mjs?v=paused-video-prime-20261006-1240';
 import{measuredClassificationView}from'./measured-classification-view.mjs?v=continuity-yield-local-evidence-20261006-1458';
 import{VideoTrackingReplay,waitForMeasuredReplayFrame}from'./video-tracking-replay.mjs?v=continuity-yield-local-evidence-20261006-1458';
 import{videoTrackingFrameKey}from'./video-patch-correspondence.mjs?v=continuity-yield-local-evidence-20261006-1458';
 import{createVideoTrackingCapture}from'./video-tracking-capture.mjs?v=camera-loss-evidence-20261006-1205';
-import {captureResidualNativeBackground} from './residual-recognition-job.mjs?v=footprint-rgb-20261006-2328';
+import {captureResidualNativeBackground} from './residual-recognition-job.mjs?v=registration-timing-20261007-0020';
 import {createFrozenAnalysisCapture} from './capture-analysis-pixels.mjs?v=native-continuation-20261006-0333';
 import {completedClassificationSnapshot,renderClassificationSummary,createDeferredEvidenceJSON} from './completed-classification-display.mjs?v=geometry-display-20261006-1112';
 import {captureAutomaticResidualPolicy,automaticResidualPolicyKey,selectAutomaticResiduals,withAutomaticResidualSelection} from './automatic-residual-policy.mjs?v=video-inference-20261005-1232';
@@ -13,9 +14,9 @@ import {replaceResidualTimelineClassification} from './residual-classification-s
 import {recognitionDisplaySummary,timelineDisplaySummary,comparisonDisplaySummary} from './recognition-display-summary.mjs?v=native-extents-latest-20261006-0843';
 import {VideoObservationPump,VideoObservationTimeline,residualAssociationHints,videoObservationFrameKey} from './video-observation-timeline.mjs?v=map-input-owned-preparation-20261006-1408';
 import {detectMapNameROI} from '../map-name-roi.mjs';
-import {upperVideoROI} from './video-player-map-input.mjs?v=complete-registration-reuse-20261006-1523';
+import {upperVideoROI} from './video-player-map-input.mjs?v=registration-timing-20261007-0020';
 import {parseVideoTimecode,formatVideoTimecode} from './video-timecode.mjs';
-import {inferPairedVideoLayout} from './automatic-video-layout.mjs?v=complete-registration-reuse-20261006-1523';
+import {inferPairedVideoLayout} from './automatic-video-layout.mjs?v=registration-timing-20261007-0020';
 import {ResidualTracker} from './residual-tracking-input.mjs?v=continuity-yield-local-evidence-20261006-1458';
 import {annotateResidualRegions,selectResidualDisplay} from './residual-region-display.mjs';
 import {FileVideoInput} from '../file-video-input.mjs?v=automatic-playback-source-cache-20261006-1100';
@@ -44,11 +45,12 @@ export function mountMapVideoComparison({renderBackground,derivePlayerBackground
  function retainCompletedClassification(value,frame,bg,cmp){const snapshot=timing.sync('completed-classification-snapshot',frame.evidence,()=>completedClassificationSnapshot(value,frame,bg,cmp.components));if(snapshot){latestCompletedClassification=snapshot;showCompletedClassification();renderMeasuredPreview();}}
  // residualObservationBundle creates its single timeline envelope inline; the
  // job/native/selection wrappers never alias it into another field of value.
+ function retainClassificationTiming(job,event){try{const row=timeline.frames.find(row=>row.frameSerial===job.frame.id&&videoObservationFrameKey(row.stamp)===job.frameKey);if(row&&(!row.classificationScheduling||row.classificationScheduling.romSHA256===job.romIdentity&&row.classificationScheduling.frameKey===job.frameKey))recordClassificationTiming(row,{...event,binding:{frameKey:job.frameKey,romSHA256:job.romIdentity,sourcePTS:job.frame.evidence.mediaTime}});}catch{}}
  const classificationLane=new FrozenClassificationLane({retainLatestPending:true,process:classifyFrozen,onIdle:()=>timelineStatus(),onState:(job,state,error,reason)=>{
   const patch={classificationScheduling:{state,reason:reason??error?.message??null,frameKey:job.frameKey,mapKey:job.mapKey,romSHA256:job.romIdentity,context:job.context,requestedRegionIds:job.ids,automaticResidualSelection:job.selection},classificationComplete:false};
   if(['skipped-busy','queued-latest','superseded-pending'].includes(state))patch.unclassifiedRegionIds=job.cmp.components.map(r=>r.id);
   if(state==='finished')delete patch.classificationComplete;
-  timeline.update(job.frame.id,patch);$('video-timeline-details').textContent=JSON.stringify(timelineDisplaySummary(timeline),null,2);
+  timeline.update(job.frame.id,patch);retainClassificationTiming(job,{kind:'terminal',state,reason:reason??error?.message??null});$('video-timeline-details').textContent=JSON.stringify(timelineDisplaySummary(timeline),null,2);
   if(frozen?.id===job.frame.id){
    const row=timeline.frames.find(row=>row.frameSerial===job.frame.id);
    if(state==='finished')$('residual-classification-status').textContent=`${row?.classificationComplete?'比較完了':'比較未完'}: 比較した残差${row?.sightings?.length??0}件、未比較${row?.unclassifiedRegionIds?.length??0}件。順位は候補で、背景・味方・UI・候補外を除外できません。出生/AT加算なし。`;
@@ -81,7 +83,7 @@ export function mountMapVideoComparison({renderBackground,derivePlayerBackground
   const acceptNative=result=>{if(!nativeCurrent())return;const value=withAutomaticResidualSelection(result,job.selection);timeline.update(frame.id,{modelPlan:value.source?.modelPlan});replaceResidualTimelineClassification(timeline,frame.id,value);$('video-timeline-details').textContent=JSON.stringify(timelineDisplaySummary(timeline),null,2);if(frozen?.id===frame.id){classification=value;showClassification(value);$('download-residual-observations').disabled=false;}if(latestCompletedClassification?.frameId===frame.id)retainCompletedClassification(value,frame,bg,cmp);const completed=timeline.snapshotBundle(value,{unaliasedResidualEnvelope:true});void timing.sync('observation-consumer-prologue',frame.evidence,()=>onObservationBundle(completed));};
   const accept=result=>{if(!current())return;const value=withAutomaticResidualSelection(result,job.selection);timeline.update(frame.id,{modelPlan:value.source?.modelPlan});replaceResidualTimelineClassification(timeline,frame.id,value);$('video-timeline-details').textContent=JSON.stringify(timelineDisplaySummary(timeline),null,2);if(frozen?.id===frame.id){classification=value;showClassification(value);$('download-residual-observations').disabled=false;}};
   const digest=await sha(bg.image.rgba);if(!current())return false;
-  const result=await classifyResiduals({nativeBackgroundSnapshot:job.nativeBackgroundSnapshot,automaticResidualSelection:job.selection,regionIds:ids,regions:cmp.components,sourceImage:frame.sourceImage,nativeVideo:frame.image,nativeComparison:cmp,videoEvidence:frame.evidence,backgroundEvidence:bg.evidence,backgroundRGBA_SHA256:digest,tracking,videoTimeline:timeline.snapshot(),shareVideoTimelineSnapshot:true,recognitionContext:job.context,isCurrent:current,isNativeCurrent:nativeCurrent,onNativePartial:acceptNative,onPartial:accept,onProgress:p=>{if(current()&&frozen?.id===frame.id)$('residual-classification-status').textContent=p.message??p.phase??'比較中';}});
+  const result=await classifyResiduals({nativeBackgroundSnapshot:job.nativeBackgroundSnapshot,automaticResidualSelection:job.selection,regionIds:ids,regions:cmp.components,sourceImage:frame.sourceImage,nativeVideo:frame.image,nativeComparison:cmp,videoEvidence:frame.evidence,backgroundEvidence:bg.evidence,backgroundRGBA_SHA256:digest,tracking,videoTimeline:timeline.snapshot(),shareVideoTimelineSnapshot:true,recognitionContext:job.context,isCurrent:current,isNativeCurrent:nativeCurrent,onNativePartial:acceptNative,onPartial:accept,onClassificationTiming:event=>retainClassificationTiming(job,event),onProgress:p=>{if(current()&&frozen?.id===frame.id)$('residual-classification-status').textContent=p.message??p.phase??'比較中';}});
   if(!current())return false;const value=withAutomaticResidualSelection(result,job.selection);accept(value);retainCompletedClassification(value,frame,bg,cmp);timeline.update(frame.id,{modelPlan:value.source.modelPlan});
   const completed=timeline.snapshotBundle(value,{unaliasedResidualEnvelope:true});void timing.sync('observation-consumer-prologue',frame.evidence,()=>onObservationBundle(completed));
  }

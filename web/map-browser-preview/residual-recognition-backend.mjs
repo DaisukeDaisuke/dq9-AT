@@ -1,5 +1,5 @@
 import {INFERENCE_ASSETS,INFERENCE_CACHE_NAME,inferenceProfile} from '../monster-inference-assets.mjs';
-import {dinoSpec,probeDinoWebGPU} from '../monster-dinov2.mjs?v=recognition-cache-20261005-1007';
+import {dinoSpec,probeDinoWebGPU} from '../monster-dinov2.mjs?v=registration-timing-20261007-0020';
 // Selection only inspects existing local assets. The worker verifies their pinned
 // size and SHA-256 before use. Nothing here fetches or prepares remote models.
 export async function chooseResidualBackend({preference='wasm',gpu=globalThis.navigator?.gpu,cacheStorage=globalThis.caches,assertCurrent=()=>{},probe=probeDinoWebGPU}={}){

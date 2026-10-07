@@ -1,19 +1,21 @@
-import {mountResidualInferencePreparation} from './residual-inference-preparation.mjs?v=monster-map-cpu-20261006-1005';
+import {loadMapKernel} from '../map-kernel-loader.mjs?v=registration-timing-20261007-0020';
+import {classificationNow,classificationDuration,classificationClock,emitClassificationTiming} from '../monster-classification-timing.mjs?v=registration-timing-20261007-0020';
+import {mountResidualInferencePreparation} from './residual-inference-preparation.mjs?v=registration-timing-20261007-0020';
 import {createVideoTrackingAT,videoATSearchOptions} from './video-tracking-at.mjs?v=map-input-owned-preparation-20261006-1408';
-import {runResidualRecognitionJob} from './residual-recognition-job.mjs?v=footprint-rgb-20261006-2328';
-import {VideoMapContinuity} from './video-map-continuity.mjs?v=complete-registration-reuse-20261006-1523';
-import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=footprint-rgb-20261006-2328';
-import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=complete-registration-reuse-20261006-1523';
+import {runResidualRecognitionJob} from './residual-recognition-job.mjs?v=registration-timing-20261007-0020';
+import {VideoMapContinuity} from './video-map-continuity.mjs?v=registration-timing-20261007-0020';
+import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=registration-timing-20261007-0020';
+import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=registration-timing-20261007-0020';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
-import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=footprint-rgb-20261006-2328';
+import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=registration-timing-20261007-0020';
 import {residualModelPlan} from './residual-recognition-input.mjs?v=map-input-owned-preparation-20261006-1408';
 import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=footprint-rgb-20261006-2328';
 import {CPUTextClient} from '../font-akinator-cpu-client.mjs?v=provided-layout-20261005';
-import {deriveVideoMapNames} from './video-map-name-input.mjs?v=complete-registration-reuse-20261006-1523';
-import {MapPositionMatcher} from '../map-position.mjs';
-import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs?v=complete-registration-reuse-20261006-1523';
+import {deriveVideoMapNames} from './video-map-name-input.mjs?v=registration-timing-20261007-0020';
+import {MapPositionMatcher} from '../map-position.mjs?v=registration-timing-20261007-0020';
+import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs?v=registration-timing-20261007-0020';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
-import {mountMapVideoComparison} from './map-video-comparison.mjs?v=footprint-rgb-20261006-2328';
+import {mountMapVideoComparison} from './map-video-comparison.mjs?v=registration-timing-20261007-0020';
 import {openMapRom} from './static-scene.mjs?v=native-source-reuse-20261006-1028';
 import {buildRomMapCatalog} from './rom-map-catalog.mjs';
 import {nameCatalogMaps} from './rom-map-names.mjs';
@@ -48,7 +50,7 @@ $('rom').onchange=async()=>{
  nameClient.cancel();residualClient.release();nameInput=null;pendingNamedMap=null;$('name-input-candidates').replaceChildren();$('name-input-details').textContent='';version++;const file=$('rom').files[0];clearView();loaded=false;for(const x of['search','map','descriptor'])$(x).disabled=true;if(!file)return;
  $('status').textContent='ROMとマップ一覧を読んでいます…';await frame();const bytes=new Uint8Array(await file.arrayBuffer());if(id!==nameRomEpoch)return;
  const p=openMapRom(bytes),c=buildRomMapCatalog(p);let csv='';try{csv=await(await responseBytes('../data/map-id-names.csv')).text();}catch(e){throw Error('既存マップ名一覧の取得に失敗: '+e.message);}
- const w=await(await responseBytes('../wasm/map_render.wasm')).arrayBuffer(),inst=await WebAssembly.instantiate(w,{});if(id!==nameRomEpoch)return;
+ const inst=await loadMapKernel({readBytes:async path=>(await responseBytes(path)).arrayBuffer(),scalarURL:'../wasm/map_render.wasm',simdURL:'../wasm/map_render_simd.wasm?v=registration-simd-20261007-0020'});if(id!==nameRomEpoch)return;
  const romHash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join('');if(id!==nameRomEpoch)return;romSHA256=romHash;rom=bytes;project=p;catalog=c;const sourceAngles=readRomCameraYawCandidates(p.sdk).candidates.map(h=>h.yawDegrees>180?h.yawDegrees-360:h.yawDegrees);$('yaw').min=String(Math.min(...sourceAngles));$('yaw').max=String(Math.max(...sourceAngles));maps=nameCatalogMaps(c,csv);renderer=new MapRenderer(inst.instance);positionMatcher=new MapPositionMatcher(inst.instance);automaticSearch=new AutomaticVideoAlignment({project,rom,romSHA256,catalog,records:maps,renderer,matcher:positionMatcher,wasm:inst.instance});loaded=true;videoComparison.inputsReady();$('search').disabled=false;$('map').disabled=false;filterMaps();await videoComparison.renderCurrent(); }catch(e){if(id===nameRomEpoch)reportError(e);}
 };
 function filterMaps(){if(!loaded)return;const q=$('search').value.trim().toLocaleLowerCase(),old=$('map').value,rows=maps.filter(m=>(m.displayLabel+' '+m.fieldCode).toLocaleLowerCase().includes(q));$('map').replaceChildren(new Option('マップを選択',''),...rows.map(r=>new Option(r.displayLabel,r.key)));if(rows.some(r=>r.key===old))$('map').value=old;else{clearView();record=null;image=null;mapCtx.clearRect(0,0,$('minimap').width,$('minimap').height);$('descriptor').replaceChildren();$('descriptor').disabled=true;}$('mapstatus').textContent=rows.length+'件。マップを選択してください。';}
@@ -148,10 +150,10 @@ $('render-profile').onchange=guard(render);
 async function classifyBackgroundResiduals(input){
  residualClient.cancel();
  const key=romSHA256,romEpoch=nameRomEpoch,frameId=input.videoEvidence.frameSerial,context=input.recognitionContext??{variant:$('residual-model-variant').value,backend:$('residual-inference-backend')?.value??'wasm'},current=input.isCurrent??(()=>videoComparison.frameId()===frameId);if(input.backgroundEvidence.romSHA256!==key)throw Error('背景とROMの識別が異なります');
- const catalog=await residualClient.load(rom,key);if(romSHA256!==key||nameRomEpoch!==romEpoch||!current())throw Error('比較中に入力が変わりました');
+ const loadStarted=classificationNow(),workerAlreadyLoaded=residualClient.romSHA===key&&Boolean(residualClient.catalog&&residualClient.worker);let catalog,loadComplete=false;emitClassificationTiming(input,{kind:'preparation',stage:'rom-worker-load',clock:classificationClock('window-main-thread'),measurementKind:'async-elapsed-not-CPU-time',startedAtMs:loadStarted,workerAlreadyLoaded,status:'running'});try{catalog=await residualClient.load(rom,key);loadComplete=true;}finally{emitClassificationTiming(input,{kind:'preparation',stage:'rom-worker-load',clock:classificationClock('window-main-thread'),measurementKind:'async-elapsed-not-CPU-time',elapsedMs:classificationDuration(loadStarted),workerAlreadyLoaded,status:loadComplete?'completed':'failed-or-cancelled'});}if(romSHA256!==key||nameRomEpoch!==romEpoch||!current())throw Error('比較中に入力が変わりました');
  const cancellationVersion=residualClient.cancellationVersion;
- encounterTables??=(await(await responseBytes('../data/enc.json')).json()).main;
- const retained=input.backgroundEvidence.nameInput?.maps?.map(m=>m.mapId)??[input.backgroundEvidence.mapId],variant=context.variant,plan=residualModelPlan(project,retained,{catalog,tables:encounterTables,variant});
+ const tableStarted=classificationNow(),tablesAlreadyLoaded=Boolean(encounterTables);let tablesComplete=false;emitClassificationTiming(input,{kind:'preparation',stage:'encounter-tables-read',clock:classificationClock('window-main-thread'),measurementKind:'async-elapsed-not-CPU-time',startedAtMs:tableStarted,tablesAlreadyLoaded,status:'running'});try{encounterTables??=(await(await responseBytes('../data/enc.json')).json()).main;tablesComplete=true;}finally{emitClassificationTiming(input,{kind:'preparation',stage:'encounter-tables-read',clock:classificationClock('window-main-thread'),measurementKind:'async-elapsed-not-CPU-time',elapsedMs:classificationDuration(tableStarted),tablesAlreadyLoaded,status:tablesComplete?'completed':'failed-or-cancelled'});}
+ const retained=input.backgroundEvidence.nameInput?.maps?.map(m=>m.mapId)??[input.backgroundEvidence.mapId],variant=context.variant,planStarted=classificationNow();let plan,planComplete=false;emitClassificationTiming(input,{kind:'preparation',stage:'model-plan',clock:classificationClock('window-main-thread'),measurementKind:'synchronous-span',startedAtMs:planStarted,status:'running'});try{plan=residualModelPlan(project,retained,{catalog,tables:encounterTables,variant});planComplete=true;}finally{emitClassificationTiming(input,{kind:'preparation',stage:'model-plan',clock:classificationClock('window-main-thread'),measurementKind:'synchronous-span',elapsedMs:classificationDuration(planStarted),status:planComplete?'completed':'failed'});}
  return runResidualRecognitionJob({input,plan,variant,client:residualClient,preference:context.backend,assertCurrent:()=>{if(residualClient.cancellationVersion!==cancellationVersion||romSHA256!==key||nameRomEpoch!==romEpoch||!current())throw new DOMException('比較中に入力が変わりました','AbortError');}});
 }
 

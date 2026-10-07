@@ -1,3 +1,4 @@
+import {mapRegistrationKernelMetadata} from './map-kernel-loader.mjs?v=registration-timing-20261007-0020';
 // Pixel-space registration reuses the ROM-composed minimap and camera ROI.
 // Scores are similarity, not calibrated probabilities or AT evidence.
 function luma(image){const v=new Uint8Array(image.width*image.height),a=new Uint8Array(v.length);for(let i=0;i<v.length;i++){v[i]=(77*image.rgba[i*4]+150*image.rgba[i*4+1]+29*image.rgba[i*4+2])>>8;a[i]=image.rgba[i*4+3];}return {v,a};}
@@ -31,7 +32,7 @@ export class MapPositionMatcher {
   }
   candidates.sort((a,b)=>b.score-a.score);const peaks=[];for(const p of candidates){if(peaks.every(q=>p.scale!==q.scale||Math.abs(p.dx-q.dx)>3||Math.abs(p.dy-q.dy)>3))peaks.push(p);if(peaks.length===12)break;}
   if(performance.now()>=deadline){budgetExhausted=true;budgetReason='time-budget';}
-  const best=peaks[0],margin=best&&peaks[1]?best.score-peaks[1].score:0;
-  return {kind:'video-map-registration',resolved:!budgetExhausted&&!!best&&best.score>=.65&&margin>=.08,search:{method:denseTranslation?'bounded-dense-translation-fallback':'coarse-grid-then-local-refinement',coarseStride:denseTranslation?1:4,coarseSampleStride:denseTranslation?1:2,coarseSeeds,budgetExhausted,budgetReason,planComplete:!budgetExhausted,translationDomainComplete:false,...(denseTranslation?{translationLimit:65536}:{}),evaluatedTranslations,...(translationSeed?{translationSeed:{...translationSeed,radius:4},seededTranslations}:{}),elapsedMilliseconds:performance.now()-started},best,margin,candidates:peaks,mapId:reference.mapId,descriptor:reference.descriptor,imageWidth:reference.width,imageHeight:reference.height,coordinateSpace:'ROM-composed-image-pixels',worldPositionKnown:false,bootProof:false,interpretation:'Image alignment only. No player/world position unless independently observed marker/transform is supplied.'};
+  const best=peaks[0],margin=best&&peaks[1]?best.score-peaks[1].score:0,kernel=mapRegistrationKernelMetadata(this.e);
+  return {kind:'video-map-registration',resolved:!budgetExhausted&&!!best&&best.score>=.65&&margin>=.08,search:{...(kernel?{kernel}:{}),method:denseTranslation?'bounded-dense-translation-fallback':'coarse-grid-then-local-refinement',coarseStride:denseTranslation?1:4,coarseSampleStride:denseTranslation?1:2,coarseSeeds,budgetExhausted,budgetReason,planComplete:!budgetExhausted,translationDomainComplete:false,...(denseTranslation?{translationLimit:65536}:{}),evaluatedTranslations,...(translationSeed?{translationSeed:{...translationSeed,radius:4},seededTranslations}:{}),elapsedMilliseconds:performance.now()-started},best,margin,candidates:peaks,mapId:reference.mapId,descriptor:reference.descriptor,imageWidth:reference.width,imageHeight:reference.height,coordinateSpace:'ROM-composed-image-pixels',worldPositionKnown:false,bootProof:false,interpretation:'Image alignment only. No player/world position unless independently observed marker/transform is supplied.'};
  }
 }
