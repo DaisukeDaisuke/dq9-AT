@@ -3,6 +3,7 @@
  * alphaBlend and fog postprocess. Conditional source scene/body composition.
  * No reconstruction from final RGB; no live actor, MSE or ordering assertion.
  */
+import {createNativeBodyColorDependency} from './monster-native-color-dependency.mjs?v=rgb-dependency-optin-20261007-0943';
 import {compositeBinaryAwareDepth} from './map-browser-preview/integer/native-binary-alpha.mjs?v=automatic-playback-source-cache-20261006-1100';
 import {applyFogPixel} from './map-browser-preview/native/fog-raster.mjs';
 import {projectNativePrimitiveFx} from './map-browser-preview/integer/native-primitive-inputs.mjs';
@@ -42,7 +43,7 @@ export function prepareNativeBodyDestination({rgb,inventory,translucent,particip
  * Opaque actor/map depth ties are not assigned a fabricated submission order.
  * The subset only scores a COMPLETE proposal: one unknown footprint cell
  * makes the whole proposal unsupported, never a favorable partial score. */
-export function composeNativeBodyOverSourceDestination(projected,participants,{destination,fog=null,alignment}){
+export function composeNativeBodyOverSourceDestination(projected,participants,{destination,fog=null,alignment,collectBodyColorDependency=false}){
  need(destination?.kind==='source-prefog-opaque-body-destination-v1','Known source pre-fog destination required');
  need(Number.isInteger(alignment?.dx)&&Number.isInteger(alignment?.dy),'Frozen integer alignment required');
  if('sourceFogParameters'in destination){const normalize=p=>p?{...p,density:Array.from(p.density)}:null;need(JSON.stringify(normalize(destination.sourceFogParameters))===JSON.stringify(normalize(fog?.parameters??null)),'Body/source scene fog differs');}
@@ -50,8 +51,10 @@ export function composeNativeBodyOverSourceDestination(projected,participants,{d
  const {controls}=destination;need(controls.translucentSortMode==='manual-source-order'&&typeof controls.alphaBlendEnabled==='boolean'&&controls.alphaTestEnabled===false&&controls.alphaTestRef===null,'Admitted source controls required');
  const attrs=new Map(projected.polygons.map(p=>[p.index,p.material.effective.polygonAttribute])),footprint=new Uint8Array(N),unknownMask=new Uint8Array(N),rgba6665=destination.rgba6665.slice(),depth24=destination.depth24.slice(),depthOwner=destination.owner.slice(),colorOwner=destination.owner.slice(),frontFacing=destination.frontFacing.slice(),isFogged=destination.sourceFogMask.slice(),opaqueId=destination.opaqueId.slice(),translucentId=new Uint8Array(N).fill(255),isTranslucentPoly=new Uint8Array(N),changedMask=new Uint8Array(N),colorOwnerIsBody=new Uint8Array(N),depthOwnerIsBody=new Uint8Array(N),stats={incoming:0,depthRejected:0,alphaDiscarded:0,duplicateIdSuppressed:0,blended:0,opaqueWrites:0,depthWrites:0,unknownDestinationPixels:0,unknownOrderPixels:0,opaqueDepthTiePixels:0,bodyFootprintPixels:0};
  for(const p of participants)for(const f of p.fragments)if(f.alpha5>0){const i=f.y*256+f.x;footprint[i]=1;if(!destination.knownMask[i])unknownMask[i]|=1;if(destination.unknownOrderMask[i])unknownMask[i]|=2;}
+// Optional fixed-trace diagnostic only. Default rendering allocates no dependency planes.
+ const dependency=collectBodyColorDependency===true?createNativeBodyColorDependency(rgba6665):null;
  const opaque=participants.filter(p=>!p.translucent),plane=compositeBinaryAwareDepth(opaque);
- for(const p of opaque)for(const f of p.fragments){const i=f.y*256+f.x;if(f.alpha5!==31||!plane.coverage[i]||plane.owner[i]!==p.index||plane.depth24[i]!==f.depth24||unknownMask[i])continue;const attr=attrs.get(p.index);need(Number.isInteger(attr)&&!(attr&0x4000),'Source ordinary opaque owner attribute required');if(f.depth24===depth24[i]){unknownMask[i]|=4;continue;}if(f.depth24>depth24[i])continue;rgba6665.set([...f.rgb6,31],i*4);depth24[i]=f.depth24;depthOwner[i]=colorOwner[i]=p.index;colorOwnerIsBody[i]=depthOwnerIsBody[i]=1;frontFacing[i]=Number(p.frontFacing);isFogged[i]=attr>>>15&1;opaqueId[i]=attr>>>24&63;changedMask[i]=1;stats.opaqueWrites++;stats.depthWrites++;}
+ for(const p of opaque)for(const f of p.fragments){const i=f.y*256+f.x;if(f.alpha5!==31||!plane.coverage[i]||plane.owner[i]!==p.index||plane.depth24[i]!==f.depth24||unknownMask[i])continue;const attr=attrs.get(p.index);need(Number.isInteger(attr)&&!(attr&0x4000),'Source ordinary opaque owner attribute required');if(f.depth24===depth24[i]){unknownMask[i]|=4;continue;}if(f.depth24>depth24[i])continue;dependency?.accept(i,f.rgb6,31,true,controls.alphaBlendEnabled,rgba6665[i*4+3]);rgba6665.set([...f.rgb6,31],i*4);depth24[i]=f.depth24;depthOwner[i]=colorOwner[i]=p.index;colorOwnerIsBody[i]=depthOwnerIsBody[i]=1;frontFacing[i]=Number(p.frontFacing);isFogged[i]=attr>>>15&1;opaqueId[i]=attr>>>24&63;changedMask[i]=1;stats.opaqueWrites++;stats.depthWrites++;}
  // All opaque polygons have already run. Native manual translucent order is
  // map first, then this ordinary natural actor. The source order proof does not
  // permit appending the actor to an already fogged/composed scene.
@@ -59,8 +62,8 @@ export function composeNativeBodyOverSourceDestination(projected,participants,{d
   const attr=body?attrs.get(p.index):p.attribute;need(Number.isInteger(attr)&&(attr>>>4&3)===0&&(attr>>>16&31)>0&&!(attr&0x4800),'Source mode0 ordinary translucent depth-write-off attribute required');const id=attr>>>24&63;
   for(const f of p.fragments){const i=f.y*256+f.x,o=i*4;if(!footprint[i])continue;stats.incoming++;if(f.alpha5===0){stats.alphaDiscarded++;continue;}if(unknownMask[i])continue;
    const lequal=p.frontFacing&&!frontFacing[i]&&rgba6665[o+3]===31;if(lequal?f.depth24>depth24[i]:f.depth24>=depth24[i]){stats.depthRejected++;continue;}
-   if(f.alpha5===31){rgba6665.set([...f.rgb6,31],o);opaqueId[i]=id;isTranslucentPoly[i]=1;isFogged[i]=attr>>>15&1;depth24[i]=f.depth24;depthOwner[i]=p.index;depthOwnerIsBody[i]=Number(body);stats.opaqueWrites++;stats.depthWrites++;}
-   else{if(translucentId[i]===id){stats.duplicateIdSuppressed++;continue;}translucentId[i]=id;const a=f.alpha5+1,priorAlpha=rgba6665[o+3];for(let c=0;c<3;c++)rgba6665[o+c]=!controls.alphaBlendEnabled||priorAlpha===0?f.rgb6[c]:(a*f.rgb6[c]+(32-a)*rgba6665[o+c])>>5;rgba6665[o+3]=!controls.alphaBlendEnabled||priorAlpha===0?f.alpha5:Math.max(f.alpha5,priorAlpha);isFogged[i]=Number(Boolean(isFogged[i])&&Boolean(attr&0x8000));stats.blended++;}
+   if(f.alpha5===31){dependency?.accept(i,f.rgb6,31,body,controls.alphaBlendEnabled,rgba6665[o+3]);rgba6665.set([...f.rgb6,31],o);opaqueId[i]=id;isTranslucentPoly[i]=1;isFogged[i]=attr>>>15&1;depth24[i]=f.depth24;depthOwner[i]=p.index;depthOwnerIsBody[i]=Number(body);stats.opaqueWrites++;stats.depthWrites++;}
+   else{if(translucentId[i]===id){stats.duplicateIdSuppressed++;continue;}translucentId[i]=id;const a=f.alpha5+1,priorAlpha=rgba6665[o+3];dependency?.accept(i,f.rgb6,f.alpha5,body,controls.alphaBlendEnabled,priorAlpha);for(let c=0;c<3;c++)rgba6665[o+c]=!controls.alphaBlendEnabled||priorAlpha===0?f.rgb6[c]:(a*f.rgb6[c]+(32-a)*rgba6665[o+c])>>5;rgba6665[o+3]=!controls.alphaBlendEnabled||priorAlpha===0?f.alpha5:Math.max(f.alpha5,priorAlpha);isFogged[i]=Number(Boolean(isFogged[i])&&Boolean(attr&0x8000));stats.blended++;}
    frontFacing[i]=Number(p.frontFacing);colorOwner[i]=p.index;colorOwnerIsBody[i]=Number(body);changedMask[i]=1;
   }
  };
@@ -76,7 +79,10 @@ export function composeNativeBodyOverSourceDestination(projected,participants,{d
  // temporary whose other pixels were discarded. Preserve Uint8 byte wrapping
  // before storing into the clamped output; native planes remain unchanged.
  for(let i=0;i<N;i++)if(footprint[i]){const x=i%256+alignment.dx,y=(i>>8)+alignment.dy;if(x>=0&&y>=0&&x<256&&y<192){const o=(y*256+x)*4;for(let c=0;c<3;c++){const v=rgba6665[i*4+c]>>>1;rgba[o+c]=((v<<3)|(v>>>2))&255;}rgba[o+3]=255;}}
- return{ready:true,width:256,height:192,rgba,sourceDepth24:depth24,sourceOwner:colorOwner,sourceCoverage:footprint,sourceAcceptedSubset:destination.postActorEffect?'conditional-source-map-actor-MSE-body':'known-source-destination-mixed-body',raster:'source-integer-original-GX-body-composition-subset',sceneOcclusionApplied:true,clippedTriangles:null,originalPolygons:projected.polygons.length,stats,nativeState:{preFogRGBA6665:beforeFog,depth24,depthOwner,colorOwner,frontFacing,isFogged,opaqueId,translucentId,isTranslucentPoly,changedMask,colorOwnerIsBody,depthOwnerIsBody},scope:'Conditional same-source pre-fog scene/body composition; retained depth/IDs/fog flags follow native fragment writes. Complete known footprint only; unknown map/MSE order, opaque depth ties, live bindings and other actors remain unproved.'};
+ const result={ready:true,width:256,height:192,rgba,sourceDepth24:depth24,sourceOwner:colorOwner,sourceCoverage:footprint,sourceAcceptedSubset:destination.postActorEffect?'conditional-source-map-actor-MSE-body':'known-source-destination-mixed-body',raster:'source-integer-original-GX-body-composition-subset',sceneOcclusionApplied:true,clippedTriangles:null,originalPolygons:projected.polygons.length,stats,nativeState:{preFogRGBA6665:beforeFog,depth24,depthOwner,colorOwner,frontFacing,isFogged,opaqueId,translucentId,isTranslucentPoly,changedMask,colorOwnerIsBody,depthOwnerIsBody},scope:'Conditional same-source pre-fog scene/body composition; retained depth/IDs/fog flags follow native fragment writes. Complete known footprint only; unknown map/MSE order, opaque depth ties, live bindings and other actors remain unproved.'};
+ // A diagnostic failure adds no inferred support and never discards a valid raster.
+ if(dependency){let masks=null;try{masks=dependency.finish({footprint,depth24,isFogged,fog});}catch{}result.bodyColorDependency=masks?{kind:'source-fixed-trace-body-rgb555-dependency-v1',diagnosticOnly:true,fixedAcceptanceTrace:true,integerBlendAndFogQuantizationIncluded:true,preFogMask:masks.preFogMask,displayMask:masks.displayMask}:null;}
+ return result;
 }
 
 /** Bind the reconstructed source state to the unchanged frozen null image.

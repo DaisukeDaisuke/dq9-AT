@@ -1,5 +1,5 @@
 import{compareNativeUiCompetition}from'./monster-native-ui-competition.mjs?v=native-scene-link-20261007-0354';
-import{nativeOriginalProposalDecision}from'./monster-native-proposal-support.mjs?v=mode1-source-reuse-20261007-0435';
+import{nativeOriginalProposalDecision}from'./monster-native-proposal-support.mjs?v=rgb-dependency-optin-20261007-0943';
 // Video/ROM hypothesis comparison for automatic conditional scheduling, not identity.
 // A fixed-view thumbnail cannot veto this separate camera-conditioned evidence.
 // Legacy outcomes, all unknown/player/background alternatives and AT bounds stay.

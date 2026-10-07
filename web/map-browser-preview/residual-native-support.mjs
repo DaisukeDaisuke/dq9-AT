@@ -1,4 +1,4 @@
-import {compareCameraBodyAlternative} from '../monster-camera-body-alternative.mjs?v=mode1-source-reuse-20261007-0435';
+import {compareCameraBodyAlternative} from '../monster-camera-body-alternative.mjs?v=rgb-dependency-optin-20261007-0943';
 import {attachNativeBodySupport} from '../monster-native-support.mjs?v=camera-relative-hint-20261007-0546';
 
 // Cooperative work budget for the entire frozen set, including preparation.

@@ -1,7 +1,7 @@
 // Conditional extent evidence for the exact already-tested native proposal.
 // No extra renders, component merging, score threshold, identity decision or
 // conversion of the composite's final alpha into a visible-body mask.
-import {nativeProjectedBodyEnvelope} from './monster-native-body-placement.mjs?v=fair-source-yield-20261007-0247';
+import {nativeProjectedBodyEnvelope} from './monster-native-body-placement.mjs?v=rgb-dependency-optin-20261007-0943';
 const WIDTH=256,HEIGHT=192,PIXELS=WIDTH*HEIGHT;
 const unsupported=reason=>({ready:false,empty:null,roi:null,pixels:null,reason});
 const validMask=mask=>mask instanceof Uint8Array&&mask.length===PIXELS&&mask.every(x=>x===0||x===1);
@@ -50,6 +50,12 @@ function collectNativeBodyExtentEvidence({projected,rendered,alignment,compariso
   if(!ownershipSummary.valid){evidence.bodyColorOwnership=unsupported('Accepted mixed-body final-color ownership mask unavailable; composite alpha is not substituted');return evidence;}
   if(ownershipSummary.outsideCoverage){evidence.bodyColorOwnership=unsupported('Body color ownership outside accepted source footprint');return evidence;}
   evidence.bodyColorOwnership={...ownershipSummary.extent,kind:'source-final-body-color-ownership',completeWithinAdmittedRendererSubset:true,allVisibleContributionsCapturedWithinComposition:false,mayOmitEarlierBodyContributionThroughLaterMapBlending:true,observedBodyCertified:false,scope:rendered.sourceAcceptedSubset==='conditional-source-map-actor-MSE-body'?'Pixels whose final accepted source color writer is the body. Earlier body contribution through later map/MSE blending is not reconstructed by this ownership mask.':'Pixels whose final accepted source color writer is the body. Earlier body contribution through later map blending is not reconstructed by this ownership mask.'};
+  // Separate opt-in computation evidence. Never relabel final-writer ownership,
+  // infer actual ROM color change, or feed this diagnostic into body/AT gates.
+  if(Object.hasOwn(rendered,'bodyColorDependency')){
+   const d=rendered.bodyColorDependency,display=summarize(d?.displayMask,alignment,comparisonValidMask,rendered.sourceCoverage),preFog=summarize(d?.preFogMask,alignment,comparisonValidMask,rendered.sourceCoverage);
+   evidence.bodyColorDependency=d?.kind==='source-fixed-trace-body-rgb555-dependency-v1'&&d.diagnosticOnly===true&&d.fixedAcceptanceTrace===true&&d.integerBlendAndFogQuantizationIncluded===true&&display.valid&&!display.outsideCoverage&&preFog.valid&&!preFog.outsideCoverage?{...display.extent,kind:d.kind,preFogRGB6Extent:preFog.extent,diagnosticOnly:true,completeWithinAdmittedComposition:true,allDisplayedRGBDependenciesCapturedWithinFixedTrace:true,fixedAcceptanceTrace:true,integerBlendAndFogQuantizationIncluded:true,bodyRGBInputDomain:[0,63],bodyRemovalDifferenceCertified:false,actualROMColorChangeCertified:false,indirectDepthOcclusionInfluenceIncluded:false,observedBodyCertified:false,completeBodyCertified:false,identityCertified:false,minimumProvenATCalls:0,scope:'Exact displayed RGB dependence on independently variable accepted body RGB6 inputs in this fixed source alpha/depth/ID/order/fog trace. Not actual ROM-color contrast, removal of body geometry, observed membership, current state or complete-body evidence.'}:unsupported('Requested fixed-trace RGB dependency diagnostic unavailable or malformed');
+  }
  }else evidence.bodyColorOwnership=unsupported('Renderer subset has no admitted body-color ownership contract');
  return evidence;
 }

@@ -1,12 +1,12 @@
 import{prepareBoundMode1NativeScene}from'./monster-native-mode1-source.mjs?v=native-scene-link-20261007-0354';
-import{renderInitialIntegerFogSteps}from'./map-browser-preview/integer-static-fog.mjs?v=native-scene-link-20261007-0354';
+import{renderInitialIntegerFogSteps}from'./map-browser-preview/integer-static-fog.mjs?v=rgb-dependency-optin-20261007-0943';
 import{captureMode1MseSceneHypothesis}from'./map-browser-preview/mode1-mse-scene-hypothesis.mjs?v=native-scene-link-20261007-0354';
-import {adoptNativeBodyDestinationHandoff} from './map-browser-preview/native-body-destination-handoff.mjs?v=mode1-source-reuse-20261007-0435';
+import {adoptNativeBodyDestinationHandoff} from './map-browser-preview/native-body-destination-handoff.mjs?v=rgb-dependency-optin-20261007-0943';
 // Frame-local lazy source destination reconstruction. No final-RGB inversion,
 // transport parameters, camera search, state search or persistent pixel cache.
 import {loadAutomaticScene} from './map-browser-preview/automatic-scene.mjs';
-import {prepareMode2InverseModel,renderMode2InverseSourceSteps} from './map-browser-preview/mode2-inverse-render.mjs?v=fair-source-yield-20261007-0247';
-import {bindNativeBodyDestination} from './monster-native-scene-composition.mjs?v=footprint-rgb-20261006-2328';
+import {prepareMode2InverseModel,renderMode2InverseSourceSteps} from './map-browser-preview/mode2-inverse-render.mjs?v=rgb-dependency-optin-20261007-0943';
+import {bindNativeBodyDestination} from './monster-native-scene-composition.mjs?v=rgb-dependency-optin-20261007-0943';
 const need=(v,m)=>{if(!v)throw Error(m);};
 const task=()=>globalThis.scheduler?.yield?globalThis.scheduler.yield():new Promise(resolve=>setTimeout(resolve,0));
 /** Advance only this provider's frozen source image. A budget yield is pending,

@@ -1,7 +1,7 @@
 import{createSourcePreparationCache}from'./integer/source-preparation-cache.mjs?v=automatic-playback-source-cache-20261006-1100';
 import {readNaturalBodySceneOrder} from '../monster-native-scene-order.mjs?v=native-continuation-20261006-0333';
 import {readArm9Overlay} from './rom-overlay.mjs';
-import {prepareNativeBodyDestination} from '../monster-native-scene-composition.mjs?v=footprint-rgb-20261006-2328';
+import {prepareNativeBodyDestination} from '../monster-native-scene-composition.mjs?v=rgb-dependency-optin-20261007-0943';
 import {readRomMapScreenEffectPlan} from './rom-map-screen-effect-plan.mjs';
 import {runSourceStepsSync,runSourceStepsAsync} from './cooperative-source-work.mjs?v=fair-source-yield-20261007-0247';
 /* SPDX-License-Identifier: GPL-2.0-or-later

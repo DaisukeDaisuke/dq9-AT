@@ -1,6 +1,6 @@
 import {prepareVideoReplaySources} from '../video-replay-source-preparation.mjs?v=replay-source-20261007-0743';
 import {copyObservationBundleForAT} from './observation-bundle-ownership.mjs?v=gap-owned-observation-20261006-1340';
-import {compareCameraBodyAlternative} from '../monster-camera-body-alternative.mjs?v=mode1-source-reuse-20261007-0435';
+import {compareCameraBodyAlternative} from '../monster-camera-body-alternative.mjs?v=rgb-dependency-optin-20261007-0943';
 import {trackingSightingMapProvenance} from './map-hypothesis-provenance.mjs';
 import {deriveCameraBodySingletonAlternatives,appendCameraBodySingletonAlternatives} from '../tracking-camera-body-alternative.mjs?v=proposal-support-20261006-1152';
 import {assertProductionATInput} from '../production-at-input-policy.mjs?v=production-inputs-20261006-1320';
