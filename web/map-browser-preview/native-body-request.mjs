@@ -1,6 +1,6 @@
-import{projectNativeOriginalProposalSupport}from'../monster-native-proposal-support.mjs?v=native-scene-link-20261007-0354';
+import{projectNativeOriginalProposalSupport}from'../monster-native-proposal-support.mjs?v=mode1-source-reuse-20261007-0435';
 import{projectMode1MseSceneHypothesis}from'./mode1-mse-scene-hypothesis.mjs?v=native-scene-link-20261007-0354';
-import{projectNativeBodyDestinationHandoff}from'./native-body-destination-handoff.mjs?v=fair-source-yield-20261007-0247';
+import{projectNativeBodyDestinationHandoff}from'./native-body-destination-handoff.mjs?v=mode1-source-reuse-20261007-0435';
 // Transport projection only. The owner keeps full original search/comparison
 // evidence. Include every branch/model; never rank/filter from a transport limit.
 const pick=(value,keys)=>value?Object.fromEntries(keys.map(k=>[k,value[k]])):null;

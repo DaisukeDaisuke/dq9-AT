@@ -45,7 +45,7 @@ export function createAutomaticBackgroundRenderer({initialize=createNativeIntege
     if(!counts||counts.covered!==counts.known||counts.unknownTranslucentDestinationFragments!==0)throw Error('GPU translucent destination/native color remains unresolved');
    } catch(error) {if(error.name==='AbortError')throw error;reason='GPU source/compute rejected: '+error.message;result=null;}
   }
-  if(!result){check();const at=now();try {result=await renderCpu(project,rom,record,active,camera,{applyFog:true,screenEffectPhase,isCurrent:()=>mine===generation&&isCurrent(),onSegment:fallbackWork.onSegment,onYieldTiming:fallbackWork.onYieldTiming});}finally {timings.cpuFallbackMs=phase('cpu-fallback',at);}}
+  if(!result){check();const at=now();try {result=await renderCpu(project,rom,record,active,camera,{applyFog:true,screenEffectPhase,retainBodyDestination:true,isCurrent:()=>mine===generation&&isCurrent(),onSegment:fallbackWork.onSegment,onYieldTiming:fallbackWork.onYieldTiming});}finally {timings.cpuFallbackMs=phase('cpu-fallback',at);}}
   check();return {...result,diagnostics:{...result.diagnostics,automaticBackgroundPipeline:{...pipeline(),status:result?.ready===false?'unsupported':'completed'}}};
   }catch(error){try{Object.defineProperty(error,'automaticBackgroundPipeline',{value:{...pipeline(),backend:reason?'cpu-fallback':'unresolved-or-interrupted',completedResult:false,status:error?.name==='AbortError'?'cancelled':'threw',errorName:error?.name??'Error'},configurable:true});}catch{/* Optional diagnostics never replace the original error. */}throw error;}
 

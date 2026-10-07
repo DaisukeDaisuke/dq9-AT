@@ -1,7 +1,7 @@
 import{prepareBoundMode1NativeScene}from'./monster-native-mode1-source.mjs?v=native-scene-link-20261007-0354';
 import{renderInitialIntegerFogSteps}from'./map-browser-preview/integer-static-fog.mjs?v=native-scene-link-20261007-0354';
 import{captureMode1MseSceneHypothesis}from'./map-browser-preview/mode1-mse-scene-hypothesis.mjs?v=native-scene-link-20261007-0354';
-import {adoptNativeBodyDestinationHandoff} from './map-browser-preview/native-body-destination-handoff.mjs?v=fair-source-yield-20261007-0247';
+import {adoptNativeBodyDestinationHandoff} from './map-browser-preview/native-body-destination-handoff.mjs?v=mode1-source-reuse-20261007-0435';
 // Frame-local lazy source destination reconstruction. No final-RGB inversion,
 // transport parameters, camera search, state search or persistent pixel cache.
 import {loadAutomaticScene} from './map-browser-preview/automatic-scene.mjs';
@@ -43,13 +43,13 @@ export function createNativeBodyDestinationProvider({project,rom,record,branch,f
     if(phase==='validate'){
      need(mode1SceneRequested||branch.sourceEnvironment?.mode2Inputs&&branch.sourceEnvironment.fogApplied===true,'Source scene destination currently admits explicit frozen mode2 only; retained mode1/MSE alternatives remain unknown');
      need(frame.recordKey===record.key&&branch.recordKey===record.key,'Source scene destination record differs');
-     state.phase=mode1SceneRequested?'prepare-mode1-source':reuseEnvelope?'adopt-background-handoff':'load-automatic-scene';
+     state.phase=reuseEnvelope?'adopt-background-handoff':mode1SceneRequested?'prepare-mode1-source':'load-automatic-scene';
     }else if(phase==='prepare-mode1-source'){
      state.mode1=prepareBoundMode1NativeScene({project,rom,record,branch,frame});state.steps=renderInitialIntegerFogSteps(project,rom,record,state.mode1.active,state.mode1.camera,{applyFog:true,screenEffectPhase:state.mode1.phase,retainBodyDestination:true});state.phase='render-source';
     }else if(phase==='adopt-background-handoff'){
      const adopted=await adoptNativeBodyDestinationHandoff({envelope:reuseEnvelope,project,rom,record,branch,frame,assertCurrent:check});check();reuseEnvelope=null;
      if(adopted.ready){state.destination=adopted.destination;state.phase='complete';boundary='validated-background-source-reuse';}
-     else{state.phase='load-automatic-scene';boundary='unverified-handoff-source-reconstruction-fallback';}
+     else{state.phase=mode1SceneRequested?'prepare-mode1-source':'load-automatic-scene';boundary='unverified-handoff-source-reconstruction-fallback';}
     }else if(phase==='load-automatic-scene'){
      state.automatic=loadAutomaticScene(project,record);state.phase='prepare-mode2-model';
     }else if(phase==='prepare-mode2-model'){

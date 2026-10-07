@@ -1,7 +1,7 @@
 import {createReadyMode1GeometryFallback,hasNonzeroSourceXZBounds} from './ready-mode1-geometry-fallback.mjs?v=fair-source-yield-20261007-0247';
 import {createAutomaticMonsterMapGate} from './automatic-monster-map-eligibility.mjs?v=monster-map-cpu-20261006-1005';
 import{createAmbiguousMarkerBackgroundBudget}from'./physical-marker-background-hypotheses.mjs?v=native-continuation-20261006-0333';
-import{buildBackgroundBranchSupport}from'./background-branch-support.mjs?v=native-scene-link-20261007-0354';
+import{buildBackgroundBranchSupport}from'./background-branch-support.mjs?v=mode1-source-reuse-20261007-0435';
 import{createSourceAnchorSceneInference}from'./source-anchor-scene-inference.mjs?v=fair-source-yield-20261007-0247';
 import{resolveFrozenInferencePixels}from'./capture-analysis-pixels.mjs?v=native-continuation-20261006-0333';
 import{createMode1BackgroundInference}from'./automatic-mode1-background.mjs?v=fair-source-yield-20261007-0247';
@@ -16,7 +16,7 @@ import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=re
 import {automaticPreviewCamera} from './automatic-preview-camera.mjs';
 import {automaticBillboardScenes} from './automatic-billboard-scene.mjs';
 import {applyAutomaticMaterialEnvironment} from './automatic-material-environment.mjs?v=native-body-20261006-0212';
-import {createAutomaticBackgroundRenderer} from './automatic-background-renderer.mjs?v=native-scene-link-20261007-0354';
+import {createAutomaticBackgroundRenderer} from './automatic-background-renderer.mjs?v=mode1-source-reuse-20261007-0435';
 import {readRomMapScreenEffectPlan} from './rom-map-screen-effect-plan.mjs';
 import {prepareDrawPackets} from './draw-packets.mjs';
 import {rasterizePreviewPackets} from './cpu-preview.mjs';

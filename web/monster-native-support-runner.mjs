@@ -1,4 +1,4 @@
-import{originalComponentMaskSHA256}from'./original-component-mask-binding.mjs?v=native-scene-link-20261007-0354';
+import{originalComponentMaskSHA256}from'./original-component-mask-binding.mjs?v=mode1-source-reuse-20261007-0435';
 import{sourcePixelComparisonBinding}from'./native-pixel-comparison-binding.mjs?v=native-scene-link-20261007-0354';
 import{verifyNativeAnimationSource,readNativeRate0Animation}from'./monster-native-animation.mjs?v=native-phase-20261006-2300';
 import{verifyNativeJointBlendSource}from'./monster-native-joint-blend.mjs?v=native-phase-20261006-2300';
@@ -13,7 +13,7 @@ import{readInitialMode1RasterProfile}from'./map-browser-preview/integer/initial-
 import{prepareNativeBodyProgram,projectNativeBodyPolygons,rasterNativeBody}from'./monster-native-body.mjs?v=fair-source-yield-20261007-0247';
 import{createNativeBodyBillboardState}from'./monster-native-billboard.mjs?v=native-body-20261006-0212';
 import{bindFrozenBodyProjection}from'./monster-perspective-input.mjs?v=native-body-20261006-0212';
-import{comparePerspectiveBody}from'./monster-perspective-body.mjs?v=native-scene-link-20261007-0354';
+import{comparePerspectiveBody}from'./monster-perspective-body.mjs?v=mode1-source-reuse-20261007-0435';
 const need=(v,m)=>{if(!v)throw Error(m);},clone=v=>structuredClone(v),pause=()=>new Promise(r=>setTimeout(r,0));
 const frameKey=f=>JSON.stringify(['romSHA256','recordKey','sourceId','sourceEpoch','timelineSegment','mediaTime','fullRGBA_SHA256'].map(k=>f?.[k]));
 /** Bind this cache to one already verified ROM/project/catalog epoch. Destroy it
