@@ -332,3 +332,11 @@ Previous record: [2026-10-06](DAILY_REPORT_20261006.md).
 最終奇数frameは前frameの繰返しではなく別の保存pairを使う。整数化後の値を単純補間して小数phaseにも対応したとは扱わず、新しいnative kindでは範囲内整数phaseだけを受理し、小数phase・範囲外phaseを拒否する。fractional探索側はこの未対応を1件として保持し、整数のstored/body/joint-plan経路は使用できる。
 
 親のfull buildは97本の直接Node検査を含め成功、既存6WASMはbyte同一、native explicit-phase・phase-runner・action-domainの実ROM検査も成功した。browser側import/cache更新は30modules・43edgesで整合させた。この変更は未対応だった読み取り経路の拡張であり、動画の現在action/phase、身体同定、AT値や全自動化完成を証明しない。既存の固定動画比較へ新decoderを遡及適用せず、次の比較は別版として行う。
+
+
+## 2026-10-07 12:25 UTC 合成 body の比較契約修正
+
+- 実装済み composer が返す厳密な raster subtype を、比較側が拒否していた不整合を最小修正。isolated/composed の2種類だけを受理し、元の画像・camera・ROM・SSE・所有画素・競合候補・ATの各条件は保持。
+- 保存済み実動画 532.846 秒の4候補を親が再比較。消えたのは誤った raster 不一致理由だけで、数値・他の理由・入力は全て同一。z064a の全画面差改善 607848、元component改善1634393、isolated改善114550 は不変。所有155画素かつ全寄与未捕捉のため依然 unknown、AT証明増分0。
+- 合成/単体双方の負例92条件を含む既存 full build 97 Node 実行が通過。6 WASM は前 main とbyte一致。ブラウザでの新しい通し動作・全入力対応は未検証。
+- 通常姿勢の有限744セルは測定済み。集計harnessの失敗は原本を保持し、別差分で修正後に集計通過。部分的な正スコアはモンスターの内訳特定・全自動完成を意味しない。現在、同じ入力とスコア条件で placement ROI だけを変える手動診断を継続中。

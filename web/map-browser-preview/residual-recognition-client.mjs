@@ -6,7 +6,7 @@ function retainRequestEnvelope(value,p,status,entryAtMs=null,workerEnvelope=null
  value.classificationEnvelopeTiming=structuredClone({...(workerEnvelope??value.classificationEnvelopeTiming??{}),main:{...p.classificationEnvelope,status,...(Number.isFinite(entryAtMs)?{replyHandlerEntryAtMs:entryAtMs,requestToReplyHandlerEntryElapsedMs:classificationDuration(p.classificationEnvelope.requestStartedAtMs,entryAtMs)}:{}),snapshotElapsedMs:classificationDuration(p.classificationEnvelope.requestStartedAtMs)}});
  }catch{}return value;}
 import {nativeBodyRequestPayload} from './native-body-request.mjs?v=rgb-dependency-optin-20261007-0943';
-import {RESIDUAL_NATIVE_BODY_BUDGET,RESIDUAL_NATIVE_BODY_OPTIONAL_WAIT_MS} from './residual-native-support.mjs?v=rgb-dependency-optin-20261007-0943';
+import {RESIDUAL_NATIVE_BODY_BUDGET,RESIDUAL_NATIVE_BODY_OPTIONAL_WAIT_MS} from './residual-native-support.mjs?v=composed-body-contract-20261007-1224';
 // First-sweep progress is work coverage, never a recognition/pose certificate.
 const continuationProgress=result=>{
  const value=result?.continuation;
