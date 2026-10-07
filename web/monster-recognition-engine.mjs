@@ -1,4 +1,4 @@
-import {classificationNow,addClassificationDuration,classificationClock} from './monster-classification-timing.mjs?v=registration-timing-20261007-0020';
+import {classificationNow,addClassificationDuration,classificationClock} from './monster-classification-timing.mjs?v=envelope-yield-20261007-0140';
 import {fitRenderedBody} from './monster-body-support.mjs?v=proposal-support-20261006-1152';
 import {proposeDenseComplement,validateDenseComplement} from './monster-dense-proposals.mjs';
 import {readMonsterAssets} from './monster-assets.mjs';
@@ -6,7 +6,7 @@ import {readNSBCA,sampleMatrices} from './monster-animation.mjs?v=stored-pivot-s
 import {MonsterTemplateBank} from './monster-template-bank.mjs';
 import {MonsterCPU} from './monster-cpu-template.mjs';
 import {getFieldExclusion,normalizeSceneContext} from './monster-field-mask.mjs';
-import {cosineSimilarity,DINO_SPEC,dinoSpec} from './monster-dinov2.mjs?v=registration-timing-20261007-0020';
+import {cosineSimilarity,DINO_SPEC,dinoSpec} from './monster-dinov2.mjs?v=envelope-yield-20261007-0140';
 import {validateRGBA,colorDescriptor,descriptorDistance,cropRGBA} from './monster-roi-descriptor.mjs';
 const need=(v,m)=>{if(!v)throw Error(m);};const clone=x=>structuredClone(x);const yieldTask=()=>new Promise(r=>setTimeout(r,0));
 // Hash of the reviewed renderer/decoder dependency manifest. Bump when those sources change.

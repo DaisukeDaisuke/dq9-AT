@@ -1,12 +1,12 @@
-import {createReadyMode1GeometryFallback,hasNonzeroSourceXZBounds} from './ready-mode1-geometry-fallback.mjs?v=ready-mode1-geometry-20261006-1907';
+import {createReadyMode1GeometryFallback,hasNonzeroSourceXZBounds} from './ready-mode1-geometry-fallback.mjs?v=envelope-yield-20261007-0140';
 import {createAutomaticMonsterMapGate} from './automatic-monster-map-eligibility.mjs?v=monster-map-cpu-20261006-1005';
 import{createAmbiguousMarkerBackgroundBudget}from'./physical-marker-background-hypotheses.mjs?v=native-continuation-20261006-0333';
-import{buildBackgroundBranchSupport}from'./background-branch-support.mjs?v=footprint-rgb-20261006-2328';
-import{createSourceAnchorSceneInference}from'./source-anchor-scene-inference.mjs?v=camera-loss-evidence-20261006-1205';
+import{buildBackgroundBranchSupport}from'./background-branch-support.mjs?v=envelope-yield-20261007-0140';
+import{createSourceAnchorSceneInference}from'./source-anchor-scene-inference.mjs?v=envelope-yield-20261007-0140';
 import{resolveFrozenInferencePixels}from'./capture-analysis-pixels.mjs?v=native-continuation-20261006-0333';
-import{createMode1BackgroundInference}from'./automatic-mode1-background.mjs?v=camera-loss-evidence-20261006-1205';
-import {Mode2VideoContinuity} from './mode2-video-continuity.mjs?v=footprint-rgb-20261006-2328';
-import {inferAutomaticMode2Background} from './automatic-mode2-background.mjs?v=footprint-rgb-20261006-2328';
+import{createMode1BackgroundInference}from'./automatic-mode1-background.mjs?v=envelope-yield-20261007-0140';
+import {Mode2VideoContinuity} from './mode2-video-continuity.mjs?v=envelope-yield-20261007-0140';
+import {inferAutomaticMode2Background} from './automatic-mode2-background.mjs?v=envelope-yield-20261007-0140';
 import {readRomMapCameraInputGate} from './rom-camera-input-gate.mjs';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
 import {CandidateMapMatcher} from '../map-disambiguation.mjs?v=registration-timing-20261007-0020';
@@ -16,7 +16,7 @@ import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=re
 import {automaticPreviewCamera} from './automatic-preview-camera.mjs';
 import {automaticBillboardScenes} from './automatic-billboard-scene.mjs';
 import {applyAutomaticMaterialEnvironment} from './automatic-material-environment.mjs?v=native-body-20261006-0212';
-import {createAutomaticBackgroundRenderer} from './automatic-background-renderer.mjs?v=footprint-rgb-20261006-2328';
+import {createAutomaticBackgroundRenderer} from './automatic-background-renderer.mjs?v=envelope-yield-20261007-0140';
 import {readRomMapScreenEffectPlan} from './rom-map-screen-effect-plan.mjs';
 import {prepareDrawPackets} from './draw-packets.mjs';
 import {rasterizePreviewPackets} from './cpu-preview.mjs';
@@ -64,6 +64,7 @@ export class AutomaticVideoAlignment {
       check();const alternatives=inferred?.floorAlternatives??[inferred??await this.backgroundRenderer.render({project,rom,record,active,camera:initialCamera,screenEffectPhase:phase,isCurrent})],baseRow={...row};
       for(let branchIndex=0;branchIndex<alternatives.length;branchIndex++){
        check();const integer=alternatives[branchIndex],candidateRow=branchIndex===0?row:{...baseRow};if(branchIndex)rows.push(candidateRow);
+       if(integer.diagnostics?.automaticBackgroundPipeline)candidateRow.renderPipeline=integer.diagnostics.automaticBackgroundPipeline;
        if(alternatives.length>1){candidateRow.floorAlternativeIndex=branchIndex;candidateRow.floorAlternativeSummary=inferred.floorAlternativeSummary;}
        let point=initialPoint,camera=initialCamera;
        if(inferenceKind){const detail=integer.diagnostics?.[inferenceKind==='mode2'?'automaticMode2':'automaticMode1']??integer.diagnostics;candidateRow[inferenceKind+'Inference']=integer.diagnostics;candidateRow.geometryRefinement=detail?.geometryRefinement;candidateRow.floorContinuation=detail?.floorContinuation;candidateRow.floorBranch=detail?.floorBranch;if(!integer.ready){candidateRow.unsupported=integer.reason;continue;}point=integer.point;camera=integer.camera;candidateRow.originalWorld=baseRow.world;candidateRow.originalYFx=yFx;candidateRow.world={xFx:point.xFx,zFx:point.zFx};candidateRow.yFx=point.yFx;}
@@ -74,7 +75,7 @@ export class AutomaticVideoAlignment {
        if(!inferenceKind&&integer.ready&&active.environmentApplied&&active.environment.mode===1&&active.environment.colorReady===true&&active.environment.fogReady&&comparison.state==='alignment-unresolved'&&hasNonzeroSourceXZBounds(position))readyMode1Queue.push({record,scene,reference,position,markerHypothesis,yFx,heading,phase,initialCamera,environment:active.environment,originalRowIndex:rows.indexOf(candidateRow)});
        const score=Number.isFinite(comparison.alignment.residual)?comparison.alignment.residual:Infinity;if(!selected||(candidateRow.accepted&&!selected.row.accepted)||(candidateRow.accepted===selected.row.accepted&&score<selected.score))selected={row:candidateRow,score,record,scene,reference,position,heading,image,camera,integer,unresolved,point};
       }
-     }catch(error){if(error.name==='AbortError')throw error;row.unsupported=error.message;}
+     }catch(error){if(error.automaticBackgroundPipeline)row.renderPipeline=error.automaticBackgroundPipeline;if(error.name==='AbortError')throw error;row.unsupported=error.message;}
      await onProgress({phase:'background',message:'背景候補を自動比較中: '+rows.length+'件',completed:rows.length});
     }
    }
@@ -86,7 +87,7 @@ export class AutomaticVideoAlignment {
    let analysis,analysisError=null;try{analysis=await analysisInput();check();}catch(error){if(error.name==='AbortError')throw error;analysisError=error.message;}
    for(const group of groups){check();const {record,scene,reference,position,markerHypothesis,yFx,heading}=group,results=analysisError?group.requests.map(r=>({...r,ready:false,reason:analysisError,diagnostics:{kind:'ready-mode1-analysis-unavailable',currentEnvironmentCertified:false,minimumProvenATCalls:0}})):await this.readyMode1Geometry.render({project,rom,record,automatic:scene.automatic,position,yFx,heading,camera:group.initialCamera,environment:group.environment,requests:group.requests,video,analysisVideo:analysis.image,analysisEvidence:analysis.evidence,floors:scene.floors,isCurrent,onProgress});check();
     for(const result of results){const original=rows[result.originalRowIndex],row={...original,accepted:false,geometryFallback:{kind:'ready-mode1-after-all-first-pass-failed',originalRowIndex:result.originalRowIndex,originalState:original.state,originalFailurePreserved:true},geometryRefinement:result.diagnostics.geometryRefinement,geometryFallbackDiagnostics:result.diagnostics};rows.push(row);
-     if(!result.ready){Object.assign(row,{state:'geometry-refinement-unresolved',unsupported:result.reason,integerReady:false,rendererReason:result.reason,backend:null,alignment:null,stats:null,renderPipeline:null});continue;}
+     if(!result.ready){Object.assign(row,{state:'geometry-refinement-unresolved',unsupported:result.reason,integerReady:false,rendererReason:result.reason,backend:null,alignment:null,stats:null,renderPipeline:result.diagnostics?.renderPipeline??null});continue;}
      const {image,comparison,point,camera}=result;Object.assign(row,{originalWorld:original.world,originalYFx:original.yFx,world:{xFx:point.xFx,zFx:point.zFx},yFx:point.yFx,phase:result.phase,backend:image.backend??image.diagnostics?.backend??'source-integer-static-mode1',alignment:comparison.alignment,stats:comparison.stats,state:comparison.state,accepted:['conditional-residual-hypotheses','no-residual-split'].includes(comparison.state),renderPipeline:image.diagnostics?.automaticBackgroundPipeline,integerReady:true,rendererReason:null,floorContinuation:result.diagnostics.floorContinuation,floorBranch:result.diagnostics.floorBranch});
      if(row.accepted)passingBackgrounds.push({row,rowIndex:rows.indexOf(row),point,camera,comparison,image});
      const score=Number.isFinite(comparison.alignment.residual)?comparison.alignment.residual:Infinity;if(!selected||(row.accepted&&!selected.row.accepted)||(row.accepted===selected.row.accepted&&score<selected.score))selected={row,score,record,scene,reference,position,markerHypothesis,heading,image,camera,integer:image,unresolved:[],point};

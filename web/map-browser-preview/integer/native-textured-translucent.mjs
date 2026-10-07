@@ -1,4 +1,4 @@
-import {runSourceStepsSync} from '../cooperative-source-work.mjs?v=native-body-20261006-0212';
+import {runSourceStepsSync} from '../cooperative-source-work.mjs?v=envelope-yield-20261007-0140';
 import{isSupportedMode1ColorEnvironment}from'../automatic-material-environment.mjs?v=native-body-20261006-0212';
 /* SPDX-License-Identifier: GPL-2.0-or-later
  * Bounded A3I5/I4/A5I3 mode0 connection, derived from DeSmuME contributors,535f676:

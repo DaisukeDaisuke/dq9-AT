@@ -1,4 +1,4 @@
-import{runSourceStepsSync,runSourceStepsAsync}from'./cooperative-source-work.mjs?v=native-body-20261006-0212';
+import{runSourceStepsSync,runSourceStepsAsync}from'./cooperative-source-work.mjs?v=envelope-yield-20261007-0140';
 import{isSupportedMode1ColorEnvironment,isSupportedMode1FogEnvironment}from'./automatic-material-environment.mjs?v=native-body-20261006-0212';
 import{readRomMapScreenEffectPlan}from'./rom-map-screen-effect-plan.mjs';
 import{readInitialMseLayers,buildMsePolygonInputs}from'./native-mse-initial-preview.mjs?v=mode2-mse-20261005-0909';
@@ -7,16 +7,16 @@ import{createSourcePreparationCache}from'./integer/source-preparation-cache.mjs?
  * Source geometry/material preparation only. No CPU pixel render is required
  * before GPU submission. Existing ROM profiles and rejection ledgers remain.
  */
-import{readInitialMode1RasterProfile,collectInitialMode1IntegerInputs,collectInitialMode1IntegerInputsSteps}from'./integer/initial-mode1-integer-preview.mjs?v=automatic-playback-source-cache-20261006-1100';
+import{readInitialMode1RasterProfile,collectInitialMode1IntegerInputs,collectInitialMode1IntegerInputsSteps}from'./integer/initial-mode1-integer-preview.mjs?v=envelope-yield-20261007-0140';
 import{collectStaticOpaqueDepthInputs}from'./integer/static-opaque-depth.mjs?v=native-raster-reuse-20261006-0637';
-import{classifyStaticBinaryDepthInputs}from'./integer/static-binary-depth.mjs?v=automatic-playback-source-cache-20261006-1100';
-import{collectStaticMode0ColorInputs}from'./integer/static-mode0-rgb.mjs?v=automatic-playback-source-cache-20261006-1100';
-import{collectInitialMode1TexturedTranslucentInputs,collectInitialMode1TexturedTranslucentInputsSteps,collectInitialMode2TexturedTranslucentInputs,readInitialTexturedBlendProfile}from'./integer/native-textured-translucent.mjs?v=enc-motion-at-20261006-1156';
+import{classifyStaticBinaryDepthInputs}from'./integer/static-binary-depth.mjs?v=envelope-yield-20261007-0140';
+import{collectStaticMode0ColorInputs}from'./integer/static-mode0-rgb.mjs?v=envelope-yield-20261007-0140';
+import{collectInitialMode1TexturedTranslucentInputs,collectInitialMode1TexturedTranslucentInputsSteps,collectInitialMode2TexturedTranslucentInputs,readInitialTexturedBlendProfile}from'./integer/native-textured-translucent.mjs?v=envelope-yield-20261007-0140';
 import{automaticBillboardScenes}from'./automatic-billboard-scene.mjs';
 import{buildAutomaticNormalMatrices,applyMode2ToAutomaticScenes}from'./integer/mode2-lighting-adapter.mjs?v=field-stream-20261005-1108';
 import{projectNativePrimitiveFx}from'./integer/native-primitive-inputs.mjs';
 import{clipNativePositionPolygon}from'./integer/native-position-clip.mjs?v=native-raster-reuse-20261006-0637';
-import{prepareNativeIntegerCompute,prepareNativeIntegerComputeSteps}from'./native-integer-compute-input.mjs?v=enc-motion-at-20261006-1156';
+import{prepareNativeIntegerCompute,prepareNativeIntegerComputeSteps}from'./native-integer-compute-input.mjs?v=envelope-yield-20261007-0140';
 const need=(x,m)=>{if(!x)throw Error(m);};
 function* completeVisibleInventorySteps(inventory,translucent){
  need(inventory.unresolved.every(x=>typeof x.reason==='string'&&x.reason.startsWith('name-char3-A / ')),'Unresolved source drawable instance');

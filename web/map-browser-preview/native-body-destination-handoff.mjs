@@ -4,7 +4,7 @@ import {bindNativeBodyDestination} from '../monster-native-scene-composition.mjs
 import {readNaturalBodySceneOrder} from '../monster-native-scene-order.mjs';
 import {readFrozenMonsterFog} from '../monster-source-fog.mjs';
 import {readArm9Overlay} from './rom-overlay.mjs';
-import {readInitialTexturedBlendProfile} from './integer/native-textured-translucent.mjs?v=enc-motion-at-20261006-1156';
+import {readInitialTexturedBlendProfile} from './integer/native-textured-translucent.mjs?v=envelope-yield-20261007-0140';
 const N=49152,need=(v,m)=>{if(!v)throw Error(m);},same=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const sha=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');
 const frameKeys=['romSHA256','recordKey','sourceId','sourceEpoch','timelineSegment','mediaTime','fullRGBA_SHA256'];

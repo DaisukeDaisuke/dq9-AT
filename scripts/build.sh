@@ -175,3 +175,6 @@ node scripts/test-native-phase-continuation.mjs
 node scripts/test-native-phase-evidence.mjs
 
 node scripts/test-monster-classification-timing.mjs
+
+node scripts/test-classification-request-envelope.mjs
+node scripts/test-background-cooperative-timing.mjs

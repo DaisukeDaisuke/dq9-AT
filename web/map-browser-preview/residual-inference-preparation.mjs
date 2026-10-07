@@ -1,5 +1,5 @@
 import {inferenceProfile,ensureInferenceAssets} from '../monster-inference-assets.mjs';
-import {probeDinoWebGPU} from '../monster-dinov2.mjs?v=registration-timing-20261007-0020';
+import {probeDinoWebGPU} from '../monster-dinov2.mjs?v=envelope-yield-20261007-0140';
 const mounted=new WeakMap();
 // Downloads are reachable only from the explicit button/prepare action. Ordinary
 // playback and backend selection keep their existing cached-only behavior.

@@ -1,13 +1,21 @@
+import {classificationNow,classificationDuration,classificationClock} from './monster-classification-timing.mjs?v=envelope-yield-20261007-0140';
+// Attached only to the existing appearance result/error. The snapshot precedes
+// postMessage; no unmeasured send time is reported as worker computation.
+function retainWorkerEnvelope(value,m,started,engineStarted,engineEnded,engineReturned,status){try{
+ if(m.type!=='recognize'||!value||typeof value!=='object')return;
+ const beforePost=classificationNow();value.classificationEnvelopeTiming={worker:{schema:'classification-worker-envelope-v1',clock:classificationClock('recognition-worker'),requestId:typeof m.id==='string'?m.id.slice(0,128):null,romEpoch:Number.isSafeInteger(m.romEpoch)?m.romEpoch:null,status,handlerStartedAtMs:started,handlerToEngineCallElapsedMs:classificationDuration(started,engineStarted),engineCallElapsedMs:classificationDuration(engineStarted,engineEnded),engineCallReturned:engineReturned,engineCallUnfinishedElapsedMs:engineReturned?null:classificationDuration(engineStarted,beforePost),engineReturnToBeforePostElapsedMs:classificationDuration(engineEnded,beforePost),handlerToBeforePostElapsedMs:classificationDuration(started,beforePost),finalSnapshotBeforePost:status==='completed',measurementKind:'async-elapsed-not-CPU-time',scope:'Same worker realm only; engine-call span includes engine validation, result assembly and cleanup. PostMessage itself and cross-realm delivery are outside this final snapshot.'}};
+ }catch{}}
 import {NitroFS} from './vendor/nitro-fs.mjs';
 import {parseMonsterAssetCatalog} from './monster-assets.mjs';
 import {MonsterGeometry} from './monster-geometry.mjs?v=field-stream-20261005-1108';
-import {createDinoFeatureBackend} from './monster-dinov2.mjs?v=registration-timing-20261007-0020';
+import {createDinoFeatureBackend} from './monster-dinov2.mjs?v=envelope-yield-20261007-0140';
 import {createFeatureBankStore} from './monster-feature-cache.mjs';
-import {recognizeROI,supplementEnemyROIs,prepareDinoPoseBank,createRenderedReferenceCache} from './monster-recognition-engine.mjs?v=registration-timing-20261007-0020';
+import {recognizeROI,supplementEnemyROIs,prepareDinoPoseBank,createRenderedReferenceCache} from './monster-recognition-engine.mjs?v=envelope-yield-20261007-0140';
 let state=null,epoch=0,active=null,nativeBodyModulePromise=null;
-const loadNativeBodyModule=()=>nativeBodyModulePromise??=import('./monster-native-auto-support.mjs?v=footprint-rgb-20261006-2328').catch(error=>{nativeBodyModulePromise=null;throw error;});
+const loadNativeBodyModule=()=>nativeBodyModulePromise??=import('./monster-native-auto-support.mjs?v=envelope-yield-20261007-0140').catch(error=>{nativeBodyModulePromise=null;throw error;});
 const post=message=>self.postMessage(message);
 self.onmessage=async({data:m})=>{
+ const handlerStarted=classificationNow();let engineStarted=null,engineEnded=null,engineReturned=false;
  if(!m||!['load','recognize','supplement','prepare','native-body-support','cancel'].includes(m.type))return;
  if(m.type==='cancel'){
   // Targeted optional expiry must never abort a newer appearance request.
@@ -49,8 +57,8 @@ self.onmessage=async({data:m})=>{
    if(active!==controller||mine!==epoch||controller.signal.aborted)return;active=null;post({type:'result',id,romEpoch,result});return;
   }
   const getDino=async({backend:provider='wasm',onAcquisitionTiming}={})=>{if(runState.dino?.spec.backend===provider){try{onAcquisitionTiming?.({reused:true});}catch{}return runState.dino;}const previous=runState.dino,previousStage=stage;runState.dino=null;runState.renderedReferenceCache.clear();stage='backend-dispose';await previous?.dispose();stage=`${provider}-init`;const backend=await createDinoFeatureBackend({backend:provider,signal:controller.signal,onProgress});if(active!==controller||mine!==epoch){await backend.dispose();throw new DOMException('中止','AbortError');}runState.dino=backend;stage=previousStage;try{onAcquisitionTiming?.({reused:false});}catch{}return backend;};
-  const outcome=await (m.type==='prepare'?prepareDinoPoseBank:m.type==='supplement'?supplementEnemyROIs:recognizeROI)(m,{...runState,cacheQuery:true,cachePartialPoses:true,signal:controller.signal,onProgress,getDino});
+  engineStarted=classificationNow();const outcome=await (m.type==='prepare'?prepareDinoPoseBank:m.type==='supplement'?supplementEnemyROIs:recognizeROI)(m,{...runState,cacheQuery:true,cachePartialPoses:true,signal:controller.signal,onProgress,getDino});engineReturned=true;engineEnded=classificationNow();
   const result=m.type==='prepare'?{prepared:true,timings:outcome.timings,cacheWarnings:outcome.cacheWarnings}:outcome;
-  if(active!==controller||mine!==epoch)return;active=null;post({type:'result',id,romEpoch,result});
- }catch(error){if(error?.name==='AbortError'||requestEpoch!==epoch||(controller&&active!==controller))return;const detail={name:typeof error?.name==='string'?error.name:'Error',message:String(error?.message??error),stack:typeof error?.stack==='string'?error.stack:'',stage:typeof error?.stage==='string'&&error.stage?error.stage:stage};post({type:'error',id,romEpoch,message:detail.message,error:detail});}
+  if(active!==controller||mine!==epoch)return;active=null;retainWorkerEnvelope(result,m,handlerStarted,engineStarted,engineEnded,engineReturned,'completed');post({type:'result',id,romEpoch,result});
+ }catch(error){if(error?.name==='AbortError'||requestEpoch!==epoch||(controller&&active!==controller))return;const detail={name:typeof error?.name==='string'?error.name:'Error',message:String(error?.message??error),stack:typeof error?.stack==='string'?error.stack:'',stage:typeof error?.stage==='string'&&error.stage?error.stage:stage};const failure={type:'error',id,romEpoch,message:detail.message,error:detail};retainWorkerEnvelope(failure,m,handlerStarted,engineStarted,engineEnded,engineReturned,'failed');post(failure);}
 };

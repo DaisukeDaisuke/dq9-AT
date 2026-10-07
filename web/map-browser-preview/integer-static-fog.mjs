@@ -1,5 +1,5 @@
 import{prepareMode1NativeBodyDestination}from'./mode1-native-body-destination.mjs?v=footprint-rgb-20261006-2328';
-import {runSourceStepsSync,runSourceStepsAsync} from './cooperative-source-work.mjs?v=native-body-20261006-0212';
+import {runSourceStepsSync,runSourceStepsAsync} from './cooperative-source-work.mjs?v=envelope-yield-20261007-0140';
 import{isSupportedMode1ColorEnvironment,isSupportedMode1FogEnvironment}from'./automatic-material-environment.mjs?v=native-body-20261006-0212';
 import {readRomMapScreenEffectPlan} from './rom-map-screen-effect-plan.mjs';
 import {readInitialMseLayers,buildMsePolygonInputs} from './native-mse-initial-preview.mjs';
@@ -8,11 +8,11 @@ import {readInitialMseLayers,buildMsePolygonInputs} from './native-mse-initial-p
  * DeSmuME535f676-derived modules retain their notices; see INTEGER_RENDER_NOTICE.md.
  * No previewDepth/RGBA8888 is converted into native raster input.
  */
-import {readInitialMode1RasterProfile,renderInitialMode1IntegerPreviewSteps} from './integer/initial-mode1-integer-preview.mjs?v=automatic-playback-source-cache-20261006-1100';
-import {readInitialTexturedBlendProfile,collectInitialMode1TexturedTranslucentInputsSteps,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgbSteps} from './integer/native-textured-translucent.mjs?v=enc-motion-at-20261006-1156';
+import {readInitialMode1RasterProfile,renderInitialMode1IntegerPreviewSteps} from './integer/initial-mode1-integer-preview.mjs?v=envelope-yield-20261007-0140';
+import {readInitialTexturedBlendProfile,collectInitialMode1TexturedTranslucentInputsSteps,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgbSteps} from './integer/native-textured-translucent.mjs?v=envelope-yield-20261007-0140';
 import {projectNativePrimitiveFx} from './integer/native-primitive-inputs.mjs';
 import {clipNativePositionPolygon} from './integer/native-position-clip.mjs?v=native-raster-reuse-20261006-0637';
-import {presentStaticRgb} from './integer/static-mode0-rgb.mjs?v=automatic-playback-source-cache-20261006-1100';
+import {presentStaticRgb} from './integer/static-mode0-rgb.mjs?v=envelope-yield-20261007-0140';
 import {buildFogTable,applyFogPixel} from './native/fog-raster.mjs';
 import {readInitialMode1ClearProfile} from './integer/native-initial-clear.mjs?v=native-body-20261006-0212';
 

@@ -1,11 +1,11 @@
-import {recordClassificationTiming} from '../monster-classification-timing.mjs?v=registration-timing-20261007-0020';
+import {recordClassificationTiming} from '../monster-classification-timing.mjs?v=envelope-yield-20261007-0140';
 import {VideoPipelineTiming} from './video-pipeline-timing.mjs?v=map-input-owned-preparation-20261006-1408';
 import {PausedLocalVideoStartup} from './paused-local-video-startup.mjs?v=paused-video-prime-20261006-1240';
 import{measuredClassificationView}from'./measured-classification-view.mjs?v=continuity-yield-local-evidence-20261006-1458';
 import{VideoTrackingReplay,waitForMeasuredReplayFrame}from'./video-tracking-replay.mjs?v=continuity-yield-local-evidence-20261006-1458';
 import{videoTrackingFrameKey}from'./video-patch-correspondence.mjs?v=continuity-yield-local-evidence-20261006-1458';
 import{createVideoTrackingCapture}from'./video-tracking-capture.mjs?v=camera-loss-evidence-20261006-1205';
-import {captureResidualNativeBackground} from './residual-recognition-job.mjs?v=registration-timing-20261007-0020';
+import {captureResidualNativeBackground} from './residual-recognition-job.mjs?v=envelope-yield-20261007-0140';
 import {createFrozenAnalysisCapture} from './capture-analysis-pixels.mjs?v=native-continuation-20261006-0333';
 import {completedClassificationSnapshot,renderClassificationSummary,createDeferredEvidenceJSON} from './completed-classification-display.mjs?v=geometry-display-20261006-1112';
 import {captureAutomaticResidualPolicy,automaticResidualPolicyKey,selectAutomaticResiduals,withAutomaticResidualSelection} from './automatic-residual-policy.mjs?v=video-inference-20261005-1232';
@@ -179,8 +179,8 @@ export function mountMapVideoComparison({renderBackground,derivePlayerBackground
  async function renderCurrent(){
   if(!frozen)return;const targetFrameId=frozen.id,capture=analysisCapture,romIdentity=getRomIdentity(),getInferencePixels=async({isCurrent=()=>true}={})=>{if(!capture)return{ready:false,reason:'Decoded analysis capture unavailable'};const result=await capture.get({isCurrent:()=>capture===analysisCapture&&targetFrameId===frozen?.id&&romIdentity===getRomIdentity()&&isCurrent()});if(targetFrameId===frozen?.id)frozen.evidence.analysisInput=result.evidence;return result;};
   if($('automatic-map-name').checked){
-   const backgroundFinished=timing.beginElapsed('map-background-elapsed',frozen.evidence);try{const frameEvidence=frozen.evidence,timingGeneration=timing.observerGeneration,measureMapInput=(phase,run,detail)=>timingGeneration===timing.observerGeneration?timing.mapInputSync(frameEvidence,phase,detail,run):run();await deriveMapBackground({automaticRecognition:frozen.continuous,sourceImage:frozen.sourceImage,layout:frozen.evidence.layout,frameEvidence,frameId:frozen.id,getInferencePixels,measureMapInput});}
-   catch(e){if(frozen?.id!==targetFrameId)return;invalidate('同フレームのマップ候補が未解決です。',{resetTracking:true});$('name-input-status').textContent=e.message;}finally{backgroundFinished();}
+   const frameEvidence=frozen.evidence,timingGeneration=timing.observerGeneration,backgroundFinished=timing.beginElapsed('map-background-elapsed',frameEvidence);try{const measureMapInput=(phase,run,detail)=>timingGeneration===timing.observerGeneration?timing.mapInputSync(frameEvidence,phase,detail,run):run();await deriveMapBackground({automaticRecognition:frozen.continuous,sourceImage:frozen.sourceImage,layout:frozen.evidence.layout,frameEvidence,frameId:frozen.id,getInferencePixels,measureMapInput});}
+   catch(e){try{const retained=timeline.frames.find(r=>r.frameSerial===targetFrameId);if(e.automaticBackgroundPipeline&&retained?.romSHA256===romIdentity&&videoObservationFrameKey(retained.stamp)===videoObservationFrameKey(frameEvidence))timeline.update(targetFrameId,{backgroundRenderPipelineFailure:structuredClone(e.automaticBackgroundPipeline)});}catch{/* Optional cancelled-branch timing cannot alter observation. */}if(frozen?.id!==targetFrameId)return;invalidate('同フレームのマップ候補が未解決です。',{resetTracking:true});$('name-input-status').textContent=e.message;}finally{backgroundFinished();}
   }else if($('automatic-player').checked){
    $('marker-status').textContent='同じ上画面のマーカーとROM地図を照合しています…';
    try{await derivePlayerBackground({sourceImage:frozen.sourceImage,layout:frozen.evidence.layout,frameEvidence:frozen.evidence,frameId:frozen.id,getInferencePixels});}

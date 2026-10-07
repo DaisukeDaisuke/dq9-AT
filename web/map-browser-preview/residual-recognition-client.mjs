@@ -1,4 +1,11 @@
-import {nativeBodyRequestPayload} from './native-body-request.mjs?v=footprint-rgb-20261006-2328';
+import {classificationNow,classificationDuration,classificationClock,addClassificationDuration} from '../monster-classification-timing.mjs?v=envelope-yield-20261007-0140';
+// One bounded aggregate per appearance request. No progress history, timers or
+// cross-realm clock subtraction. This never catches the caller's callback.
+function retainRequestEnvelope(value,p,status,entryAtMs=null,workerEnvelope=null){try{
+ if(!p?.classificationEnvelope||!value||typeof value!=='object')return value;
+ value.classificationEnvelopeTiming=structuredClone({...(workerEnvelope??value.classificationEnvelopeTiming??{}),main:{...p.classificationEnvelope,status,...(Number.isFinite(entryAtMs)?{replyHandlerEntryAtMs:entryAtMs,requestToReplyHandlerEntryElapsedMs:classificationDuration(p.classificationEnvelope.requestStartedAtMs,entryAtMs)}:{}),snapshotElapsedMs:classificationDuration(p.classificationEnvelope.requestStartedAtMs)}});
+ }catch{}return value;}
+import {nativeBodyRequestPayload} from './native-body-request.mjs?v=envelope-yield-20261007-0140';
 import {RESIDUAL_NATIVE_BODY_BUDGET,RESIDUAL_NATIVE_BODY_OPTIONAL_WAIT_MS} from './residual-native-support.mjs?v=native-phase-20261006-2300';
 // First-sweep progress is work coverage, never a recognition/pose certificate.
 const continuationProgress=result=>{
@@ -57,16 +64,18 @@ export class ResidualRecognitionClient{
   this.stopNativeContinuation();
   const p=this.pending;this.pending=null;
   if(p)this.worker?.postMessage({type:'cancel',id:p.id,romEpoch:p.romEpoch});
-  if(p){this.clearPendingTimers(p);p.reject(new DOMException('領域比較を中止しました','AbortError'));}
+  if(p){this.clearPendingTimers(p);p.reject(retainRequestEnvelope(new DOMException('領域比較を中止しました','AbortError'),p,'cancelled'));}
  }
  release(){this.cancel();this.forgetWorker();}
  request(message,transfer=[],onProgress=()=>{},options={}){
+  const requestStartedAtMs=classificationNow();
   if(!options.nativeContinuation)this.cancel(false);
   return new Promise((resolve,reject)=>{
    // A queued background callback must never preempt any foreground request.
    if(options.nativeContinuation&&(this.nativeContinuation!==options.nativeContinuation||this.pending)){reject(continuationAbort());return;}
    if(!this.worker){reject(Error('現在のNDSを読み込み直してください'));return;}
    const id='residual-compare-'+(++this.sequence),worker=this.worker,p={id,romEpoch:this.epoch,type:message.type,resolve,reject,onProgress,nativeContinuation:options.nativeContinuation};this.pending=p;
+   if(p.type==='recognize')p.classificationEnvelope={schema:'classification-request-envelope-v1',clock:classificationClock('window-main-thread'),requestId:id,romEpoch:this.epoch,requestStartedAtMs,postMessageSyncMs:null,progressHandlerCount:0,progressHandlerSyncMs:0,progressHandlerThrows:0,measurementKind:'async-elapsed-except-explicit-sync-spans',scope:'Request posting, delivery and callback intervals overlap worker elapsed; do not align clock origins or sum as CPU.'};
    const check=()=>{if(this.pending!==p)return;try{options.assertCurrent?.();}catch{this.cancel();}};
    if(options.assertCurrent)p.currentGuard=setInterval(check,50);
    if(options.optionalWaitMs){
@@ -81,25 +90,26 @@ export class ResidualRecognitionClient{
      p.reject(Error('Native body optional response wait expired; cancellation requested, unfinished support remains unknown'));
     },options.optionalWaitMs);
    }
-   try{check();if(this.pending===p)worker.postMessage({...message,id,romEpoch:this.epoch},transfer);}catch(error){if(this.pending===p)this.pending=null;this.clearPendingTimers(p);reject(error);}
+   try{check();if(this.pending===p){const postStarted=classificationNow();try{worker.postMessage({...message,id,romEpoch:this.epoch},transfer);}finally{try{if(p.classificationEnvelope)p.classificationEnvelope.postMessageSyncMs=classificationDuration(postStarted);}catch{}}}}catch(error){if(this.pending===p)this.pending=null;this.clearPendingTimers(p);reject(retainRequestEnvelope(error,p,'post-failed'));}
   });
  }
  async load(rom,sha){
   this.stopNativeContinuation();
   if(this.romSHA===sha&&this.catalog&&this.worker)return this.catalog;
-  this.release();const worker=new Worker(new URL('../monster-recognition-worker.mjs?v=registration-timing-20261007-0020',import.meta.url),{type:'module'});this.worker=worker;this.epoch++;
+  this.release();const worker=new Worker(new URL('../monster-recognition-worker.mjs?v=envelope-yield-20261007-0140',import.meta.url),{type:'module'});this.worker=worker;this.epoch++;
   worker.onmessage=({data:m})=>{
+   const handlerEntryAtMs=classificationNow();
    if(this.worker!==worker)return;
    if(m.romEpoch===this.epoch&&['cancelled','error','result'].includes(m.type))this.clearNativeDeadline(m.id);
    if(m.type==='cancelled')return;
    const p=this.pending;if(!p||m.id!==p.id||m.romEpoch!==this.epoch)return;
-   if(m.type==='progress'){p.onProgress(m);return;}
+   if(m.type==='progress'){const started=classificationNow();let returned=false;retainRequestEnvelope(m,p,'progress-before-callback');try{p.onProgress(m);returned=true;}finally{try{if(p.classificationEnvelope){p.classificationEnvelope.progressHandlerCount++;if(!returned)p.classificationEnvelope.progressHandlerThrows++;addClassificationDuration(p.classificationEnvelope,'progressHandlerSyncMs',started);}}catch{}}return;}
    if(m.type==='error'||m.type==='loaded'||m.type==='result'){
     this.pending=null;this.clearPendingTimers(p);
-    if(m.type==='error')p.reject(Error(m.message));else p.resolve(m);
+    if(m.type==='error')p.reject(retainRequestEnvelope(Error(m.message),p,'worker-error',handlerEntryAtMs,m.classificationEnvelopeTiming));else{if(m.type==='result')retainRequestEnvelope(m.result,p,'completed',handlerEntryAtMs);p.resolve(m);}
    }
   };
-  worker.onerror=e=>{if(this.worker!==worker)return;const p=this.pending;this.pending=null;this.clearPendingTimers(p);this.forgetWorker(worker);p?.reject(Error(e.message||'既存ROM比較Workerでエラー'));};
+  worker.onerror=e=>{if(this.worker!==worker)return;const p=this.pending;this.pending=null;this.clearPendingTimers(p);this.forgetWorker(worker);p?.reject(retainRequestEnvelope(Error(e.message||'既存ROM比較Workerでエラー'),p,'worker-error-event'));};
   const copy=rom.slice(),answer=await this.request({type:'load',rom:copy.buffer},[copy.buffer]);
   if(this.worker!==worker)throw new DOMException('NDS読込みが中止されました','AbortError');
   this.catalog=new Map(answer.catalog.map(r=>[r.modelId,r.speciesCandidates]));this.romSHA=sha;return this.catalog;

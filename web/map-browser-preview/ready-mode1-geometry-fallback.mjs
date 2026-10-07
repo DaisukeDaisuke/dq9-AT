@@ -1,6 +1,6 @@
 // Delayed source-bounded geometry only. The caller first exhausts the unchanged
 // centroid pass and must not call this when any original candidate is accepted.
-import {prepareMode1PhotometricBasis,renderMode1PhotometricBasis} from './mode1-photometric-inverse.mjs?v=enc-motion-at-20261006-1156';
+import {prepareMode1PhotometricBasis,renderMode1PhotometricBasis} from './mode1-photometric-inverse.mjs?v=envelope-yield-20261007-0140';
 import {refineGeometryPosition} from './geometry-position-refinement.mjs?v=geometry-display-20261006-1112';
 import {floorHeightsAtXZ} from './rom-floor-candidates.mjs';
 import {continueRefinedFloorAlternatives} from './refined-floor-alternatives.mjs?v=source-scene-20261006-0040';
@@ -34,10 +34,10 @@ export function createReadyMode1GeometryFallback({backgroundRenderer}){
     try{
      const active=applyMode1OrdinaryHypothesis(project,record,automaticBillboardScenes(project,automatic,refinedCamera.viewFx),environment);
      if(!active.environmentApplied)throw Error('Original ready mode1 material replay unavailable');
-     const image=await backgroundRenderer.render({project,rom,record,active,camera:refinedCamera,screenEffectPhase:request.phase,isCurrent});check();if(!image.ready)throw Error(image.reason??'Refined native render unavailable');
+     const image=await backgroundRenderer.render({project,rom,record,active,camera:refinedCamera,screenEffectPhase:request.phase,isCurrent});if(image.diagnostics?.automaticBackgroundPipeline)detail.renderPipeline=image.diagnostics.automaticBackgroundPipeline;check();if(!image.ready)throw Error(image.reason??'Refined native render unavailable');
      const comparison=compareMapBackground(image,video,{applyTranslation:true});detail.nativeForward={state:comparison.state,alignment:comparison.alignment,stats:comparison.stats};detail.originalEnvironmentRetained=true;
      results.push({originalRowIndex:request.originalRowIndex,phase:copy(request.phase),ready:true,image,comparison,point,camera:refinedCamera,diagnostics:detail});
-    }catch(error){if(error.name==='AbortError')throw error;results.push({originalRowIndex:request.originalRowIndex,phase:copy(request.phase),ready:false,reason:error.message,diagnostics:detail});}
+    }catch(error){if(error.automaticBackgroundPipeline)detail.renderPipeline=error.automaticBackgroundPipeline;if(error.name==='AbortError')throw error;results.push({originalRowIndex:request.originalRowIndex,phase:copy(request.phase),ready:false,reason:error.message,diagnostics:detail});}
    }
    return results;
   }catch(error){if(error.name==='AbortError')throw error;return unavailable(error.message);}

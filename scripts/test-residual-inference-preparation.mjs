@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import vm from 'node:vm';
+import {classificationNow,classificationDuration,classificationClock} from '../web/monster-classification-timing.mjs';
 import {createHash,webcrypto} from 'node:crypto';
 import {mountResidualInferencePreparation} from '../web/map-browser-preview/residual-inference-preparation.mjs';
 import {INFERENCE_ASSETS,INFERENCE_CACHE_NAME,inferenceProfile,createInferenceAssetCache} from '../web/monster-inference-assets.mjs';
@@ -94,7 +95,7 @@ const createBackend=options=>{inits++;return createDinoFeatureBackend({...option
 const posts=[],fixtureState={romEpoch:1,renderedReferenceCache:{clear(){}}};
 const workerURL=new URL('../web/monster-recognition-worker.mjs',import.meta.url);
 const workerSource=(await readFile(workerURL,'utf8')).replace(/^import .*;\n/gm,'').replaceAll('import.meta.url',JSON.stringify(workerURL.href));
-const context=vm.createContext({self:{postMessage:m=>posts.push(m)},AbortController,DOMException,performance,createDinoFeatureBackend:createBackend,fixtureState,recognizeROI:async(m,{getDino})=>{const dino=await getDino({backend:m.inferenceBackend});const vector=await dino.encode({width:1,height:1,rgba:new Uint8ClampedArray([20,30,40,255])});return{syntheticOnly:true,vectorLength:vector.length,backend:dino.spec.backend};}});
+const context=vm.createContext({classificationNow,classificationDuration,classificationClock,self:{postMessage:m=>posts.push(m)},AbortController,DOMException,performance,createDinoFeatureBackend:createBackend,fixtureState,recognizeROI:async(m,{getDino})=>{const dino=await getDino({backend:m.inferenceBackend});const vector=await dino.encode({width:1,height:1,rgba:new Uint8ClampedArray([20,30,40,255])});return{syntheticOnly:true,vectorLength:vector.length,backend:dino.spec.backend};}});
 vm.runInContext(workerSource+'\nstate=fixtureState;',context,{filename:workerURL.pathname});
 await context.self.onmessage({data:{type:'recognize',id:'cold',romEpoch:1,inferenceBackend:'wasm'}});eq(posts.at(-1).type,'error');eq(posts.at(-1).error.stage,'wasm-init');matches(posts.at(-1).message,/推論用ファイルの準備が必要です/);eq(inits,1);eq(runs,0);eq(downloads.length,0);eq(fixtureState.dino,null);
 const prepared=mount({ensure:store.ensure,probe:()=>{throw Error('CPU must not probe GPU');}});eq(await prepared.api.prepareCPU(),true);eq(downloads,assets.slice(0,4).map(a=>a.url));

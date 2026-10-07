@@ -1,11 +1,11 @@
 import{prepareBoundMode1NativeScene}from'./monster-native-mode1-source.mjs?v=native-yaw-mse-20261006-2101';
-import{renderInitialIntegerFogSteps}from'./map-browser-preview/integer-static-fog.mjs?v=footprint-rgb-20261006-2328';
+import{renderInitialIntegerFogSteps}from'./map-browser-preview/integer-static-fog.mjs?v=envelope-yield-20261007-0140';
 import{captureMode1MseSceneHypothesis}from'./map-browser-preview/mode1-mse-scene-hypothesis.mjs?v=native-yaw-mse-20261006-2101';
-import {adoptNativeBodyDestinationHandoff} from './map-browser-preview/native-body-destination-handoff.mjs?v=footprint-rgb-20261006-2328';
+import {adoptNativeBodyDestinationHandoff} from './map-browser-preview/native-body-destination-handoff.mjs?v=envelope-yield-20261007-0140';
 // Frame-local lazy source destination reconstruction. No final-RGB inversion,
 // transport parameters, camera search, state search or persistent pixel cache.
 import {loadAutomaticScene} from './map-browser-preview/automatic-scene.mjs';
-import {prepareMode2InverseModel,renderMode2InverseSourceSteps} from './map-browser-preview/mode2-inverse-render.mjs?v=footprint-rgb-20261006-2328';
+import {prepareMode2InverseModel,renderMode2InverseSourceSteps} from './map-browser-preview/mode2-inverse-render.mjs?v=envelope-yield-20261007-0140';
 import {bindNativeBodyDestination} from './monster-native-scene-composition.mjs?v=footprint-rgb-20261006-2328';
 const need=(v,m)=>{if(!v)throw Error(m);};
 const task=()=>globalThis.scheduler?.yield?globalThis.scheduler.yield():new Promise(resolve=>setTimeout(resolve,0));

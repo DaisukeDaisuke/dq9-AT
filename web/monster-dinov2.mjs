@@ -1,4 +1,4 @@
-import {classificationNow,addClassificationDuration,classificationClock} from './monster-classification-timing.mjs?v=registration-timing-20261007-0020';
+import {classificationNow,addClassificationDuration,classificationClock} from './monster-classification-timing.mjs?v=envelope-yield-20261007-0140';
 import {readCachedInferenceAsset,inferenceProfile} from './monster-inference-assets.mjs';
 import {validateRGBA} from './monster-roi-descriptor.mjs';
 export const DINO_SPEC=Object.freeze({backend:'wasm',precision:'int8',modelRevision:'c2bb04a51fab207c420665f1946016107bffc701',modelId:'model',modelSHA256:'3afdc8bc63b50558d6e5770f5b799bb82455c2311183a2de43803f343a29d917',runtime:'1.23.2',provider:'wasm',size:224,components:384,maxTemplates:64,maxMs:90000,preprocessor:'alpha-tight-template/full-ROI-gray128-bicubic224-v1'});

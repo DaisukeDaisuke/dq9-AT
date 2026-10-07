@@ -17,9 +17,9 @@ import {readNativeTextureResource} from './map-browser-preview/native/native-tex
 import {unpackNativeTexture} from './map-browser-preview/native/native-texture-unpack.mjs';
 import {makeNativeTrig} from './map-browser-preview/native/native-map-records.mjs';
 import {readNSBCA} from './monster-animation.mjs?v=stored-pivot-source-20261006-0800';
-import {rasterizeNativeMode0Rgb,presentStaticRgb} from './map-browser-preview/integer/static-mode0-rgb.mjs?v=automatic-playback-source-cache-20261006-1100';
+import {rasterizeNativeMode0Rgb,presentStaticRgb} from './map-browser-preview/integer/static-mode0-rgb.mjs?v=envelope-yield-20261007-0140';
 import {compositeBinaryAwareDepth} from './map-browser-preview/integer/native-binary-alpha.mjs?v=automatic-playback-source-cache-20261006-1100';
-import {rasterizeNativeTexturedTranslucentMode0} from './map-browser-preview/integer/native-textured-translucent.mjs?v=enc-motion-at-20261006-1156';
+import {rasterizeNativeTexturedTranslucentMode0} from './map-browser-preview/integer/native-textured-translucent.mjs?v=envelope-yield-20261007-0140';
 import {applyFogPixel} from './map-browser-preview/native/fog-raster.mjs';
 const need=(v,m)=>{if(!v)throw Error(m);},i32=v=>Number(BigInt.asIntN(32,BigInt(v))),signed=(x,n)=>(x<<(32-n))>>(32-n);
 const identity=()=>[4096,0,0,0,0,4096,0,0,0,0,4096,0,0,0,0,4096];
