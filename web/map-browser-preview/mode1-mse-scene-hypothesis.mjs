@@ -14,3 +14,10 @@ export function validateMode1MseSceneHypothesis(h,plan){
  if(h.applied!==!omitted||h.gatesEvaluated!==false)throw Error('Mode1 MSE render assumptions differ');
  return{omitted,constructor};
 }
+
+// Source-only transport whitelist. The plan and phase are kept exact, including
+// malformed values, so the existing ROM reconstruction validator rejects them.
+// Never copy unrelated runtime buffers or normalize a dynamic phase to null.
+export function projectMode1MseSceneHypothesis(h){
+ return{kind:h?.kind,effectPlan:clone(h?.effectPlan),requestedPhase:clone(h?.requestedPhase),applied:h?.applied,gatesEvaluated:h?.gatesEvaluated,currentPhaseProven:h?.currentPhaseProven,currentEnableFadeOffsetsObserved:h?.currentEnableFadeOffsetsObserved,unknownAlternatives:clone(h?.unknownAlternatives)};
+}

@@ -1,4 +1,4 @@
-import{captureMode1MseSceneHypothesis}from'./mode1-mse-scene-hypothesis.mjs?v=native-yaw-mse-20261006-2101';
+import{captureMode1MseSceneHypothesis}from'./mode1-mse-scene-hypothesis.mjs?v=native-scene-link-20261007-0354';
 import{beginNativeBodyDestinationHandoffFrame,retainNativeBodyDestinationHandoff}from'./native-body-destination-handoff.mjs?v=fair-source-yield-20261007-0247';
 /* Branch-specific and common residual support in original frozen gameplay pixel
  * coordinates. No branch is selected as true and no different observations are

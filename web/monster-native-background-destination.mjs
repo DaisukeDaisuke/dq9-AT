@@ -1,6 +1,6 @@
-import{prepareBoundMode1NativeScene}from'./monster-native-mode1-source.mjs?v=native-yaw-mse-20261006-2101';
-import{renderInitialIntegerFogSteps}from'./map-browser-preview/integer-static-fog.mjs?v=fair-source-yield-20261007-0247';
-import{captureMode1MseSceneHypothesis}from'./map-browser-preview/mode1-mse-scene-hypothesis.mjs?v=native-yaw-mse-20261006-2101';
+import{prepareBoundMode1NativeScene}from'./monster-native-mode1-source.mjs?v=native-scene-link-20261007-0354';
+import{renderInitialIntegerFogSteps}from'./map-browser-preview/integer-static-fog.mjs?v=native-scene-link-20261007-0354';
+import{captureMode1MseSceneHypothesis}from'./map-browser-preview/mode1-mse-scene-hypothesis.mjs?v=native-scene-link-20261007-0354';
 import {adoptNativeBodyDestinationHandoff} from './map-browser-preview/native-body-destination-handoff.mjs?v=fair-source-yield-20261007-0247';
 // Frame-local lazy source destination reconstruction. No final-RGB inversion,
 // transport parameters, camera search, state search or persistent pixel cache.

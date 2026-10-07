@@ -1,0 +1,9 @@
+import assert from 'node:assert/strict';
+import {originalComponentMaskSHA256} from '../web/original-component-mask-binding.mjs';
+import {packBackgroundMask} from '../web/map-browser-preview/background-branch-support.mjs';
+const a=new Uint8Array(49152),b=new Uint8Array(49152);for(const i of[257,258,259,513,769,770,771])a[i]=1;for(const i of[257,258,259,515,769,770,771])b[i]=1;
+const componentSSE=mask=>mask.reduce((n,v)=>n+(v?3*10*10:0),0);assert.equal(componentSSE(a),2100);assert.equal(componentSSE(b),2100);
+const support=mask=>({kind:'original-residual-component-support-v1',ready:true,mask}),x=await originalComponentMaskSHA256(support(a)),y=await originalComponentMaskSHA256(support(b));assert.match(x,/^[a-f0-9]{64}$/);assert.notEqual(x,y);assert.equal(a.reduce((x,y)=>x+y),b.reduce((x,y)=>x+y));
+const packed={kind:'original-residual-component-support-v1',ready:true,packedMask:packBackgroundMask(a)};assert.equal(await originalComponentMaskSHA256(packed),x);assert.equal(await originalComponentMaskSHA256(packed),x);packed.packedMask=packBackgroundMask(b);assert.equal(await originalComponentMaskSHA256(packed),y);packed.packedMask.width=255;assert.equal(await originalComponentMaskSHA256(packed),null);assert.equal(await originalComponentMaskSHA256({kind:packed.kind,ready:true}),null);
+const raw=support(a);assert.equal(await originalComponentMaskSHA256(raw),x);a[513]=0;a[515]=1;assert.equal(await originalComponentMaskSHA256(raw),y);a[0]=2;assert.equal(await originalComponentMaskSHA256(raw),null);
+console.log(JSON.stringify({passed:true,equalCountsDifferentMasksHaveDifferentHashes:true,sameBoundingROIAndSame2100SSEForDistinctConnectedMasks:true,rawMutableMasksRehashed:true,stablePackedDataReused:true,changedPackedDataRehashed:true,invalidAndHistoricalMissingMasksStayUnknown:true}));

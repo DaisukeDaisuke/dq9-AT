@@ -1,3 +1,4 @@
+import{sourcePixelComparisonBinding}from'../web/native-pixel-comparison-binding.mjs';
 import{retainIsolatedBodySupport}from'../web/monster-native-isolated-support.mjs';
 // Deterministic scheduler regression with explicit renderer/source doubles.
 // Actual-ROM decoding and fixed-frame rendering are tested separately.
@@ -5,7 +6,7 @@ import fs from 'node:fs';import assert from 'node:assert/strict';import crypto f
 import {nativeWorkIdentity} from '../web/monster-native-work-identity.mjs';
 const state={reads:0,extraDecodes:0,fail:false,setupFail:false,calls:[]},bytes=new Uint8Array(49152*4),sha=crypto.createHash('sha256').update(bytes).digest('hex'),video={sourceId:'fixed',sourceEpoch:1,timelineSegment:1,mediaTime:1,fullRGBA_SHA256:'a'.repeat(64)},romSHA256='b'.repeat(64);
 const actionCondition={sourceMode:2,priorTransitions:[0],currentActionKnown:false,componentLookupResolved:false};
-const deps={retainIsolatedBodySupport,
+const deps={sourcePixelComparisonBinding,retainIsolatedBodySupport,
  createNativeBodyDestinationProvider:()=>({dispose(){}}),nativeWorkIdentity,
  readNativeReferencePose:()=>({ready:false}),openMapRom:()=>({sdk:{},nfs:{readFile:()=>new Uint8Array(1)}}),buildRomMapCatalog:()=>({maps:[{key:'r',mapId:1}]}),planRomScene:()=>({}),loadRomFloorInstances:()=>[],readArm9Overlay:()=>new Uint8Array(1),unpackBranchRGBA:b=>b,unpackBackgroundMask:b=>b,
  readMonsterAssets:(_n,_c,cs)=>({models:cs.map(c=>({...c,model:{bytes:new Uint8Array(1)},animations:['stand.nsbca','run.nsbca','appear.nsbca','attack0a.nsbca'].map(name=>({name,bytes:new Uint8Array(1)})),speciesCandidates:[{monsterId:1}]}))}),readNSBCA:()=>({numFrames:1}),sampleMatrices:()=>[],decodeEncounterStream:()=>({}),readNaturalMonsterScaleRule:()=>({}),naturalMonsterScaleCandidates:()=>{if(state.setupFail)throw Error('ordinary setup unavailable');return{creatorDefault:{actorScaleFx:4096},candidates:[]};},sourceFloorPlanes:()=>({unsupported:[]}),preparePerspectiveBody:()=>({}),placeCompleteBodyOnFloors:()=>({placements:[{position:[0,0,0],planeKey:'p',faces:[]}],unresolved:[]}),

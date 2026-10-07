@@ -1,7 +1,7 @@
 import{prepareNativeBodyDestination,packNativeMapTranslucentFragments}from'../monster-native-scene-composition.mjs?v=footprint-rgb-20261006-2328';
 import{readNaturalBodyMseOrder}from'../monster-native-mse-order.mjs?v=native-yaw-mse-20261006-2101';
 import{readArm9Overlay}from'./rom-overlay.mjs';
-import{captureMode1MseSceneHypothesis,validateMode1MseSceneHypothesis}from'./mode1-mse-scene-hypothesis.mjs?v=native-yaw-mse-20261006-2101';
+import{captureMode1MseSceneHypothesis,validateMode1MseSceneHypothesis}from'./mode1-mse-scene-hypothesis.mjs?v=native-scene-link-20261007-0354';
 export function prepareMode1NativeBodyDestination({project,rom,rgb,inventory,translucent,compositeInputs,participants,controls,diagnostics}){
  const hypothesis=captureMode1MseSceneHypothesis(diagnostics),selection=validateMode1MseSceneHypothesis(hypothesis,diagnostics.screenEffect.plan),order=readNaturalBodyMseOrder({sdk:project.sdk,fieldOverlay:readArm9Overlay(rom,17)}),mapIds=new Set(translucent.polygons.map(p=>p.index)),mapParticipants=participants.filter(p=>mapIds.has(p.index)),effectParticipants=participants.filter(p=>!mapIds.has(p.index));
  const effectSources=new Map(compositeInputs.polygons.filter(p=>!mapIds.has(p.index)).map(p=>[p.index,p]));

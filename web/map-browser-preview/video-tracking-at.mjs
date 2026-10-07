@@ -1,5 +1,5 @@
 import {copyObservationBundleForAT} from './observation-bundle-ownership.mjs?v=gap-owned-observation-20261006-1340';
-import {compareCameraBodyAlternative} from '../monster-camera-body-alternative.mjs?v=camera-body-alternative-20261006-1430';
+import {compareCameraBodyAlternative} from '../monster-camera-body-alternative.mjs?v=native-scene-link-20261007-0354';
 import {trackingSightingMapProvenance} from './map-hypothesis-provenance.mjs';
 import {deriveCameraBodySingletonAlternatives,appendCameraBodySingletonAlternatives} from '../tracking-camera-body-alternative.mjs?v=proposal-support-20261006-1152';
 import {assertProductionATInput} from '../production-at-input-policy.mjs?v=production-inputs-20261006-1320';
@@ -34,7 +34,7 @@ function validatedCameraComparisons(snapshot){
     const matches=r.sourceNativeSupport.branches?.filter(b=>b.branchId===branch.branchId&&b.recordKey===branch.recordKey)??[];need(matches.length===1,'Owned body branch is missing or ambiguous');const b=matches[0];
     return{modelId:r.modelId,testedProposals:b.testedProposals??0,best:b.best??null,unsupported:b.unsupported??[],candidateSource:b.candidateSource??null};
    })}));
-   const checked=compareCameraBodyAlternative({appearanceFrame:frame,rankings,legacyPrediction:s.conditionalBodyPrediction,backgroundBranchSupport,sourceBranches,expectedModelIds});
+   const checked=compareCameraBodyAlternative({appearanceFrame:frame,rankings,legacyPrediction:s.conditionalBodyPrediction,backgroundBranchSupport,sourceBranches,expectedModelIds,originalResidualId:Number(s.originalProposalId)});
    need(checked.supportedModelId===claimed.supportedModelId&&checked.appearanceModelId===claimed.appearanceModelId&&JSON.stringify(checked.speciesCandidates)===JSON.stringify(claimed.speciesCandidates)&&checked.branches.length===claimed.branches?.length&&claimed.identityCertified===false&&claimed.certifiedObservation===false&&claimed.conditionalHypothesisOnly===true&&claimed.noEventPossible===true&&claimed.minimumProvenATCalls===0&&claimed.unknownNonEnemyPossible===true&&claimed.playerPossible===true&&claimed.backgroundErrorPossible===true,'Camera attachment no longer matches complete owned body evidence');
    for(const branch of checked.branches){const b=claimed.branches.find(b=>b.branchId===branch.branchId&&b.recordKey===branch.recordKey);need(b&&b.status===branch.status&&b.bestTestedModelId===branch.bestTestedModelId&&b.candidates?.length===branch.candidates.length,'Camera branch/model domain attachment differs');
     for(const candidate of branch.candidates){const c=b.candidates.find(c=>c.modelId===candidate.modelId),ref=c?.sourceEvidenceReference;need(c&&c.ready===candidate.ready&&c.encounterCompatible===candidate.encounterCompatible&&c.pixelErrorReduction===candidate.pixelErrorReduction&&c.sourceProposalId===candidate.sourceProposalId&&ref?.kind==='same-sighting-source-native-support-reference'&&ref.classificationEvidenceIndex===0&&ref.modelId===candidate.modelId&&ref.branchId===branch.branchId&&ref.recordKey===branch.recordKey&&ref.field==='sourceNativeSupport','Camera model evidence reference is missing or changed');}

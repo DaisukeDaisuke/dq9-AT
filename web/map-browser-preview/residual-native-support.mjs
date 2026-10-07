@@ -1,4 +1,4 @@
-import {compareCameraBodyAlternative} from '../monster-camera-body-alternative.mjs?v=camera-body-alternative-20261006-1430';
+import {compareCameraBodyAlternative} from '../monster-camera-body-alternative.mjs?v=native-scene-link-20261007-0354';
 import {attachNativeBodySupport} from '../monster-native-support.mjs?v=native-phase-20261006-2300';
 
 // Cooperative work budget for the entire frozen set, including preparation.
@@ -41,9 +41,9 @@ function cameraAlternativeAttachment(sighting,{appearance,input,native}){
  try{
   if(sighting.classificationEvidence?.length!==1)throw Error('One complete frozen appearance domain required');
   const rankings=sighting.classificationEvidence[0].rankings,expectedModelIds=appearance.source?.modelPlan?.models?.map(m=>m.modelId),sourceBranches=(native?.groups??[]).flatMap(group=>(group.bundle?.branches??[]).map(branch=>({...branch,frame:group.frame,renderer:group.bundle.renderer})));
-  const result=compareCameraBodyAlternative({appearanceFrame:frame,rankings,legacyPrediction:sighting.conditionalBodyPrediction,backgroundBranchSupport:input.backgroundEvidence?.backgroundBranchSupport,sourceBranches,expectedModelIds});
+  const result=compareCameraBodyAlternative({appearanceFrame:frame,rankings,legacyPrediction:sighting.conditionalBodyPrediction,backgroundBranchSupport:input.backgroundEvidence?.backgroundBranchSupport,sourceBranches,expectedModelIds,originalResidualId:Number(sighting.originalProposalId)});
   const {legacyPrediction,...attachment}=result;
-  return {...attachment,legacyPredictionReference:'conditionalBodyPrediction',branches:result.branches.map(branch=>({...branch,candidates:branch.candidates.map(candidate=>({modelId:candidate.modelId,ready:candidate.ready,encounterCompatible:candidate.encounterCompatible,pixelErrorReduction:candidate.pixelErrorReduction,sourceProposalId:candidate.sourceProposalId,reasons:candidate.reasons,unsupportedCount:candidate.unsupported.length,sourceEvidenceReference:{kind:'same-sighting-source-native-support-reference',classificationEvidenceIndex:0,modelId:candidate.modelId,branchId:branch.branchId,recordKey:branch.recordKey,field:'sourceNativeSupport'}}))}))};
+  return {...attachment,legacyPredictionReference:'conditionalBodyPrediction',branches:result.branches.map(branch=>({...branch,candidates:branch.candidates.map(candidate=>({modelId:candidate.modelId,ready:candidate.ready,encounterCompatible:candidate.encounterCompatible,pixelErrorReduction:candidate.pixelErrorReduction,sourceProposalId:candidate.sourceProposalId,originalProposalSupport:clone(candidate.originalProposalSupport),reasons:candidate.reasons,unsupportedCount:candidate.unsupported.length,sourceEvidenceReference:{kind:'same-sighting-source-native-support-reference',classificationEvidenceIndex:0,modelId:candidate.modelId,branchId:branch.branchId,recordKey:branch.recordKey,field:'sourceNativeSupport'}}))}))};
  }catch(error){return{kind:'conditional-camera-body-alternative-v1',frame,supportedModelId:null,speciesCandidates:[],appearanceModelId:null,branches:[],unavailableReason:String(error?.message??error),legacyPredictionReference:'conditionalBodyPrediction',legacyPredictionChanged:false,appearanceOrderChanged:false,unknownNonEnemyPossible:true,playerPossible:true,backgroundErrorPossible:true,identityCertified:false,minimumProvenATCalls:0,noEventPossible:true,certifiedObservation:false,conditionalHypothesisOnly:true};}
 }
 

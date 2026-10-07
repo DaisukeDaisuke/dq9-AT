@@ -185,3 +185,9 @@ node scripts/test-background-interruption-retention.mjs
 node scripts/test-source-message-yield.mjs
 
 node scripts/test-conditional-ui-competition.mjs
+
+# Source scene transport, exact original-component attribution and UI/native competition.
+node scripts/test-native-original-proposal.mjs
+node scripts/test-native-ui-objective.mjs
+node scripts/test-native-original-proposal-branches.mjs
+node scripts/test-original-component-mask-binding.mjs
