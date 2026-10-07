@@ -298,3 +298,26 @@ Previous record: [2026-10-06](DAILY_REPORT_20261006.md).
 - Sampled run retains three observation frames; actual stop570.383157 is7.526157s later than the planned562.857 because root issued stop late. Post-cancel export differs only in snapshotAtMs. An earlier tab's file changes did not trigger app status; a fresh tab in the same dot cloud browser worked. Cause remains unknown, not a confirmed code defect or environment reset. Existing same-pose direct/relative priority alternatives are being completed separately; no broad pose/angle expansion or tuned acceptance threshold is introduced. Recognition, monster composition and AT reconstruction remain incomplete.
 
 - Before publication, the existing sampled-frame priority milestone completed in a fresh byte-bound offline service: seven slices,578 attempts/577 completed visits, all16 relative/direct decoded/emitted target alternatives, without opening action/yaw/fractional domains. All available live recipe references and572 actual source failures match;128 export-time untested-domain notices remain separately retained. Original-direct z064a emitted gain−2182997 does not repair the body versus relative−2111643. The current ordinary creator's %s_f.mon source path matches all four stems; this does not identify the actual image actor or justify another variant sweep. A separately labeled manual-association diagnostic is pending solely to test crop truncation; it will not enter production or count as automatic grouping.
+
+
+## 2026-10-07 19:39 JST — 無作為抽出動画の身体対応を継続（未解決）
+
+対象は事前抽選した動画地点の実PTS 532.846。既知24地点による全自動化の証明ではなく、既存の自動候補・失敗を保持した原因切り分けである。
+
+### 手動関連付けと位置／姿勢の交差比較
+
+デバッグとして原領域125・44・123を手動関連付けした比較では、全4モデルを保持し、16条件を実測した。これは自動グルーピングではない。z064aの画像特徴が選ぶ姿勢はrun4からappear10へ変わったが、非スライム候補の全体RGB改善量はすべて負で、身体同定・AT証明には進まなかった。
+
+その2姿勢・2位置を交差した64論理条件では、元32条件と同じ姿勢の8交差条件を再利用し、新規に24条件だけを描画した。sourceと元証拠544ファイルの前後hashが一致した。z064a/direct/emittedの全体改善量は、元−2,182,997、位置だけ変更−2,208,697、姿勢だけ変更−1,912,195、両方変更−1,434,599。位置だけで回復したとは言えない。元の合成前の孤立身体との比較も非スライムではすべて負で、遮蔽・合成だけの問題とは説明できない。ただし真のモデル・カメラ・scale・clip・phaseを確定したものではない。
+
+### 現行sourceの材質・fog照合
+
+4 assets・8 materials・保存16 projectionsを照合し、ROM由来の材質とテクスチャ、条件付きfogが一致した。4モデルのGX streamにはNORMAL/COLOR命令がなく、local materialはwhite COLOR、light-mask0、alpha31、fog enabledだった。現行sourceで保存済み孤立RGBA16件が一致し、親も2本の再現scriptを別directoryで再実行して成功した。今回の条件付き16描画の受理画素5,117個にはfog重み17〜40/128が適用されていた。実動画の異なる画素数や本番のlive状態を示す数ではない。未観測のactor材質変更・MSE位相を原因と断定せず、色合わせ・fog補正のパッチは追加していない。
+
+### 原cropの別producer候補
+
+元の自動cropのRGB body-fitがすでに選んでいた別姿勢も、既存の位置算出・床候補を保持してnative比較した。初期見積もり12新規条件に対し、z019bで同じ床domainから複数の有効位置が出たため、候補を捨てず16新規条件と4既存条件再利用で完了した。非スライムの全体・孤立身体の改善量はいずれも負。z064a/camera-relative/emittedは全体−1,121,881、原component+1,309,337だったが、局所の改善を全身の一致へ昇格させない。別producerのposeを本番へ追加transportする変更はしていない。
+
+次の未実測境界は、現行ROMで条件付きに選択され、既存の後続native探索にも存在するaction clipと、stand/run/appear中心の簡易画像bankとの候補範囲の違い。source selectorの欠落とは断定しない。現在のaction・phaseは未確定であり、全frame×全yawの無条件拡大や既知地点への閾値合わせをせず、既存の有限候補生成を使う比較を準備している。
+
+身体種別・個体対応・現在AT・全自動化は引き続き未証明。失敗条件と原入力を保持して継続する。
