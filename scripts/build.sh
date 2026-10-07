@@ -191,3 +191,6 @@ node scripts/test-native-original-proposal.mjs
 node scripts/test-native-ui-objective.mjs
 node scripts/test-native-original-proposal-branches.mjs
 node scripts/test-original-component-mask-binding.mjs
+
+# Exact typed source-plane bytes remain bound without per-index JSON expansion.
+node scripts/test-native-work-identity-bytes.mjs

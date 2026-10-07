@@ -6,7 +6,7 @@ import{createNativeYawEvidence,referenceNativeYawFailure}from'./monster-native-y
 import{readNativeYawDomain,nativeYawIndex,nativeYawCondition}from'./monster-native-yaw-domain.mjs?v=native-yaw-mse-20261006-2101';
 import{readNativeConditionalActionRules,prepareNativeConditionalActionSource}from'./monster-native-action-domain.mjs?v=native-action-domain-20261006-1723';
 import{createNativeBodyDestinationProvider}from'./monster-native-background-destination.mjs?v=mode1-source-reuse-20261007-0435';
-import{nativeWorkIdentity}from'./monster-native-work-identity.mjs?v=native-continuation-20261006-0333';
+import{nativeWorkIdentity}from'./monster-native-work-identity.mjs?v=native-byte-identity-20261007-0502';
 // Automatic source proposals for the optional bounded native worker job.
 // Static root-on-floor/complete-envelope is a conditional branch, not live Y.
 import{readNativeReferencePose}from'./monster-native-reference-pose.mjs?v=native-body-20261006-0212';
