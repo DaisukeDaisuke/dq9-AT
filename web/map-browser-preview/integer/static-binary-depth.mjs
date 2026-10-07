@@ -1,4 +1,4 @@
-import {runSourceStepsSync,runSourceStepsAsync} from '../cooperative-source-work.mjs?v=envelope-yield-20261007-0140';
+import {runSourceStepsSync,runSourceStepsAsync} from '../cooperative-source-work.mjs?v=fair-source-yield-20261007-0247';
 /* SPDX-License-Identifier: GPL-2.0-or-later
  * Automatic connection of the already-proven native1x/TexGen0 binary-alpha
  * subset. No map/material-name rules and no changes to the opaque baseline.

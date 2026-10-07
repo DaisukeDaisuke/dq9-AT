@@ -1,7 +1,7 @@
 import{continueRefinedFloorAlternatives,collectRefinedFloorResults}from'./refined-floor-alternatives.mjs?v=source-scene-20261006-0040';
 /* Image-observed discrete ordinary load record, not continuously interpolated
  * mode2 or video elapsed-time inference. No ordinary-state/fog-phase render loop. */
-import{prepareMode1PhotometricBasis,renderMode1PhotometricBasis,inferMode1OrdinaryColor}from'./mode1-photometric-inverse.mjs?v=source-reuse-interruption-20261007-0204';
+import{prepareMode1PhotometricBasis,renderMode1PhotometricBasis,inferMode1OrdinaryColor}from'./mode1-photometric-inverse.mjs?v=fair-source-yield-20261007-0247';
 import{automaticPreviewCamera}from'./automatic-preview-camera.mjs';
 import{automaticBillboardScenes}from'./automatic-billboard-scene.mjs';
 import{applyMode1OrdinaryHypothesis}from'./automatic-material-environment.mjs?v=native-body-20261006-0212';

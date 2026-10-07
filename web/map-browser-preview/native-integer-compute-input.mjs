@@ -1,4 +1,4 @@
-import{runSourceStepsSync}from'./cooperative-source-work.mjs?v=envelope-yield-20261007-0140';
+import{runSourceStepsSync}from'./cooperative-source-work.mjs?v=fair-source-yield-20261007-0247';
 /* SPDX-License-Identifier: GPL-2.0-or-later
  * DeSmuME535f676 integer attribute preparation. Existing source clip/edge
  * functions are reused; packed pixel work is consumed by WebGPU without floats.

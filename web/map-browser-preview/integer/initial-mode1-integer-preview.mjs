@@ -1,4 +1,4 @@
-import {runSourceStepsSync} from '../cooperative-source-work.mjs?v=envelope-yield-20261007-0140';
+import {runSourceStepsSync} from '../cooperative-source-work.mjs?v=fair-source-yield-20261007-0247';
 /* SPDX-License-Identifier: GPL-2.0-or-later
  * ROM-initial mode1 adapter into the existing DeSmuME535f676-derived integer
  * polygon components. Those components retain their source/license notices.
@@ -13,8 +13,8 @@ import {isSupportedMode1ColorEnvironment,replayZeroLightShapeColors,transformNat
 import {readArm9Overlay} from '../rom-overlay.mjs';
 import {retainNativePrimitiveInputs,projectNativePrimitiveFx} from './native-primitive-inputs.mjs';
 import {readNativeBinaryPolygonTexture} from './native-binary-alpha.mjs?v=automatic-playback-source-cache-20261006-1100';
-import {renderClassifiedStaticBinaryDepthSteps} from './static-binary-depth.mjs?v=envelope-yield-20261007-0140';
-import {renderStaticMode0RgbSteps,presentStaticRgb} from './static-mode0-rgb.mjs?v=envelope-yield-20261007-0140';
+import {renderClassifiedStaticBinaryDepthSteps} from './static-binary-depth.mjs?v=fair-source-yield-20261007-0247';
+import {renderStaticMode0RgbSteps,presentStaticRgb} from './static-mode0-rgb.mjs?v=fair-source-yield-20261007-0247';
 const eq=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
 const fx=m=>Array.isArray(m)&&m.length===16&&m.every(x=>Number.isInteger(x)&&x>=-2147483648&&x<=2147483647);
 const i32=n=>Number(BigInt.asIntN(32,n));

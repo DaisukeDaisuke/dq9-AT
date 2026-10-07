@@ -3,11 +3,11 @@
  * only the existing exact integer forward renderer may validate that proposal. */
 import{automaticBillboardScenes}from'./automatic-billboard-scene.mjs';
 import{buildAutomaticNormalMatrices,applyMode2ToAutomaticScenes,deriveMode2StaticMaterials}from'./integer/mode2-lighting-adapter.mjs?v=field-stream-20261005-1108';
-import{readInitialMode1RasterProfile}from'./integer/initial-mode1-integer-preview.mjs?v=source-reuse-interruption-20261007-0204';
+import{readInitialMode1RasterProfile}from'./integer/initial-mode1-integer-preview.mjs?v=fair-source-yield-20261007-0247';
 import{collectStaticOpaqueDepthInputs}from'./integer/static-opaque-depth.mjs?v=native-raster-reuse-20261006-0637';
-import{classifyStaticBinaryDepthInputs,renderClassifiedStaticBinaryDepth}from'./integer/static-binary-depth.mjs?v=envelope-yield-20261007-0140';
-import{collectStaticMode0ColorInputs,renderStaticMode0Rgb}from'./integer/static-mode0-rgb.mjs?v=envelope-yield-20261007-0140';
-import{collectInferredMode2TexturedTranslucentInputs,readInitialTexturedBlendProfile,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb}from'./integer/native-textured-translucent.mjs?v=envelope-yield-20261007-0140';
+import{classifyStaticBinaryDepthInputs,renderClassifiedStaticBinaryDepth}from'./integer/static-binary-depth.mjs?v=fair-source-yield-20261007-0247';
+import{collectStaticMode0ColorInputs,renderStaticMode0Rgb}from'./integer/static-mode0-rgb.mjs?v=fair-source-yield-20261007-0247';
+import{collectInferredMode2TexturedTranslucentInputs,readInitialTexturedBlendProfile,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb}from'./integer/native-textured-translucent.mjs?v=fair-source-yield-20261007-0247';
 import{readFogRecord}from'./native/fog-records.mjs';
 import{minimizeBox}from'./mode2-fog-photometric-inverse.mjs?v=field-stream-20261005-1108';
 const rgb=w=>[w&31,w>>>5&31,w>>>10&31],dot=(a,b)=>a.reduce((s,v,i)=>s+v*b[i],0),clamp=x=>Math.max(0,Math.min(1,x));

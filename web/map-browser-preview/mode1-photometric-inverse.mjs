@@ -1,18 +1,18 @@
-import {runSourceStepsSync,runSourceStepsAsync} from './cooperative-source-work.mjs?v=envelope-yield-20261007-0140';
+import {runSourceStepsSync,runSourceStepsAsync} from './cooperative-source-work.mjs?v=fair-source-yield-20261007-0247';
 /* Source-retained mode1 COLOR inference. One algebraic white texture basis;
  * no time/fog-state images are searched. Source COLOR interpolation and the common
  * zero-fog domain delimit the supported photometric observations. */
 import{readMode1OrdinaryHypotheses,applyMode1OrdinaryHypothesis}from'./automatic-material-environment.mjs?v=native-body-20261006-0212';
 import{automaticBillboardScenes}from'./automatic-billboard-scene.mjs';
-import{readInitialMode1RasterProfile,collectInitialMode1IntegerInputsSteps}from'./integer/initial-mode1-integer-preview.mjs?v=source-reuse-interruption-20261007-0204';
-import{renderClassifiedStaticBinaryDepthSteps}from'./integer/static-binary-depth.mjs?v=envelope-yield-20261007-0140';
-import{renderStaticMode0RgbSteps,presentStaticRgb}from'./integer/static-mode0-rgb.mjs?v=envelope-yield-20261007-0140';
-import{collectInitialMode1TexturedTranslucentInputs,readInitialTexturedBlendProfile,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb}from'./integer/native-textured-translucent.mjs?v=envelope-yield-20261007-0140';
+import{readInitialMode1RasterProfile,collectInitialMode1IntegerInputsSteps}from'./integer/initial-mode1-integer-preview.mjs?v=fair-source-yield-20261007-0247';
+import{renderClassifiedStaticBinaryDepthSteps}from'./integer/static-binary-depth.mjs?v=fair-source-yield-20261007-0247';
+import{renderStaticMode0RgbSteps,presentStaticRgb}from'./integer/static-mode0-rgb.mjs?v=fair-source-yield-20261007-0247';
+import{collectInitialMode1TexturedTranslucentInputs,readInitialTexturedBlendProfile,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgb}from'./integer/native-textured-translucent.mjs?v=fair-source-yield-20261007-0247';
 import{projectNativePrimitiveFx}from'./integer/native-primitive-inputs.mjs';
 import{clipNativePositionPolygon}from'./integer/native-position-clip.mjs?v=native-raster-reuse-20261006-0637';
 import{buildFogTable}from'./native/fog-raster.mjs';
-import{prepareNativeIntegerCompute}from'./native-integer-compute-input.mjs?v=envelope-yield-20261007-0140';
-import{renderPreparedIntegerCompute}from'./prepare-initial-integer-compute.mjs?v=source-reuse-interruption-20261007-0204';
+import{prepareNativeIntegerCompute}from'./native-integer-compute-input.mjs?v=fair-source-yield-20261007-0247';
+import{renderPreparedIntegerCompute}from'./prepare-initial-integer-compute.mjs?v=fair-source-yield-20261007-0247';
 const need=(x,m)=>{if(!x)throw Error(m);},expand=n=>n?2*n+1:0,median=a=>{const b=a.slice().sort((x,y)=>x-y);return b[Math.floor(b.length/2)];};
 function* prepareMode1PhotometricBasisSteps({project,rom,record,automatic,camera}){
  const read=readMode1OrdinaryHypotheses(project,record,automatic);need(read.ready,read.reason);need(read.environment.timeIndependenceProof.commonMaterial,'Variable material globals outside flat-COLOR inverse subset');

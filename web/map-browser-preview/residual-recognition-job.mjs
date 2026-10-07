@@ -1,5 +1,5 @@
 import {classificationNow,classificationDuration,classificationClock,emitClassificationTiming} from '../monster-classification-timing.mjs?v=envelope-yield-20261007-0140';
-import {nativeBodyRequestPayload} from './native-body-request.mjs?v=envelope-yield-20261007-0140';
+import {nativeBodyRequestPayload} from './native-body-request.mjs?v=fair-source-yield-20261007-0247';
 import {attachResidualNativeSupport,RESIDUAL_NATIVE_BODY_BUDGET} from './residual-native-support.mjs?v=native-phase-20261006-2300';
 import {chooseResidualBackend,residualBackendProvenance,assertResidualBackendResult} from './residual-recognition-backend.mjs?v=envelope-yield-20261007-0140';
 import {residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs?v=map-input-owned-preparation-20261006-1408';

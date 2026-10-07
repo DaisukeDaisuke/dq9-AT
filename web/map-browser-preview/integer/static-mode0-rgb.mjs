@@ -1,4 +1,4 @@
-import {runSourceStepsSync,runSourceStepsAsync} from '../cooperative-source-work.mjs?v=envelope-yield-20261007-0140';
+import {runSourceStepsSync,runSourceStepsAsync} from '../cooperative-source-work.mjs?v=fair-source-yield-20261007-0247';
 /* SPDX-License-Identifier: GPL-2.0-or-later
  * Integer RGB connection derived from DeSmuME contributors, 535f676:
  * gfx3d.cpp SetVertexColor/AddCurrentVertexToList, GFX3D_LerpUnsigned;

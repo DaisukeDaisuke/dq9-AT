@@ -1,12 +1,12 @@
-import {createReadyMode1GeometryFallback,hasNonzeroSourceXZBounds} from './ready-mode1-geometry-fallback.mjs?v=source-reuse-interruption-20261007-0204';
+import {createReadyMode1GeometryFallback,hasNonzeroSourceXZBounds} from './ready-mode1-geometry-fallback.mjs?v=fair-source-yield-20261007-0247';
 import {createAutomaticMonsterMapGate} from './automatic-monster-map-eligibility.mjs?v=monster-map-cpu-20261006-1005';
 import{createAmbiguousMarkerBackgroundBudget}from'./physical-marker-background-hypotheses.mjs?v=native-continuation-20261006-0333';
-import{buildBackgroundBranchSupport}from'./background-branch-support.mjs?v=envelope-yield-20261007-0140';
-import{createSourceAnchorSceneInference}from'./source-anchor-scene-inference.mjs?v=source-reuse-interruption-20261007-0204';
+import{buildBackgroundBranchSupport}from'./background-branch-support.mjs?v=fair-source-yield-20261007-0247';
+import{createSourceAnchorSceneInference}from'./source-anchor-scene-inference.mjs?v=fair-source-yield-20261007-0247';
 import{resolveFrozenInferencePixels}from'./capture-analysis-pixels.mjs?v=native-continuation-20261006-0333';
-import{createMode1BackgroundInference}from'./automatic-mode1-background.mjs?v=source-reuse-interruption-20261007-0204';
-import {Mode2VideoContinuity} from './mode2-video-continuity.mjs?v=source-reuse-interruption-20261007-0204';
-import {inferAutomaticMode2Background} from './automatic-mode2-background.mjs?v=source-reuse-interruption-20261007-0204';
+import{createMode1BackgroundInference}from'./automatic-mode1-background.mjs?v=fair-source-yield-20261007-0247';
+import {Mode2VideoContinuity} from './mode2-video-continuity.mjs?v=fair-source-yield-20261007-0247';
+import {inferAutomaticMode2Background} from './automatic-mode2-background.mjs?v=fair-source-yield-20261007-0247';
 import {readRomMapCameraInputGate} from './rom-camera-input-gate.mjs';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
 import {CandidateMapMatcher} from '../map-disambiguation.mjs?v=registration-timing-20261007-0020';
@@ -16,7 +16,7 @@ import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=re
 import {automaticPreviewCamera} from './automatic-preview-camera.mjs';
 import {automaticBillboardScenes} from './automatic-billboard-scene.mjs';
 import {applyAutomaticMaterialEnvironment} from './automatic-material-environment.mjs?v=native-body-20261006-0212';
-import {createAutomaticBackgroundRenderer} from './automatic-background-renderer.mjs?v=source-reuse-interruption-20261007-0204';
+import {createAutomaticBackgroundRenderer} from './automatic-background-renderer.mjs?v=fair-source-yield-20261007-0247';
 import {readRomMapScreenEffectPlan} from './rom-map-screen-effect-plan.mjs';
 import {prepareDrawPackets} from './draw-packets.mjs';
 import {rasterizePreviewPackets} from './cpu-preview.mjs';
