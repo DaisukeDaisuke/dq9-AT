@@ -1,7 +1,7 @@
 // Additional conditional ordinary-field actions. The caller must finish every
 // original native job before reading these rules or decoding these clips.
 import {readFieldAnimationRules,deriveFieldAnimationRequest} from './monster-field-animation-state.mjs?v=native-action-domain-20261006-1723';
-import {readNSBCA} from './monster-animation.mjs?v=stored-pivot-source-20261006-0800';
+import {readNSBCA} from './monster-animation.mjs?v=integer-scale-source-20261007-1102';
 export function readNativeConditionalActionRules(sdk){
  const rules=readFieldAnimationRules(sdk),requests=new Map();
  // Every prior-transition entry in the guarded source mode-2 row is retained.

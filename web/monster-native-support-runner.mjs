@@ -1,17 +1,17 @@
 import{verifyNativeDrawAnimationSource,nativeDrawAnimationTerms,bindNativeDrawAnimationTerms}from'./monster-native-draw-animation.mjs?v=conditional-draw-links-20261007-0847';
 import{originalComponentMaskSHA256}from'./original-component-mask-binding.mjs?v=rgb-dependency-optin-20261007-0943';
 import{sourcePixelComparisonBinding}from'./native-pixel-comparison-binding.mjs?v=native-scene-link-20261007-0354';
-import{verifyNativeAnimationSource,readNativeRate0Animation}from'./monster-native-animation.mjs?v=native-phase-20261006-2300';
-import{verifyNativeJointBlendSource}from'./monster-native-joint-blend.mjs?v=native-phase-20261006-2300';
-import{createNativeBodyJointPlan}from'./monster-native-joint-plan.mjs?v=native-phase-20261006-2300';
-import{nativeBodyExtentEvidence}from'./monster-native-extent-evidence.mjs?v=rgb-dependency-optin-20261007-0943';
+import{verifyNativeAnimationSource,readNativeRate0Animation}from'./monster-native-animation.mjs?v=integer-scale-source-20261007-1102';
+import{verifyNativeJointBlendSource}from'./monster-native-joint-blend.mjs?v=integer-scale-source-20261007-1102';
+import{createNativeBodyJointPlan}from'./monster-native-joint-plan.mjs?v=integer-scale-source-20261007-1102';
+import{nativeBodyExtentEvidence}from'./monster-native-extent-evidence.mjs?v=integer-scale-source-20261007-1102';
 // Optional bounded worker-side source-native evaluator. No production caller.
 import{readMonsterAssets}from'./monster-assets.mjs';
-import{readNSBCA}from'./monster-animation.mjs?v=stored-pivot-source-20261006-0800';
-import{prepareNativeBodyEnvelope,placeNativeBodyEnvelopeOnFloors}from'./monster-native-body-placement.mjs?v=rgb-dependency-optin-20261007-0943';
+import{readNSBCA}from'./monster-animation.mjs?v=integer-scale-source-20261007-1102';
+import{prepareNativeBodyEnvelope,placeNativeBodyEnvelopeOnFloors}from'./monster-native-body-placement.mjs?v=integer-scale-source-20261007-1102';
 import{readSdkInitialMaterialGlobals}from'./map-browser-preview/rom-sdk-initial-material.mjs';
 import{readInitialMode1RasterProfile}from'./map-browser-preview/integer/initial-mode1-integer-preview.mjs?v=fair-source-yield-20261007-0247';
-import{prepareNativeBodyProgram,projectNativeBodyPolygons,rasterNativeBody}from'./monster-native-body.mjs?v=rgb-dependency-optin-20261007-0943';
+import{prepareNativeBodyProgram,projectNativeBodyPolygons,rasterNativeBody}from'./monster-native-body.mjs?v=integer-scale-source-20261007-1102';
 import{createNativeBodyBillboardState}from'./monster-native-billboard.mjs?v=native-body-20261006-0212';
 import{bindFrozenBodyProjection}from'./monster-perspective-input.mjs?v=native-body-20261006-0212';
 import{comparePerspectiveBody}from'./monster-perspective-body.mjs?v=rgb-dependency-optin-20261007-0943';
@@ -52,7 +52,7 @@ export function createNativeBodySupportRunner({project,rom,catalog,romSHA256,max
  // retains this cursor and every failed clip once; no phase bank is allocated.
  async function prepareNativePhaseDomain(request,{state=null,signal,getCurrentFrame,shouldYield}={}){
   need(typeof getCurrentFrame==='function'&&typeof shouldYield==='function','Frozen phase preparation guard/budget required');const key=frameKey(request.frame),guard=()=>{if(disposed||signal?.aborted||frameKey(getCurrentFrame())!==key)throw new DOMException('Source-native phase cancelled or stale','AbortError');};guard();need(request.frame?.romSHA256===romSHA256&&Array.isArray(request.clips),'Bound source phase clips required');if(state)need(state.request===request,'Phase preparation belongs to another frozen request');state??={request,index:0,clips:[],unsupported:[],completedSteps:0};
-  if(state.index<request.clips.length&&!shouldYield()){const condition=request.clips[state.index];try{const source=prepared(request.candidate),entry=await phaseAnimation(source,condition.clip,guard);guard();state.clips.push({clip:condition.clip,numFrames:entry.animation.parsed.numFrames,resourceFlags:entry.animation.resourceFlags,resourceSHA256:entry.resourceSHA256,...(condition.actionCondition?{actionCondition:clone(condition.actionCondition)}:{})});}catch(error){if(error.name==='AbortError')throw error;state.unsupported.push({clip:condition.clip,reason:error.message,...(condition.actionCondition?{actionCondition:clone(condition.actionCondition)}:{})});}state.index++;state.completedSteps++;}
+  if(state.index<request.clips.length&&!shouldYield()){const condition=request.clips[state.index];try{const source=prepared(request.candidate),entry=await phaseAnimation(source,condition.clip,guard);guard();need(entry.animation.kind==='source-native-rate0-animation-v1','Sparse scale integer expansion does not support the fractional phase domain');state.clips.push({clip:condition.clip,numFrames:entry.animation.parsed.numFrames,resourceFlags:entry.animation.resourceFlags,resourceSHA256:entry.resourceSHA256,...(condition.actionCondition?{actionCondition:clone(condition.actionCondition)}:{})});}catch(error){if(error.name==='AbortError')throw error;state.unsupported.push({clip:condition.clip,reason:error.message,...(condition.actionCondition?{actionCondition:clone(condition.actionCondition)}:{})});}state.index++;state.completedSteps++;}
   return{state,complete:state.index===request.clips.length,completedSteps:state.completedSteps,clips:clone(state.clips),unsupported:clone(state.unsupported)};
  }
  async function preparePoseResources(source,pose,guard){

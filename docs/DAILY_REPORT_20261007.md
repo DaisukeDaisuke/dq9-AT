@@ -321,3 +321,14 @@ Previous record: [2026-10-06](DAILY_REPORT_20261006.md).
 次の未実測境界は、現行ROMで条件付きに選択され、既存の後続native探索にも存在するaction clipと、stand/run/appear中心の簡易画像bankとの候補範囲の違い。source selectorの欠落とは断定しない。現在のaction・phaseは未確定であり、全frame×全yawの無条件拡大や既知地点への閾値合わせをせず、既存の有限候補生成を使う比較を準備している。
 
 身体種別・個体対応・現在AT・全自動化は引き続き未証明。失敗条件と原入力を保持して継続する。
+
+
+## 2026-10-07 20:05 JST — 間引かれた拡縮データの整数フレーム対応
+
+動画候補に含まれるz019b_fのattack0aで、従来の完全rate0制限によって読み取れない拡縮曲線を確認した。新しい対応はstart=0・rate=1・width=2・偶数frame数・end=frame数−2のscale/inverse-scaleペアに限定する。ほかの間引き形式やtranslation/rotationは未対応のまま。
+
+親が独立したsource stageで元ROMのARM処理を再実行し、実resourceの28整数frameにおけるscale/inverse168値、およびmodel-scale callback前の336 node呼出し・有効channel3,612値の一致を確認した。既存25 rate0 resourcesのparsed値、374整数frame、1,122小数phaseの出力は旧実装と一致。合成入力による境界検査は実ROMとは別に記録する。
+
+最終奇数frameは前frameの繰返しではなく別の保存pairを使う。整数化後の値を単純補間して小数phaseにも対応したとは扱わず、新しいnative kindでは範囲内整数phaseだけを受理し、小数phase・範囲外phaseを拒否する。fractional探索側はこの未対応を1件として保持し、整数のstored/body/joint-plan経路は使用できる。
+
+親のfull buildは97本の直接Node検査を含め成功、既存6WASMはbyte同一、native explicit-phase・phase-runner・action-domainの実ROM検査も成功した。browser側import/cache更新は30modules・43edgesで整合させた。この変更は未対応だった読み取り経路の拡張であり、動画の現在action/phase、身体同定、AT値や全自動化完成を証明しない。既存の固定動画比較へ新decoderを遡及適用せず、次の比較は別版として行う。

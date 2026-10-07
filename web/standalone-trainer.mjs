@@ -1,6 +1,6 @@
 import{need}from'./standalone-pool-core.mjs';
 import{previewLocalBackground,parseBackgroundRecipes}from'./standalone-background-input.mjs';
-import{preparePipelineContext,calibratePipeline,runTrainingPipeline}from'./standalone-training-pipeline.mjs?v=stored-pivot-source-20261006-0800';
+import{preparePipelineContext,calibratePipeline,runTrainingPipeline}from'./standalone-training-pipeline.mjs?v=integer-scale-source-20261007-1102';
 import{inferRetainedFrame}from'./standalone-retained-inference.mjs';
 import{DEADLINE_UTC}from'./standalone-train-core.mjs';
 const $=id=>document.getElementById(id);let busy=false,controller=null,context=null,report=null,previews=null,lastProgress=0,latestDownload=null;

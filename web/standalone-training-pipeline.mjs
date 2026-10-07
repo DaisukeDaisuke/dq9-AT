@@ -2,7 +2,7 @@ import{need,abort,sha256,hashValue,createDataPlan,composeSample}from'./standalon
 import{verifyDataAssets,readTarget}from'./standalone-data-inputs.mjs';
 import{createDataStore}from'./standalone-pool-store.mjs';
 import{DATA_VIEWS,prepareDataChunk,estimateFullRun}from'./standalone-pool-run.mjs';
-import{createROMPoseSource}from'./detector-rom-source.mjs?v=stored-pivot-source-20261006-0800';
+import{createROMPoseSource}from'./detector-rom-source.mjs?v=integer-scale-source-20261007-1102';
 import{MonsterGeometry}from'./monster-geometry.mjs';
 import{loadDetectorAssets}from'./tiny-yolo-assets.mjs';
 import{createDetector}from'./tiny-yolo-model.mjs';

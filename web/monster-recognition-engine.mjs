@@ -4,7 +4,7 @@ import {classificationNow,addClassificationDuration,classificationClock} from '.
 import {fitRenderedBody} from './monster-body-support.mjs?v=proposal-support-20261006-1152';
 import {proposeDenseComplement,validateDenseComplement} from './monster-dense-proposals.mjs';
 import {readMonsterAssets} from './monster-assets.mjs';
-import {readNSBCA,sampleMatrices} from './monster-animation.mjs?v=stored-pivot-source-20261006-0800';
+import {readNSBCA,sampleMatrices} from './monster-animation.mjs?v=integer-scale-source-20261007-1102';
 import {MonsterTemplateBank} from './monster-template-bank.mjs';
 import {MonsterCPU} from './monster-cpu-template.mjs';
 import {getFieldExclusion,normalizeSceneContext} from './monster-field-mask.mjs';

@@ -96,7 +96,7 @@ export class ResidualRecognitionClient{
  async load(rom,sha){
   this.stopNativeContinuation();
   if(this.romSHA===sha&&this.catalog&&this.worker)return this.catalog;
-  this.release();const worker=new Worker(new URL('../monster-recognition-worker.mjs?v=rgb-dependency-optin-20261007-0943',import.meta.url),{type:'module'});this.worker=worker;this.epoch++;
+  this.release();const worker=new Worker(new URL('../monster-recognition-worker.mjs?v=integer-scale-source-20261007-1102',import.meta.url),{type:'module'});this.worker=worker;this.epoch++;
   worker.onmessage=({data:m})=>{
    const handlerEntryAtMs=classificationNow();
    if(this.worker!==worker)return;

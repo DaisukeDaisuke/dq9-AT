@@ -1,4 +1,4 @@
-import {openNativeBodyJointPlan} from './monster-native-joint-plan.mjs?v=native-phase-20261006-2300';
+import {openNativeBodyJointPlan} from './monster-native-joint-plan.mjs?v=integer-scale-source-20261007-1102';
 import {fieldNativeNormalize} from './field-preferred-node.mjs';
 import {composeNativeBodyOverSourceDestination} from './monster-native-scene-composition.mjs?v=rgb-dependency-optin-20261007-0943';
 /* SPDX-License-Identifier: GPL-2.0-or-later
@@ -16,7 +16,7 @@ import {readNativeMaterials,deriveNativeMaterialResult} from './map-browser-prev
 import {readNativeTextureResource} from './map-browser-preview/native/native-tex0.mjs';
 import {unpackNativeTexture} from './map-browser-preview/native/native-texture-unpack.mjs';
 import {makeNativeTrig} from './map-browser-preview/native/native-map-records.mjs';
-import {readNSBCA} from './monster-animation.mjs?v=stored-pivot-source-20261006-0800';
+import {readNSBCA} from './monster-animation.mjs?v=integer-scale-source-20261007-1102';
 import {rasterizeNativeMode0Rgb,presentStaticRgb} from './map-browser-preview/integer/static-mode0-rgb.mjs?v=fair-source-yield-20261007-0247';
 import {compositeBinaryAwareDepth} from './map-browser-preview/integer/native-binary-alpha.mjs?v=automatic-playback-source-cache-20261006-1100';
 import {rasterizeNativeTexturedTranslucentMode0} from './map-browser-preview/integer/native-textured-translucent.mjs?v=fair-source-yield-20261007-0247';

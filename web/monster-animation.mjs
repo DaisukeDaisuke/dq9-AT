@@ -1,7 +1,8 @@
 // Adapted from apicula by scurest, Copyright (C) 2019, 0BSD.
 // Full license: ./licenses/apicula-0BSD.txt
 // Bounded NSBCA reader, derived from vendored apicula (0BSD) animation.rs/rotation.rs.
-// Exact integer sample frames only: no guessed sparse-rate interpolation or native playback claim.
+// Integer frames only: complete rate0 samples plus the bounded source rate1 FX16 scale branch.
+// Sparse rotation/translation, other scale layouts and native fractional playback remain unsupported.
 const need=(v,m)=>{if(!v)throw Error(m);};
 export const identity=()=>[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
 const signed=(v,bits)=>{const mask=2**bits-1,vv=v&mask;return vv&(2**(bits-1))?vv-2**bits:vv;};
@@ -38,8 +39,20 @@ export function readNSBCA(bytes){
   if(ref&32768){const p=pivot+index*6,flags=u16(p);stats.pivotReferences++;return pivotRotation(flags&15,(flags>>4)&15,s16(p+2),s16(p+4));}
   stats.basisReferences++;const p=basis+index*10;return basisRotation(Array.from({length:5},(_,i)=>u16(p+i*2)));
  }
- const curveInfo=word=>{const start=word&65535,end=(word>>>16)&4095,rate=word>>>30,width=(word>>>28)&3;
+ let integerFrameExpansion=false;
+ const curveInfo=(word,scale=false)=>{const start=word&65535,end=(word>>>16)&4095,rate=word>>>30,width=(word>>>28)&3;
+  // Original ARM 020b9cdc: this exact layout has pairs at even frames and
+  // one separately stored final odd frame. Do not extend to other sparse layouts.
+  if(scale&&start===0&&rate===1&&width===2&&numFrames%2===0&&end===numFrames-2){integerFrameExpansion=true;return {count:numFrames,width,rate,end};}
   need(start===0&&end===numFrames&&rate===0,'Only complete rate0 integer sample curves supported');need(width<=2,'Unsupported curve data width');return {count:end,width};};
+ const scaleSamples=(info,offset,inverse)=>Array.from({length:info.count},(_,frame)=>{
+  if(info.rate!==1){const stride=info.width===0?8:4;return info.width===0?s32(offset+frame*stride+(inverse?4:0)):s16(offset+frame*stride+(inverse?2:0));}
+  const at=index=>{const p=offset+index*4+(inverse?2:0);range(p,2);return d.getInt16(p,true);},index=frame>>>1;
+  // 020b9e68..020b9e98: sum the signed FX16 values before ASR1, for each
+  // stored pair member independently. Inverse scale is not recomputed.
+  const fx=(frame&1)?frame<=info.end?(at(index)+at(index+1))>>1:at((info.end>>>1)+1):at(index);
+  return fx/4096;
+ });
  const objects=Array.from({length:numObjects},(_,objectIndex)=>{
   let p=base+u16(base+20+objectIndex*2);const flags=u16(p),dummy=u8(p+2),index=u8(p+3);p+=4;
   need(index===objectIndex&&dummy===0,'Sequential object binding required');
@@ -57,12 +70,13 @@ export function readNSBCA(bytes){
   }
   if((flags&0x600)===0)for(let axis=0;axis<3;axis++){
    if(flags&(0x800<<axis)){obj.scale[axis]={constant:s32(p),inverseConstant:s32(p+4)};p+=8;stats.constantScale++;}
-   else{const info=curveInfo(u32(p)),offset=base+u32(p+4);p+=8;const stride=info.width===0?8:4;obj.scale[axis]={samples:Array.from({length:info.count},(_,i)=>info.width===0?s32(offset+i*stride):s16(offset+i*stride)),inverseSamples:Array.from({length:info.count},(_,i)=>info.width===0?s32(offset+i*stride+4):s16(offset+i*stride+2))};stats.sampledScale++;}
+   else{const info=curveInfo(u32(p),true),offset=base+u32(p+4);p+=8;obj.scale[axis]={samples:scaleSamples(info,offset,false),inverseSamples:scaleSamples(info,offset,true)};stats.sampledScale++;}
   }
   return obj;
  });
  return {format:'bounded-nsbca-exact-samples-v1',name,numFrames,numObjects,objects,stats,
-  sampling:'complete rate0 integer frames only; no interpolation',channelDefaults:'identity/zero/unit for explicit identity flags; base-model fallback rejected',
+  ...(integerFrameExpansion?{integerFrameExpansion:'source-rate1-fx16-scale-pairs-v1'}:{}),
+  sampling:integerFrameExpansion?'integer frames; source rate1 FX16 scale pairs expanded; fractional sampling unsupported':'complete rate0 integer frames only; no interpolation',channelDefaults:'identity/zero/unit for explicit identity flags; base-model fallback rejected',
   scaleInverseValuesPreserved:true,scaleInverseUsed:false,nativePlaybackEquivalent:false};
 }
 export function sampleMatrices(animation,frame){

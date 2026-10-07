@@ -1,6 +1,6 @@
 // Source 020b5678. Explicit one/two-clip, ordinary mapping/callback subset.
 // No actor clip, phase, blend weight, model visibility or scene state is guessed.
-import {sampleNativeRate0Animation} from './monster-native-animation.mjs?v=native-phase-20261006-2300';
+import {sampleNativeRate0Animation} from './monster-native-animation.mjs?v=integer-scale-source-20261007-1102';
 import {fieldNativeNormalize} from './field-preferred-node.mjs';
 import {createNativeScalingContext,evaluateNativeNodeScale} from './map-browser-preview/native/native-node-pose.mjs';
 const need=(x,m)=>{if(!x)throw Error(m);},i32=x=>Number(BigInt.asIntN(32,BigInt(x))),valid=x=>Number.isInteger(x)&&x>=-2147483648&&x<=2147483647,xyz=a=>Array.isArray(a)&&a.length===3&&a.every(valid);
