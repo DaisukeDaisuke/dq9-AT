@@ -340,3 +340,15 @@ Previous record: [2026-10-06](DAILY_REPORT_20261006.md).
 - 保存済み実動画 532.846 秒の4候補を親が再比較。消えたのは誤った raster 不一致理由だけで、数値・他の理由・入力は全て同一。z064a の全画面差改善 607848、元component改善1634393、isolated改善114550 は不変。所有155画素かつ全寄与未捕捉のため依然 unknown、AT証明増分0。
 - 合成/単体双方の負例92条件を含む既存 full build 97 Node 実行が通過。6 WASM は前 main とbyte一致。ブラウザでの新しい通し動作・全入力対応は未検証。
 - 通常姿勢の有限744セルは測定済み。集計harnessの失敗は原本を保持し、別差分で修正後に集計通過。部分的な正スコアはモンスターの内訳特定・全自動完成を意味しない。現在、同じ入力とスコア条件で placement ROI だけを変える手動診断を継続中。
+
+
+## 2026-10-07 13:00 UTC 位置枠と攻撃姿勢の有限比較
+
+同じ実動画532.846秒、元component125の590画素mask、全画面objective、4モデル、既存4方向、ROM由来scale266、同じ14床planeを保持して比較した。既知の正解地点への閾値合わせはしていない。
+
+- 手動で関連付けたunion ROIをplacementだけに使う普通姿勢の診断：744 cells／760 roots、756新規+4再利用。747 scene／751 isolated結果、13 scene失敗を全て保持。z064a最大gainは元の607848から164882へ低下し、isolatedは−923904。z000cが333303で上回り、画像でも部分的身体のまま。自動grouping変更の根拠にはならない。
+- 元の自動ROIを使い、ROMの条件付きattack0a全integer framesを固定範囲で比較：4モデル計89 frames×4方向=356 cells。351新規preparation、4914 plane checks、359 roots（354新規render+5再利用）は全scene/isolated成功。z019b−523693、z021a−1315039、z064a60834、z000c246795。z064aはattack10/yaw0で上の突起を持つが、描画位置・全体一致は解消していない。
+- 全候補の所有画素条件は未成立、現AT未特定・証明増分0。単一フレームの有限debug比較を全自動認識の完成・全入力対応と扱わない。失敗した最初のcount harnessも別原本で保持した。
+- 次の限定対照は、上記3条件を保持したまま同じattack domainのplacementだけを同一manual ROIへ変更する交互作用の確認。別途、z064a jointサンプリングとsource callbackの実ARM一致範囲を確認中。原因はまだ確定していない。
+
+- 追記13:01 UTC：4つ目のattack×manual ROI対照も終了。356 preparation／4984 plane checks／356 rootsは全scene/isolated成功、exact reuseなし。同じz064a attack10/world0はauto60834からmanual−1295469へ悪化（component425356、isolated−2023367）。manual attackの4候補最大gainは−201218／−952614／−478334／316995で、交互作用だけでも身体不一致を解消しなかった。範囲の追加探索は行わず、source joint数値の独立確認へ進む。
