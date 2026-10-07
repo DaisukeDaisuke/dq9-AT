@@ -1,0 +1,24 @@
+{
+  "taskUUID": "05508d74-d95d-48dc-b350-28a73652c5d5",
+  "publicBase": "13720583d552291f6ba012ac85f60ceeb5b0741f",
+  "files": [
+    {
+      "path": "web/monster-camera-body-alternative.mjs",
+      "baseSHA256": "12b34715a9f10ef3f918a646c181a8dd88bba303fe080c9eb8b71cb411bdb4ee",
+      "sha256": "a9027ec13c4361a0bb03548e52201634e7977f76d45876a30fb5babdae64b538",
+      "bytes": 9143
+    },
+    {
+      "path": "scripts/test-native-original-proposal.mjs",
+      "baseSHA256": "bd893a335096bdc5972ce142a19f8b6e12ef656dc95f75ee0737b5032cb0d400",
+      "sha256": "4a85f28ecc3b4a68b28afa7e0e1bf8f243c4e3eb48d3c7238712ce42a37170e5",
+      "bytes": 13626
+    }
+  ],
+  "patchSHA256": "303c36f4582d4e622ada04d93e702e26ca4df2e59c5237f283d8480bf2f548a4",
+  "baselineRegressionReproduced": true,
+  "focusedResult": "{\"passed\":true,\"sourceRasterSubtypesEquivalent\":true,\"rasterNegativeControls\":92,\"completeRetainedBranches\":2,\"completeRivalModels\":2,\"fullFitUnchanged\":true,\"positiveOutsideNegativeOriginalDeferred\":true,\"positiveBoundOriginalPermittedWithinExistingOwnershipGuard\":true,\"mixedFinalWriterDoesNotCertifyBody\":true,\"malformedSupportUnknown\":true,\"mode1WhitelistPreservesSourceAndRejectsRuntimePhase\":true,\"repeatedTransportPasses\":5,\"continuationFingerprintIncludesOriginalSupport\":true}\n",
+  "realCase": "Saved z064a row retains ownership allVisibleContributionsCapturedWithinComposition=false; end-to-end comparison not yet rerun because exact appearance/branch inputs have not yet been assembled.",
+  "fullBuild": "Not run; root-owned",
+  "frozen": true
+}
