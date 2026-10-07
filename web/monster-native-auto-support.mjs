@@ -4,7 +4,7 @@ import{retainIsolatedBodySupport}from'./monster-native-isolated-support.mjs?v=na
 import{createNativeYawEvidence,referenceNativeYawFailure}from'./monster-native-yaw-evidence.mjs?v=native-yaw-mse-20261006-2101';
 import{readNativeYawDomain,nativeYawIndex,nativeYawCondition}from'./monster-native-yaw-domain.mjs?v=native-yaw-mse-20261006-2101';
 import{readNativeConditionalActionRules,prepareNativeConditionalActionSource}from'./monster-native-action-domain.mjs?v=native-action-domain-20261006-1723';
-import{createNativeBodyDestinationProvider}from'./monster-native-background-destination.mjs?v=envelope-yield-20261007-0140';
+import{createNativeBodyDestinationProvider}from'./monster-native-background-destination.mjs?v=source-reuse-interruption-20261007-0204';
 import{nativeWorkIdentity}from'./monster-native-work-identity.mjs?v=native-continuation-20261006-0333';
 // Automatic source proposals for the optional bounded native worker job.
 // Static root-on-floor/complete-envelope is a conditional branch, not live Y.
@@ -20,7 +20,7 @@ import{readNSBCA,sampleMatrices}from'./monster-animation.mjs?v=stored-pivot-sour
 import{decodeEncounterStream}from'./encounter-distribution.mjs';
 import{readNaturalMonsterScaleRule,naturalMonsterScaleCandidates}from'./monster-source-scale.mjs?v=native-body-20261006-0212';
 import{sourceFloorPlanes,preparePerspectiveBody,placeCompleteBodyOnFloors}from'./monster-perspective-body.mjs?v=native-body-20261006-0212';
-import{createNativeBodySupportRunner}from'./monster-native-support-runner.mjs?v=envelope-yield-20261007-0140';
+import{createNativeBodySupportRunner}from'./monster-native-support-runner.mjs?v=source-reuse-interruption-20261007-0204';
 import{readFrozenMonsterMode1Fog}from'./monster-source-mode1-fog.mjs?v=native-body-20261006-0212';
 import{readFrozenMonsterFog}from'./monster-source-fog.mjs?v=native-body-20261006-0212';
 const need=(v,m)=>{if(!v)throw Error(m);},clone=v=>structuredClone(v),pause=()=>new Promise(r=>setTimeout(r,0));

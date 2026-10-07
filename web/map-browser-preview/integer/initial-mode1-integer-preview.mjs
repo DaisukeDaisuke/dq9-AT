@@ -63,7 +63,7 @@ function verifySourceColors(bytes,model,sbc,instance,sourceModel,environment,mas
  * Explicit raster profile selects the same bounded component as prior probes;
  * it does not assert a running game's retained viewport/swap/hack settings.
  */
-export function* collectInitialMode1IntegerInputsSteps(project,record,automatic,camera,{viewportWord,depthMode,fragmentSamplingHack,textureScalingFactor}={}){
+export function* collectInitialMode1IntegerInputsSteps(project,record,automatic,camera,{viewportWord,depthMode,fragmentSamplingHack,textureScalingFactor}={},sourceCache=null){
  if(automatic?.plan?.recordKey!==record?.key||automatic.environmentApplied!==true||automatic.environment?.profile!=='ROM-initial-ordinary-environment'||!isSupportedMode1ColorEnvironment(automatic.environment,record.key))throw Error('Source-proven matching time-independent initial mode1 environment required');
  if(automatic.environment.normalLighting?.kind!=='source-zero-light-colors'||automatic.environment.normalLighting.lightColorWords.some((x,i)=>x!==(i<<30)>>>0))throw Error('Source mode1 zero-light proof required');
  if(!fx(camera?.viewFx)||!fx(camera?.projectionFx))throw Error('Calculated source FX32 initial camera required');
@@ -112,12 +112,12 @@ export function* collectInitialMode1IntegerInputsSteps(project,record,automatic,
        const position=projectNativePrimitiveFx(primitive,row.positionMatrixFx,row.projectionFx);
        row.args={clipVerticesFx:position.clipVerticesFx,polygonAttribute:material.polygonAttribute,primitiveMode:primitive.primitiveMode,viewportWord,depthMode,fragmentSamplingHack};
        if(allOpaque){row.classification='opaque';Object.assign(row.args,{textureFormat:binding.texture.format,textureAllAlpha255:true});}
-       else{row.textureInput=readNativeBinaryPolygonTexture(bytes,row,binding);row.classification='binary';}
+       else{row.textureInput=readNativeBinaryPolygonTexture(bytes,row,binding,{sourceCache});row.classification='binary';}
        try{
         if(!primitive.vertexIndices.every((index,k)=>commandProof.get(draw.sbcOffset)[index]===primitive.vertexCommands[k]))throw Error('Original polygon GX command/index correspondence differs');
         const rgb555=primitive.vertexIndices.map(i=>source.vertices[i]?.color555);
         if(rgb555.some(x=>!Number.isInteger(x)||x<0||x>32767))throw Error('Source event-ordered RGB555 unavailable');
-        const texture=row.textureInput??readNativeBinaryPolygonTexture(bytes,row,binding);
+        const texture=row.textureInput??readNativeBinaryPolygonTexture(bytes,row,binding,{sourceCache});
         if(!textureCache.has(binding.decoded))textureCache.set(binding.decoded,nativeRgba6665(binding.decoded));
         row.colorInput={rgb555,texture:{...texture,rgba6665:textureCache.get(binding.decoded)},source:{rule:automatic.environment.discreteOrdinaryHypothesis?'initial-mode1-discrete-source-GX-COLOR-NORMAL-tint':'initial-mode1-time-independent-source-GX-COLOR-NORMAL-tint',sbcOffset:draw.sbcOffset,shapeIndex:draw.shapeIndex,vertexCommands:primitive.vertexCommands.slice(),normalLightingApplied:source.normalLightingApplied===true,positionMatrix:billboard?'source-emitted-BB/BBY-matrix':'source-view-world-node-replay'}};
        }catch(e){row.colorRejection=e.message;}
@@ -131,8 +131,8 @@ export function* collectInitialMode1IntegerInputsSteps(project,record,automatic,
  for(const p of polygons){if(p.classification==='rejected'){counts.rejected++;colorCounts.priorRejected++;}else{counts[p.classification==='opaque'?'existingOpaque':'binaryEligible']++;colorCounts.priorEligible++;colorCounts[p.colorInput?'colorEligible':'colorRejected']++;}}
  return{recordKey:record.key,snapshot,polygons,unresolved,counts,colorCounts,geometryCounts,textureScalingFactor,rasterProfile:profile,environmentEvidence:{source:automatic.environment.source,ordinaryTimeIndependent:automatic.environment.ordinaryTimeIndependent,discreteOrdinaryHypothesis:automatic.environment.discreteOrdinaryHypothesis??null,normalLighting:automatic.environment.normalLighting,materialGlobals:automatic.environment.materialGlobals,colorTransformIdentity:automatic.environment.colorTransformIdentity,normalDraws:automatic.environmentNormalDraws,colorDraws:automatic.environmentColorDraws},scope:'Initial ROM mode1 default static pose at caller-selected geometric floor/heading. Integer source original polygons and event-ordered RGB; retained live visibility, dynamic models, fog, translucent paths and native framebuffer acceptance are unresolved.'};
 }
-export function* renderInitialMode1IntegerPreviewSteps(project,record,automatic,camera,profile){
- const inventory=yield*collectInitialMode1IntegerInputsSteps(project,record,automatic,camera,profile),depth=yield*renderClassifiedStaticBinaryDepthSteps(inventory),rgb=yield*renderStaticMode0RgbSteps(inventory,depth);
+export function* renderInitialMode1IntegerPreviewSteps(project,record,automatic,camera,profile,sourceCache=null){
+ const inventory=yield*collectInitialMode1IntegerInputsSteps(project,record,automatic,camera,profile,sourceCache),depth=yield*renderClassifiedStaticBinaryDepthSteps(inventory),rgb=yield*renderStaticMode0RgbSteps(inventory,depth);
  return{ready:true,complete:false,inventory,depth,rgb,present(options){return presentStaticRgb(rgb,options);}};
 }
 

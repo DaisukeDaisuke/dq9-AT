@@ -3,7 +3,7 @@
  * only the existing exact integer forward renderer may validate that proposal. */
 import{automaticBillboardScenes}from'./automatic-billboard-scene.mjs';
 import{buildAutomaticNormalMatrices,applyMode2ToAutomaticScenes,deriveMode2StaticMaterials}from'./integer/mode2-lighting-adapter.mjs?v=field-stream-20261005-1108';
-import{readInitialMode1RasterProfile}from'./integer/initial-mode1-integer-preview.mjs?v=envelope-yield-20261007-0140';
+import{readInitialMode1RasterProfile}from'./integer/initial-mode1-integer-preview.mjs?v=source-reuse-interruption-20261007-0204';
 import{collectStaticOpaqueDepthInputs}from'./integer/static-opaque-depth.mjs?v=native-raster-reuse-20261006-0637';
 import{classifyStaticBinaryDepthInputs,renderClassifiedStaticBinaryDepth}from'./integer/static-binary-depth.mjs?v=envelope-yield-20261007-0140';
 import{collectStaticMode0ColorInputs,renderStaticMode0Rgb}from'./integer/static-mode0-rgb.mjs?v=envelope-yield-20261007-0140';

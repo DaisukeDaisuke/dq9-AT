@@ -8,28 +8,33 @@ import {readInitialMseLayers,buildMsePolygonInputs} from './native-mse-initial-p
  * DeSmuME535f676-derived modules retain their notices; see INTEGER_RENDER_NOTICE.md.
  * No previewDepth/RGBA8888 is converted into native raster input.
  */
-import {readInitialMode1RasterProfile,renderInitialMode1IntegerPreviewSteps} from './integer/initial-mode1-integer-preview.mjs?v=envelope-yield-20261007-0140';
+import {readInitialMode1RasterProfile,renderInitialMode1IntegerPreviewSteps} from './integer/initial-mode1-integer-preview.mjs?v=source-reuse-interruption-20261007-0204';
 import {readInitialTexturedBlendProfile,collectInitialMode1TexturedTranslucentInputsSteps,rasterizeNativeTexturedTranslucentMode0,compositeTexturedTranslucentOverStaticRgbSteps} from './integer/native-textured-translucent.mjs?v=envelope-yield-20261007-0140';
 import {projectNativePrimitiveFx} from './integer/native-primitive-inputs.mjs';
 import {clipNativePositionPolygon} from './integer/native-position-clip.mjs?v=native-raster-reuse-20261006-0637';
 import {presentStaticRgb} from './integer/static-mode0-rgb.mjs?v=envelope-yield-20261007-0140';
 import {buildFogTable,applyFogPixel} from './native/fog-raster.mjs';
+import {createSourcePreparationCache} from './integer/source-preparation-cache.mjs?v=automatic-playback-source-cache-20261006-1100';
 import {readInitialMode1ClearProfile} from './integer/native-initial-clear.mjs?v=native-body-20261006-0212';
 
 export function* renderInitialIntegerFogSteps(project,rom,record,automatic,camera,{applyFog=true,screenEffectPhase=null,retainBodyDestination=false}={}){
  const diagnostics={backend:'source-integer-static-mode1',requestedFog:applyFog,recordKey:record.key,fogApplied:false,sourcePolygonCount:null,remaining:[],scope:'ROM initial mode1 static scene; live camera/environment, animation, edge marking/antialiasing and native framebuffer parity unverified.'};
+ let sourceCache=null;
  try{
   const environment=automatic.environment;
   if(!isSupportedMode1ColorEnvironment(environment,record.key))throw Error('時間独立mode1材質が未対応です');
   if(applyFog&&(!isSupportedMode1FogEnvironment(environment,record.key)))throw Error('ROMの時間独立fog入力が未解決です');
-  const profile=readInitialMode1RasterProfile(project,rom),base=yield*renderInitialMode1IntegerPreviewSteps(project,record,automatic,camera,profile),inventory=base.inventory;
+  // Reuse immutable ROM archive bytes and byte-checked GX/alpha decoding only
+  // within this render. All polygon, material, position and failure checks run.
+  sourceCache=createSourcePreparationCache(project);project=sourceCache.project;
+  const profile=readInitialMode1RasterProfile(project,rom),base=yield*renderInitialMode1IntegerPreviewSteps(project,record,automatic,camera,profile,sourceCache),inventory=base.inventory;
   diagnostics.profile=profile;diagnostics.inventory=inventory.counts;diagnostics.colorCounts=inventory.colorCounts;diagnostics.sourcePolygonCount=inventory.polygons.length;diagnostics.unresolved=inventory.unresolved;diagnostics.depth=base.depth.stats;diagnostics.availability=base.rgb.availability;
   // The existing source name-char3-A branch is collision data, not drawable
   // geometry. Every other missing source-instance/matrix/material path blocks
   // this complete-visible-static preview rather than filling from behind it.
   if(inventory.unresolved.some(x=>typeof x.reason!=='string'||!x.reason.startsWith('name-char3-A / ')))throw Error('整数経路に未解決の描画instanceがあります');
   if(base.depth.stats.rasterRejected||base.rgb.polygons.some(p=>p.rasterRejection)||base.rgb.availability.unavailable)throw Error('整数raster/RGBの可視所有画素が未解決です');
-  const translucent=yield*collectInitialMode1TexturedTranslucentInputsSteps(project,automatic,inventory),controls=readInitialTexturedBlendProfile(project,rom),participants=[];
+  const translucent=yield*collectInitialMode1TexturedTranslucentInputsSteps(project,automatic,inventory,sourceCache),controls=readInitialTexturedBlendProfile(project,rom),participants=[];
   diagnostics.translucent={eligible:translucent.polygons.length,controls,rejected:translucent.rejected};
   for(const row of translucent.rejected){const p=inventory.polygons[row.index],position=projectNativePrimitiveFx(p.primitive,p.positionMatrixFx,p.projectionFx),clip=clipNativePositionPolygon(position.clipVerticesFx);diagnostics.remaining.push({...row,model:p.model,materialName:p.materialName,positionClipDiscarded:clip.discarded,remainingVertices:clip.positionsFx.length});}
   if(diagnostics.remaining.some(p=>!p.positionClipDiscarded))throw Error('可視範囲に未対応polygonがあります（原形状と拒否理由を保持）');
@@ -48,7 +53,7 @@ export function* renderInitialIntegerFogSteps(project,rom,record,automatic,camer
   }
   const image=presentStaticRgb({...combined,rgba6665},{profile:'rgb555-expanded'}),knownMask=new Uint8Array(49152);for(let i=0;i<49152;i++){if(combined.unavailableMask[i])image.rgba[i*4+3]=0;else if(image.rgba[i*4+3]===255)knownMask[i]=1;}diagnostics.partialKnownStatic.comparablePixels=knownMask.reduce((n,v)=>n+v,0);
   return{ready:true,...image,...(bodyDestination?{bodyDestination}:{}),completeVisibleStatic:diagnostics.completeVisibleStatic,knownMask,unavailableMask:combined.unavailableMask,rgba:Uint8ClampedArray.from(image.rgba),diagnostics,scope:diagnostics.scope,stats:{...base.depth.stats,fragments:base.depth.stats.opaqueGeometricFragments+base.depth.stats.binaryGeometricFragments+combined.stats.incoming,rejected:[]}};
- }catch(error){return{ready:false,reason:error.message,diagnostics};}
+ }catch(error){return{ready:false,reason:error.message,diagnostics};}finally{sourceCache?.dispose();}
 }
 
 export function renderInitialIntegerFog(project,rom,record,automatic,camera,options={}){return runSourceStepsSync(renderInitialIntegerFogSteps(project,rom,record,automatic,camera,options));}

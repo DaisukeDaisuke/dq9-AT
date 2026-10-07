@@ -1,6 +1,6 @@
 // Delayed source-bounded geometry only. The caller first exhausts the unchanged
 // centroid pass and must not call this when any original candidate is accepted.
-import {prepareMode1PhotometricBasis,renderMode1PhotometricBasis} from './mode1-photometric-inverse.mjs?v=envelope-yield-20261007-0140';
+import {prepareMode1PhotometricBasis,renderMode1PhotometricBasis} from './mode1-photometric-inverse.mjs?v=source-reuse-interruption-20261007-0204';
 import {refineGeometryPosition} from './geometry-position-refinement.mjs?v=geometry-display-20261006-1112';
 import {floorHeightsAtXZ} from './rom-floor-candidates.mjs';
 import {continueRefinedFloorAlternatives} from './refined-floor-alternatives.mjs?v=source-scene-20261006-0040';
