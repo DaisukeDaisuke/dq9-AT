@@ -8,7 +8,7 @@ export function cpuTextDiagnostic(error,phase='client'){
  const supplied=error?.cpuDiagnostic;
  if(supplied?.revision===revision&&phases.has(supplied.phase)&&Array.isArray(supplied.frames))return {revision,phase:supplied.phase,frames:supplied.frames.slice(0,6).filter(frame)};
  const stack=typeof error?.stack==='string'?error.stack.slice(0,8192):'',frames=[];
- for(const match of stack.matchAll(/(?:^|[\s/(])([\w-]+\.mjs):([1-9]\d{0,7}):([1-9]\d{0,7})(?=[\s)]|$)/gm)){
+ for(const match of stack.matchAll(/(?:^|[\s/(])([\w-]+\.mjs)(?:\?v=[A-Za-z0-9_-]{1,80})?:([1-9]\d{0,7}):([1-9]\d{0,7})(?=[\s)]|$)/gm)){
   const value=match.slice(1).join(':');if(frame(value)&&!frames.includes(value))frames.push(value);if(frames.length===6)break;
  }
  return {revision,phase:phases.has(phase)?phase:'client',frames};

@@ -18,7 +18,7 @@ const validFrame=f=>f&&/^[a-f0-9]{64}$/.test(f.romSHA256??'')&&/^[a-f0-9]{64}$/.
  */
 export function createNativeBodyColorLineage(rgba6665,binding){
  if(!(rgba6665 instanceof Uint8Array)||rgba6665.length!==N*4||binding?.kind!=='same-frozen-source-destination-v1'||!validFrame(binding.frame)||!Number.isInteger(binding.alignment?.dx)||!Number.isInteger(binding.alignment?.dy))return null;
- const actual=rgba6665.slice(),lower=rgba6665.slice(),upper=rgba6665.slice(),boundFrame=frameKey(binding.frame),alignment={...binding.alignment};
+ const actual=rgba6665.slice(),lower=rgba6665.slice(),upper=rgba6665.slice(),boundFrame=frameKey(binding.frame),boundCamera=JSON.stringify([binding.camera?.viewFx,binding.camera?.projectionFx]),alignment={...binding.alignment};
  let supported=true,acceptedBodyWrites=0,acceptedOtherWrites=0;
  return{
   accept(i,rgb6,alpha5,body,blendEnabled,priorAlpha){
@@ -69,13 +69,14 @@ export function createNativeBodyColorLineage(rgba6665,binding){
    }
    // Native state survives rasterNativeBody's isolated-result object spread;
    // a JSON/structured clone or a caller-supplied diagnostic cannot issue this.
-   issued.set(rendered.nativeState,{displayMask,boundFrame,alignment,rgba:rendered.rgba,sourceCoverage:rendered.sourceCoverage,coverageWitness:rendered.sourceCoverage.slice(),outputIndices:Uint32Array.from(outputIndices),outputValues:Uint32Array.from(outputValues),sourceAcceptedSubset:rendered.sourceAcceptedSubset,verifiedPixels,acceptedBodyWrites,acceptedOtherWrites});
+   issued.set(rendered.nativeState,{displayMask,boundFrame,boundCamera,binding,alignment,rgba:rendered.rgba,sourceCoverage:rendered.sourceCoverage,coverageWitness:rendered.sourceCoverage.slice(),outputIndices:Uint32Array.from(outputIndices),outputValues:Uint32Array.from(outputValues),sourceAcceptedSubset:rendered.sourceAcceptedSubset,verifiedPixels,acceptedBodyWrites,acceptedOtherWrites});
    return true;
   }
  };
 }
-export function readNativeBodyColorLineage(rendered,{frame,alignment}){
+export function readNativeBodyColorLineage(rendered,{frame,alignment,camera}){
  const row=issued.get(rendered?.nativeState);
+ if(camera!==undefined&&JSON.stringify([camera?.viewFx,camera?.projectionFx])!==row?.boundCamera)return null;
  if(!row||rendered.ready!==true||rendered.sceneOcclusionApplied!==true||rendered.rgba!==row.rgba||rendered.sourceCoverage!==row.sourceCoverage||rendered.sourceAcceptedSubset!==row.sourceAcceptedSubset||!validFrame(frame)||frameKey(frame)!==row.boundFrame||alignment?.dx!==row.alignment.dx||alignment?.dy!==row.alignment.dy)return null;
  // Exact sparse displayed-byte witness plus zero outside the emitted footprint.
  // This catches mutation and cross-raster reuse without retaining an RGB frame.
@@ -85,3 +86,6 @@ export function readNativeBodyColorLineage(rendered,{frame,alignment}){
  if(cursor!==row.outputIndices.length)return null;
  return{kind:'source-accepted-body-color-lineage-v1',displayMask:row.displayMask.slice(),sourceAcceptedSubset:row.sourceAcceptedSubset,completeWithinAdmittedComposition:true,allDisplayedBodyOperandDependenciesCaptured:true,actualAcceptedRGBReplayVerified:true,sourceDestinationFrameBindingVerified:true,fixedAcceptanceTrace:true,integerBlendAndFogQuantizationIncluded:true,verifiedCompositionPixels:row.verifiedPixels,acceptedBodyColorWrites:row.acceptedBodyWrites,acceptedOtherColorWrites:row.acceptedOtherWrites,bodyRGBOperandDomain:[0,63],actualROMColorContrastCertified:false,bodyRemovalDifferenceCertified:false,indirectDepthOcclusionInfluenceIncluded:false,observedBodyCertified:false,identityCertified:false,minimumProvenATCalls:0};
 }
+
+// Exact destination object used by the verified source composition.
+export function nativeBodyColorLineageUsesDestination(rendered,binding){return binding!==undefined&&issued.get(rendered?.nativeState)?.binding===binding;}

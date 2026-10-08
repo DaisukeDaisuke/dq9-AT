@@ -44,6 +44,10 @@ const hidden='PRIVATE_INPUT_SENTINEL',sourceError={stack:`TypeError: ${hidden}\n
 const diagnostic=cpuTextDiagnostic(sourceError,'worker-match');eq(diagnostic,{revision:'cpu-text-diag-1',phase:'worker-match',frames:['font-akinator.mjs:146:19','video-panel.mjs:102:84']});ok(!JSON.stringify(diagnostic).includes(hidden));ok(!JSON.stringify(diagnostic).includes('https:'));
 eq(cpuTextDiagnostic({cpuDiagnostic:{...diagnostic,pixels:[1,2,3],frames:[...diagnostic.frames,'private.mjs:1:2','font-akinator.mjs:0:0']}},'client'),diagnostic);
 eq(cpuTextDiagnostic({stack:Array(20).fill(' at f (font-akinator.mjs:146:19)').join('\n')}).frames.length,1);
+eq(cpuTextDiagnostic({stack:' at f (file:///private/font-akinator.mjs?v=recognition-20261008-test:146:19)'},'worker-match').frames,['font-akinator.mjs:146:19']);
+eq(cpuTextDiagnostic({stack:' at f (file:///private/font-akinator.mjs?v=https://private:146:19)'}).frames,[]);
+eq(cpuTextDiagnostic({stack:' at f (file:///private/unknown.mjs?v=test:146:19)'}).frames,[]);
+
 eq(cpuTextDiagnostic({stack:Array.from({length:20},(_,i)=>` at f (font-akinator.mjs:${i+1}:1)`).join('\n')}).frames.length,6);
 eq(formatCpuTextDiagnostic({cpuDiagnostic:diagnostic}),'[cpu-text-diag-1/worker-match font-akinator.mjs:146:19 ← video-panel.mjs:102:84]');
 const diagnosticClient=new CPUTextClient({factory:()=>new FakeWorker(),now:()=>0,setTimer:()=>1,clearTimer:()=>{}}),diagnosticPending=diagnosticClient.match(image,request()),diagnosticWorker=workers.at(-1),diagnosticMessage=diagnosticWorker.messages[0];

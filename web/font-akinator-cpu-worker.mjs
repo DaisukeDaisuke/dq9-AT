@@ -1,5 +1,5 @@
-import {buildGlyphAkinatorDictionary,GlyphAkinatorMatcher,validateCpuAkinatorRequest} from './font-akinator.mjs';
-import {cpuTextDiagnostic} from './font-akinator-diagnostic.mjs';
+import {buildGlyphAkinatorDictionary,GlyphAkinatorMatcher,validateCpuAkinatorRequest} from './font-akinator.mjs?v=recognition-20261008-7cf64cf4';
+import {cpuTextDiagnostic} from './font-akinator-diagnostic.mjs?v=recognition-20261008-7cf64cf4';
 
 // A worker owns one ROM epoch and one frozen-frame request at a time. The host
 // terminates it on cancellation, ROM/frame changes, or its hard watchdog.

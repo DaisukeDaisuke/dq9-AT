@@ -1,12 +1,12 @@
 import{prepareBoundMode1NativeScene}from'./monster-native-mode1-source.mjs?v=shrine-beam-20261008-a9738d0c';
-import{renderInitialIntegerFogSteps}from'./map-browser-preview/integer-static-fog.mjs?v=native-lineage-at-20261008-556f7ca6';
+import{renderInitialIntegerFogSteps}from'./map-browser-preview/integer-static-fog.mjs?v=recognition-20261008-7cf64cf4';
 import{captureMode1MseSceneHypothesis}from'./map-browser-preview/mode1-mse-scene-hypothesis.mjs?v=native-scene-link-20261007-0354';
-import {adoptNativeBodyDestinationHandoff} from './map-browser-preview/native-body-destination-handoff.mjs?v=native-lineage-at-20261008-556f7ca6';
+import {adoptNativeBodyDestinationHandoff} from './map-browser-preview/native-body-destination-handoff.mjs?v=recognition-20261008-7cf64cf4';
 // Frame-local lazy source destination reconstruction. No final-RGB inversion,
 // transport parameters, camera search, state search or persistent pixel cache.
 import {loadAutomaticScene} from './map-browser-preview/automatic-scene.mjs';
-import {prepareMode2InverseModel,renderMode2InverseSourceSteps} from './map-browser-preview/mode2-inverse-render.mjs?v=native-lineage-at-20261008-556f7ca6';
-import {bindNativeBodyDestination} from './monster-native-scene-composition.mjs?v=native-lineage-at-20261008-556f7ca6';
+import {prepareMode2InverseModel,renderMode2InverseSourceSteps} from './map-browser-preview/mode2-inverse-render.mjs?v=recognition-20261008-7cf64cf4';
+import {bindNativeBodyDestination} from './monster-native-scene-composition.mjs?v=recognition-20261008-7cf64cf4';
 const need=(v,m)=>{if(!v)throw Error(m);};
 const task=()=>globalThis.scheduler?.yield?globalThis.scheduler.yield():new Promise(resolve=>setTimeout(resolve,0));
 /** Advance only this provider's frozen source image. A budget yield is pending,

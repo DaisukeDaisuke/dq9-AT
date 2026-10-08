@@ -1,4 +1,4 @@
-import{originalComponentMaskSHA256}from'./original-component-mask-binding.mjs?v=native-lineage-at-20261008-556f7ca6';
+import{originalComponentMaskSHA256}from'./original-component-mask-binding.mjs?v=recognition-20261008-7cf64cf4';
 import{sourcePixelComparisonBinding}from'./native-pixel-comparison-binding.mjs?v=native-scene-link-20261007-0354';
 import {classificationNow,addClassificationDuration,classificationClock} from './monster-classification-timing.mjs?v=envelope-yield-20261007-0140';
 import {fitRenderedBody} from './monster-body-support.mjs?v=proposal-support-20261006-1152';

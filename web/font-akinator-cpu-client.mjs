@@ -1,5 +1,5 @@
-import {snapshotCpuGlyphInput,validateCpuAkinatorRequest} from './font-akinator.mjs';
-import {cpuTextDiagnostic} from './font-akinator-diagnostic.mjs';
+import {snapshotCpuGlyphInput,validateCpuAkinatorRequest} from './font-akinator.mjs?v=recognition-20261008-7cf64cf4';
+import {cpuTextDiagnostic} from './font-akinator-diagnostic.mjs?v=recognition-20261008-7cf64cf4';
 // One active CPU frame job. Default is disposable; continuous preview may reuse an idle successful ROM Worker. Cancellation and watchdog always terminate active work.
 const aborted=()=>new DOMException('CPU文字照合を中止しました','AbortError');
 const need=(value,message)=>{if(!value)throw Error(message);};
@@ -8,7 +8,7 @@ export function cpuUnknownResult(reason='time-budget'){
  return {route:'glyph-akinator',backend:'cpu-reference',cpuOneFrame:true,sequence:'',characters:[],candidates:[],hypotheses:[],evaluated:0,evaluationCountKnown:false,complete:false,reason,searchStopped:reason,hypothesisSearchComplete:false,thresholdSearchComplete:false,textResolved:false,fontIdentityResolved:false,confidenceCalibrated:false,unknownTextPossible:true,unsearchedTextPossible:true,provisional:true,whitespaceUnresolved:true,workerTerminated:true};
 }
 export class CPUTextClient {
- constructor({reuseWorker=false,factory=()=>new Worker(new URL('./font-akinator-cpu-worker.mjs',import.meta.url),{type:'module'}),setTimer=(callback,delay)=>globalThis.setTimeout(callback,delay),clearTimer=timer=>globalThis.clearTimeout(timer),now=()=>performance.now()}={}){
+ constructor({reuseWorker=false,factory=()=>new Worker(new URL('./font-akinator-cpu-worker.mjs?v=recognition-20261008-7cf64cf4',import.meta.url),{type:'module'}),setTimer=(callback,delay)=>globalThis.setTimeout(callback,delay),clearTimer=timer=>globalThis.clearTimeout(timer),now=()=>performance.now()}={}){
   Object.assign(this,{factory,setTimer,clearTimer,now,reuseWorker,idle:null,active:null,sequence:0});
  }
  match(image,{glyphsBySize,romEpoch,stamp,options={}}={}){

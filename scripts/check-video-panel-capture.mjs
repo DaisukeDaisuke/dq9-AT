@@ -44,12 +44,12 @@ async function fixture({auto=false,track=true,registration=true,markerCandidates
  const context=vm.createContext(sandbox);
  const module=new vm.SourceTextModule(source+`\nexport const captureTest={readFrame,invalidateSource,setup(){matcher=testMatcher;records=[{mapId:7402,name:'TEST MAP'}];positionReady=true;positionHasReference=true;},getFile:()=>fileInput,getCamera:()=>camera,resetGPU(){gpuUnavailable=false;},setupCPU(){runtimeGlyphs={'1x1':[{char:'T',assignedChar:'T',rows:['#']}]};},getTrajectory:()=>playerCoordinator.trajectory.export(),getState:()=>({generation,romEpoch,positionEpoch,frameSerial,busy,pendingRead,observations,positionSample,mapCandidatePending,gpuUnavailable,cpuHeld,screenApproved,layoutBinding,retainedMap,roi})};`,{context,identifier:pathToFileURL(panel).href,initializeImportMeta(meta){meta.url=pathToFileURL(panel).href;}});
  await module.link(spec=>{
-  let exports=imported[spec];
-  if(spec==='./font-akinator-cpu-client.mjs')exports={CPUTextClient:class extends imported[spec].CPUTextClient{constructor(){super({factory:()=>new FakeWorker('font-akinator-cpu-worker.mjs')});}}};
-  if(spec==='./player-capture.mjs')exports={PlayerCaptureCoordinator:Coordinator};
-  if(spec==='./map-name-match.mjs')exports={createTextMatcher:()=>match};
-  if(spec==='./map-name-roi.mjs')exports={detectMapNameROI:()=>nameDetection};
-  if(spec==='./party-marker-calibration.mjs')exports={calibratedPartyMarkerCandidates:image=>{markerPixels.push(image.rgba[0]);return {frame:{width:256,height:192},candidates:structuredClone(markerCandidates),calibration:{profiles:[{slot:1,rgb:[66,66,66]}],status:'test'}};}};
+  const modulePath=spec.split('?')[0];let exports=imported[spec];
+  if(modulePath==='./font-akinator-cpu-client.mjs')exports={CPUTextClient:class extends imported[spec].CPUTextClient{constructor(){super({factory:()=>new FakeWorker('font-akinator-cpu-worker.mjs')});}}};
+  if(modulePath==='./player-capture.mjs')exports={PlayerCaptureCoordinator:Coordinator};
+  if(modulePath==='./map-name-match.mjs')exports={createTextMatcher:()=>match};
+  if(modulePath==='./map-name-roi.mjs')exports={detectMapNameROI:()=>nameDetection};
+  if(modulePath==='./party-marker-calibration.mjs')exports={calibratedPartyMarkerCandidates:image=>{markerPixels.push(image.rgba[0]);return {frame:{width:256,height:192},candidates:structuredClone(markerCandidates),calibration:{profiles:[{slot:1,rgb:[66,66,66]}],status:'test'}};}};
   return new vm.SyntheticModule(Object.keys(exports),function(){for(const [key,value]of Object.entries(exports))this.setExport(key,value);},{context});
  });
  await module.evaluate();

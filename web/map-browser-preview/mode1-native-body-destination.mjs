@@ -1,4 +1,4 @@
-import{prepareNativeBodyDestination,packNativeMapTranslucentFragments}from'../monster-native-scene-composition.mjs?v=native-lineage-at-20261008-556f7ca6';
+import{prepareNativeBodyDestination,packNativeMapTranslucentFragments}from'../monster-native-scene-composition.mjs?v=recognition-20261008-7cf64cf4';
 import{readNaturalBodyMseOrder}from'../monster-native-mse-order.mjs?v=native-yaw-mse-20261006-2101';
 import{readArm9Overlay}from'./rom-overlay.mjs';
 import{captureMode1MseSceneHypothesis,validateMode1MseSceneHypothesis}from'./mode1-mse-scene-hypothesis.mjs?v=native-scene-link-20261007-0354';

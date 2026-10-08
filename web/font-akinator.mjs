@@ -134,6 +134,21 @@ function createCpuScorer(d,spec,width,height,disposableWorker){
   if(disposableWorker&&performance.now()-lastYield<20)return;
   await new Promise(resolve=>setTimeout(resolve,0));lastYield=performance.now();
  }
+ // Collapse only consecutive horizontal cells. Their shared rounded edges
+ // cancel exactly in both area and integer prefix sums; no f32 arithmetic,
+ // new search pruning, frame/result cache, or cross-request state is involved.
+ const cellCount=d.glyphs.reduce((sum,_,gi)=>sum+d.metas[gi*6+1],0);
+ const runs=new Uint32Array(cellCount*2),offsets=new Uint32Array(d.glyphs.length+1);let runCount=0;
+ for(let gi=0;gi<d.glyphs.length;gi++){
+  offsets[gi]=runCount;
+  const start=d.metas[gi*6],end=start+d.metas[gi*6+1];
+  for(let k=start;k<end;){
+   const first=d.coords[k++],x=first&65535,y=first>>>16;let length=1;
+   while(k<end&&x+length<=65535&&d.coords[k]===((y*65536)+x+length)){length++;k++;}
+   runs[runCount*2]=first;runs[runCount*2+1]=length;runCount++;
+  }
+ }
+ offsets[d.glyphs.length]=runCount;
  const edge=(a,max)=>Math.min(max,Math.max(0,Math.ceil(a-.5))),stride=width+1;
  return {cap:2048,beginPass(p,i){prefix=p;info=i;},destroy(){},yieldControl,async score(start,count,interrupted){
   const scores=new Uint32Array(count);let cellsSinceYield=0;
@@ -143,14 +158,20 @@ function createCpuScorer(d,spec,width,height,disposableWorker){
    const dx=(pi%spec.posW-spec.xSteps)*spec.stepMilli/1000,dy=(Math.floor(pi/spec.posW)-spec.ySteps)*spec.stepMilli/1000,scale=spec.sizes[si]/750;
    const tx=info.bounds.minX-d.metas[gi*6+2]*scale+dx,ty=info.bounds.minY-d.metas[gi*6+3]*scale+dy;
    let cw=0,inter=0;
-   for(let k=0;k<d.metas[gi*6+1];k++){
-    const v=d.coords[d.metas[gi*6]+k],x=v&65535,y=v>>>16;
-    const x0=edge(tx+x*scale,width),x1=edge(tx+(x+1)*scale,width),y0=edge(ty+y*scale,height),y1=edge(ty+(y+1)*scale,height);
-    cw+=(x1-x0)*(y1-y0);inter+=prefix[y1*stride+x1]+prefix[y0*stride+x0]-prefix[y0*stride+x1]-prefix[y1*stride+x0];
-    // Even one unusually dense glyph cannot monopolize the worker indefinitely.
-    if(++cellsSinceYield>=32768){
-     cellsSinceYield=0;await yieldControl();
-     const stopped=interrupted();if(stopped)return {scores,evaluated:j,reason:stopped};
+   for(let k=offsets[gi];k<offsets[gi+1];k++){
+    const v=runs[k*2],runX=v&65535,y=v>>>16,length=runs[k*2+1];
+    const y0=edge(ty+y*scale,height),y1=edge(ty+(y+1)*scale,height);
+    for(let consumed=0;consumed<length;){
+     // Preserve the original 32768-cell cancellation/yield checkpoints,
+     // including a checkpoint inside one unusually long horizontal run.
+     const cells=Math.min(length-consumed,32768-cellsSinceYield),x=runX+consumed;
+     const x0=edge(tx+x*scale,width),x1=edge(tx+(x+cells)*scale,width);
+     cw+=(x1-x0)*(y1-y0);inter+=prefix[y1*stride+x1]+prefix[y0*stride+x0]-prefix[y0*stride+x1]-prefix[y1*stride+x0];
+     consumed+=cells;cellsSinceYield+=cells;
+     if(cellsSinceYield>=32768){
+      cellsSinceYield=0;await yieldControl();
+      const stopped=interrupted();if(stopped)return {scores,evaluated:j,reason:stopped};
+     }
     }
    }
    scores[j]=info.white+cw-2*inter;

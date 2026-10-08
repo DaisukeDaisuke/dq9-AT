@@ -1,21 +1,21 @@
 import {loadMapKernel} from '../map-kernel-loader.mjs?v=registration-timing-20261007-0020';
 import {classificationNow,classificationDuration,classificationClock,emitClassificationTiming} from '../monster-classification-timing.mjs?v=envelope-yield-20261007-0140';
 import {mountResidualInferencePreparation} from './residual-inference-preparation.mjs?v=envelope-yield-20261007-0140';
-import {createVideoTrackingAT,videoATSearchOptions} from './video-tracking-at.mjs?v=native-lineage-at-20261008-556f7ca6';
-import {runResidualRecognitionJob} from './residual-recognition-job.mjs?v=native-lineage-at-20261008-556f7ca6';
-import {VideoMapContinuity} from './video-map-continuity.mjs?v=shrine-beam-20261008-a9738d0c';
-import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=native-lineage-at-20261008-556f7ca6';
+import {createVideoTrackingAT,videoATSearchOptions} from './video-tracking-at.mjs?v=recognition-20261008-7cf64cf4';
+import {runResidualRecognitionJob} from './residual-recognition-job.mjs?v=recognition-20261008-7cf64cf4';
+import {VideoMapContinuity} from './video-map-continuity.mjs?v=recognition-20261008-7cf64cf4';
+import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=recognition-20261008-7cf64cf4';
 import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=shrine-beam-20261008-a9738d0c';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
-import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=native-lineage-at-20261008-556f7ca6';
+import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=recognition-20261008-7cf64cf4';
 import {residualModelPlan} from './residual-recognition-input.mjs?v=conditional-ui-20261007-0257';
-import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=native-lineage-at-20261008-556f7ca6';
-import {CPUTextClient} from '../font-akinator-cpu-client.mjs?v=provided-layout-20261005';
+import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=recognition-20261008-7cf64cf4';
+import {CPUTextClient} from '../font-akinator-cpu-client.mjs?v=recognition-20261008-7cf64cf4';
 import {deriveVideoMapNames} from './video-map-name-input.mjs?v=shrine-beam-20261008-a9738d0c';
 import {MapPositionMatcher} from '../map-position.mjs?v=registration-timing-20261007-0020';
 import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs?v=shrine-beam-20261008-a9738d0c';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
-import {mountMapVideoComparison} from './map-video-comparison.mjs?v=native-lineage-at-20261008-556f7ca6';
+import {mountMapVideoComparison} from './map-video-comparison.mjs?v=recognition-20261008-7cf64cf4';
 import {openMapRom} from './static-scene.mjs?v=native-source-reuse-20261006-1028';
 import {buildRomMapCatalog} from './rom-map-catalog.mjs';
 import {nameCatalogMaps} from './rom-map-names.mjs';
@@ -131,7 +131,7 @@ async function renderFromMarker(input){
  if(!multiple)await render();
 }
 async function render(){
- if(!point||!$('floor').options.length||$('floor').value==='')return;const id=version,drawId=++renderVersion,comparisonFrameId=videoComparison.frameId();videoComparison.invalidate('背景を再描画しています。');const selected={...point,yFx:Number($('floor').value),yawDegrees:Number($('yaw').value)};$('status').textContent='CPUで描画しています…';await frame();if(id!==version||drawId!==renderVersion)return;
+ if(!automatic||!point||!$('floor').options.length||$('floor').value==='')return;const id=version,drawId=++renderVersion,comparisonFrameId=videoComparison.frameId();videoComparison.invalidate('背景を再描画しています。');const selected={...point,yFx:Number($('floor').value),yawDegrees:Number($('yaw').value)};$('status').textContent='CPUで描画しています…';await frame();if(id!==version||drawId!==renderVersion)return;
  const camera=automaticPreviewCamera(project,rom,record,selected),active=applyAutomaticMaterialEnvironment(project,record,automaticBillboardScenes(project,automatic,camera.viewFx));
  if(!active.environmentApplied){$('diagnostics').textContent=JSON.stringify(active.environment,null,2);throw Error('ROMの初期環境をまだ適用できません: '+active.environment.unresolved.join('; '));}
  const parts=active.scenes.map(s=>prepareDrawPackets(s,{materialGlobals:active.environment.materialGlobals,masks:automatic.masks})),packets={draws:parts.flatMap(x=>x.draws)},requestedRenderer=$('render-profile').value;

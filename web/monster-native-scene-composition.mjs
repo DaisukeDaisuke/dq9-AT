@@ -1,9 +1,10 @@
+import {retainNativeBodyComparisonDestination} from './monster-native-comparison-support.mjs?v=recognition-20261008-7cf64cf4';
 /* SPDX-License-Identifier: GPL-2.0-or-later
  * DeSmuME contributors, 535f676: GFX3D_GenerateRenderLists, _pixel,
  * alphaBlend and fog postprocess. Conditional source scene/body composition.
  * No reconstruction from final RGB; no live actor, MSE or ordering assertion.
  */
-import {createNativeBodyColorLineage} from './monster-native-color-lineage.mjs?v=native-lineage-at-20261008-556f7ca6';
+import {createNativeBodyColorLineage} from './monster-native-color-lineage.mjs?v=recognition-20261008-7cf64cf4';
 import {createNativeBodyColorDependency} from './monster-native-color-dependency.mjs?v=rgb-dependency-optin-20261007-0943';
 import {compositeBinaryAwareDepth} from './map-browser-preview/integer/native-binary-alpha.mjs?v=automatic-playback-source-cache-20261006-1100';
 import {applyFogPixel} from './map-browser-preview/native/fog-raster.mjs';
@@ -108,7 +109,8 @@ export function bindNativeBodyDestination(destination,{frame,camera,alignment,re
  need(Number.isInteger(alignment?.dx)&&Number.isInteger(alignment?.dy)&&reconstructedRGBA?.length===N*4&&backgroundRGBA?.length===N*4&&validMask?.length===N,'Source/null RGBA, mask and alignment required');
  const knownMask=destination.knownMask.slice(),mismatchMask=new Uint8Array(N);let backgroundMismatchPixels=0,unavailableComparisonPixels=0;
  for(let i=0;i<N;i++){const x=i%256+alignment.dx,y=(i>>8)+alignment.dy,j=y*256+x;if(x<0||x>=256||y<0||y>=192||!validMask[j]){knownMask[i]=0;unavailableComparisonPixels++;continue;}if([0,1,2,3].some(c=>reconstructedRGBA[i*4+c]!==backgroundRGBA[j*4+c])){knownMask[i]=0;mismatchMask[i]=1;backgroundMismatchPixels++;}}
- return{...destination,knownMask,mismatchMask,binding:{kind:'same-frozen-source-destination-v1',frame:structuredClone(frame),camera:structuredClone(camera),alignment:{...alignment},backgroundMismatchPixels,unavailableComparisonPixels}};
+ const binding={kind:'same-frozen-source-destination-v1',frame:structuredClone(frame),camera:structuredClone(camera),alignment:{...alignment},backgroundMismatchPixels,unavailableComparisonPixels};retainNativeBodyComparisonDestination(binding,backgroundRGBA,validMask);
+ return{...destination,knownMask,mismatchMask,binding};
 }
 
 /** Compact per-pixel source-order stream. Strictly behind the original opaque

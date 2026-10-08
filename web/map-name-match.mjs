@@ -1,6 +1,6 @@
 import {getGPU,makeBuffer,maskInfo,buildPrefix} from './vendor/font-match-reference.mjs';
-import {GlyphAkinatorMatcher,buildGlyphAkinatorDictionary} from './font-akinator.mjs';
-export {GlyphAkinatorMatcher,buildGlyphAkinatorDictionary} from './font-akinator.mjs';
+import {GlyphAkinatorMatcher,buildGlyphAkinatorDictionary} from './font-akinator.mjs?v=recognition-20261008-7cf64cf4';
+export {GlyphAkinatorMatcher,buildGlyphAkinatorDictionary} from './font-akinator.mjs?v=recognition-20261008-7cf64cf4';
 // Explicit routes keep the existing whole-name reference available.
 export function createTextMatcher({route,glyphsBySize,records=[]}){
  if(route==='glyph-akinator')return new GlyphAkinatorMatcher(buildGlyphAkinatorDictionary(glyphsBySize));

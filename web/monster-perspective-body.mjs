@@ -1,4 +1,4 @@
-import{nativeOriginalProposalAttribution}from'./monster-native-proposal-support.mjs?v=native-lineage-at-20261008-556f7ca6';
+import{nativeOriginalProposalAttribution}from'./monster-native-proposal-support.mjs?v=recognition-20261008-7cf64cf4';
 // Isolated continuous source-geometry diagnostic. Not imported by recognition.
 // No template normalization, pixel rescaling, species gate, or AT evidence.
 import {orientMonsterVertices} from './monster-render-state.mjs';

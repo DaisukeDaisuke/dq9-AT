@@ -1,8 +1,8 @@
 // Conditional extent evidence for the exact already-tested native proposal.
 // No extra renders, component merging, score threshold, identity decision or
 // conversion of the composite's final alpha into a visible-body mask.
-import {readNativeBodyColorLineage} from './monster-native-color-lineage.mjs?v=native-lineage-at-20261008-556f7ca6';
-import {nativeProjectedBodyEnvelope} from './monster-native-body-placement.mjs?v=native-lineage-at-20261008-556f7ca6';
+import {readNativeBodyColorLineage} from './monster-native-color-lineage.mjs?v=recognition-20261008-7cf64cf4';
+import {nativeProjectedBodyEnvelope} from './monster-native-body-placement.mjs?v=recognition-20261008-7cf64cf4';
 const WIDTH=256,HEIGHT=192,PIXELS=WIDTH*HEIGHT;
 const unsupported=reason=>({ready:false,empty:null,roi:null,pixels:null,reason});
 const validMask=mask=>mask instanceof Uint8Array&&mask.length===PIXELS&&mask.every(x=>x===0||x===1);

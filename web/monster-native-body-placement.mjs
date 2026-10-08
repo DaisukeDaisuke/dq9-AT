@@ -2,7 +2,7 @@
  * No video scale fit, template box, model-ID rule, or ROI-bottom foot anchor.
  * This adds a hypothesis; it does not invalidate the decoded-envelope path.
  */
-import {projectNativeBodyPolygons} from './monster-native-body.mjs?v=native-lineage-at-20261008-556f7ca6';
+import {projectNativeBodyPolygons} from './monster-native-body.mjs?v=recognition-20261008-7cf64cf4';
 import {createNativeBodyBillboardState} from './monster-native-billboard.mjs';
 const need=(v,m)=>{if(!v)throw Error(m);};
 function billboard(program,profile){

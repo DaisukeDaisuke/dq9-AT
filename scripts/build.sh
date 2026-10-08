@@ -167,6 +167,7 @@ node scripts/test-mode1-mse-composition.mjs
 node scripts/test-native-observation-viewport.mjs
 node scripts/test-native-boundary-placement.mjs
 node scripts/test-native-color-lineage.mjs
+node scripts/test-native-comparison-contract.mjs
 node scripts/test-native-isolated-support.mjs
 
 # Exact native yaw classes, resumable continuation and lossless evidence.
@@ -207,3 +208,5 @@ node scripts/test-native-work-identity-bytes.mjs
 # Camera-relative ordering retains the original source domain even after hint failure.
 node scripts/test-native-reference-camera.mjs
 node scripts/test-relative-hint-preparation-failure.mjs
+
+node --test scripts/test-map-observation-purpose-separation.mjs

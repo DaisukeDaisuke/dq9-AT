@@ -2,22 +2,23 @@ import {resolveConditionalBeamBackground} from './conditional-beam-background.mj
 import {createReadyMode1GeometryFallback,hasNonzeroSourceXZBounds} from './ready-mode1-geometry-fallback.mjs?v=native-viewport-color-20261008-99202e36';
 import {createAutomaticMonsterMapGate} from './automatic-monster-map-eligibility.mjs?v=monster-map-cpu-20261006-1005';
 import{createAmbiguousMarkerBackgroundBudget}from'./physical-marker-background-hypotheses.mjs?v=native-continuation-20261006-0333';
-import{buildBackgroundBranchSupport}from'./background-branch-support.mjs?v=native-lineage-at-20261008-556f7ca6';
+import{buildBackgroundBranchSupport}from'./background-branch-support.mjs?v=recognition-20261008-7cf64cf4';
 import{createSourceAnchorSceneInference}from'./source-anchor-scene-inference.mjs?v=shrine-beam-20261008-a9738d0c';
 import{resolveFrozenInferencePixels}from'./capture-analysis-pixels.mjs?v=native-continuation-20261006-0333';
 import{createMode1BackgroundInference}from'./automatic-mode1-background.mjs?v=shrine-beam-20261008-a9738d0c';
-import {Mode2VideoContinuity} from './mode2-video-continuity.mjs?v=native-lineage-at-20261008-556f7ca6';
-import {inferAutomaticMode2Background} from './automatic-mode2-background.mjs?v=native-lineage-at-20261008-556f7ca6';
+import {Mode2VideoContinuity} from './mode2-video-continuity.mjs?v=recognition-20261008-7cf64cf4';
+import {inferAutomaticMode2Background} from './automatic-mode2-background.mjs?v=recognition-20261008-7cf64cf4';
 import {readRomMapCameraInputGate} from './rom-camera-input-gate.mjs';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
 import {CandidateMapMatcher} from '../map-disambiguation.mjs?v=registration-timing-20261007-0020';
 import {loadAutomaticScene} from './automatic-scene.mjs';
+import {planRomScene} from './rom-scene-plan.mjs';
 import {loadRomFloorInstances} from './rom-floor-candidates.mjs';
 import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=shrine-beam-20261008-a9738d0c';
 import {automaticPreviewCamera} from './automatic-preview-camera.mjs';
 import {automaticBillboardScenes} from './automatic-billboard-scene.mjs';
 import {applyAutomaticMaterialEnvironment} from './automatic-material-environment.mjs?v=native-body-20261006-0212';
-import {createAutomaticBackgroundRenderer} from './automatic-background-renderer.mjs?v=native-lineage-at-20261008-556f7ca6';
+import {createAutomaticBackgroundRenderer} from './automatic-background-renderer.mjs?v=recognition-20261008-7cf64cf4';
 import {readRomMapScreenEffectPlan} from './rom-map-screen-effect-plan.mjs';
 import {prepareDrawPackets} from './draw-packets.mjs';
 import {rasterizePreviewPackets} from './cpu-preview.mjs';
@@ -30,6 +31,16 @@ export class AutomaticVideoAlignment {
  phasePlan(effect){return{phases:effect.ready&&effect.request?[null,{kind:'source-constructor'}]:[null],coverage:{kind:'initial-diagnostic-only',phaseEnumeration:false,currentPhaseProven:false,requiredInput:'Map entry timeline and enabled draw history; not filled by phase brute force'}};}
  headingPlan(record){const gate=readRomMapCameraInputGate(this.project,this.rom,record);const source=readRomCameraYawCandidates(this.project.sdk);return{...source,candidates:gate.ready&&gate.mapAllowsShoulderInput?source.candidates:[readRomInitialHeading(this.project.sdk)],gate,scope:gate.ready?(gate.mapAllowsShoulderInput?'ROM permits shoulder input: initial and L/R endpoints evaluated; intermediate/runtime angles unresolved':'ROM map disables shoulder input: initial hypothesis only; script/runtime changes unresolved'):'Map input gate unresolved: initial hypothesis only, other headings unsearched'};}
  scene(record){if(this.scenes.has(record.key)){this.sceneHits++;return this.scenes.get(record.key);}this.sceneMisses++;const automatic=loadAutomaticScene(this.project,record),floors=loadRomFloorInstances(this.project,automatic.plan),value={automatic,floors};if(this.scenes.size>=4)this.scenes.delete(this.scenes.keys().next().value);this.scenes.set(record.key,value);return value;}
+ // Encounter admission gates expensive monster background work only. Map
+ // observations still need the same source COL2 queries, without decoding any
+ // scene models/textures or preparing a renderer. Keep a separate bounded cache.
+ mapInputScene(record,eligibility){
+  if(!eligibility?.skipBackground)return this.scene(record);
+  const cache=this.mapInputScenes??=new Map();if(cache.has(record.key))return cache.get(record.key);
+  let floors;try{const plan=planRomScene(this.project,record);floors=loadRomFloorInstances(this.project,plan);floors.unsupported.push(...plan.unresolved.map(reason=>({reason,source:'ROM scene plan'})));}
+  catch(error){floors={instances:[],unsupported:[{reason:error.message,source:'ROM map-input floor preparation'}]};}
+  const value={automatic:null,floors,observationOnly:true};if(cache.size>=4)cache.delete(cache.keys().next().value);cache.set(record.key,value);return value;
+ }
  async search({input,names,prevalidatedMaps=null,headingsFor,onProgress=async()=>{},isCurrent=()=>true}){
   const {project,rom,catalog,records,matcher}=this,rows=[],mapRows=[],workflowRows=[],located=[],unlocated=[],passingBackgrounds=[],readyMode1Queue=[],completedRows=new Set();let interruptionStage='input-preparation';
   try{const roi=gameplayVideoROI(input.sourceImage.width,input.sourceImage.height,input.layout),video=sampleGameplayFrame(input.sourceImage,roi);let selected=null;const ambiguousMarkerBudget=createAmbiguousMarkerBackgroundBudget();
@@ -38,8 +49,14 @@ export class AutomaticVideoAlignment {
   const analysisInput=()=>analysisInputPromise??=resolveFrozenInferencePixels({input,video,isCurrent});
   const renderer={compose:(_project,path)=>{if(this.referenceCache.cache.has(path))this.imageHits++;else this.imageMisses++;return this.referenceCache.image(path,2097152);}};
   for(const candidate of names.maps){interruptionStage='map-record-resolution';check();const record=records.find(r=>r.key===candidate.key);if(!record){mapRows.push({key:candidate.key,unsupported:'ROM record unavailable'});if(input.automaticRecognition===true)workflowRows.push({recordKey:candidate.key,mapId:candidate.mapId??null,status:'unknown',skipBackground:false,reason:'ROM record unavailable',mapCandidateRetained:true,absenceCertified:false,minimumProvenATCalls:0});continue;}
-   const eligibility=this.monsterWorkflowEligibility(record,input);if(eligibility){const observation={recordKey:record.key,mapId:record.mapId,fieldCode:record.fieldCode,monsterWorkflow:eligibility};workflowRows.push({recordKey:record.key,...eligibility});if(eligibility.skipBackground){mapRows.push({...observation,status:'background-skipped-for-monster-workflow',mapIdentityCertified:false,actorPositionKnown:false});await onProgress({phase:'map',message:'地図候補を保持: '+record.displayLabel+' / ROMエンカウント参照がないため敵特定用の背景探索を省略'});continue;}}
-   interruptionStage='minimap-registration';let scene,selection;try{scene=this.scene(record);selection=(prevalidatedMaps?.frameId===input.frameId&&prevalidatedMaps.sourceImage===input.sourceImage?prevalidatedMaps.selections.get(record.key):null)??await resolveVideoMinimapCandidates({record,catalog,renderer,matcher,floors:scene.floors,...input,isCurrent,onCandidate:async r=>{await onProgress({phase:'map',message:'地図画像を照合中: '+r.path});}});mapRows.push({...selection.diagnostics,...(eligibility?{monsterWorkflow:eligibility}:{})});}catch(error){if(error.name==='AbortError')throw error;mapRows.push({key:record.key,mapId:record.mapId,unsupported:error.message,...(eligibility?{monsterWorkflow:eligibility}:{})});continue;}
+   const eligibility=this.monsterWorkflowEligibility(record,input);if(eligibility)workflowRows.push({recordKey:record.key,...eligibility});
+   interruptionStage='minimap-registration';let scene,selection;try{scene=this.mapInputScene(record,eligibility);selection=(prevalidatedMaps?.frameId===input.frameId&&prevalidatedMaps.sourceImage===input.sourceImage?prevalidatedMaps.selections.get(record.key):null)??await resolveVideoMinimapCandidates({record,catalog,renderer,matcher,floors:scene.floors,...input,isCurrent,onCandidate:async r=>{await onProgress({phase:'map',message:'地図画像を照合中: '+r.path});}});mapRows.push({...selection.diagnostics,...(eligibility?{monsterWorkflow:eligibility,...(eligibility.skipBackground?{backgroundStatus:'background-skipped-for-monster-workflow'}:{})}:{})});}catch(error){if(error.name==='AbortError')throw error;mapRows.push({key:record.key,mapId:record.mapId,unsupported:error.message,...(eligibility?{monsterWorkflow:eligibility}:{})});continue;}
+   if(eligibility?.skipBackground){
+    for(const anchor of selection.anchorOnly??[]){const evidence={recordKey:record.key,mapId:record.mapId,descriptor:anchor.path,anchorCandidates:anchor.anchorCandidates,world:null,floor:null,actorPositionKnown:false,mapIdentityCertified:false};unlocated.push({record,scene,reference:anchor,evidence});}
+    const paths=selection.diagnostics.equivalentGroups.map(g=>g[0]),references=[...selection.accepted.filter(a=>paths.includes(a.path)),...(selection.physicalMarkerHypotheses??[])];
+    for(const reference of references)for(const {position,evidence:markerHypothesis}of(reference.backgroundPositionCandidates??[{position:reference.result.primaryCandidate,evidence:null}]))if(position)located.push({record,scene,reference,position,markerHypothesis});
+    await onProgress({phase:'map',message:'地図照合の証拠を保持: '+record.displayLabel+' / ROMエンカウント参照がないため敵特定用の背景探索を省略'});continue;
+   }
    for(const anchor of selection.anchorOnly??[]){
     const evidence={recordKey:record.key,mapId:record.mapId,descriptor:anchor.path,anchorCandidates:anchor.anchorCandidates,world:null,floor:null,actorPositionKnown:false,mapIdentityCertified:false};unlocated.push({record,scene,reference:anchor,evidence});
     const yawPlan=headingsFor?await headingsFor(record,null,scene):this.headingPlan(record),analysis=await analysisInput();
