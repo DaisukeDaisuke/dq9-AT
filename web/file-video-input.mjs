@@ -44,10 +44,22 @@ export class FileVideoInput {
  pauseResumePresentation(metadata,context,diagnostic,clock,time,previous){
   const pending=this.pendingPresentation;
   if(pending){
-   this.pendingPresentation=null;const caughtUp=clock==='mediaTime'&&this.currentPresentationCallback(context)&&Number.isSafeInteger(metadata?.presentedFrames)&&metadata.presentedFrames>pending.metadata.presentedFrames&&time>=pending.record.previousPTS;
-   pending.record.resolution=caughtUp?'forward-catch-up-observed':'not-confirmed';pending.record.resolutionState=this.diagnosticState();pending.record.nextCapture=structuredClone(diagnostic);this.notifyPresentation(pending.record,metadata);
-   // Do not reinterpret a second regression: the unchanged comparison below
-   // resets it. Forward samples keep their own original timestamp and pixels.
+   this.pendingPresentation=null;
+   const state=this.diagnosticState(),last=pending.record.lastWithheld??{mediaTime:pending.metadata.mediaTime,presentedFrames:pending.metadata.presentedFrames,currentTime:pending.record.incomingCapture.before.currentTime},owned=clock==='mediaTime'&&this.currentPresentationCallback(context)&&state.sourceId===pending.record.sourceId&&state.sourceEpoch===pending.record.sourceEpoch&&state.timelineSegment===pending.record.timelineSegment&&state.playbackRate===pending.record.resume.playbackRate;
+   const monotonic=owned&&Number.isSafeInteger(metadata?.presentedFrames)&&metadata.presentedFrames===last.presentedFrames+1&&time>last.mediaTime&&Number.isFinite(state.currentTime)&&state.currentTime>=last.currentTime;
+   const caughtUp=monotonic&&time>=pending.record.previousPTS;
+   if(monotonic&&pending.record.lowerObservedPTS<=time&&time<pending.record.previousPTS&&time<=state.currentTime){
+    // Additional presentations inside this measured pause interval remain
+    // unobserved. Never feed their pixels, timestamps or counts to inference.
+    const sample={mediaTime:time,presentedFrames:metadata.presentedFrames,currentTime:state.currentTime,registration:structuredClone(context.registration)};
+    pending.record.lastWithheld=sample;pending.record.withheldPresentations=(pending.record.withheldPresentations??1)+1;
+    (pending.record.recentWithheld??=[]).push(sample);if(pending.record.recentWithheld.length>8){pending.record.recentWithheld.shift();pending.record.evictedWithheld=(pending.record.evictedWithheld??0)+1;}
+    pending.record.resolution='pending-forward-check';pending.record.resolutionState=state;diagnostic.outcome='pause-resume-presentation-withheld';
+    this.pendingPresentation=pending;this.notifyPresentation(pending.record,metadata);return true;
+   }
+   pending.record.resolution=caughtUp?'forward-catch-up-observed':'not-confirmed';pending.record.resolutionState=state;pending.record.nextCapture=structuredClone(diagnostic);this.notifyPresentation(pending.record,metadata);
+   // A missing presentation, nonincreasing PTS or lost owner cannot extend
+   // this hold. The ordinary regression/seek rules below remain unchanged.
   }
   const b=this.pauseBoundary;this.pauseBoundary=null;
   if(!b?.resumed||clock!=='mediaTime'||!(time<previous)||!this.currentPresentationCallback(context)||context.registration.serial!==b.registration?.serial||context.registration.callbackId!==b.registration?.callbackId||previous!==b.upperObservedPTS||!(b.lowerObservedPTS<=time&&time<=b.resume.currentTime)||!Number.isFinite(this.video.currentTime)||this.video.currentTime<b.resume.currentTime||metadata.presentedFrames!==b.anchor.metadata.presentedFrames+1)return false;

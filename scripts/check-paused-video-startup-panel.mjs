@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
 import {test} from 'node:test';
 import {createVideoTrackingCapture} from '../web/map-browser-preview/video-tracking-capture.mjs';
-const panelURL=new URL('../web/map-browser-preview/map-video-comparison.mjs?v=pause-bracket-20261008-59aef60e',import.meta.url),source=await readFile(panelURL,'utf8'),imports=new Map();
+const panelURL=new URL('../web/map-browser-preview/map-video-comparison.mjs?v=replay-sequence-20261008-a60b0c3b',import.meta.url),source=await readFile(panelURL,'utf8'),imports=new Map();
 for(const spec of [...source.matchAll(/^import.*?from\s*['"]([^'"]+)['"]/gm)].map(m=>m[1]))imports.set(spec,await import(new URL(spec,panelURL)));
 const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return{promise,resolve,reject};};
 const turns=async(n=20)=>{for(let i=0;i<n;i++)await Promise.resolve();};

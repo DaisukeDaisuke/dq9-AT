@@ -65,5 +65,5 @@ test('dispose and remount leave exactly one listener and ignore all old work',()
 });
 test('display expansion and JSON refresh do not change full exported observations',()=>{
  const f=fixture(),value=observation(),before=JSON.stringify(value);renderClassificationSummary(f.container,value,{document:f.document});expandAll(f,f.container.firstChild);const display=createDeferredEvidenceJSON(f.pre,recognitionDisplaySummary,f);display.set(value);f.open(f.details);f.flush();display.clear();assert.equal(JSON.stringify(value),before);
- const panel=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs?v=pause-bracket-20261008-59aef60e',import.meta.url),'utf8');assert.match(panel,/const exported=latestCompletedClassification\?\.value\?\?classification/);assert.match(panel,/new Blob\(\[JSON.stringify\(exported,null,2\)\]/);assert.doesNotMatch(panel,/textContent=JSON.stringify\(recognitionDisplaySummary/);
+ const panel=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs?v=replay-sequence-20261008-a60b0c3b',import.meta.url),'utf8');assert.match(panel,/const exported=latestCompletedClassification\?\.value\?\?classification/);assert.match(panel,/new Blob\(\[JSON.stringify\(exported,null,2\)\]/);assert.doesNotMatch(panel,/textContent=JSON.stringify\(recognitionDisplaySummary/);
 });
