@@ -8,7 +8,7 @@ import {mineFieldGraphs,fieldPathName} from '../web/field-graph.mjs';
 import {decodeCalls} from '../web/map-core.mjs';
 import {openMapRom} from '../web/map-browser-preview/static-scene.mjs';
 import {buildRomMapCatalog} from '../web/map-browser-preview/rom-map-catalog.mjs';
-import {createVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=route-cursor-20261008-d2296d0e';
+import {createVideoTrackingAT as createProductionVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=route-cursor-20261008-d2296d0e';
 let checks=0;const eq=(a,b)=>{assert.deepEqual(a,b);checks++;},reject=async(f,name)=>{await assert.rejects(f,name?{name}:undefined);checks++;};
 const hash=b=>createHash('sha256').update(b).digest('hex');
 const romSHA256='a'.repeat(64),frame=(t,key)=>({romSHA256,sourceId:'synthetic-video',sourceEpoch:1,timelineSegment:2,sourcePTS:t,frameKey:key});
@@ -47,6 +47,11 @@ let actual=null;if(process.argv[2]&&process.argv[3]){
 }
 // Existing controller defaults and the new no-source/unknown branch do not start
 // an AT search, even when static preparation is requested.
+// Route persistence uses the existing store DI in Node-only fixtures.
+const createVideoTrackingAT=options=>{
+ const records=new Map(),store={load:async key=>structuredClone(records.get(key)??null),save:async(key,value)=>{records.set(key,structuredClone(value));}};
+ return createProductionVideoTrackingAT({openStore:async()=>store,...options});
+};
 const states=[],controller=createVideoTrackingAT({getReplaySourceContext:()=>noFiles,engineRevision:'synthetic-source-preparation',onState:s=>states.push(s),prepare:()=>{throw Error('No body evidence must not prepare AT');}});
 await controller.observe({schema:'headless-monster-observation-bundle-v1',source:{background:{romSHA256},modelPlan:{models:[]}},sightings:[],videoObservations:[]});eq(controller.replaySourcePreparation.bindings,[]);eq(states.at(-1).status,'waiting');eq(states.at(-1).replaySourcePreparation.nativeReplayExecuted,false);controller.cancel();eq(controller.replaySourcePreparation,null);
 console.log(JSON.stringify({passed:true,checks,actual,scope:'Conditional static source preparation and controller connection. No live origin, source-clock producer, actor identity or current AT recovery.'},null,2));
