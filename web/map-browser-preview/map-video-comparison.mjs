@@ -5,12 +5,12 @@ import{measuredClassificationView}from'./measured-classification-view.mjs?v=cont
 import{VideoTrackingReplay,waitForMeasuredReplayFrame}from'./video-tracking-replay.mjs?v=continuity-yield-local-evidence-20261006-1458';
 import{videoTrackingFrameKey}from'./video-patch-correspondence.mjs?v=continuity-yield-local-evidence-20261006-1458';
 import{createVideoTrackingCapture}from'./video-tracking-capture.mjs?v=shrine-beam-20261008-a9738d0c';
-import {captureResidualNativeBackground} from './residual-recognition-job.mjs?v=recognition-20261008-7cf64cf4';
+import {captureResidualNativeBackground} from './residual-recognition-job.mjs?v=native-async-20261008-43d9a67a';
 import {createFrozenAnalysisCapture} from './capture-analysis-pixels.mjs?v=native-continuation-20261006-0333';
 import {completedClassificationSnapshot,renderClassificationSummary,createDeferredEvidenceJSON} from './completed-classification-display.mjs?v=geometry-display-20261006-1112';
 import {captureAutomaticResidualPolicy,automaticResidualPolicyKey,selectAutomaticResiduals,withAutomaticResidualSelection} from './automatic-residual-policy.mjs?v=video-inference-20261005-1232';
 import {FrozenClassificationLane} from './frozen-classification-lane.mjs?v=native-extents-latest-20261006-0843';
-import {replaceResidualTimelineClassification} from './residual-classification-state.mjs?v=camera-at-20261008-f1a85661';
+import {replaceResidualTimelineClassification} from './residual-classification-state.mjs?v=native-async-20261008-43d9a67a';
 import {recognitionDisplaySummary,timelineDisplaySummary,comparisonDisplaySummary} from './recognition-display-summary.mjs?v=native-extents-latest-20261006-0843';
 import {VideoObservationPump,VideoObservationTimeline,residualAssociationHints,videoObservationFrameKey} from './video-observation-timeline.mjs?v=map-input-owned-preparation-20261006-1408';
 import {detectMapNameROI} from '../map-name-roi.mjs';

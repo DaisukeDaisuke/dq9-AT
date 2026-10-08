@@ -115,9 +115,11 @@ export class ResidualRecognitionClient{
   this.catalog=new Map(answer.catalog.map(r=>[r.modelId,r.speciesCandidates]));this.romSHA=sha;return this.catalog;
  }
  async classify(request,onProgress){const {residualEvidence,...recognitionRequest}=request;const copy={...recognitionRequest,crop:{...request.crop,rgba:request.crop.rgba.slice()}};const answer=await this.request({type:'recognize',...copy},[copy.crop.rgba.buffer],onProgress);return answer.result;}
- async nativeBodySupport(request,onProgress,{assertCurrent=()=>{},nativeContinuation=null}={}){
+ async nativeBodySupport(request,onProgress,{assertCurrent=()=>{},nativeContinuation=null,retainNativeJob=false}={}){
+  // Owned asynchronous work is cancelled by its frame/epoch/worker lifecycle,
+  // not by the UI optional-result wait. Foreground-only callers retain the deadline.
   // Clone once for the whole region set. Nothing owned by the UI is transferred.
   assertCurrent();const copy=structuredClone(nativeBodyRequestPayload(request));assertCurrent();
-  const answer=await this.request({type:'native-body-support',request:copy,budget:{...RESIDUAL_NATIVE_BODY_BUDGET}},[],onProgress,{assertCurrent,nativeContinuation,optionalWaitMs:RESIDUAL_NATIVE_BODY_OPTIONAL_WAIT_MS});assertCurrent();return answer.result;
+  const answer=await this.request({type:'native-body-support',request:copy,budget:{...RESIDUAL_NATIVE_BODY_BUDGET}},[],onProgress,{assertCurrent,nativeContinuation,optionalWaitMs:nativeContinuation||retainNativeJob===true?undefined:RESIDUAL_NATIVE_BODY_OPTIONAL_WAIT_MS});assertCurrent();return answer.result;
  }
 }

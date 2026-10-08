@@ -214,3 +214,5 @@ node --test scripts/test-map-observation-purpose-separation.mjs
 node scripts/test-camera-at-background-support.mjs
 
 node scripts/test-camera-motion-inputs.mjs
+
+node scripts/test-native-optional-result.mjs
