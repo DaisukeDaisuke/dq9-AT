@@ -1,0 +1,39 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import {pathToFileURL} from 'node:url';
+import {runTrackingSearch as changed} from '../web/tracking-at-runner.mjs';
+const baseline=process.argv[2]?(await import(pathToFileURL(process.argv[2]))).runTrackingSearch:null;
+const wasmBytes=new Uint8Array(fs.readFileSync(new URL('../web/wasm/at_identify.wasm',import.meta.url)));
+const identity={bundleSHA256:'a'.repeat(64),romSHA256:'b'.repeat(64),engineRevision:'owned-subrequest-regression',observationRevision:'fixed'};
+const mask=n=>{const a=new Uint8Array(32768);a[n]=1;return a;};
+const event=(id,n)=>({id,stateBoundary:'immediately-after-draw',possibleMask:mask(n),exactPredicate:false,eventEvidence:{sightingIds:[id],conditional:true}});
+const branch=(id,n)=>({id,events:[event(id,n)],edges:[],sightingEventBindings:{[id]:id},observationEdges:[],assumptions:['conditional'],association:{kind:'same-event-not-extra-draw'}});
+const make=()=>({experiment:{branches:[branch('one',0),branch('repeat',0),branch('other',3),{id:'unknown',events:[],edges:[],assumptions:['unknown retained']}],sightings:[{id:'one',payload:new Uint8Array(1024*1024).fill(7)}],associationAlternatives:[{unknown:true}],coverage:{complete:false}},domain:{kind:'all-output-classes'},budget:{maxInspectedStates:0,maxWallTimeMs:120000,chunkStates:4096}});
+const nativeClone=globalThis.structuredClone;
+async function run(fn,request,extra={}){let copiedEvidenceBytes=0,calls=0;const saved=[],start=performance.now();globalThis.structuredClone=(v,...rest)=>{calls++;copiedEvidenceBytes+=(v?.experiment?.sightings??v?.sightings)?.[0]?.payload?.byteLength??0;return nativeClone(v,...rest);};try{const result=await fn({request,identity,wasmBytes,persist:async x=>saved.push(x),...extra});return{result,saved,copiedEvidenceBytes,calls,elapsedMs:performance.now()-start};}finally{globalThis.structuredClone=nativeClone;}}
+const request=make(),original=nativeClone(request),after=await run(changed,request);assert.deepEqual(request,original);assert.equal(after.result.status,'complete');assert.equal(after.result.checkpoint.sequence,3);assert.equal(after.result.summary.branches.find(b=>b.branchId==='unknown').status,'unconstrained');assert.equal(after.result.summary.currentVideoStateRecovered,false);
+const resume=await run(changed,request,{resume:after.result.checkpoint});assert.deepEqual(resume.result,after.result);assert.equal(resume.saved.length,0);
+let before=null;if(baseline){before=await run(baseline,request);assert.deepEqual(after.result,before.result);assert.deepEqual(after.saved,before.saved);assert(after.copiedEvidenceBytes<before.copiedEvidenceBytes);}
+// Caller data and full evidence still contribute to the immutable input identity.
+const different=make();different.experiment.sightings[0].payload[0]=8;
+await assert.rejects(changed({request:different,identity,wasmBytes,resume:after.result.checkpoint,persist:async()=>{}}),/Stale observation/);
+const invalid=make();invalid.experiment.sightings[0].unused=()=>{};await assert.rejects(changed({request:invalid,identity,wasmBytes,persist:async()=>{}}),{name:'DataCloneError'});
+const abort=new AbortController();abort.abort();const cancelled=await run(changed,request,{signal:abort.signal});assert.equal(cancelled.result.status,'cancelled');assert.equal(cancelled.result.checkpoint.sequence,0);
+await assert.rejects(changed({request,identity,wasmBytes,persist:async()=>{throw Error('durable write failed');}}),/durable write failed/);assert.deepEqual(request,original);
+// The initial owned graph, including aliases, is restored even if the internal
+// projection clone throws. No await or callback sees its temporary projection.
+let owned,oldBranches,oldSightings,thrown=false;globalThis.structuredClone=(v,...rest)=>{if(v===request){const r=nativeClone(v,...rest);owned=r;oldBranches=r.experiment.branches;oldSightings=r.experiment.sightings;return r;}if(v===owned&&v.experiment.branches.length===0){thrown=true;throw Error('internal clone failed');}return nativeClone(v,...rest);};
+try{await assert.rejects(changed({request,identity,wasmBytes,persist:async()=>{}}),/internal clone failed/);}finally{globalThis.structuredClone=nativeClone;}
+assert(thrown);assert.strictEqual(owned.experiment.branches,oldBranches);assert.strictEqual(owned.experiment.sightings,oldSightings);assert.deepEqual(owned,original);
+const aliased=make();aliased.experiment.sightingsAlias=aliased.experiment.sightings;aliased.experiment.branchesAlias=aliased.experiment.branches;aliased.otherExperiment=aliased.experiment;
+if(baseline){const a=await run(changed,aliased),b=await run(baseline,aliased);assert.deepEqual(a.result,b.result);assert.deepEqual(a.saved,b.saved);}
+console.log(JSON.stringify({passed:true,scope:'internal discarded numerical checkpoint projection; no source evidence or gate removal',exactACKAndResultParity:!!baseline,callerUnchanged:true,resumeAndStaleEvidence:true,cancelAndPersistenceFailure:true,cloneFailureRestoresOwnedAliases:true,fullRequestAndCheckpointHashesRetained:true,baseline:before&&{copiedEvidenceBytes:before.copiedEvidenceBytes,calls:before.calls,elapsedMs:before.elapsedMs},changed:{copiedEvidenceBytes:after.copiedEvidenceBytes,calls:after.calls,elapsedMs:after.elapsedMs}}));
+const chain=make();const e1=event('first',0),e2=event('second',0);e1.possibleMask.fill(1);e2.possibleMask.fill(1);chain.experiment.branches=[{id:'chain',events:[e1,e2],edges:[{from:'first',to:'second',callsBetweenPostStates:{min:'1',max:'1'},provenance:'synthetic gap'}],sightingEventBindings:{first:'first',second:'second'},assumptions:['synthetic'],observationEdges:[]},{id:'unknown',events:[],edges:[]}];chain.domain={kind:'intervals',intervals:[{first:0,last:63}],provenance:'synthetic bounded state domain'};chain.budget={maxInspectedStates:64,maxWallTimeMs:120000,chunkStates:16};
+const multi=await run(changed,chain);assert.equal(multi.result.status,'complete');assert.equal(multi.result.checkpoint.sequence,4);assert.equal(multi.result.summary.branches[0].candidateCount,'64');
+if(baseline){const b=await run(baseline,chain);assert.deepEqual(multi.result,b.result);assert.deepEqual(multi.saved,b.saved);}
+const limited=nativeClone(chain);limited.budget.maxInspectedStates=16;const partial=await run(changed,limited);assert.equal(partial.result.status,'budget-stopped');assert.equal(partial.result.checkpoint.sequence,1);const continued=await run(changed,limited,{resume:partial.result.checkpoint});assert.equal(continued.result.checkpoint.sequence,2);
+if(baseline){const oldPartial=await run(baseline,limited),oldContinued=await run(baseline,limited,{resume:oldPartial.result.checkpoint});assert.deepEqual(partial.result,oldPartial.result);assert.deepEqual(continued.result,oldContinued.result);}
+const indexed=nativeClone(chain);indexed.domain={kind:'known-origin-terminal-indices',origin:{kind:'initial-state-before-draw-1',initialSeed:0x12345678,provenance:'synthetic test only'},first:'1',last:'64',provenance:'synthetic finite range',predecessorPolicy:'post-boot-events-only'};indexed.budget={maxInspectedIndices:64,maxWallTimeMs:120000,chunkIndices:16};indexed.materialization={maxCandidatesTotal:100};
+const stream=new Uint8Array(fs.readFileSync(new URL('../web/wasm/at_identify_stream.wasm',import.meta.url))),ix=await run(changed,indexed,{wasmBytes:stream});assert.equal(ix.result.status,'complete');assert.equal(ix.result.checkpoint.sequence,4);assert.equal(ix.result.summary.branches[0].candidateCount,'63');
+if(baseline){const b=await run(baseline,indexed,{wasmBytes:stream});assert.deepEqual(ix.result,b.result);assert.deepEqual(ix.saved,b.saved);}
+console.log(JSON.stringify({passed:true,multiEventStates:64,knownOriginIndices:64,exactMultiEventACKParity:!!baseline,exactIndexMaterializationAndACKParity:!!baseline,partialResumeParity:!!baseline,unconstrainedAlternativesPreserved:true}));

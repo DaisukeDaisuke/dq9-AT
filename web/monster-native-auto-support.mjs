@@ -5,7 +5,7 @@ import{retainIsolatedBodySupport}from'./monster-native-isolated-support.mjs?v=na
 import{createNativeYawEvidence,referenceNativeYawFailure}from'./monster-native-yaw-evidence.mjs?v=native-yaw-mse-20261006-2101';
 import{readNativeYawDomain,nativeYawIndex,nativeYawCondition}from'./monster-native-yaw-domain.mjs?v=native-yaw-mse-20261006-2101';
 import{readNativeConditionalActionRules,prepareNativeConditionalActionSource}from'./monster-native-action-domain.mjs?v=source-rate1-curves-20261008-2e3ba48d';
-import{createNativeBodyDestinationProvider}from'./monster-native-background-destination.mjs?v=native-viewport-color-20261008-99202e36';
+import{createNativeBodyDestinationProvider}from'./monster-native-background-destination.mjs?v=native-lineage-at-20261008-556f7ca6';
 import{nativeWorkIdentity}from'./monster-native-work-identity.mjs?v=native-byte-identity-20261007-0502';
 // Automatic source proposals for the optional bounded native worker job.
 // Static root-on-floor/complete-envelope is a conditional branch, not live Y.
@@ -15,13 +15,13 @@ import{buildRomMapCatalog}from'./map-browser-preview/rom-map-catalog.mjs';
 import{planRomScene}from'./map-browser-preview/rom-scene-plan.mjs';
 import{loadRomFloorInstances}from'./map-browser-preview/rom-floor-candidates.mjs';
 import{readArm9Overlay}from'./map-browser-preview/rom-overlay.mjs';
-import{unpackBranchRGBA,unpackBackgroundMask}from'./map-browser-preview/background-branch-support.mjs?v=native-viewport-color-20261008-99202e36';
+import{unpackBranchRGBA,unpackBackgroundMask}from'./map-browser-preview/background-branch-support.mjs?v=native-lineage-at-20261008-556f7ca6';
 import{readMonsterAssets}from'./monster-assets.mjs';
 import{readNSBCA,sampleMatrices}from'./monster-animation.mjs?v=source-rate1-curves-20261008-2e3ba48d';
 import{decodeEncounterStream}from'./encounter-distribution.mjs';
 import{readNaturalMonsterScaleRule,naturalMonsterScaleCandidates}from'./monster-source-scale.mjs?v=native-body-20261006-0212';
-import{sourceFloorPlanes,preparePerspectiveBody,placeCompleteBodyOnFloors}from'./monster-perspective-body.mjs?v=native-viewport-color-20261008-99202e36';
-import{createNativeBodySupportRunner}from'./monster-native-support-runner.mjs?v=native-boundary-20261008-1bf21a3f';
+import{sourceFloorPlanes,preparePerspectiveBody,placeCompleteBodyOnFloors}from'./monster-perspective-body.mjs?v=native-lineage-at-20261008-556f7ca6';
+import{createNativeBodySupportRunner}from'./monster-native-support-runner.mjs?v=native-lineage-at-20261008-556f7ca6';
 import{readFrozenMonsterMode1Fog}from'./monster-source-mode1-fog.mjs?v=native-body-20261006-0212';
 import{readFrozenMonsterFog}from'./monster-source-fog.mjs?v=native-body-20261006-0212';
 const need=(v,m)=>{if(!v)throw Error(m);},clone=v=>structuredClone(v),pause=()=>new Promise(r=>setTimeout(r,0));

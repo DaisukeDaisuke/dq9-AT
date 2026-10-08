@@ -1,10 +1,10 @@
 import{continueRefinedFloorAlternatives}from'./refined-floor-alternatives.mjs?v=source-scene-20261006-0040';
-import{createInferredMode2GpuRenderer}from'./inferred-mode2-gpu-renderer.mjs?v=native-viewport-color-20261008-99202e36';
+import{createInferredMode2GpuRenderer}from'./inferred-mode2-gpu-renderer.mjs?v=native-lineage-at-20261008-556f7ca6';
 /* One-entry, segment-scoped reuse of a prior environment HYPOTHESIS. Fresh
  * marker bounds + geometry refinement + exact native rendering are mandatory.
  * A hit never means current clock/selector identity or temporal AT evidence.
  */
-import{inferAutomaticMode2Background}from'./automatic-mode2-background.mjs?v=native-viewport-color-20261008-99202e36';import{prepareMode2InverseModel,renderMode2InverseSource}from'./mode2-inverse-render.mjs?v=native-viewport-color-20261008-99202e36';import{refineGeometryPosition}from'./geometry-position-refinement.mjs?v=geometry-display-20261006-1112';import{automaticPreviewCamera}from'./automatic-preview-camera.mjs';import{floorHeightsAtXZ}from'./rom-floor-candidates.mjs';import{compareMapBackground}from'./map-video-residual.mjs?v=shrine-beam-20261008-a9738d0c';
+import{inferAutomaticMode2Background}from'./automatic-mode2-background.mjs?v=native-lineage-at-20261008-556f7ca6';import{prepareMode2InverseModel,renderMode2InverseSource}from'./mode2-inverse-render.mjs?v=native-lineage-at-20261008-556f7ca6';import{refineGeometryPosition}from'./geometry-position-refinement.mjs?v=geometry-display-20261006-1112';import{automaticPreviewCamera}from'./automatic-preview-camera.mjs';import{floorHeightsAtXZ}from'./rom-floor-candidates.mjs';import{compareMapBackground}from'./map-video-residual.mjs?v=shrine-beam-20261008-a9738d0c';
 const withoutBodyDestination=image=>{const{bodyDestination,...geometryImage}=image;return geometryImage;};
 export class Mode2VideoContinuity{
  constructor({initializeGpu}={}){this.forwardRenderer=createInferredMode2GpuRenderer({initialize:initializeGpu});this.entry=null;this.stats={coldSolves:0,probes:0,hits:0,misses:0,invalidations:0};}

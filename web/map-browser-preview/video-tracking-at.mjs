@@ -1,12 +1,12 @@
 import {prepareVideoReplaySources} from '../video-replay-source-preparation.mjs?v=replay-source-20261007-0743';
 import {copyObservationBundleForAT} from './observation-bundle-ownership.mjs?v=gap-owned-observation-20261006-1340';
-import {compareCameraBodyAlternative} from '../monster-camera-body-alternative.mjs?v=native-viewport-color-20261008-99202e36';
+import {compareCameraBodyAlternative} from '../monster-camera-body-alternative.mjs?v=native-lineage-at-20261008-556f7ca6';
 import {trackingSightingMapProvenance} from './map-hypothesis-provenance.mjs';
 import {deriveCameraBodySingletonAlternatives,appendCameraBodySingletonAlternatives} from '../tracking-camera-body-alternative.mjs?v=proposal-support-20261006-1152';
 import {assertProductionATInput} from '../production-at-input-policy.mjs?v=production-inputs-20261006-1320';
 import {searchAutomaticReplayInputs} from '../video-replay-factor-search.mjs?v=automatic-entry-factors-20261006-1120';
 import {deriveTrackingEventEvidence,automaticSingletonSearchOptions} from '../tracking-at-event-evidence.mjs?v=proposal-support-20261006-1152';
-import {prepareTrackingJob,openTrackingCheckpointStore,startTrackingSession,collectTrackingMotionAssociationInputs} from '../tracking-at-session.mjs?v=map-input-owned-preparation-20261006-1408';
+import {prepareTrackingJob,openTrackingCheckpointStore,startTrackingSession,collectTrackingMotionAssociationInputs} from '../tracking-at-session.mjs?v=native-lineage-at-20261008-556f7ca6';
 // This is an execution budget/prior supplied by the user, never inferred from PTS.
 export function videoATSearchOptions(values,tables){
  const {seed,seedProvenance,first,last,indexProvenance}=values;

@@ -142,6 +142,7 @@ node scripts/test-original-proposal-support.mjs
 node --test scripts/test-observation-bundle-ownership.mjs
 
 node --test scripts/test-tracking-preparation-copy.mjs
+node scripts/test-tracking-subrequest-copy.mjs
 
 node --test scripts/test-map-input-timing.mjs
 
@@ -165,6 +166,7 @@ node scripts/test-ready-mode1-geometry-fallback.mjs
 node scripts/test-mode1-mse-composition.mjs
 node scripts/test-native-observation-viewport.mjs
 node scripts/test-native-boundary-placement.mjs
+node scripts/test-native-color-lineage.mjs
 node scripts/test-native-isolated-support.mjs
 
 # Exact native yaw classes, resumable continuation and lossless evidence.

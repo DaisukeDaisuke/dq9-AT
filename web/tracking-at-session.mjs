@@ -1,7 +1,7 @@
 import {assertProductionATInput} from './production-at-input-policy.mjs?v=production-inputs-20261006-1320';
 import {searchAutomaticReplayInputs} from './video-replay-factor-search.mjs?v=automatic-entry-factors-20261006-1120';
 import {compileTrackingObservations} from './tracking-at-observation-adapter.mjs?v=map-input-owned-preparation-20261006-1408';
-import {fingerprint} from './tracking-at-runner.mjs?v=field-stream-20261005-1108';
+import {fingerprint} from './tracking-at-runner.mjs?v=native-lineage-at-20261008-556f7ca6';
 import {createNativeMotionContinuityIndex} from './tracking-native-motion.mjs?v=enc-motion-at-20261006-1156';
 const need=(v,m)=>{if(!v)throw Error(m);};
 // A predecessor with the same model is not necessarily the prior classified
@@ -80,7 +80,7 @@ export async function openTrackingCheckpointStore(name='dq9-tracking-at-v1'){
 // Each start gets its own Worker and run token. A previous revision never updates
 // a new session. Cancel terminates immediately; last completed host ACK survives.
 export function startTrackingSession({job,wasmBytes,resume=null,store,checkpointKey,onProgress=()=>{}}){
- checkpointKey??=job.checkpointKey;need(checkpointKey===job.checkpointKey,'Use the hashed job checkpoint key');const runId=crypto.randomUUID(),worker=new Worker(new URL('./tracking-at-worker.mjs?v=field-stream-20261005-1108',import.meta.url),{type:'module'});let stopped=false,lastAcknowledged=resume,resolveDone,rejectDone;
+ checkpointKey??=job.checkpointKey;need(checkpointKey===job.checkpointKey,'Use the hashed job checkpoint key');const runId=crypto.randomUUID(),worker=new Worker(new URL('./tracking-at-worker.mjs?v=native-lineage-at-20261008-556f7ca6',import.meta.url),{type:'module'});let stopped=false,lastAcknowledged=resume,resolveDone,rejectDone;
  const done=new Promise((resolve,reject)=>{resolveDone=resolve;rejectDone=reject;});
  const stop=()=>{stopped=true;worker.terminate();};
  worker.onerror=e=>{if(!stopped){stop();rejectDone(Error(e.message??'AT Worker failed'));}};

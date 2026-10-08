@@ -7,7 +7,7 @@ import {createRendererSourceArchives} from './renderer-source-archives.mjs?v=rec
  */
 import {createNativeIntegerCompute} from './native-integer-compute.mjs?v=wgsl-keyword-20261005-0834';
 import {prepareInitialMode1IntegerComputeAsync as prepareInitialMode1IntegerCompute,renderPreparedIntegerCompute} from './prepare-initial-integer-compute.mjs?v=fair-source-yield-20261007-0247';
-import {renderInitialIntegerFogAsync} from './integer-static-fog.mjs?v=native-viewport-color-20261008-99202e36';
+import {renderInitialIntegerFogAsync} from './integer-static-fog.mjs?v=native-lineage-at-20261008-556f7ca6';
 import {createSourcePreparationCache} from './integer/source-preparation-cache.mjs?v=automatic-playback-source-cache-20261006-1100';
 
 // Constant-size aggregates for one original preparation/render branch. The

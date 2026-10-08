@@ -1,6 +1,6 @@
 // A component ID/count/SSE is not a mask identity. Bind the actual recovered
 // selected mask; never recover a same-numbered component in another branch.
-import {unpackBackgroundMask} from './map-browser-preview/background-branch-support.mjs?v=native-viewport-color-20261008-99202e36';
+import {unpackBackgroundMask} from './map-browser-preview/background-branch-support.mjs?v=native-lineage-at-20261008-556f7ca6';
 const packedOwners=new WeakMap(),sha=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join('');
 export async function originalComponentMaskSHA256(s){
  if(s?.kind!=='original-residual-component-support-v1'||s.ready!==true)return null;

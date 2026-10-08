@@ -9,8 +9,8 @@ function missing(domain,records,index){let out=domain.map(r=>({first:BigInt(r.fi
 // persist leaves the old ACK authoritative. Worker termination may discard work.
 export async function runTrackingSearch({request,identity,wasmBytes,resume=null,persist,onProgress=()=>{},signal}){
  request=copy(request);identity=copy(identity);need(typeof persist==='function','Atomic durable checkpoint writer required');need(identity?.bundleSHA256&&identity?.romSHA256&&identity?.engineRevision&&identity?.observationRevision!==undefined,'Bundle/ROM/engine/revision identity required');
- const index=request.domain.kind==='known-origin-terminal-indices',initial=index?prepareIndexIdentification(request).checkpoint:prepare(request).checkpoint;
- const domain=index?[{first:request.domain.first,last:request.domain.last}]:prepare(request).intervals;
+ const index=request.domain.kind==='known-origin-terminal-indices',{checkpoint:initial,intervals:stateIntervals}=index?prepareIndexIdentification(request):prepare(request);
+ const domain=index?[{first:request.domain.first,last:request.domain.last}]:stateIntervals;
  const wasm=Uint8Array.from(wasmBytes);const wasmSHA256=[...new Uint8Array(await crypto.subtle.digest('SHA-256',wasm))].map(n=>n.toString(16).padStart(2,'0')).join('');
  const inputHash=await fingerprint({request,identity,wasmSHA256});let ack={schema:'tracking-at-ack-v1',inputHash,sequence:0,records:[],identity,wasmSHA256};
  if(resume){const {checksum,...payload}=copy(resume);need(await fingerprint(payload)===checksum,'ACK checksum mismatch');need(payload.schema===ack.schema&&payload.inputHash===inputHash,'Stale observation/predicate/domain/origin/engine revision');ack=payload;}
@@ -24,7 +24,14 @@ export async function runTrackingSearch({request,identity,wasmBytes,resume=null,
  for(const b of initial.branches){if(b.status!=='pending')continue;const source=request.experiment.branches.find(x=>x.id===b.branchId),analytic=!index&&source.events.length===1;
   while(true){const remaining=missing(domain,ack.records.filter(r=>r.branchId===b.branchId),index);if(!remaining.length)break;if(signal?.aborted||performance.now()-start>=request.budget.maxWallTimeMs||(!analytic&&spent>=max))return {status:signal?.aborted?'cancelled':'budget-stopped',checkpoint:await envelope(),summary:summarize(ack,initial,domain,index)};
    const first=BigInt(remaining[0].first),end=BigInt(remaining[0].last),size=analytic?end-first+1n:BigInt(Math.min(chunk,max-spent)),last=end<first+size-1n?end:first+size-1n,range={first:index?String(first):Number(first),last:index?String(last):Number(last)};
-   const q=copy(request);q.experiment.branches=[source];q.branchPriority=(q.branchPriority??[]).filter(x=>x.branchId===b.branchId);
+   // Only the selected branch result is consumed below. Full sighting evidence
+   // remains in the owned request, initial validation and inputHash; copying it
+   // into each throwaway numerical checkpoint cannot alter branch arithmetic.
+   // Temporarily project this private clone synchronously to preserve aliases
+   // elsewhere; restore before callbacks/await and even when cloning throws.
+   const experiment=request.experiment,allBranches=experiment.branches,hasSightings=Object.hasOwn(experiment,'sightings'),allSightings=experiment.sightings;let q;
+   try{experiment.branches=[];if(hasSightings)experiment.sightings=[];q=copy(request);}finally{experiment.branches=allBranches;if(hasSightings)experiment.sightings=allSightings;}
+   q.experiment.branches=[source];q.branchPriority=(q.branchPriority??[]).filter(x=>x.branchId===b.branchId);
    q.domain=index?{...q.domain,first:range.first,last:range.last}:{kind:'intervals',intervals:[range],provenance:'Exact unACKed subdomain of hashed original input'};
    // Each native run is at most one host chunk. Its output is ACKed only if complete.
    if(index){q.budget.maxInspectedIndices=Number(last-first+1n);q.materialization.maxCandidatesTotal=Math.max(0,request.materialization.maxCandidatesTotal-materialized);}else q.budget.maxInspectedStates=analytic?0:Number(last-first+1n);

@@ -1,4 +1,4 @@
-import {runTrackingSearch} from './tracking-at-runner.mjs?v=field-stream-20261005-1108';
+import {runTrackingSearch} from './tracking-at-runner.mjs?v=native-lineage-at-20261008-556f7ca6';
 let current=null;
 self.onmessage=async({data})=>{
  if(data.type==='persisted'||data.type==='persist-failed'){if(current?.runId===data.runId&&current.pending?.sequence===data.sequence){const p=current.pending;current.pending=null;data.type==='persisted'?p.resolve():p.reject(Error(data.message??'Checkpoint write failed'));}return;}

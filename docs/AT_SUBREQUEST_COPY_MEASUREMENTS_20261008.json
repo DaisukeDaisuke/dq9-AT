@@ -1,0 +1,43 @@
+{
+  "actualPreparedJob": true,
+  "inputArchiveSHA256": "bb0c05521c6ec2f4a124db6e3518bf39154a9d87a9e67219f397132666805a6a",
+  "requestV8Bytes": 144525195,
+  "sightingsV8Bytes": 139109669,
+  "sourceRequestUnchanged": true,
+  "retainedNumericalSubrequestExactAfterRemovingDiscardedSightingCopy": true,
+  "numericalSearchRerun": false,
+  "sourceVideoRecognitionRerun": false,
+  "scope": "Synchronous internal clone only, not end-to-end AT timing",
+  "rows": [
+    {
+      "kind": "old",
+      "elapsedMs": 4446.8086220000005,
+      "serializedSubrequestBytes": 143640490
+    },
+    {
+      "kind": "new",
+      "elapsedMs": 190.56036199999835,
+      "serializedSubrequestBytes": 4531802
+    },
+    {
+      "kind": "new",
+      "elapsedMs": 138.94919200000004,
+      "serializedSubrequestBytes": 4531802
+    },
+    {
+      "kind": "old",
+      "elapsedMs": 3932.7490720000023,
+      "serializedSubrequestBytes": 143640490
+    },
+    {
+      "kind": "old",
+      "elapsedMs": 4476.016156999998,
+      "serializedSubrequestBytes": 143640490
+    },
+    {
+      "kind": "new",
+      "elapsedMs": 205.6530939999975,
+      "serializedSubrequestBytes": 4531802
+    }
+  ]
+}

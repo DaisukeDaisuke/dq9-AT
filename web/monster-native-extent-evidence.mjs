@@ -1,7 +1,8 @@
 // Conditional extent evidence for the exact already-tested native proposal.
 // No extra renders, component merging, score threshold, identity decision or
 // conversion of the composite's final alpha into a visible-body mask.
-import {nativeProjectedBodyEnvelope} from './monster-native-body-placement.mjs?v=native-boundary-20261008-1bf21a3f';
+import {readNativeBodyColorLineage} from './monster-native-color-lineage.mjs?v=native-lineage-at-20261008-556f7ca6';
+import {nativeProjectedBodyEnvelope} from './monster-native-body-placement.mjs?v=native-lineage-at-20261008-556f7ca6';
 const WIDTH=256,HEIGHT=192,PIXELS=WIDTH*HEIGHT;
 const unsupported=reason=>({ready:false,empty:null,roi:null,pixels:null,reason});
 const validMask=mask=>mask instanceof Uint8Array&&mask.length===PIXELS&&mask.every(x=>x===0||x===1);
@@ -50,6 +51,8 @@ function collectNativeBodyExtentEvidence({projected,rendered,alignment,compariso
   if(!ownershipSummary.valid){evidence.bodyColorOwnership=unsupported('Accepted mixed-body final-color ownership mask unavailable; composite alpha is not substituted');return evidence;}
   if(ownershipSummary.outsideCoverage){evidence.bodyColorOwnership=unsupported('Body color ownership outside accepted source footprint');return evidence;}
   evidence.bodyColorOwnership={...ownershipSummary.extent,kind:'source-final-body-color-ownership',completeWithinAdmittedRendererSubset:true,allVisibleContributionsCapturedWithinComposition:false,mayOmitEarlierBodyContributionThroughLaterMapBlending:true,observedBodyCertified:false,scope:rendered.sourceAcceptedSubset==='conditional-source-map-actor-MSE-body'?'Pixels whose final accepted source color writer is the body. Earlier body contribution through later map/MSE blending is not reconstructed by this ownership mask.':'Pixels whose final accepted source color writer is the body. Earlier body contribution through later map blending is not reconstructed by this ownership mask.'};
+  const lineage=readNativeBodyColorLineage(rendered,{frame,alignment});
+  if(lineage){const summary=summarize(lineage.displayMask,alignment,comparisonValidMask,rendered.sourceCoverage);if(summary.valid&&!summary.outsideCoverage){const{displayMask,...contract}=lineage;evidence.bodyColorLineage={...summary.extent,...contract,retainedPixelMask:false,completeBodyCertified:false,scope:'Complete displayed dependence on accepted source body RGB operands in this verified, fixed native composition trace. Actual source RGB replay equals the renderer. Not actual ROM/background color contrast, removal of geometry, observed body pixels, current actor state or identity.'};}}
   // Separate opt-in computation evidence. Never relabel final-writer ownership,
   // infer actual ROM color change, or feed this diagnostic into body/AT gates.
   if(Object.hasOwn(rendered,'bodyColorDependency')){
