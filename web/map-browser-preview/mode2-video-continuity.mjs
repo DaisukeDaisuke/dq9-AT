@@ -4,7 +4,7 @@ import{createInferredMode2GpuRenderer}from'./inferred-mode2-gpu-renderer.mjs?v=r
  * marker bounds + geometry refinement + exact native rendering are mandatory.
  * A hit never means current clock/selector identity or temporal AT evidence.
  */
-import{inferAutomaticMode2Background}from'./automatic-mode2-background.mjs?v=rgb-dependency-optin-20261007-0943';import{prepareMode2InverseModel,renderMode2InverseSource}from'./mode2-inverse-render.mjs?v=rgb-dependency-optin-20261007-0943';import{refineGeometryPosition}from'./geometry-position-refinement.mjs?v=geometry-display-20261006-1112';import{automaticPreviewCamera}from'./automatic-preview-camera.mjs';import{floorHeightsAtXZ}from'./rom-floor-candidates.mjs';import{compareMapBackground}from'./map-video-residual.mjs?v=camera-loss-evidence-20261006-1205';
+import{inferAutomaticMode2Background}from'./automatic-mode2-background.mjs?v=shrine-beam-20261008-a9738d0c';import{prepareMode2InverseModel,renderMode2InverseSource}from'./mode2-inverse-render.mjs?v=rgb-dependency-optin-20261007-0943';import{refineGeometryPosition}from'./geometry-position-refinement.mjs?v=geometry-display-20261006-1112';import{automaticPreviewCamera}from'./automatic-preview-camera.mjs';import{floorHeightsAtXZ}from'./rom-floor-candidates.mjs';import{compareMapBackground}from'./map-video-residual.mjs?v=shrine-beam-20261008-a9738d0c';
 const withoutBodyDestination=image=>{const{bodyDestination,...geometryImage}=image;return geometryImage;};
 export class Mode2VideoContinuity{
  constructor({initializeGpu}={}){this.forwardRenderer=createInferredMode2GpuRenderer({initialize:initializeGpu});this.entry=null;this.stats={coldSolves:0,probes:0,hits:0,misses:0,invalidations:0};}

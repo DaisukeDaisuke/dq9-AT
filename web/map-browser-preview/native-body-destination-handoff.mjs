@@ -1,7 +1,7 @@
 // Same-frame CPU source-render handoff only. No final-RGB inversion, cross-frame
 // source cache, GPU substitution or exported raw planes in appearance evidence.
 import {bindNativeBodyDestination} from '../monster-native-scene-composition.mjs?v=rgb-dependency-optin-20261007-0943';
-import {prepareBoundMode1NativeScene} from '../monster-native-mode1-source.mjs?v=native-scene-link-20261007-0354';
+import {prepareBoundMode1NativeScene} from '../monster-native-mode1-source.mjs?v=shrine-beam-20261008-a9738d0c';
 import {readNaturalBodyMseOrder} from '../monster-native-mse-order.mjs?v=native-yaw-mse-20261006-2101';
 import {captureMode1MseSceneHypothesis,validateMode1MseSceneHypothesis} from './mode1-mse-scene-hypothesis.mjs?v=native-scene-link-20261007-0354';
 import {readNaturalBodySceneOrder} from '../monster-native-scene-order.mjs';
@@ -17,7 +17,7 @@ function cameraOf(branch){return{viewFx:branch.viewFx.slice(),projectionFx:branc
 function plain(value){if(ArrayBuffer.isView(value))return Array.from(value);if(Array.isArray(value))return value.map(plain);if(value&&typeof value==='object')return Object.fromEntries(Object.keys(value).sort().map(k=>[k,plain(value[k])]));return value;}
 // Match the native request's source-only environment projection. No diagnostic
 // clear buffers, source scene objects or runtime snapshots enter the mailbox.
-function mode1Environment(e){const f=e?.fog;return{fogApplied:e?.fogApplied,fog:f?Object.fromEntries(['parameters','source','timeIndependent','discreteOrdinaryHypothesis'].map(k=>[k,f[k]])):null,mode1:e?.mode1??null,mode2Inputs:e?.mode2Inputs??null,mode1Scene:e?.mode1Scene};}
+function mode1Environment(e){const f=e?.fog;return{beamVisibilityHypothesis:e?.beamVisibilityHypothesis??null,fogApplied:e?.fogApplied,fog:f?Object.fromEntries(['parameters','source','timeIndependent','discreteOrdinaryHypothesis'].map(k=>[k,f[k]])):null,mode1:e?.mode1??null,mode2Inputs:e?.mode2Inputs??null,mode1Scene:e?.mode1Scene};}
 const mode1Profile=e=>e.mode1?'ROM-initial-discrete-ordinary-mode1':'ROM-initial-time-independent-mode1';
 const samePlain=(a,b)=>same(plain(a),plain(b));
 async function integrity(value){
@@ -47,7 +47,7 @@ export async function retainNativeBodyDestinationHandoff({image,branchId,recordK
    need(image.ready===true&&image.diagnostics?.backend==='source-integer-static-mode1'&&snapshot?.profile===mode1Profile(sourceEnvironment),'Only a final source mode1 CPU render may be handed off');
    const captured=captureMode1MseSceneHypothesis(image.diagnostics);validateMode1MseSceneHypothesis(captured,d.screenEffectPlan);
    need(sourceEnvironment.fogApplied===true&&sourceEnvironment.mode2Inputs==null&&same(captured,sourceEnvironment.mode1Scene)&&same(captured,d.postActorEffect?.hypothesis),'Final mode1 plan/phase differs');
-   need(samePlain(mode1Environment(sourceEnvironment),mode1Environment({mode1Scene:captured,fogApplied:image.diagnostics.fogApplied,fog:image.diagnostics.fog,mode1:image.diagnostics.automaticMode1?.sourceHypothesis??image.diagnostics.fog?.discreteOrdinaryHypothesis??null})),'Final mode1 source environment differs');
+   need(samePlain(mode1Environment(sourceEnvironment),mode1Environment({beamVisibilityHypothesis:image.diagnostics.beamVisibilityHypothesis??null,mode1Scene:captured,fogApplied:image.diagnostics.fogApplied,fog:image.diagnostics.fog,mode1:image.diagnostics.automaticMode1?.sourceHypothesis??image.diagnostics.fog?.discreteOrdinaryHypothesis??null})),'Final mode1 source environment differs');
   }else{
    need(image.ready===true&&image.basisOnly===false&&snapshot?.profile==='ROM-mode2-inverse-source-hypothesis'&&snapshot.basisLabel===null,'Only a final source mode2 CPU render may be handed off');
    need(sourceEnvironment?.fogApplied===true&&sourceEnvironment.mode2Inputs&&same(snapshot.inputs,sourceEnvironment.mode2Inputs),'Final source environment differs');

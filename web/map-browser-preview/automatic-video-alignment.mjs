@@ -1,26 +1,27 @@
-import {createReadyMode1GeometryFallback,hasNonzeroSourceXZBounds} from './ready-mode1-geometry-fallback.mjs?v=fair-source-yield-20261007-0247';
+import {resolveConditionalBeamBackground} from './conditional-beam-background.mjs?v=shrine-beam-20261008-a9738d0c';
+import {createReadyMode1GeometryFallback,hasNonzeroSourceXZBounds} from './ready-mode1-geometry-fallback.mjs?v=shrine-beam-20261008-a9738d0c';
 import {createAutomaticMonsterMapGate} from './automatic-monster-map-eligibility.mjs?v=monster-map-cpu-20261006-1005';
 import{createAmbiguousMarkerBackgroundBudget}from'./physical-marker-background-hypotheses.mjs?v=native-continuation-20261006-0333';
-import{buildBackgroundBranchSupport}from'./background-branch-support.mjs?v=rgb-dependency-optin-20261007-0943';
-import{createSourceAnchorSceneInference}from'./source-anchor-scene-inference.mjs?v=fair-source-yield-20261007-0247';
+import{buildBackgroundBranchSupport}from'./background-branch-support.mjs?v=shrine-beam-20261008-a9738d0c';
+import{createSourceAnchorSceneInference}from'./source-anchor-scene-inference.mjs?v=shrine-beam-20261008-a9738d0c';
 import{resolveFrozenInferencePixels}from'./capture-analysis-pixels.mjs?v=native-continuation-20261006-0333';
-import{createMode1BackgroundInference}from'./automatic-mode1-background.mjs?v=fair-source-yield-20261007-0247';
-import {Mode2VideoContinuity} from './mode2-video-continuity.mjs?v=rgb-dependency-optin-20261007-0943';
-import {inferAutomaticMode2Background} from './automatic-mode2-background.mjs?v=rgb-dependency-optin-20261007-0943';
+import{createMode1BackgroundInference}from'./automatic-mode1-background.mjs?v=shrine-beam-20261008-a9738d0c';
+import {Mode2VideoContinuity} from './mode2-video-continuity.mjs?v=shrine-beam-20261008-a9738d0c';
+import {inferAutomaticMode2Background} from './automatic-mode2-background.mjs?v=shrine-beam-20261008-a9738d0c';
 import {readRomMapCameraInputGate} from './rom-camera-input-gate.mjs';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
 import {CandidateMapMatcher} from '../map-disambiguation.mjs?v=registration-timing-20261007-0020';
 import {loadAutomaticScene} from './automatic-scene.mjs';
 import {loadRomFloorInstances} from './rom-floor-candidates.mjs';
-import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=registration-timing-20261007-0020';
+import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=shrine-beam-20261008-a9738d0c';
 import {automaticPreviewCamera} from './automatic-preview-camera.mjs';
 import {automaticBillboardScenes} from './automatic-billboard-scene.mjs';
 import {applyAutomaticMaterialEnvironment} from './automatic-material-environment.mjs?v=native-body-20261006-0212';
-import {createAutomaticBackgroundRenderer} from './automatic-background-renderer.mjs?v=rgb-dependency-optin-20261007-0943';
+import {createAutomaticBackgroundRenderer} from './automatic-background-renderer.mjs?v=shrine-beam-20261008-a9738d0c';
 import {readRomMapScreenEffectPlan} from './rom-map-screen-effect-plan.mjs';
 import {prepareDrawPackets} from './draw-packets.mjs';
 import {rasterizePreviewPackets} from './cpu-preview.mjs';
-import {sampleGameplayFrame,gameplayVideoROI,compareMapBackground} from './map-video-residual.mjs?v=camera-loss-evidence-20261006-1205';
+import {sampleGameplayFrame,gameplayVideoROI,compareMapBackground} from './map-video-residual.mjs?v=shrine-beam-20261008-a9738d0c';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
 const identity=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
 export class AutomaticVideoAlignment {
@@ -94,6 +95,16 @@ export class AutomaticVideoAlignment {
      const score=Number.isFinite(comparison.alignment.residual)?comparison.alignment.residual:Infinity;if(!selected||(row.accepted&&!selected.row.accepted)||(row.accepted===selected.row.accepted&&score<selected.score))selected={row,score,record,scene,reference,position,markerHypothesis,heading,image,camera,integer:image,unresolved:[],point};completedRows.add(row);
     }
    }
+  }
+  // Camera search is complete. Compare source effect ON/OFF with that exact
+  // camera, material, effect phase, translation and shared known-pixel metric.
+  interruptionStage='post-angle-beam-comparison';
+  for(const branch of passingBackgrounds.slice()){
+   check();const record=records.find(r=>r.key===branch.row.recordKey);const beam=await resolveConditionalBeamBackground({record,image:branch.image,comparison:branch.comparison,video,renderer:this.backgroundRenderer,isCurrent});check();if(!beam)continue;
+   branch.row.beamComparison=beam.evidence;if(!beam.ready){branch.row.beamComparison.unresolved=true;continue;}
+   const chosen=beam.selected;branch.image=beam.images[chosen];branch.comparison=beam.comparisons[chosen];Object.assign(branch.row,{stats:branch.comparison.stats,state:branch.comparison.state,alignment:branch.comparison.alignment});
+   if(selected?.row===branch.row){selected.image=branch.image;selected.integer=branch.image;}
+   for(const alternative of beam.winners.slice(1)){const row={...branch.row,beamComparison:{...beam.evidence,selectedState:beam.evidence.states[alternative],tieAlternative:true}};rows.push(row);passingBackgrounds.push({...branch,row,rowIndex:rows.length-1,image:beam.images[alternative],comparison:beam.comparisons[alternative]});}
   }
   interruptionStage='background-branch-support';check();const backgroundBranchSupport=await buildBackgroundBranchSupport({branches:passingBackgrounds,romSHA256:this.romSHA256,frameEvidence:input.frameEvidence,selectedRowIndex:selected?rows.indexOf(selected.row):null});check();return{selected,located,unlocated,backgroundBranchSupport,diagnostics:{kind:'automatic-video-map-background-hypotheses',monsterWorkflow:input.automaticRecognition===true?{purpose:'automatic-monster-recognition',candidates:workflowRows,skippedCount:workflowRows.filter(r=>r.skipBackground).length,unknownCount:workflowRows.filter(r=>r.status==='unknown').length,allSkipped:names.maps.length>0&&workflowRows.length===names.maps.length&&workflowRows.every(r=>r.skipBackground),allMapCandidatesRetained:true,absenceCertified:false,minimumProvenATCalls:0}:null,ambiguousMarkerBudget:ambiguousMarkerBudget.snapshot(),backgroundBranchSupport:backgroundBranchSupport.ready?{passingBranchCount:backgroundBranchSupport.passingBranchCount,common: {comparedPixels:backgroundBranchSupport.common.comparedPixels,residualPixels:backgroundBranchSupport.common.residualPixels,unavailablePixels:backgroundBranchSupport.common.unavailablePixels},currentCameraCertified:false,branchMasksProvided:true}:backgroundBranchSupport,mapCandidates:mapRows,backgroundCandidates:rows,selectedIndex:selected?rows.indexOf(selected.row):null,acceptedCount:rows.filter(r=>r.accepted).length,unlocatedCandidates:unlocated.map(s=>s.evidence),locatedCandidates:located.map(s=>({recordKey:s.record.key,mapId:s.record.mapId,descriptor:s.reference.path,world:s.position.world,floor:s.position.floor,...(s.markerHypothesis?{markerHypothesis:s.markerHypothesis}: {})})),cache:{mapImages:this.referenceCache.cache.size,mapImageBytes:this.referenceCache.cacheBytes,imageHits:this.imageHits,imageMisses:this.imageMisses,sceneHits:this.sceneHits,sceneMisses:this.sceneMisses,sceneEntries:this.scenes.size},inputFrame:input.frameEvidence,mapIdentityCertified:false,cameraCertified:false,currentEffectPhaseCertified:false,minimumProvenATCalls:0,scope:'Automatic comparison of ROM-linked names/images, existing same-frame player XZ/chunk estimates, source floors and supplied source yaw candidates. All evaluated alternatives and failures retained. Unsearched name/camera/middle-angle/effect-phase branches remain unknown; preview selection is not a native identity or AT claim.'}};
   }catch(error){

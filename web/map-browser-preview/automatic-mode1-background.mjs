@@ -7,7 +7,7 @@ import{automaticBillboardScenes}from'./automatic-billboard-scene.mjs';
 import{applyMode1OrdinaryHypothesis}from'./automatic-material-environment.mjs?v=native-body-20261006-0212';
 import{refineGeometryPosition}from'./geometry-position-refinement.mjs?v=geometry-display-20261006-1112';
 import{floorHeightsAtXZ}from'./rom-floor-candidates.mjs';
-import{compareMapBackground}from'./map-video-residual.mjs?v=camera-loss-evidence-20261006-1205';
+import{compareMapBackground}from'./map-video-residual.mjs?v=shrine-beam-20261008-a9738d0c';
 import{createRendererSourceArchives}from'./renderer-source-archives.mjs';
 export function createMode1BackgroundInference({backgroundRenderer}){
  const archives=createRendererSourceArchives();

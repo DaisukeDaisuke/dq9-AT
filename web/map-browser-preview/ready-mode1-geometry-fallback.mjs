@@ -7,7 +7,7 @@ import {continueRefinedFloorAlternatives} from './refined-floor-alternatives.mjs
 import {automaticPreviewCamera} from './automatic-preview-camera.mjs';
 import {automaticBillboardScenes} from './automatic-billboard-scene.mjs';
 import {applyMode1OrdinaryHypothesis} from './automatic-material-environment.mjs?v=native-body-20261006-0212';
-import {compareMapBackground} from './map-video-residual.mjs?v=camera-loss-evidence-20261006-1205';
+import {compareMapBackground} from './map-video-residual.mjs?v=shrine-beam-20261008-a9738d0c';
 import {createRendererSourceArchives} from './renderer-source-archives.mjs';
 const copy=structuredClone;
 export function hasNonzeroSourceXZBounds(position){

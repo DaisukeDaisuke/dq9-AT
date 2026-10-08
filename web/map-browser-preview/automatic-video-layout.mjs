@@ -1,5 +1,5 @@
-import {upperVideoROI} from './video-player-map-input.mjs?v=registration-timing-20261007-0020';
-import {gameplayVideoROI} from './map-video-residual.mjs?v=camera-loss-evidence-20261006-1205';
+import {upperVideoROI} from './video-player-map-input.mjs?v=shrine-beam-20261008-a9738d0c';
+import {gameplayVideoROI} from './map-video-residual.mjs?v=shrine-beam-20261008-a9738d0c';
 // Input contract for the supplied recordings, not a visual/layout classifier.
 // The supplied 1920x1080 recording puts both 960x720 DS screens above the stream HUD.
 // Name visibility, map identity and player position are independently unresolved.

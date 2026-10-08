@@ -1,7 +1,7 @@
 // Attribution of an unchanged native rendering objective, not body membership.
 // The original four-connected component is recovered by the existing producer.
 import {originalResidualProposalSupport} from './map-browser-preview/residual-proposal-support.mjs';
-import {packBackgroundMask,unpackBackgroundMask} from './map-browser-preview/background-branch-support.mjs?v=rgb-dependency-optin-20261007-0943';
+import {packBackgroundMask,unpackBackgroundMask} from './map-browser-preview/background-branch-support.mjs?v=shrine-beam-20261008-a9738d0c';
 const KIND='conditional-source-native-original-proposal-support-v1',clone=structuredClone;
 export function projectNativeOriginalProposalSupport(request,region){
  // Repeated transport must preserve unknown/malformed evidence, never turn it

@@ -75,9 +75,9 @@ function regions(mask){const seen=new Uint8Array(N),queue=new Int32Array(N),out=
   out.push({id:out.length,roi:{x:x0,y:y0,w:x1-x0+1,h:y1-y0+1},pixels:tail,kind:'unclassified-background-residual',bodyCertified:false,speciesKnown:false,birthCertified:false,minimumProvenATCalls:0});
  }return out.sort((a,b)=>b.pixels-a.pixels||a.id-b.id);
 }
-export function compareMapBackground(background,video,{applyTranslation=false}={}){
+export function compareMapBackground(background,video,{applyTranslation=false,fixedAlignment=null}={}){
  for(const image of[background,video])need(image?.width===W&&image?.height===H&&image.rgba?.length===N*4,'比較には256×192 RGBAが必要です');
- const alignment=estimateCameraTranslation(tracking(background.rgba),tracking(video.rgba)),shift=applyTranslation&&alignment.reliable?{dx:alignment.dx,dy:alignment.dy}:{dx:0,dy:0};
+ const alignment=fixedAlignment??background.postAngleFixedAlignment??estimateCameraTranslation(tracking(background.rgba),tracking(video.rgba)),shift=applyTranslation&&alignment.reliable?{dx:alignment.dx,dy:alignment.dy}:{dx:0,dy:0};
  const residual=new Uint8Array(N),valid=new Uint8Array(N),histogram=new Uint32Array(256),heatmap=new Uint8ClampedArray(N*4),aligned=new Uint8ClampedArray(N*4);let count=0,sum=0,exact=0;
  for(let y=0;y<H;y++)for(let x=0;x<W;x++){const i=y*W+x,bx=x-shift.dx,by=y-shift.dy;if(bx<0||by<0||bx>=W||by>=H)continue;const j=by*W+bx;if(background.rgba[j*4+3]!==255||video.rgba[i*4+3]!==255)continue;
   let error=0;for(let c=0;c<3;c++){aligned[i*4+c]=background.rgba[j*4+c];error+=Math.abs(background.rgba[j*4+c]-video.rgba[i*4+c]);}aligned[i*4+3]=255;valid[i]=1;count++;sum+=error;if(!error)exact++;const value=Math.round(error/3);residual[i]=value;histogram[value]++;heatmap.set([value,value,value,255],i*4);

@@ -181,6 +181,7 @@ node scripts/test-monster-classification-timing.mjs
 node scripts/test-classification-request-envelope.mjs
 node scripts/test-background-cooperative-timing.mjs
 
+node scripts/test-conditional-beam-background.mjs
 node scripts/test-background-search-interruption.mjs
 node scripts/test-background-interruption-retention.mjs
 

@@ -1,3 +1,4 @@
+import {retainedBackgroundInputs} from './conditional-beam-background.mjs?v=shrine-beam-20261008-a9738d0c';
 import {createRendererSourceArchives} from './renderer-source-archives.mjs?v=recognition-cache-20261005-1007';
 /* SPDX-License-Identifier: GPL-2.0-or-later
  * Render the already enumerated background hypothesis on GPU before comparison.
@@ -46,7 +47,7 @@ export function createAutomaticBackgroundRenderer({initialize=createNativeIntege
    } catch(error) {if(error.name==='AbortError')throw error;reason='GPU source/compute rejected: '+error.message;result=null;}
   }
   if(!result){check();const at=now();try {result=await renderCpu(project,rom,record,active,camera,{applyFog:true,screenEffectPhase,retainBodyDestination:true,isCurrent:()=>mine===generation&&isCurrent(),onSegment:fallbackWork.onSegment,onYieldTiming:fallbackWork.onYieldTiming});}finally {timings.cpuFallbackMs=phase('cpu-fallback',at);}}
-  check();return {...result,diagnostics:{...result.diagnostics,automaticBackgroundPipeline:{...pipeline(),status:result?.ready===false?'unsupported':'completed'}}};
+  check();return {...result,[retainedBackgroundInputs]:{project,rom,record,active,camera,screenEffectPhase},diagnostics:{...result.diagnostics,automaticBackgroundPipeline:{...pipeline(),status:result?.ready===false?'unsupported':'completed'}}};
   }catch(error){try{Object.defineProperty(error,'automaticBackgroundPipeline',{value:{...pipeline(),backend:reason?'cpu-fallback':'unresolved-or-interrupted',completedResult:false,status:error?.name==='AbortError'?'cancelled':'threw',errorName:error?.name??'Error'},configurable:true});}catch{/* Optional diagnostics never replace the original error. */}throw error;}
 
  }

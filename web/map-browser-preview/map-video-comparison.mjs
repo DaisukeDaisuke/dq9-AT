@@ -4,8 +4,8 @@ import {PausedLocalVideoStartup} from './paused-local-video-startup.mjs?v=paused
 import{measuredClassificationView}from'./measured-classification-view.mjs?v=continuity-yield-local-evidence-20261006-1458';
 import{VideoTrackingReplay,waitForMeasuredReplayFrame}from'./video-tracking-replay.mjs?v=continuity-yield-local-evidence-20261006-1458';
 import{videoTrackingFrameKey}from'./video-patch-correspondence.mjs?v=continuity-yield-local-evidence-20261006-1458';
-import{createVideoTrackingCapture}from'./video-tracking-capture.mjs?v=camera-loss-evidence-20261006-1205';
-import {captureResidualNativeBackground} from './residual-recognition-job.mjs?v=composed-body-contract-20261007-1224';
+import{createVideoTrackingCapture}from'./video-tracking-capture.mjs?v=shrine-beam-20261008-a9738d0c';
+import {captureResidualNativeBackground} from './residual-recognition-job.mjs?v=shrine-beam-20261008-a9738d0c';
 import {createFrozenAnalysisCapture} from './capture-analysis-pixels.mjs?v=native-continuation-20261006-0333';
 import {completedClassificationSnapshot,renderClassificationSummary,createDeferredEvidenceJSON} from './completed-classification-display.mjs?v=geometry-display-20261006-1112';
 import {captureAutomaticResidualPolicy,automaticResidualPolicyKey,selectAutomaticResiduals,withAutomaticResidualSelection} from './automatic-residual-policy.mjs?v=video-inference-20261005-1232';
@@ -14,13 +14,13 @@ import {replaceResidualTimelineClassification} from './residual-classification-s
 import {recognitionDisplaySummary,timelineDisplaySummary,comparisonDisplaySummary} from './recognition-display-summary.mjs?v=native-extents-latest-20261006-0843';
 import {VideoObservationPump,VideoObservationTimeline,residualAssociationHints,videoObservationFrameKey} from './video-observation-timeline.mjs?v=map-input-owned-preparation-20261006-1408';
 import {detectMapNameROI} from '../map-name-roi.mjs';
-import {upperVideoROI} from './video-player-map-input.mjs?v=registration-timing-20261007-0020';
+import {upperVideoROI} from './video-player-map-input.mjs?v=shrine-beam-20261008-a9738d0c';
 import {parseVideoTimecode,formatVideoTimecode} from './video-timecode.mjs';
-import {inferPairedVideoLayout} from './automatic-video-layout.mjs?v=registration-timing-20261007-0020';
+import {inferPairedVideoLayout} from './automatic-video-layout.mjs?v=shrine-beam-20261008-a9738d0c';
 import {ResidualTracker} from './residual-tracking-input.mjs?v=continuity-yield-local-evidence-20261006-1458';
 import {annotateResidualRegions,selectResidualDisplay} from './residual-region-display.mjs';
 import {FileVideoInput} from '../file-video-input.mjs?v=automatic-playback-source-cache-20261006-1100';
-import {gameplayVideoROI,sampleGameplayFrame,compareMapBackground} from './map-video-residual.mjs?v=camera-loss-evidence-20261006-1205';
+import {gameplayVideoROI,sampleGameplayFrame,compareMapBackground} from './map-video-residual.mjs?v=shrine-beam-20261008-a9738d0c';
 const $=id=>document.getElementById(id),sha=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join('');
 const draw=(id,image)=>{const canvas=$(id);canvas.width=image.width;canvas.height=image.height;canvas.getContext('2d').putImageData(new ImageData(image.rgba,image.width,image.height),0,0);};
 export function mountMapVideoComparison({renderBackground,derivePlayerBackground,deriveMapBackground,classifyResiduals,cancelPending=()=>{},cancelSearch=()=>{},onAutomaticStart=()=>{},canAnalyze=()=>true,getRomIdentity=()=>null,getRecognitionContext=()=>({}),onObservationBundle=()=>{},onObservationReset=()=>{},immutableObservationBundles=false}){

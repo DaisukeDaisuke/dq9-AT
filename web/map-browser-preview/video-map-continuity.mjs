@@ -1,5 +1,5 @@
-import {createVideoUpperPreparation} from './video-player-map-input.mjs?v=registration-timing-20261007-0020';
-import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=registration-timing-20261007-0020';
+import {createVideoUpperPreparation} from './video-player-map-input.mjs?v=shrine-beam-20261008-a9738d0c';
+import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=shrine-beam-20261008-a9738d0c';
 // A cached map is a search hypothesis, never a temporal assertion. Every hit
 // requires fresh whole-minimap registration and physical-marker/floor hypotheses or fixed-display-anchor evidence.
 export class VideoMapContinuity {

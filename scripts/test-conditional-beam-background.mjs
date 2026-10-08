@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {beamComparisonScene,applyBoundBeamHypothesis,compareBeamAlternatives} from '../web/map-browser-preview/conditional-beam-background.mjs';
+const instance=(id,c)=>({id,modelName:`D04M02${c}1.nsbmd`,draws:[1,2].map(n=>({textureBinding:{material:{name:'xray0'+n}}}))});
+const active={scenes:[{archiveName:'a',streamName:'s',instances:[instance(55,'R'),instance(78,'B'),{id:1,modelName:'wall',draws:[]}],sourcePlacements:[{id:55,modelId:1},{id:78,modelId:2}],sourceModels:[]}]},record={name:'ふういんのほこら　１Ｆ'};
+assert.equal(beamComparisonScene({name:'other'},active),null);assert.equal(active.scenes[0].instances.length,3);
+const all=beamComparisonScene(record,active);assert.equal(all.active.scenes[0].instances.length,1);
+for(const [state,n] of [['red-on-blue-on',3],['red-off-blue-on',2],['red-on-blue-off',2],['red-off-blue-off',1]])assert.equal(applyBoundBeamHypothesis(record,active,{state,removed:all.removed,currentBeamStateCertified:false}).scenes[0].instances.length,n);
+assert.throws(()=>applyBoundBeamHypothesis(record,active,{state:'red-off-blue-off',removed:[],currentBeamStateCertified:false}));
+const image=n=>({width:256,height:192,rgba:Uint8ClampedArray.from({length:256*192*4},(_,i)=>i%4===3?255:n)}),alignment={reliable:true,dx:0,dy:0,applied:{dx:0,dy:0}};
+const r=compareBeamAlternatives([image(40),image(20),image(30),image(20)],image(20),alignment,['11','01','10','00']);assert.deepEqual(r.winners,[1,3]);assert.equal(r.evidence.commonKnownPixels,49152);assert.equal(r.evidence.rgbAbsoluteError[1],0);assert.equal(r.evidence.currentBeamStateCertified,false);
+console.log(JSON.stringify({passed:true,scope:'synthetic policy, map gate, no mutation,4states,ties,source-binding; no native parity claim'}));

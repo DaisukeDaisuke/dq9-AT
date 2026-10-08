@@ -1,12 +1,12 @@
-import{projectNativeOriginalProposalSupport}from'../monster-native-proposal-support.mjs?v=rgb-dependency-optin-20261007-0943';
+import{projectNativeOriginalProposalSupport}from'../monster-native-proposal-support.mjs?v=shrine-beam-20261008-a9738d0c';
 import{projectMode1MseSceneHypothesis}from'./mode1-mse-scene-hypothesis.mjs?v=native-scene-link-20261007-0354';
-import{projectNativeBodyDestinationHandoff}from'./native-body-destination-handoff.mjs?v=rgb-dependency-optin-20261007-0943';
+import{projectNativeBodyDestinationHandoff}from'./native-body-destination-handoff.mjs?v=shrine-beam-20261008-a9738d0c';
 // Transport projection only. The owner keeps full original search/comparison
 // evidence. Include every branch/model; never rank/filter from a transport limit.
 const pick=(value,keys)=>value?Object.fromEntries(keys.map(k=>[k,value[k]])):null;
 const frame=value=>pick(value,['sourceId','sourceEpoch','timelineSegment','frameSerial','mediaTime','videoTime','fullRGBA_SHA256']);
 const fog=value=>pick(value,['parameters','source','timeIndependent','discreteOrdinaryHypothesis']);
-const environment=value=>value?{fogApplied:value.fogApplied,fog:fog(value.fog),mode1:value.mode1??null,mode2Inputs:value.mode2Inputs??null,...(value.mode1Scene!=null?{mode1Scene:projectMode1MseSceneHypothesis(value.mode1Scene)}:{})}:null;
+const environment=value=>value?{beamVisibilityHypothesis:structuredClone(value.beamVisibilityHypothesis??null),fogApplied:value.fogApplied,fog:fog(value.fog),mode1:value.mode1??null,mode2Inputs:value.mode2Inputs??null,...(value.mode1Scene!=null?{mode1Scene:projectMode1MseSceneHypothesis(value.mode1Scene)}:{})}:null;
 export function nativeBodyRequestPayload(request){
  const bg=request.backgroundEvidence,support=bg?.backgroundBranchSupport,hasBranches=support?.ready===true&&Array.isArray(support.branches),backgroundEvidence={romSHA256:bg?.romSHA256,recordKey:bg?.recordKey};
  // Preserve the producer count verbatim: deriving it from surviving rows would
