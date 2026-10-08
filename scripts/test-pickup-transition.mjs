@@ -4,7 +4,7 @@ import {validateMapTransitionInputs,deriveEmptyF06NpcList,advanceMapTransition} 
 import {ATKernel} from '../web/at-core.mjs';
 import {FieldATKernel} from '../web/field-at.mjs';
 import {MapProject} from '../web/map-core.mjs';
-import {MonsterMovementKernel} from '../web/monster-movement.mjs';
+import {MonsterMovementKernel} from '../web/monster-movement.mjs?v=motion-closure-20261008-89e290ef';
 import {preferredNodeTrigFromRom} from '../web/field-preferred-node.mjs';
 import {createFirstSpawnReplay} from '../web/first-spawn-replay.mjs';
 let checks=0;const eq=(a,b)=>{assert.deepEqual(a,b);checks++;},reject=f=>{assert.throws(f);checks++;},copy=structuredClone;

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
 import {createFirstSpawnReplay,validateSpawnTrajectory} from '../web/first-spawn-replay.mjs';
-import {MapProject} from '../web/map-core.mjs';import {MonsterMovementKernel} from '../web/monster-movement.mjs';import {preferredNodeTrigFromRom} from '../web/field-preferred-node.mjs';import {ATKernel} from '../web/at-core.mjs';import {FieldATKernel} from '../web/field-at.mjs';
+import {MapProject} from '../web/map-core.mjs';import {MonsterMovementKernel} from '../web/monster-movement.mjs?v=motion-closure-20261008-89e290ef';import {preferredNodeTrigFromRom} from '../web/field-preferred-node.mjs';import {ATKernel} from '../web/at-core.mjs';import {FieldATKernel} from '../web/field-at.mjs';
 let checks=0;const eq=(a,b)=>{assert.deepEqual(a,b);checks++;},reject=f=>{assert.throws(f);checks++;};
 const point={xyz:[0,0,0],angle:0,nodeIndex:0,graphEnabled:true},t={schema:'dq9-pre-spawn-trajectory-v2',phase:'pre-spawn-and-post-hero-effective',mapId:7402,steps:[{index:0,sourceFrame:null,delta:33,timeValue:0,hero:point,postHero:structuredClone(point),actorClock:{phase:2,scaledDelta:33}}]};
 const graph={nodes:[{id:0}]};eq(validateSpawnTrajectory(t,7402,graph,true),t.steps);const actorInjected=structuredClone(t);actorInjected.steps[0].actors=[{xyz:[1,2,3]}];reject(()=>validateSpawnTrajectory(actorInjected,7402,graph,true));const seedInjected=structuredClone(t);seedInjected.steps[0].nextSeed=123;reject(()=>validateSpawnTrajectory(seedInjected,7402,graph,true));

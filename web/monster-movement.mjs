@@ -1,3 +1,4 @@
+import {isMovementNoDrawSource} from './monster-motion-source-binding.mjs?v=motion-closure-20261008-89e290ef';
 // Partial source-derived native motion arithmetic. No renderer, tween, recorded
 // next position, collision result or full-FSM completion is hidden in this API.
 import {fieldNodeOccupied} from './field-preferred-node.mjs';
@@ -17,7 +18,7 @@ function boundDerivedFamily(actor,context){
  let pointer=c.headPointer;const seen=new Set();for(const r of c.records){if(!r||r.pointer!==pointer||!u32(r.pointer)||seen.has(pointer)||r.typeWord!==1||!u32(r.nextPointer))return false;seen.add(pointer);pointer=r.nextPointer;}return pointer===0;
 }
 export class MonsterMovementKernel {
- constructor(instance,trig){this.e=instance.exports;if(typeof this.e.monster_motion_prefix!=='function')throw Error('Monster motion WASM export missing');if(trig?.divisor!==25736||!(trig.values instanceof Int16Array)||trig.values.length!==8192)throw Error('Verified ROM trig resource required');new Int16Array(this.e.memory.buffer,this.e.monster_motion_trig(),8192).set(trig.values);this.atanReady=trig.atan?.values instanceof Int16Array&&trig.atan.values.length===129&&typeof this.e.monster_motion_atan_table==='function';if(this.atanReady)new Int16Array(this.e.memory.buffer,this.e.monster_motion_atan_table(),129).set(trig.atan.values);}
+ constructor(instance,trig,{sourceBinding=null}={}){this.sourceBinding=isMovementNoDrawSource(sourceBinding)?sourceBinding:null;this.e=instance.exports;if(typeof this.e.monster_motion_prefix!=='function')throw Error('Monster motion WASM export missing');if(trig?.divisor!==25736||!(trig.values instanceof Int16Array)||trig.values.length!==8192)throw Error('Verified ROM trig resource required');new Int16Array(this.e.memory.buffer,this.e.monster_motion_trig(),8192).set(trig.values);this.atanReady=trig.atan?.values instanceof Int16Array&&trig.atan.values.length===129&&typeof this.e.monster_motion_atan_table==='function';if(this.atanReady)new Int16Array(this.e.memory.buffer,this.e.monster_motion_atan_table(),129).set(trig.atan.values);}
  state2Steering(currentXYZ,targetXYZ){return this.steering(currentXYZ,targetXYZ,true);}
  state2EntrySteering(currentXYZ,targetXYZ){return this.steering(currentXYZ,targetXYZ,false);}
  steering(currentXYZ,targetXYZ,flattenCurrentY){
@@ -40,16 +41,16 @@ export class MonsterMovementKernel {
   const prefix=this.kinematicPrefix(before,context.clock,{reached:true});if(!prefix.resolved)return unresolved(prefix.reason);
   const current={...prefix.kinematic,stateTimer:(before.stateTimer+context.clock.scaledDelta)>>>0,activeElapsed:(before.activeElapsed+context.clock.scaledDelta)>>>0,updateCounter:(before.updateCounter+1)>>>0};
   if(current.activeElapsed>1999&&current.alertFlag===0&&current.detectionMode!==0){
-   if(![1,2,3].includes(current.detectionMode)||!dense(context.parties)||context.parties.some(p=>!p||typeof p!=='object'))return unresolved('alert detector mode/party pre-state unresolved');
+   if((![1,2,3].includes(current.detectionMode)&&!(current.detectionMode===4&&this.sourceBinding))||!dense(context.parties)||context.parties.some(p=>!p||typeof p!=='object'))return unresolved('alert detector mode/party pre-state unresolved');
    const parties=new Map(context.parties.map(p=>[p.slot,p]));if(parties.size!==context.parties.length)return unresolved('duplicate party records');
-   const radius=current.detectionMode===2?0x7800:0x3800;
+   const radius=current.detectionMode===4?this.sourceBinding.mode4Radius:current.detectionMode===2?0x7800:0x3800;
    for(let slot=0;slot<4;slot++){
     const p=parties.get(slot);if(p?.registryKnown!==true||!u32(p.pointer))return unresolved('party registry incomplete');
     if(p.pointer===0){if(slot===0)break;continue;}
     if(!Number.isInteger(p.headerFlags)||p.headerFlags<0||p.headerFlags>65535)return unresolved('typed-party header unknown');
     if((p.headerFlags&0x800)===0){if(slot===0)break;continue;}
     const distance=this.state2EntrySteering(current.xyz,p.xyz);
-    if(!distance.resolved||(current.detectionMode===3?distance.steeringDistance<radius:distance.steeringDistance<=radius))return unresolved('near/unknown party requires unsupported alert/eligibility branch');
+    if(!distance.resolved||([3,4].includes(current.detectionMode)?distance.steeringDistance<radius:distance.steeringDistance<=radius))return unresolved('near/unknown party requires unsupported alert/eligibility branch');
    }
   }
   let result;
@@ -57,7 +58,8 @@ export class MonsterMovementKernel {
   else{
    if(!xyz(current.targetXYZ)||!Number.isInteger(current.speedMode)||current.speedMode<0||current.speedMode>3)return unresolved('state2 target/speed pre-state unknown');
    const steering=this.state2Steering(current.xyz,current.targetXYZ);
-   if(!steering.resolved||steering.steeringDistance<4096)return unresolved('early full-distance state2 transition not closed');
+   if(!steering.resolved)return unresolved(steering.reason??'state2 numeric steering unresolved');
+   if(steering.steeringDistance<4096&&!this.sourceBinding)return unresolved('early full-distance state2 transition requires verified ROM source');
    const speed=[0,154,230,450][current.speedMode];
    const nextState={...current,targetAngle:steering.targetAngle,speed,targetSpeed:speed,movementByte:1,delayWord:current.delayWord&32767,actorFlags:(current.actorFlags&~0x40000)>>>0};
    let terrain;

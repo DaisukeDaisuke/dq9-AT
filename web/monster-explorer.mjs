@@ -2,7 +2,7 @@ import {MapProject, MapRenderer} from './map-core.mjs';
 import {Narc} from './vendor/narc-source.js';
 import {preferredNodeTrigFromRom, fieldNativeFacing} from './field-preferred-node.mjs';
 import {monsterCol2FromRom} from './monster-terrain.mjs';
-import {MonsterMovementKernel} from './monster-movement.mjs';
+import {MonsterMovementKernel} from './monster-movement.mjs?v=motion-closure-20261008-89e290ef';
 import {projectMonsterOuterReset} from './monster-lifecycle.mjs';
 import {ATKernel, parseSeed} from './at-core.mjs';
 import {FieldATKernel} from './field-at.mjs';

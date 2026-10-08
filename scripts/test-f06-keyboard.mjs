@@ -1,7 +1,7 @@
 import assert from'node:assert/strict';import fs from'node:fs';
 import{validateF06KeyboardInput,F06_KEYBOARD_GATES,advanceF06HeroMotion}from'../web/f06-hero-motion.mjs';
 import{sourceF06KeyboardAngles}from'../web/f06-creator.mjs';
-import{MonsterMovementKernel}from'../web/monster-movement.mjs';
+import{MonsterMovementKernel}from'../web/monster-movement.mjs?v=motion-closure-20261008-89e290ef';
 import{preferredNodeTrigFromRom}from'../web/field-preferred-node.mjs';
 let checks=0;const eq=(a,b)=>{assert.deepEqual(a,b);checks++},reject=f=>{assert.throws(f);checks++},gates=Object.fromEntries(F06_KEYBOARD_GATES.map(k=>[k,true])),input=heldDirection=>({heldDirection,gates:structuredClone(gates)});
 for(const key of ['Down','Right','Up','Left','UpLeft','UpRight','DownLeft','DownRight','None'])eq(validateF06KeyboardInput(input(key)).heldDirection,key);

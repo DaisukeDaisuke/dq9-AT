@@ -5,7 +5,7 @@ import {FirstSpawnReplay,createFirstSpawnReplay,validateSpawnTrajectory} from '.
 import {ATKernel} from '../web/at-core.mjs';
 import {FieldATKernel} from '../web/field-at.mjs';
 import {MapProject} from '../web/map-core.mjs';
-import {MonsterMovementKernel} from '../web/monster-movement.mjs';
+import {MonsterMovementKernel} from '../web/monster-movement.mjs?v=motion-closure-20261008-89e290ef';
 import {preferredNodeTrigFromRom} from '../web/field-preferred-node.mjs';
 import {decodeEncounterStream} from '../web/encounter-distribution.mjs';
 let checks=0;const eq=(a,b)=>{assert.deepEqual(a,b);checks++;},reject=f=>{assert.throws(f);checks++;};

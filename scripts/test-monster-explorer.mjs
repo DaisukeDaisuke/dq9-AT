@@ -3,9 +3,9 @@
 // locally; no native fixture, recorded actor state or expected trajectory enters.
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {defaultExplorerConfig,validateExplorerConfig,createExplorerProfile,ExplorerSession,explorerTerrain,explorerMapTransform} from '../web/monster-explorer.mjs';
+import {defaultExplorerConfig,validateExplorerConfig,createExplorerProfile,ExplorerSession,explorerTerrain,explorerMapTransform} from '../web/monster-explorer.mjs?v=motion-closure-20261008-89e290ef';
 import {MapProject} from '../web/map-core.mjs';
-import {MonsterMovementKernel} from '../web/monster-movement.mjs';
+import {MonsterMovementKernel} from '../web/monster-movement.mjs?v=motion-closure-20261008-89e290ef';
 import {preferredNodeTrigFromRom} from '../web/field-preferred-node.mjs';
 import {monsterCol2FromRom} from '../web/monster-terrain.mjs';
 import {Narc} from '../web/vendor/narc-source.js';

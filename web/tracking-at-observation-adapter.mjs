@@ -43,8 +43,10 @@ export function compileTrackingObservations(bundle,{tables={},domain,budget,mate
  for(const route of nativeRouteChains){
   need(route?.kind==='conditional-chain'&&route.unknownAlternativeRetained===true&&route.currentVideoStateRecovered===false&&route.sourceRuntimeInitialized===false,'Conditional native route-chain contract required');
   const refs=route.sourceEvidence,h=route.hypothesis;
-  need(refs?.first&&refs?.second&&h&&Array.isArray(h.events)&&h.events.length===2&&h.events.every(e=>e.operation==='direct-output-modulo'),'Two source route choices required');
-  for(const ref of [refs.first,refs.second]){
+  need(refs?.first&&refs?.second&&h&&Array.isArray(h.events)&&h.events.length>=2&&h.events.length<=32&&h.events.every(e=>e.operation==='direct-output-modulo'),'Source route choices only; weighted-origin transition is not source-closed');
+  const routeReferences=refs.choices??[refs.first,refs.second];
+  need(Array.isArray(routeReferences)&&routeReferences.length===h.events.filter(e=>e.operation==='direct-output-modulo').length,'Each route draw must retain its source motion interval');
+  for(const ref of routeReferences){
    need(ref.romSHA256===bundle.source?.background?.romSHA256,'Route ROM differs from observation');
    need(Array.isArray(ref.sourceIdentity)&&ref.sourceIdentity.length===3&&ref.sourceIdentity.every((v,i)=>v===[bundle.source?.video?.sourceId,bundle.source?.video?.sourceEpoch,bundle.source?.video?.timelineSegment][i]),'Route source epoch or segment differs');
    need(seen.has(ref.fromSightingId)&&seen.has(ref.toSightingId),'Route endpoints must exist in the owned observation');
@@ -53,7 +55,7 @@ export function compileTrackingObservations(bundle,{tables={},domain,budget,mate
     need(frame&&endpoint?.frameKey===sighting.frameKey&&endpoint.frameKey===frame.frameKey&&endpoint.sourcePTS===frame.sourcePTS&&frame.romSHA256===ref.romSHA256&&['sourceId','sourceEpoch','timelineSegment'].every((k,i)=>frame[k]===ref.sourceIdentity[i]),'Route endpoint differs from its exact immutable frame');
    }
   }
-  need(h.edges?.length===1&&h.edges[0].callsBetweenPostStates?.min==='1'&&h.edges[0].callsBetweenPostStates?.max==='1'&&h.edges[0].assumptionsMeasured===false,'Explicit conditional consecutive-consumer edge required');
+  need(h.edges?.length===h.events.length-1&&h.edges.every(e=>e.callsBetweenPostStates?.min==='1'&&e.callsBetweenPostStates?.max==='1'&&e.assumptionsMeasured===false),'Explicit conditional consecutive-consumer edge required');
   hypotheses.push(copy(h));
  }
  const experiment=compileExperiment({sightings,associationAlternatives:alternatives,hypotheses,coverage:{...copy(bundle.coverage??{}),eventHypothesesComplete:false,associationEnumerationComplete:false,deferredAutomaticAlternatives:copy(bundle.automaticATEventEvidence?.deferred??[]),broadTrackingHypothesesDeferred:!includeBroadSingletons}},{tables});
