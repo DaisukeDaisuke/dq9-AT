@@ -7,7 +7,7 @@ const ownershipImport=readFileSync(timelineModuleURL,'utf8').match(/import\s*\{\
 assert(ownershipImport,'Production timeline ownership-helper import is required');
 const {cloneImmutableObservationBundle,copyObservationBundleForAT}=await import(new URL(ownershipImport[1],timelineModuleURL).href);
 import {VideoObservationTimeline} from '../web/map-browser-preview/video-observation-timeline.mjs';
-import {createVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs';
+import {createVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=camera-at-20261008-f1a85661';
 const bundle=extra=>({schema:'headless-monster-observation-bundle-v1',producer:'browser-ROM-background-residual',sightings:[],videoObservations:[{kind:'partial-video-observation-timeline',timeline:{old:true}}],...extra});
 const stamp={sourceId:'ownership-test',sourceEpoch:0,timelineSegment:0,mediaTime:1};
 const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -83,7 +83,8 @@ test('camera alternative validation and singleton append accept frozen nested ev
  assert.equal(alternative.supportedModelId,modelId);for(const b of alternative.branches)for(const c of b.candidates)c.sourceEvidenceReference={kind:'same-sighting-source-native-support-reference',classificationEvidenceIndex:0,modelId:c.modelId,branchId:b.branchId,recordKey:b.recordKey,field:'sourceNativeSupport'};
  const sighting={id:'camera-owned',originalProposalId:'9',frameKey:map.frame.frameKey,sourcePTS:1,classificationEvidence:[{rankings}],modelAliases:[{modelId,speciesCandidates:[{monsterId:1}]}],cameraBodyAlternative:alternative,conditionalBodyPrediction:null};
  const plan={mapIds:[1],models:[{modelId,variant:'_f',speciesCandidates:[{monsterId:1}],origins:[{mapId:1,tableId:1,monsterId:1}]}]};retained.sightings=[sighting];retained.modelPlan=plan;
- const owned=cloneImmutableObservationBundle(bundle({source:{video:stamp,background:{romSHA256:frame.romSHA256},modelPlan:plan},sightings:[sighting],videoObservations:[{timeline:{schema:'video-map-observation-timeline-v1',frames:[retained]}}]}));
+ const backgroundBranchSupport={kind:'same-frame-background-branch-support-v1',ready:true,frame,passingBranchCount:1,branches:[{branchId,recordKey,mapId:1,romSHA256:frame.romSHA256,fullRGBA_SHA256:frame.fullRGBA_SHA256}]};
+ const owned=cloneImmutableObservationBundle(bundle({source:{video:stamp,background:{romSHA256:frame.romSHA256,backgroundBranchSupport},modelPlan:plan},sightings:[sighting],videoObservations:[{timeline:{schema:'video-map-observation-timeline-v1',frames:[retained]}}]}));
  const states=[],prepared=[];const at=createVideoTrackingAT({engineRevision:'camera-ownership-test',getTables:()=>({}),getOptions:()=>({}),onState:s=>states.push(s),prepare:async(snapshot,options)=>{prepared.push({snapshot,options});return {gate:[],missingEvidence:[]};}});
  await at.observe(owned);assert.equal(prepared.length,1);assert.equal(prepared[0].snapshot.cameraBodyATAlternatives.singleEvents.length,1);assert.equal(prepared[0].options.singleEvents.length,1);assert.equal(prepared[0].snapshot.cameraBodyATValidationDeferrals,undefined);assert.equal(owned.cameraBodyATAlternatives,undefined);assert.equal(prepared[0].snapshot.cameraBodyATAlternatives.unknownAlternativeRetained,true);
  // A weaker scaled fit's UI deferral cannot discard a stronger native fit on
@@ -99,7 +100,7 @@ test('camera alternative validation and singleton append accept frozen nested ev
   sighting.cameraBodyAlternative=compare(sighting.conditionalBodyPrediction);for(const b of sighting.cameraBodyAlternative.branches)for(const c of b.candidates)c.sourceEvidenceReference={kind:'same-sighting-source-native-support-reference',classificationEvidenceIndex:0,modelId:c.modelId,branchId:b.branchId,recordKey:b.recordKey,field:'sourceNativeSupport'};
   assert.equal(sighting.cameraBodyAlternative.supportedModelId,differentBackground?null:modelId);
   if(differentBackground){assert.equal(sighting.cameraBodyAlternative.unboundModelId,modelId);assert.equal(sighting.cameraBodyAlternative.nonEnemyCompetitionDecision.branches[0].alternatives[0].uiVictoryClaimed,false);}
-  const source=cloneImmutableObservationBundle(bundle({source:{video:stamp,background:{romSHA256:frame.romSHA256},modelPlan:plan},sightings:[sighting],videoObservations:[{timeline:{schema:'video-map-observation-timeline-v1',frames:[retained]}}]})),calls=[];
+  const source=cloneImmutableObservationBundle(bundle({source:{video:stamp,background:{romSHA256:frame.romSHA256,backgroundBranchSupport},modelPlan:plan},sightings:[sighting],videoObservations:[{timeline:{schema:'video-map-observation-timeline-v1',frames:[retained]}}]})),calls=[];
   const gate=createVideoTrackingAT({engineRevision:'ui-owned-objective-test',getTables:()=>({}),getOptions:()=>({}),prepare:async(snapshot,options)=>{calls.push({snapshot,options});return{gate:[],missingEvidence:[]};}});await gate.observe(source);assert.equal(calls.length,differentBackground?0:1);if(calls.length)assert.equal(calls[0].options.singleEvents.length,1);
  }
 });
@@ -117,7 +118,7 @@ test('default/non-AT timeline skips freezing and retains mutable independent nat
 });
 
 test('main AT consumer explicitly opts in while GPU preview uses the default native-copy path',()=>{
- const main=readFileSync(new URL('../web/map-browser-preview/preview.mjs',import.meta.url),'utf8'),gpu=readFileSync(new URL('../web/map-browser-preview/gpu-file-preview.mjs',import.meta.url),'utf8'),panel=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs',import.meta.url),'utf8');
+ const main=readFileSync(new URL('../web/map-browser-preview/preview.mjs?v=camera-at-20261008-f1a85661',import.meta.url),'utf8'),gpu=readFileSync(new URL('../web/map-browser-preview/gpu-file-preview.mjs?v=camera-at-20261008-f1a85661',import.meta.url),'utf8'),panel=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs?v=camera-at-20261008-f1a85661',import.meta.url),'utf8');
  const mount=source=>source.match(/const videoComparison=mountMapVideoComparison\(\{[^\n]+/)[0];
  assert.match(mount(main),/immutableObservationBundles:true,onObservationBundle:bundle=>trackingAT.observe\(bundle\)/);assert.doesNotMatch(mount(gpu),/immutableObservationBundles|onObservationBundle/);
  assert.match(panel,/onObservationReset=\(\)=>\{\},immutableObservationBundles=false\}/);assert.match(panel,/timeline=new VideoObservationTimeline\(\{timing,immutableObservationBundles\}\)/);

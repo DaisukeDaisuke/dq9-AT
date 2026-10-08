@@ -1,3 +1,4 @@
+import {resolveCameraATBackgroundSupport} from './camera-at-background-support.mjs?v=camera-at-20261008-f1a85661';
 import {prepareVideoReplaySources} from '../video-replay-source-preparation.mjs?v=replay-source-20261007-0743';
 import {copyObservationBundleForAT} from './observation-bundle-ownership.mjs?v=gap-owned-observation-20261006-1340';
 import {compareCameraBodyAlternative} from '../monster-camera-body-alternative.mjs?v=recognition-20261008-7cf64cf4';
@@ -6,7 +7,7 @@ import {deriveCameraBodySingletonAlternatives,appendCameraBodySingletonAlternati
 import {assertProductionATInput} from '../production-at-input-policy.mjs?v=production-inputs-20261006-1320';
 import {searchAutomaticReplayInputs} from '../video-replay-factor-search.mjs?v=automatic-entry-factors-20261006-1120';
 import {deriveTrackingEventEvidence,automaticSingletonSearchOptions} from '../tracking-at-event-evidence.mjs?v=proposal-support-20261006-1152';
-import {prepareTrackingJob,openTrackingCheckpointStore,startTrackingSession,collectTrackingMotionAssociationInputs} from '../tracking-at-session.mjs?v=native-lineage-at-20261008-556f7ca6';
+import {prepareTrackingJob,openTrackingCheckpointStore,startTrackingSession,collectTrackingMotionAssociationInputs} from '../tracking-at-session.mjs?v=camera-at-20261008-f1a85661';
 // This is an execution budget/prior supplied by the user, never inferred from PTS.
 export function videoATSearchOptions(values,tables){
  const {seed,seedProvenance,first,last,indexProvenance}=values;
@@ -20,16 +21,16 @@ export function videoATSearchOptions(values,tables){
 // exact snapshot. An attachment alone is never authority to schedule a branch.
 function validatedCameraComparisons(snapshot){
  const rows=new Map(),alternatives=[],deferred=[];
- for(const s of snapshot.sightings??[])rows.set(s.id,{s,plan:snapshot.source?.modelPlan,map:trackingSightingMapProvenance(snapshot,s)});
- for(const v of snapshot.videoObservations??[])for(const f of v.timeline?.frames??[])for(const s of f.sightings??[])if(!rows.has(s.id))rows.set(s.id,{s,plan:f.modelPlan,map:trackingSightingMapProvenance(snapshot,s,f)});
- for(const {s,plan,map} of rows.values()){
+ for(const s of snapshot.sightings??[])rows.set(s.id,{s,plan:snapshot.source?.modelPlan,background:snapshot.source?.background?.backgroundBranchSupport,map:trackingSightingMapProvenance(snapshot,s)});
+ for(const v of snapshot.videoObservations??[])for(const f of v.timeline?.frames??[])for(const s of f.sightings??[])if(!rows.has(s.id))rows.set(s.id,{s,plan:f.modelPlan,background:f.cameraATBackgroundSupport,map:trackingSightingMapProvenance(snapshot,s,f)});
+ for(const {s,plan,map,background} of rows.values()){
   const claimed=s.cameraBodyAlternative;if(typeof claimed?.supportedModelId!=='string')continue;
   try{
    const need=(x,m)=>{if(!x)throw Error(m);};
    need(s.classificationEvidence?.length===1&&map?.frame?.frameKey===s.frameKey,'Camera alternative own-frame appearance/provenance unavailable');
    const p=map.frame,frame={romSHA256:p.romSHA256,sourceId:p.sourceId,sourceEpoch:p.sourceEpoch,timelineSegment:p.timelineSegment,mediaTime:p.sourcePTS,fullRGBA_SHA256:p.fullRGBA_SHA256},expected=map.survivingBackgroundCandidates??[],rankings=s.classificationEvidence[0].rankings,expectedModelIds=plan?.models?.map(m=>m.modelId);
    need(expected.length>0&&['romSHA256','sourceId','sourceEpoch','timelineSegment','mediaTime','fullRGBA_SHA256'].every(k=>claimed.frame?.[k]===frame[k]),'Camera alternative frame differs from its owned sighting');
-   const backgroundBranchSupport={kind:'same-frame-background-branch-support-v1',ready:true,frame,passingBranchCount:expected.length,branches:expected.map(b=>({...b,romSHA256:frame.romSHA256,fullRGBA_SHA256:frame.fullRGBA_SHA256}))};
+   const backgroundBranchSupport=resolveCameraATBackgroundSupport(background,frame,expected);
    const sourceBranches=expected.map(branch=>({branchId:branch.branchId,frame:{...frame,recordKey:branch.recordKey},renderer:'source-integer-original-GX-body-subset',candidates:rankings.map(r=>{
     need(r.sourceNativeSupport?.kind==='conditional-source-native-own-support','Owned source-body support unavailable');
     const matches=r.sourceNativeSupport.branches?.filter(b=>b.branchId===branch.branchId&&b.recordKey===branch.recordKey)??[];need(matches.length===1,'Owned body branch is missing or ambiguous');const b=matches[0];

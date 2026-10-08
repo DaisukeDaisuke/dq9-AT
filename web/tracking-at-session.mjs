@@ -26,10 +26,19 @@ function bindSelectionEndpoint(candidate,bySighting,nativeFrames,endpoint){
   for(const {event,source,compiledBranch}of entries){
    const frame=source.mapHypothesisProvenance?.frame,compatibility=source.mapCompatibility,background=compatibility?.bodyBackground,prediction=source.conditionalBodyPrediction;
    const sameFrame=frame&&nativeFrame&&frame.frameKey===reference.frameKey&&source.frameKey===reference.frameKey&&source.sourcePTS===reference.sourcePTS&&frame.sourcePTS===reference.sourcePTS&&frame.fullRGBA_SHA256===nativeFrame.fullRGBA_SHA256&&frame.romSHA256===candidate.romSHA256&&['sourceId','sourceEpoch','timelineSegment'].every((k,i)=>frame[k]===candidate.sourceIdentity[i]);
-   const sameBody=event.modelId===h.modelId&&source.modelId===h.modelId&&prediction?.modelId===h.modelId&&prediction.appearanceModelId===h.modelId&&prediction.bodyModelId===h.modelId&&prediction.agreement===true&&Number.isFinite(prediction.pixelErrorReduction)&&prediction.pixelErrorReduction>0&&prediction.spatialSupportRank>=2;
-   const sameBackground=compatibility?.jointlySupported===true&&compatibility.modelId===h.modelId&&background?.frameKey===reference.frameKey&&background.recordKey===h.recordKey&&background.branchId===reference.branchId;
+   const camera=source.cameraBodyAlternative,cameraFrame=camera?.frame;
+   const cameraBound=camera?.kind==='conditional-camera-body-alternative-v1'&&camera.supportedModelId===h.modelId&&camera.appearanceModelId===h.modelId&&camera.identityCertified===false&&camera.certifiedObservation===false&&camera.conditionalHypothesisOnly===true&&camera.noEventPossible===true&&camera.minimumProvenATCalls===0&&cameraFrame?.romSHA256===candidate.romSHA256&&cameraFrame.fullRGBA_SHA256===nativeFrame?.fullRGBA_SHA256&&cameraFrame.mediaTime===reference.sourcePTS&&['sourceId','sourceEpoch','timelineSegment'].every((k,i)=>cameraFrame[k]===candidate.sourceIdentity[i]);
+   const cameraRows=source.branchSpecificEncounterAlternatives?.filter(b=>b.branchId===reference.branchId&&b.recordKey===h.recordKey)??[],cameraRow=cameraRows.length===1?cameraRows[0]:null;
+   const cameraBranch=camera?.branches?.filter(b=>b.branchId===reference.branchId&&b.recordKey===h.recordKey)??[];
+   const cameraBackground=cameraBound&&cameraRow&&cameraRow.unresolvedOrigins?.length===0&&cameraBranch.length===1&&cameraBranch[0].status==='conditional-tested-body-preference'&&cameraBranch[0].bestTestedModelId===h.modelId&&source.mapHypothesisProvenance?.survivingBackgroundCandidates?.some(b=>b.branchId===reference.branchId&&b.recordKey===h.recordKey&&b.mapId===cameraRow.mapId);
+   const legacyBody=prediction?.modelId===h.modelId&&prediction.appearanceModelId===h.modelId&&prediction.bodyModelId===h.modelId&&prediction.agreement===true&&Number.isFinite(prediction.pixelErrorReduction)&&prediction.pixelErrorReduction>0&&prediction.spatialSupportRank>=2;
+   const legacyBackground=compatibility?.jointlySupported===true&&compatibility.modelId===h.modelId&&background?.frameKey===reference.frameKey&&background.recordKey===h.recordKey&&background.branchId===reference.branchId;
+   // A body from one route cannot borrow the other route's map/table binding.
+   const cameraReady=cameraBound&&cameraBackground,legacyReady=legacyBody&&legacyBackground;
+   const sameBody=event.modelId===h.modelId&&source.modelId===h.modelId&&(cameraBound||legacyBody);
+   const sameBackground=cameraReady||legacyReady;
    const validPair=p=>Number.isInteger(p?.tableId)&&p.tableId>=0&&p.tableId<=65535&&Number.isInteger(p?.monsterId)&&p.monsterId>=0&&p.monsterId<=65535;
-   const pairs=compatibility?.tableSpeciesAlternatives;
+   const pairs=cameraReady?cameraRow.tableSpeciesAlternatives:compatibility?.tableSpeciesAlternatives;
    const exactPairs=Array.isArray(pairs)&&pairs.length>0&&pairs.every(p=>validPair(p)&&event.tableSpeciesAlternatives?.some(e=>e.tableId===p.tableId&&e.monsterId===p.monsterId));
    if(!sameFrame||!sameBody||!sameBackground||!exactPairs){deferred.push({hypothesisIndex,automaticSingletonId:event.id,reason:!sameFrame?'event-frame-ROM-source-binding-mismatch':!sameBody?'event-model-body-binding-mismatch':!sameBackground?'event-map-camera-binding-unresolved':'event-exact-table-species-pairs-unavailable'});continue;}
    const compiledEventId=compiledBranch?.sightingEventBindings?.[source.sightingId],compiledEventLinked=typeof compiledEventId==='string'&&compiledBranch.events?.some(e=>e.id===compiledEventId);

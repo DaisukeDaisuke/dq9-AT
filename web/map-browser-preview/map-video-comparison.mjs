@@ -10,7 +10,7 @@ import {createFrozenAnalysisCapture} from './capture-analysis-pixels.mjs?v=nativ
 import {completedClassificationSnapshot,renderClassificationSummary,createDeferredEvidenceJSON} from './completed-classification-display.mjs?v=geometry-display-20261006-1112';
 import {captureAutomaticResidualPolicy,automaticResidualPolicyKey,selectAutomaticResiduals,withAutomaticResidualSelection} from './automatic-residual-policy.mjs?v=video-inference-20261005-1232';
 import {FrozenClassificationLane} from './frozen-classification-lane.mjs?v=native-extents-latest-20261006-0843';
-import {replaceResidualTimelineClassification} from './residual-classification-state.mjs?v=residual-backend-20261005';
+import {replaceResidualTimelineClassification} from './residual-classification-state.mjs?v=camera-at-20261008-f1a85661';
 import {recognitionDisplaySummary,timelineDisplaySummary,comparisonDisplaySummary} from './recognition-display-summary.mjs?v=native-extents-latest-20261006-0843';
 import {VideoObservationPump,VideoObservationTimeline,residualAssociationHints,videoObservationFrameKey} from './video-observation-timeline.mjs?v=map-input-owned-preparation-20261006-1408';
 import {detectMapNameROI} from '../map-name-roi.mjs';

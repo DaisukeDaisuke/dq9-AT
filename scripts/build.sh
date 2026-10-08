@@ -210,3 +210,7 @@ node scripts/test-native-reference-camera.mjs
 node scripts/test-relative-hint-preparation-failure.mjs
 
 node --test scripts/test-map-observation-purpose-separation.mjs
+
+node scripts/test-camera-at-background-support.mjs
+
+node scripts/test-camera-motion-inputs.mjs
