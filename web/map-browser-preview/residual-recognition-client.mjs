@@ -18,11 +18,15 @@ const continuationProgress=result=>{
  return{...value,totalPreparationSteps,totalCompletedVisits,totalEmittedPlacementSteps,laterPlacementPhase,preparationPending:value.preparationPending===true};
 };
 const needsNativeContinuation=p=>p&&p.hasMore===true&&(p.firstSweepComplete===false&&p.firstSweepServed<p.jobsTotal||p.firstSweepComplete===true&&p.laterPlacementPhase);
+// A finite nonempty work set can consume its first budget in setup before
+// any proposal is visited. Allow its one owned initial continuation only.
+// The normal per-slice progress checks below still reject a second zero slice.
+const initialNativeSetup=p=>p?.slice===1&&p.jobsTotal>0&&p.laterPlacementPhase===true&&p.firstSweepComplete===false&&p.firstSweepServed===0&&p.totalAttempts===0&&p.totalPreparationSteps===0&&p.totalCompletedVisits===0&&p.totalEmittedPlacementSteps===0&&p.preparationPending===false;
 const madeNativeProgress=(next,previous)=>next.firstSweepServed>previous.firstSweepServed||next.totalPreparationSteps>previous.totalPreparationSteps||next.laterPlacementPhase&&(next.totalCompletedVisits>previous.totalCompletedVisits||next.totalEmittedPlacementSteps>previous.totalEmittedPlacementSteps)||!next.laterPlacementPhase&&!next.preparationPending&&next.totalAttempts>previous.totalAttempts;
 const continuationAbort=()=>new DOMException('保持フレームの身体比較を中止しました','AbortError');
 // One ROM worker owns both its appearance cache and optional source preparations.
 export class ResidualRecognitionClient{
- constructor(){this.cancellationVersion=0;this.sequence=0;this.epoch=0;this.worker=null;this.pending=null;this.romSHA=null;this.catalog=null;this.nativeDeadlines=new Map();this.nativeContinuation=null;}
+ constructor(){this.cancellationVersion=0;this.sequence=0;this.epoch=0;this.worker=null;this.pending=null;this.romSHA=null;this.catalog=null;this.nativeDeadlines=new Map();this.nativeContinuation=null;this.nativeSetupContinuation=null;}
  stopNativeContinuation(state=this.nativeContinuation){
   if(!state||this.nativeContinuation!==state)return;
   this.nativeContinuation=null;if(state.timer!==null)clearTimeout(state.timer);
@@ -31,13 +35,14 @@ export class ResidualRecognitionClient{
  }
  scheduleNativeContinuation({request,result,isCurrent,onResult,onProgress,requestSequence=this.sequence}){
   if(typeof isCurrent!=='function'||typeof onResult!=='function')return false;
-  const progress=continuationProgress(result);
-  if(!needsNativeContinuation(progress)||!(progress.firstSweepServed>0||progress.totalPreparationSteps>0||!progress.preparationPending&&progress.totalAttempts>0)||this.pending||requestSequence!==this.sequence)return false;
+  const progress=continuationProgress(result),setupOnly=initialNativeSetup(progress);
+  if(setupOnly&&this.nativeSetupContinuation?.token===progress.token&&this.nativeSetupContinuation.romEpoch===this.epoch&&this.nativeSetupContinuation.cancellationVersion===this.cancellationVersion)return false;
+  if(!needsNativeContinuation(progress)||!(setupOnly||progress.firstSweepServed>0||progress.totalPreparationSteps>0||!progress.preparationPending&&progress.totalAttempts>0)||this.pending||requestSequence!==this.sequence)return false;
   let frozenRequest;try{frozenRequest=structuredClone(nativeBodyRequestPayload(request));}catch{return false;}
   const state={request:frozenRequest,progress,isCurrent,onResult,onProgress,timer:null,cancellationVersion:this.cancellationVersion,romEpoch:this.epoch};
   const check=()=>{if(this.nativeContinuation!==state||this.cancellationVersion!==state.cancellationVersion||this.epoch!==state.romEpoch||!this.worker||state.isCurrent()!==true)throw continuationAbort();};
   state.check=check;this.stopNativeContinuation();this.nativeContinuation=state;
-  try{check();this.queueNativeContinuation(state);return true;}catch{this.stopNativeContinuation(state);return false;}
+  try{check();if(setupOnly)this.nativeSetupContinuation={token:progress.token,romEpoch:this.epoch,cancellationVersion:this.cancellationVersion};this.queueNativeContinuation(state);return true;}catch{this.stopNativeContinuation(state);return false;}
  }
  queueNativeContinuation(state){
   // Each slice yields a task boundary. A foreground request always cancels this
@@ -96,7 +101,7 @@ export class ResidualRecognitionClient{
  async load(rom,sha){
   this.stopNativeContinuation();
   if(this.romSHA===sha&&this.catalog&&this.worker)return this.catalog;
-  this.release();const worker=new Worker(new URL('../monster-recognition-worker.mjs?v=recognition-20261008-7cf64cf4',import.meta.url),{type:'module'});this.worker=worker;this.epoch++;
+  this.release();const worker=new Worker(new URL('../monster-recognition-worker.mjs?v=temporal-prior-20261008-e462320d',import.meta.url),{type:'module'});this.worker=worker;this.epoch++;
   worker.onmessage=({data:m})=>{
    const handlerEntryAtMs=classificationNow();
    if(this.worker!==worker)return;

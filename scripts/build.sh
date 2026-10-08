@@ -216,3 +216,8 @@ node scripts/test-camera-at-background-support.mjs
 node scripts/test-camera-motion-inputs.mjs
 
 node scripts/test-native-optional-result.mjs
+
+node scripts/test-native-temporal-prior-bank.mjs
+node scripts/test-native-temporal-prior-service.mjs
+
+node scripts/test-native-setup-continuation.mjs

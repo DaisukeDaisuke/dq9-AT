@@ -12,7 +12,7 @@ import {createDinoFeatureBackend} from './monster-dinov2.mjs?v=envelope-yield-20
 import {createFeatureBankStore} from './monster-feature-cache.mjs';
 import {recognizeROI,supplementEnemyROIs,prepareDinoPoseBank,createRenderedReferenceCache} from './monster-recognition-engine.mjs?v=recognition-20261008-7cf64cf4';
 let state=null,epoch=0,active=null,nativeBodyModulePromise=null;
-const loadNativeBodyModule=()=>nativeBodyModulePromise??=import('./monster-native-auto-support.mjs?v=recognition-20261008-7cf64cf4').catch(error=>{nativeBodyModulePromise=null;throw error;});
+const loadNativeBodyModule=()=>nativeBodyModulePromise??=import('./monster-native-auto-support.mjs?v=temporal-prior-20261008-e462320d').catch(error=>{nativeBodyModulePromise=null;throw error;});
 const post=message=>self.postMessage(message);
 self.onmessage=async({data:m})=>{
  const handlerStarted=classificationNow();let engineStarted=null,engineEnded=null,engineReturned=false;

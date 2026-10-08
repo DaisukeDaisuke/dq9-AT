@@ -1,4 +1,4 @@
-import assert from'node:assert/strict';import{retainIsolatedBodySupport}from'../web/monster-native-isolated-support.mjs';
+import assert from'node:assert/strict';import{retainIsolatedBodySupport}from'../web/monster-native-isolated-support.mjs?v=temporal-prior-20261008-e462320d';
 const target={testedProposals:0,best:{fit:{pixelErrorReduction:999}},unsupported:[]},before=structuredClone(target),calls=[];const append=(array,...rows)=>{calls.push(rows.length);array.push(...rows);};
 retainIsolatedBodySupport(target,{});assert.deepEqual(target,before);
 const row=(id,gain,unsupported=[])=>({isolatedBodySupport:{testedProposals:gain===null?0:1,best:gain===null?null:{proposalId:id,fit:{pixelErrorReduction:gain}},unsupported}});

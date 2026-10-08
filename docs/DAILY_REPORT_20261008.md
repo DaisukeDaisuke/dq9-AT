@@ -119,3 +119,16 @@ GPU準備用の既存source cacheがcollectorへ渡っていない箇所を修�
 Node検証109コマンドは通過。実Nodeメッセージ転送＋本番clientに人工的な遅延結果を渡し、初回2秒でpendingを返しても2.3秒後の結果を保持すること、別のsource/epoch/取消後の結果を使わないことを確認した。これは転送・制御の回帰確認で、実ROMの認識速度やAT特定の成功ではない。本番ブラウザの今回差分での実動画確認と、今回commitのCI/Pages公開は追記時点で未確認。
 
 別のoffline実行では、独立再検証済みnative支持を機械的な起点として同一動画の後続フレームへ進む経路を開始した。起点の時刻・source/epoch/segmentは入力から取得し、個体同一性・出生・乱数消費間隔を手で確定していない。offline専用の明示非同期policyと本番UI変更は別版として記録している。
+
+
+## 2026-10-08 18:13 JST — 本番ブラウザ実行へ移行
+
+ヘッドレス継続はsupported02が08:28:17 UTCにsignal9／exit137で終了していた。最後の完全checkpoint144・動画PTS46.129はhash照合済み。原因は未確定で、検知が遅れた。ユーザーの指示を受け、同じヘッドレス動画runの再起動をやめ、検証済み修正を本番へ反映してクラウドブラウザ／Computer UseでAT接続・探索を進める。現時点で動画の現在ATは未特定。
+
+今回の変更は前のowned frameから得た正のsource描画のpose/rootを、同ROM・source epoch・segment・map・modelの次frameへ追加の優先仮説として再描画する接続。既存の候補域・cursorは残し、古いscore・画素・支持は流用しない。source scale・合法なbind/ordinary整数pose・同floor planeに限定し、未知phase/actionは元探索に残す。失敗したpriorで元域を打ち切らない。これは元ROI中央候補の並べ替えだけでなく、観測に由来する追加root仮説である。
+
+自動順で選んだ実prior1件を次の保存済みframeへ投入し、通常rendererの受理・現在画素との比較binding・210既知画素のexact score再演算を確認した。現在のgainは−2,490,978で、元component改善0だった。敵支持の成功例へ置き換えず、速度改善や現在の種別確定とは扱わない。
+
+加えて初期化だけで予算を使い切った非空workのslice1が、提案進捗0のため継続されない箇所を修正。同token/epoch/cancellation世代で一度だけ初期継続を許可し、次slice以降の単調進捗・取消・入力所有条件は維持する。
+
+統合Node検証112コマンドが通過。今回版のCI/Pagesと本番ブラウザ実動画の結果は追記時点で未確認。既存の失敗、初期化停止、旧run、原本を保持した。容量対策ではユーザーの個別許可に従い、再照合済み長尺動画のダウンロード用33partだけを削除し、本体・正式Library・コード・結果を残した。

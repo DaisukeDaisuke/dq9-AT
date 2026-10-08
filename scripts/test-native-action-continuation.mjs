@@ -1,5 +1,5 @@
 import{sourcePixelComparisonBinding}from'../web/native-pixel-comparison-binding.mjs';
-import{retainIsolatedBodySupport}from'../web/monster-native-isolated-support.mjs';
+import{retainIsolatedBodySupport}from'../web/monster-native-isolated-support.mjs?v=temporal-prior-20261008-e462320d';
 // Deterministic scheduler regression with explicit renderer/source doubles.
 // Actual-ROM decoding and fixed-frame rendering are tested separately.
 import fs from 'node:fs';import assert from 'node:assert/strict';import crypto from 'node:crypto';
@@ -17,7 +17,7 @@ const deps={sourcePixelComparisonBinding,retainIsolatedBodySupport,
 };
 async function load(path){let src=fs.readFileSync(path,'utf8').replace(/^import\s*\{([^}]+)\}\s*from\s*['"][^'"]+['"];\s*$/gm,(_,names)=>`const {${names}}=globalThis.__nativeActionTest;`);globalThis.__nativeActionTest=deps;return (await import('data:text/javascript;base64,'+Buffer.from(src).toString('base64'))).createAutomaticNativeBodySupportService;}
 const stripAlphaLabels=regions=>{const copy=structuredClone(regions),labels=['ROM-stored material alpha is conditional; current actor alpha factors and material updates are unobserved','Actor-driven alpha differing from stored material; a mode1 translucent scene destination is not reconstructed','Actor-driven alpha differing from stored material; scene destinations outside explicitly bound conditional source subsets remain unknown'];for(const r of copy)for(const g of r.groups)for(const b of g.bundle.branches){b.assumptions=b.assumptions.map(s=>s.replace('isolated opaque/binary path has no scene occlusion','opaque/binary path has no scene occlusion')).filter(s=>!labels.includes(s));b.unknownAlternatives=b.unknownAlternatives.filter(s=>!labels.includes(s));}return copy;};
-const current=await load(new URL('../web/monster-native-auto-support.mjs',import.meta.url));
+const current=await load(new URL('../web/monster-native-auto-support.mjs?v=temporal-prior-20261008-e462320d',import.meta.url));
 const baseline=await load(process.argv[2]);
 const create=fn=>fn({rom:new Uint8Array(1),catalog:new Map(),romSHA256,geometry:{decode:()=>({vertices:new Float32Array(3),indices:new Uint16Array(3),materials:[]})}});
 const request={videoEvidence:video,backgroundEvidence:{romSHA256,backgroundBranchSupport:{ready:true,frame:video,branches:[{branchId:'b',recordKey:'r',romSHA256,fullRGBA_SHA256:video.fullRGBA_SHA256,alignedBackgroundRGBA:bytes,alignedBackgroundRGBA_SHA256:sha,knownMask:new Uint8Array(49152).fill(1),sourceEnvironment:{fogApplied:false},video}]}},nativeVideo:{rgba:bytes},regions:[{id:1},{id:2}],candidates:[{modelId:'a',origins:[{mapId:1}]},{modelId:'b',origins:[{mapId:1}]}]};

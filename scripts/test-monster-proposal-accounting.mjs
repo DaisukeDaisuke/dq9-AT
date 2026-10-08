@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {proposeEnemyROIs} from '../web/monster-position-proposals.mjs';
 import {recognizeROI} from '../web/monster-recognition-engine.mjs';
-import * as page from '../web/monster-recognize-page.mjs';
+import * as page from '../web/monster-recognize-page.mjs?v=temporal-prior-20261008-e462320d';
 let count=0;const check=(name,fn)=>{fn();count++;console.log(`ok ${count} - ${name}`);};
 const image=()=>({width:256,height:192,rgba:new Uint8ClampedArray(Array.from({length:256*192},()=>[20,70,150,255]).flat())});
 const fill=(im,x,y,w,h,c)=>{for(let yy=y;yy<y+h;yy++)for(let xx=x;xx<x+w;xx++)im.rgba.set([...c,255],(yy*256+xx)*4);};
