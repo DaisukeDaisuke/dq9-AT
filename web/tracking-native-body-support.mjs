@@ -1,4 +1,5 @@
-import {buildNativeMotionContinuity} from './tracking-native-motion.mjs?v=enc-motion-at-20261006-1156';
+import {validatedRetainedNativeRoutePoses} from './monster-native-route-pose-support.mjs?v=route-poses-20261008-d98f497f';
+import {buildNativeMotionContinuity} from './tracking-native-motion.mjs?v=route-poses-20261008-d98f497f';
 // Compact machine-readable native support for tracking, not an entity merger.
 // The caller supplies each sighting's OWN model plan and map/frame provenance.
 // Scores remain descriptive. No overlap/IoU threshold, source-pose search,
@@ -68,10 +69,13 @@ export function collectNativeTrackingBodySupport(rows){
   for(const [evidenceIndex,evidence]of (Array.isArray(s.classificationEvidence)?s.classificationEvidence:[]).entries())for(const [rankingIndex,rawRanking]of (Array.isArray(evidence?.rankings)?evidence.rankings:[]).entries()){
    const ranking=rawRanking??{};
    const support=ranking.sourceNativeSupport,branches=Array.isArray(support?.branches)&&support.branches.length?support.branches:[null];
-   for(const [branchIndex,branch]of branches.entries()){
+   for(const [branchIndex,originalBranch]of branches.entries()){
+    const retained=validatedRetainedNativeRoutePoses(originalBranch,{frame:{...frame,recordKey:originalBranch?.recordKey},modelId:ranking.modelId,originalResidualId:Number(s.originalProposalId)}).filter(best=>best.proposalId!==originalBranch?.best?.proposalId);
+    for(const [poseIndex,branch] of [originalBranch,...retained.map(best=>({...originalBranch,best,ownGain:best.fit.pixelErrorReduction}))].entries()){
     const best=branch?.best;let binding;
     try{binding=bind({s,plan,mapProvenance,ranking,support,branch,expected:frame});}catch(error){binding={ready:false,reason:'Optional native tracking metadata unavailable: '+String(error.message).slice(0,512)};}
-    alternatives.push({evidenceIndex,rankingIndex,branchIndex:branch?branchIndex:null,modelId:typeof ranking.modelId==='string'?ranking.modelId:null,branchId:typeof branch?.branchId==='string'?branch.branchId:null,recordKey:typeof branch?.recordKey==='string'?branch.recordKey:null,proposalId:typeof best?.proposalId==='string'?best.proposalId:null,status:typeof branch?.status==='string'?branch.status:'unavailable',ownGain:finite(branch?.ownGain)?branch.ownGain:null,testedProposals:integer(branch?.testedProposals)?branch.testedProposals:null,binding:fields(binding,['ready','reason']),variant:binding.ready?binding.variant:null,pose:fields(best?.pose,['clip','frame','actorScaleFx','yawFx']),positionFx:Array.isArray(best?.positionFx)&&best.positionFx.length===3&&best.positionFx.every(finite)?best.positionFx.slice():null,fit:fields(best?.fit,['pixelErrorReduction','backgroundSSE','bodySSE','bodyPixels','knownBodyPixels','unavailableBodyPixels']),extent:binding.ready?binding.extent:null,unknownRetained:true,noEventPossible:true});
+    alternatives.push({evidenceIndex,rankingIndex,branchIndex:branch?branchIndex:null,modelId:typeof ranking.modelId==='string'?ranking.modelId:null,branchId:typeof branch?.branchId==='string'?branch.branchId:null,recordKey:typeof branch?.recordKey==='string'?branch.recordKey:null,proposalId:typeof best?.proposalId==='string'?best.proposalId:null,...(poseIndex?{sourcePoseReference:{kind:'retained-route-pose',proposalId:best.proposalId}}:{}),...(best?.sourcePlacement?.routeHeading?{routeHeading:structuredClone(best.sourcePlacement.routeHeading)}:{}),status:typeof branch?.status==='string'?branch.status:'unavailable',ownGain:finite(branch?.ownGain)?branch.ownGain:null,testedProposals:integer(branch?.testedProposals)?branch.testedProposals:null,binding:fields(binding,['ready','reason']),variant:binding.ready?binding.variant:null,pose:fields(best?.pose,['clip','frame','actorScaleFx','yawFx']),positionFx:Array.isArray(best?.positionFx)&&best.positionFx.length===3&&best.positionFx.every(finite)?best.positionFx.slice():null,fit:fields(best?.fit,['pixelErrorReduction','backgroundSSE','bodySSE','bodyPixels','knownBodyPixels','unavailableBodyPixels']),extent:binding.ready?binding.extent:null,unknownRetained:true,noEventPossible:true});
+    }
    }
   }
   const h=s.tentativeImageTrack;

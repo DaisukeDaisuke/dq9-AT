@@ -1,5 +1,5 @@
 import {CameraInput} from './camera-input.mjs';
-import {FileVideoInput} from './file-video-input.mjs?v=replay-sequence-20261008-a60b0c3b';
+import {FileVideoInput} from './file-video-input.mjs?v=route-poses-20261008-d98f497f';
 import {createTextMatcher} from './map-name-match.mjs?v=recognition-20261008-7cf64cf4';
 import {CPUTextClient} from './font-akinator-cpu-client.mjs?v=recognition-20261008-7cf64cf4';
 import {formatCpuTextDiagnostic} from './font-akinator-diagnostic.mjs?v=recognition-20261008-7cf64cf4';

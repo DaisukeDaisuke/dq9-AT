@@ -93,7 +93,7 @@ let inits=0,runs=0,disposed=0;
 const ort={env:{versions:{web:'1.23.2'},wasm:{}},Tensor:class{dispose(){}},InferenceSession:{create:async()=>({run:async()=>{runs++;const data=new Float32Array(257*384);data[0]=1;return{last_hidden_state:{dims:[1,257,384],data,dispose(){}}};},release:async()=>{disposed++;}})}};
 const createBackend=options=>{inits++;return createDinoFeatureBackend({...options,loadRuntime:async(signal,backend)=>{eq(backend,'wasm');for(const id of ['runtime-entry','runtime-mjs','runtime-wasm'])await store.read(id,{signal});return{ort,mjsURL:'synthetic:',wasmBinary:new Uint8Array(1),dispose(){}};},readModel:()=>store.read('model',{signal:options.signal})});};
 const posts=[],fixtureState={romEpoch:1,renderedReferenceCache:{clear(){}}};
-const workerURL=new URL('../web/monster-recognition-worker.mjs?v=frame-heading-20261008-b8f5df4e',import.meta.url);
+const workerURL=new URL('../web/monster-recognition-worker.mjs?v=route-poses-20261008-d98f497f',import.meta.url);
 const workerSource=(await readFile(workerURL,'utf8')).replace(/^import .*;\n/gm,'').replaceAll('import.meta.url',JSON.stringify(workerURL.href));
 const context=vm.createContext({classificationNow,classificationDuration,classificationClock,self:{postMessage:m=>posts.push(m)},AbortController,DOMException,performance,createDinoFeatureBackend:createBackend,fixtureState,recognizeROI:async(m,{getDino})=>{const dino=await getDino({backend:m.inferenceBackend});const vector=await dino.encode({width:1,height:1,rgba:new Uint8ClampedArray([20,30,40,255])});return{syntheticOnly:true,vectorLength:vector.length,backend:dino.spec.backend};}});
 vm.runInContext(workerSource+'\nstate=fixtureState;',context,{filename:workerURL.pathname});

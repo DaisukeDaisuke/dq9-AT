@@ -8,7 +8,7 @@ import {mineFieldGraphs,fieldPathName} from '../web/field-graph.mjs';
 import {decodeCalls} from '../web/map-core.mjs';
 import {openMapRom} from '../web/map-browser-preview/static-scene.mjs';
 import {buildRomMapCatalog} from '../web/map-browser-preview/rom-map-catalog.mjs';
-import {createVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=motion-closure-20261008-89e290ef';
+import {createVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=route-poses-20261008-d98f497f';
 let checks=0;const eq=(a,b)=>{assert.deepEqual(a,b);checks++;},reject=async(f,name)=>{await assert.rejects(f,name?{name}:undefined);checks++;};
 const hash=b=>createHash('sha256').update(b).digest('hex');
 const romSHA256='a'.repeat(64),frame=(t,key)=>({romSHA256,sourceId:'synthetic-video',sourceEpoch:1,timelineSegment:2,sourcePTS:t,frameKey:key});

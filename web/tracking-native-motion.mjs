@@ -6,10 +6,19 @@ const sourceKey=frame=>JSON.stringify([frame.romSHA256,frame.sourceId,frame.sour
 const modelKey=a=>JSON.stringify([a.recordKey,a.modelId,a.variant]);
 const frameValid=f=>f&&/^[a-f0-9]{64}$/.test(f.romSHA256??'')&&typeof f.sourceId==='string'&&f.sourceId.length>0&&integer(f.sourceEpoch)&&f.sourceEpoch>=0&&integer(f.timelineSegment)&&f.timelineSegment>=0&&finite(f.mediaTime)&&/^[a-f0-9]{64}$/.test(f.fullRGBA_SHA256??'');
 const flags={identityCertified:false,actorMembershipCertified:false,birthCertified:false,absenceCertified:false,independentDrawCertified:false,minimumProvenATCalls:0};
-const nativeReference=(observation,a)=>({sightingId:observation.sightingId,frameKey:observation.frameKey,sourcePTS:observation.sourcePTS,originalProposalId:observation.originalProposalId,evidenceIndex:a.evidenceIndex,rankingIndex:a.rankingIndex,branchIndex:a.branchIndex,branchId:a.branchId,recordKey:a.recordKey,proposalId:a.proposalId});
+const nativeReference=(observation,a)=>({sightingId:observation.sightingId,frameKey:observation.frameKey,sourcePTS:observation.sourcePTS,originalProposalId:observation.originalProposalId,evidenceIndex:a.evidenceIndex,rankingIndex:a.rankingIndex,branchIndex:a.branchIndex,branchId:a.branchId,recordKey:a.recordKey,proposalId:a.proposalId,...(a.sourcePoseReference?{sourcePoseReference:clone(a.sourcePoseReference)}:{})});
 function eligibleAlternative(a){
  const owned=a.extent?.bodyColorOwnership,p=a.positionFx;
  return a.binding?.ready===true&&typeof a.modelId==='string'&&typeof a.recordKey==='string'&&['_f','regular'].includes(a.variant)&&a.ownGain>0&&finite(a.ownGain)&&owned?.ready===true&&owned.empty===false&&owned.knownPixels>0&&['isolated-source-opaque-binary-body-coverage','source-final-body-color-ownership'].includes(owned.kind)&&owned.roi&&['x','y','w','h'].every(k=>finite(owned.roi[k]))&&owned.roi.w>0&&owned.roi.h>0&&Array.isArray(p)&&p.length===3&&p.every(integer);
+}
+// Ordering only: prefer both independently supported endpoints naming the
+// same ROM target. The route producer still recomputes source steering and
+// eligibility. All other pairs retain their original domain and omission count.
+function* orderedNativePairs(older,newer){
+ const targets=(a,stage)=>{const r=a.routeHeading;if(!r||!Array.isArray(r.targets))return[];return r.targets.filter(t=>t.sourceStage===stage).map(t=>JSON.stringify([r.romSHA256,r.recordKey,r.graphSource,t.nodeIndex,t.nodeId,t.targetXYZ]));};
+ const byTarget=new Map();for(let j=0;j<newer.length;j++)for(const key of new Set(targets(newer[j],'state2-update'))){if(!byTarget.has(key))byTarget.set(key,[]);byTarget.get(key).push(j);}
+ const yielded=new Set();for(let i=0;i<older.length;i++)for(const key of new Set(targets(older[i],'state2-entry')))for(const j of byTarget.get(key)??[]){const pair=i+':'+j;if(yielded.has(pair))continue;yielded.add(pair);yield[older[i],newer[j]];}
+ for(let i=0;i<older.length;i++)for(let j=0;j<newer.length;j++)if(!yielded.has(i+':'+j))yield[older[i],newer[j]];
 }
 function trackId(o){return o.tentativeImageTrack?.sameObservationBinding===true?o.tentativeImageTrack.trackId??null:null;}
 function nativePair(from,to,a,b){
@@ -43,7 +52,7 @@ export function buildNativeMotionContinuity(observations,{maximumIncomingSightin
    if(budgetStopped){query.enumerationCompleteWithinSuppliedSupport=false;break;}
    query.consideredPriorSightings++;const {o:from}=previous,hypotheses=[];let omittedHypotheses=0;
    for(const [key,bodies]of next.models){const older=previous.models.get(key);if(!older)continue;
-    nativePairs: for(const a of older)for(const b of bodies){
+    nativePairs: for(const [a,b] of orderedNativePairs(older,bodies)){
      if(pairEvaluations>=maximumPairEvaluations){budgetStopped=true;query.enumerationCompleteWithinSuppliedSupport=false;break nativePairs;}
      pairEvaluations++;
      if(hypotheses.length>=maximumHypothesesPerPair){omittedHypotheses++;continue;}

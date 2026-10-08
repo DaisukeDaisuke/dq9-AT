@@ -6,7 +6,7 @@ function retainRequestEnvelope(value,p,status,entryAtMs=null,workerEnvelope=null
  value.classificationEnvelopeTiming=structuredClone({...(workerEnvelope??value.classificationEnvelopeTiming??{}),main:{...p.classificationEnvelope,status,...(Number.isFinite(entryAtMs)?{replyHandlerEntryAtMs:entryAtMs,requestToReplyHandlerEntryElapsedMs:classificationDuration(p.classificationEnvelope.requestStartedAtMs,entryAtMs)}:{}),snapshotElapsedMs:classificationDuration(p.classificationEnvelope.requestStartedAtMs)}});
  }catch{}return value;}
 import {nativeBodyRequestPayload} from './native-body-request.mjs?v=recognition-20261008-7cf64cf4';
-import {RESIDUAL_NATIVE_BODY_BUDGET,RESIDUAL_NATIVE_BODY_OPTIONAL_WAIT_MS,RESIDUAL_NATIVE_FRAME_SOURCE_BUDGET_MS} from './residual-native-support.mjs?v=frame-heading-20261008-b8f5df4e';
+import {RESIDUAL_NATIVE_BODY_BUDGET,RESIDUAL_NATIVE_BODY_OPTIONAL_WAIT_MS,RESIDUAL_NATIVE_FRAME_SOURCE_BUDGET_MS} from './residual-native-support.mjs?v=route-poses-20261008-d98f497f';
 // First-sweep progress is work coverage, never a recognition/pose certificate.
 const continuationProgress=result=>{
  const value=result?.continuation;
@@ -111,7 +111,7 @@ export class ResidualRecognitionClient{
  async load(rom,sha){
   this.stopNativeContinuation();
   if(this.romSHA===sha&&this.catalog&&this.worker)return this.catalog;
-  this.release();const worker=new Worker(new URL('../monster-recognition-worker.mjs?v=frame-heading-20261008-b8f5df4e',import.meta.url),{type:'module'});this.worker=worker;this.epoch++;
+  this.release();const worker=new Worker(new URL('../monster-recognition-worker.mjs?v=route-poses-20261008-d98f497f',import.meta.url),{type:'module'});this.worker=worker;this.epoch++;
   worker.onmessage=({data:m})=>{
    const handlerEntryAtMs=classificationNow();
    if(this.worker!==worker)return;

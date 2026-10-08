@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {composeNativeBodyOverSourceDestination as compose,packNativeMapTranslucentFragments as pack} from '../web/monster-native-scene-composition.mjs?v=automatic-playback-source-cache-20261006-1100';
 import {nativeBodyExtentEvidence as extent} from '../web/monster-native-extent-evidence.mjs';
-import {compareCameraBodyAlternative} from '../web/monster-camera-body-alternative.mjs';
+import {compareCameraBodyAlternative} from '../web/monster-camera-body-alternative.mjs?v=route-poses-20261008-d98f497f';
 import {bindNativeBodyDestination} from '../web/monster-native-scene-composition.mjs?v=native-lineage-at-20261008-556f7ca6';
 import {retainNativeBodyComparisonRaster,prepareNativeBodyComparison,nativeBodyComparisonSupport} from '../web/monster-native-comparison-support.mjs?v=recognition-20261008-7cf64cf4';
 import {comparePerspectiveBody} from '../web/monster-perspective-body.mjs';

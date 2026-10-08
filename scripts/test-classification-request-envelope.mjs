@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {ResidualRecognitionClient} from '../web/map-browser-preview/residual-recognition-client.mjs?v=frame-heading-20261008-b8f5df4e';
+import {ResidualRecognitionClient} from '../web/map-browser-preview/residual-recognition-client.mjs?v=route-poses-20261008-d98f497f';
 const clean=x=>Array.isArray(x)?x.map(clean):x&&typeof x==='object'?Object.fromEntries(Object.entries(x).filter(([k])=>k!=='classificationEnvelopeTiming').map(([k,v])=>[k,clean(v)])):x;
 export async function runEnvelopeClientCases(Client){
  const originalWorker=globalThis.Worker,originalNow=Object.getOwnPropertyDescriptor(performance,'now');let now=0;

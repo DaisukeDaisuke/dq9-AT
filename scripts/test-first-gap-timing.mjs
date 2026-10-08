@@ -50,5 +50,5 @@ test('failing clock/snapshot/watch/flush/dispose fake diagnostics cannot change 
  }
 });
 test('only explicit comparison download exposes the saved ledger',()=>{
- const panel=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs?v=replay-sequence-20261008-a60b0c3b',import.meta.url),'utf8');assert.equal((panel.match(/firstFrameGapTimingSnapshot\(/g)??[]).length,1);assert.match(panel,/firstRetainedFrameGapTiming:fastReplay.firstFrameGapTimingSnapshot\(\)/);
+ const panel=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs?v=route-poses-20261008-d98f497f',import.meta.url),'utf8');assert.equal((panel.match(/firstFrameGapTimingSnapshot\(/g)??[]).length,1);assert.match(panel,/firstRetainedFrameGapTiming:fastReplay.firstFrameGapTimingSnapshot\(\)/);
 });

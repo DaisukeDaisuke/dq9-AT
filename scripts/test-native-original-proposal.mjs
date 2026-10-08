@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {comparePerspectiveBody} from '../web/monster-perspective-body.mjs';
-import {compareCameraBodyAlternative} from '../web/monster-camera-body-alternative.mjs';
+import {compareCameraBodyAlternative} from '../web/monster-camera-body-alternative.mjs?v=route-poses-20261008-d98f497f';
 import {nativeBodyRequestPayload} from '../web/map-browser-preview/native-body-request.mjs';
 import {nativeWorkIdentity} from '../web/monster-native-work-identity.mjs';
 import {projectMode1MseSceneHypothesis,validateMode1MseSceneHypothesis} from '../web/map-browser-preview/mode1-mse-scene-hypothesis.mjs';

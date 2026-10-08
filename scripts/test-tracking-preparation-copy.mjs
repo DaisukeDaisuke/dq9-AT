@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {compileTrackingObservations} from '../web/tracking-at-observation-adapter.mjs?v=motion-closure-20261008-89e290ef';
-import {prepareTrackingJob} from '../web/tracking-at-session.mjs?v=motion-closure-20261008-89e290ef';
-import {createVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=motion-closure-20261008-89e290ef';
+import {compileTrackingObservations} from '../web/tracking-at-observation-adapter.mjs?v=route-poses-20261008-d98f497f';
+import {prepareTrackingJob} from '../web/tracking-at-session.mjs?v=route-poses-20261008-d98f497f';
+import {createVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=route-poses-20261008-d98f497f';
 const bundle=extra=>({schema:'headless-monster-observation-bundle-v1',source:{background:{romSHA256:'a'.repeat(64)},modelPlan:{models:[]}},sightings:[],videoObservations:[],...extra});
 const options=()=>({tables:{},domain:{kind:'all-output-classes'},budget:{maxInspectedStates:0,maxWallTimeMs:2000,chunkStates:4096}});
 const context=extra=>({engineRevision:'preparation-copy-test',...extra});

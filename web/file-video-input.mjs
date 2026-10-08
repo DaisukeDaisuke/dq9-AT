@@ -46,7 +46,14 @@ export class FileVideoInput {
   if(pending){
    this.pendingPresentation=null;
    const state=this.diagnosticState(),last=pending.record.lastWithheld??{mediaTime:pending.metadata.mediaTime,presentedFrames:pending.metadata.presentedFrames,currentTime:pending.record.incomingCapture.before.currentTime},owned=clock==='mediaTime'&&this.currentPresentationCallback(context)&&state.sourceId===pending.record.sourceId&&state.sourceEpoch===pending.record.sourceEpoch&&state.timelineSegment===pending.record.timelineSegment&&state.playbackRate===pending.record.resume.playbackRate;
-   const monotonic=owned&&Number.isSafeInteger(metadata?.presentedFrames)&&metadata.presentedFrames===last.presentedFrames+1&&time>last.mediaTime&&Number.isFinite(state.currentTime)&&state.currentTime>=last.currentTime;
+   const monotonic=owned&&Number.isSafeInteger(metadata?.presentedFrames)&&metadata.presentedFrames>last.presentedFrames&&time>last.mediaTime&&Number.isFinite(state.currentTime)&&state.currentTime>=last.currentTime;
+   // A presentation-count gap is missing video evidence, not a seek or a
+   // license to invent its pixels/PTS. Retain the exact absent index interval.
+   if(monotonic&&metadata.presentedFrames>last.presentedFrames+1){
+    const gap={afterPresentedFrames:last.presentedFrames,beforePresentedFrames:metadata.presentedFrames,missingPresentedFrames:metadata.presentedFrames-last.presentedFrames-1,pixelsObserved:false,timestampsKnown:false,minimumProvenATCalls:0};
+    pending.record.missingPresentedFrames=(pending.record.missingPresentedFrames??0)+gap.missingPresentedFrames;
+    (pending.record.recentMissingPresentations??=[]).push(gap);if(pending.record.recentMissingPresentations.length>8){pending.record.recentMissingPresentations.shift();pending.record.evictedMissingIntervals=(pending.record.evictedMissingIntervals??0)+1;}
+   }
    const caughtUp=monotonic&&time>=pending.record.previousPTS;
    if(monotonic&&pending.record.lowerObservedPTS<=time&&time<pending.record.previousPTS&&time<=state.currentTime){
     // Additional presentations inside this measured pause interval remain
@@ -58,12 +65,14 @@ export class FileVideoInput {
     this.pendingPresentation=pending;this.notifyPresentation(pending.record,metadata);return true;
    }
    pending.record.resolution=caughtUp?'forward-catch-up-observed':'not-confirmed';pending.record.resolutionState=state;pending.record.nextCapture=structuredClone(diagnostic);this.notifyPresentation(pending.record,metadata);
-   // A missing presentation, nonincreasing PTS or lost owner cannot extend
+   // A nonincreasing presentation/PTS or lost owner cannot extend
    // this hold. The ordinary regression/seek rules below remain unchanged.
   }
   const b=this.pauseBoundary;this.pauseBoundary=null;
-  if(!b?.resumed||clock!=='mediaTime'||!(time<previous)||!this.currentPresentationCallback(context)||context.registration.serial!==b.registration?.serial||context.registration.callbackId!==b.registration?.callbackId||previous!==b.upperObservedPTS||!(b.lowerObservedPTS<=time&&time<=b.resume.currentTime)||!Number.isFinite(this.video.currentTime)||this.video.currentTime<b.resume.currentTime||metadata.presentedFrames!==b.anchor.metadata.presentedFrames+1)return false;
+  if(!b?.resumed||clock!=='mediaTime'||!(time<previous)||!this.currentPresentationCallback(context)||context.registration.serial!==b.registration?.serial||context.registration.callbackId!==b.registration?.callbackId||previous!==b.upperObservedPTS||!(b.lowerObservedPTS<=time&&time<=b.resume.currentTime)||!Number.isFinite(this.video.currentTime)||this.video.currentTime<b.resume.currentTime||(!Number.isSafeInteger(metadata.presentedFrames)||metadata.presentedFrames<=b.anchor.metadata.presentedFrames))return false;
   const record={kind:'pause-resume-presentation-replay-candidate-v1',id:this.sourceId+':'+this.generation+':'+(++this.presentationSerial),resolution:'pending-forward-check',sourceId:this.sourceId,sourceEpoch:this.generation,timelineSegment:this.segment,previousPTS:previous,incomingPTS:time,previousAcceptedSample:b.anchor,lowerAcceptedSample:b.lowerAcceptedSample,lowerObservedPTS:b.lowerObservedPTS,pause:b.pause,resume:b.resume,incomingCapture:structuredClone(diagnostic),callbackMetadataObserved:true,pixelsObserved:false,replayCertified:false,observed:false,absenceCertified:false,independentDrawCertified:false,minimumProvenATCalls:0,frameRateAssumed:false,timeRetimed:false};
+  const missing=metadata.presentedFrames-b.anchor.metadata.presentedFrames-1;
+  record.missingPresentedFrames=missing;record.recentMissingPresentations=missing?[{afterPresentedFrames:b.anchor.metadata.presentedFrames,beforePresentedFrames:metadata.presentedFrames,missingPresentedFrames:missing,pixelsObserved:false,timestampsKnown:false,minimumProvenATCalls:0}]:[];
   diagnostic.outcome='pause-resume-presentation-withheld';diagnostic.presentationReplay=record;this.pendingPresentation={record,metadata:diagnosticMetadata(metadata)};this.notifyPresentation(record,metadata);return true;
  }
  diagnosticState(){

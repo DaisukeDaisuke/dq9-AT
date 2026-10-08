@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {nativeBodyRequestPayload} from '../web/map-browser-preview/native-body-request.mjs';
-import {attachResidualNativeSupport} from '../web/map-browser-preview/residual-native-support.mjs?v=frame-heading-20261008-b8f5df4e';
-import {runResidualRecognitionJob} from '../web/map-browser-preview/residual-recognition-job.mjs?v=frame-heading-20261008-b8f5df4e';
+import {attachResidualNativeSupport} from '../web/map-browser-preview/residual-native-support.mjs?v=route-poses-20261008-d98f497f';
+import {runResidualRecognitionJob} from '../web/map-browser-preview/residual-recognition-job.mjs?v=route-poses-20261008-d98f497f';
 import {dinoSpec} from '../web/monster-dinov2.mjs';
 
 const clone=structuredClone;

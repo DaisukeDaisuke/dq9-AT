@@ -6,7 +6,7 @@ import{measuredClassificationView}from'./measured-classification-view.mjs?v=cont
 import{VideoTrackingReplay,waitForMeasuredReplayFrame}from'./video-tracking-replay.mjs?v=continuity-yield-local-evidence-20261006-1458';
 import{videoTrackingFrameKey}from'./video-patch-correspondence.mjs?v=continuity-yield-local-evidence-20261006-1458';
 import{createVideoTrackingCapture}from'./video-tracking-capture.mjs?v=shrine-beam-20261008-a9738d0c';
-import {captureResidualNativeBackground} from './residual-recognition-job.mjs?v=frame-heading-20261008-b8f5df4e';
+import {captureResidualNativeBackground} from './residual-recognition-job.mjs?v=route-poses-20261008-d98f497f';
 import {createFrozenAnalysisCapture} from './capture-analysis-pixels.mjs?v=native-continuation-20261006-0333';
 import {completedClassificationSnapshot,renderClassificationSummary,createDeferredEvidenceJSON} from './completed-classification-display.mjs?v=geometry-display-20261006-1112';
 import {captureAutomaticResidualPolicy,automaticResidualPolicyKey,selectAutomaticResiduals,withAutomaticResidualSelection} from './automatic-residual-policy.mjs?v=video-inference-20261005-1232';
@@ -20,7 +20,7 @@ import {parseVideoTimecode,formatVideoTimecode} from './video-timecode.mjs';
 import {inferPairedVideoLayout} from './automatic-video-layout.mjs?v=shrine-beam-20261008-a9738d0c';
 import {ResidualTracker} from './residual-tracking-input.mjs?v=continuity-yield-local-evidence-20261006-1458';
 import {annotateResidualRegions,selectResidualDisplay} from './residual-region-display.mjs';
-import {FileVideoInput} from '../file-video-input.mjs?v=replay-sequence-20261008-a60b0c3b';
+import {FileVideoInput} from '../file-video-input.mjs?v=route-poses-20261008-d98f497f';
 import {gameplayVideoROI,sampleGameplayFrame,compareMapBackground} from './map-video-residual.mjs?v=shrine-beam-20261008-a9738d0c';
 const $=id=>document.getElementById(id),sha=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join('');
 const draw=(id,image)=>{const canvas=$(id);canvas.width=image.width;canvas.height=image.height;canvas.getContext('2d').putImageData(new ImageData(image.rgba,image.width,image.height),0,0);};
@@ -44,7 +44,11 @@ export function mountMapVideoComparison({renderBackground,derivePlayerBackground
  const classificationWaiters=new Map(),nativePlaybackWaiters=new Map();
  function settleNativePlayback(job,detail){const wait=nativePlaybackWaiters.get(job);if(!wait)return false;nativePlaybackWaiters.delete(job);timeline.update(job.frame.id,{nativePlaybackGate:{status:detail.status,reason:detail.reason??null,progress:structuredClone(detail.progress??null),validationFailure:structuredClone(detail.validationFailure??null),nativePreparationTiming:structuredClone(detail.nativePreparationTiming??null),resourceBudget:structuredClone(detail.resourceBudget??null),identityCertified:false,currentATRecovered:false}});wait(detail);timelineStatus();return true;}
  function receiveNativePlayback(frame,detail){if(!frame||detail?.romSHA256!==getRomIdentity())return false;for(const job of nativePlaybackWaiters.keys())if(job.nativeEpoch===nativeContinuationEpoch&&job.romIdentity===detail.romSHA256&&job.frameKey===videoObservationFrameKey(frame))return settleNativePlayback(job,detail);return false;}
- function nativeATValidated(frame,detail){if(detail?.kind!=='current-frame-conditional-native-AT-admission-v1'||!detail.branches?.length)return false;return receiveNativePlayback(frame,{...detail,status:'conditional-native-AT-validated',reason:'Current owned native evidence passed AT preparation; identity and current AT remain unknown.'});}
+ function nativeATValidated(frame,detail){if(detail?.kind!=='current-frame-conditional-native-AT-admission-v1'||(!detail.branches?.length&&!detail.routeBranches?.length)||detail.romSHA256!==getRomIdentity())return false;
+  if(detail.routeBranches?.length)return receiveNativePlayback(frame,{...detail,status:'conditional-native-route-AT-validated',reason:'Current-frame native pose reached a compiled conditional route chain; identity and current AT remain unknown.'});
+  for(const job of nativePlaybackWaiters.keys())if(job.nativeEpoch===nativeContinuationEpoch&&job.romIdentity===detail.romSHA256&&job.frameKey===videoObservationFrameKey(frame)){timeline.update(job.frame.id,{nativePlaybackGate:{status:'conditional-native-singleton-AT-validated-route-pending',reason:'Singleton support recorded. Native route poses continue until a route input or the existing source resource terminal.',branches:structuredClone(detail.branches),identityCertified:false,currentATRecovered:false}});timelineStatus();return false;}
+  return false;
+ }
  let classificationMapKey=null,classificationMapFrame=null,latestCompletedClassification=null,nativeContinuationEpoch=0;
  function showCompletedClassification(){if(!latestCompletedClassification)return false;timing.sync('completed-classification-display',latestCompletedClassification.evidence,()=>renderClassificationSummary($('residual-classification-summary'),latestCompletedClassification.value,{completed:latestCompletedClassification}));classificationJSON.set(latestCompletedClassification.value);$('download-residual-observations').disabled=false;return true;}
  function retainCompletedClassification(value,frame,bg,cmp){const snapshot=timing.sync('completed-classification-snapshot',frame.evidence,()=>completedClassificationSnapshot(value,frame,bg,cmp.components));if(snapshot){latestCompletedClassification=snapshot;showCompletedClassification();renderMeasuredPreview();}}

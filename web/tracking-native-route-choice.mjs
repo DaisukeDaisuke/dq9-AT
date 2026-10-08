@@ -14,6 +14,9 @@ export function* enumerateNativeRouteChoiceHypotheses(candidate,{romSHA256,resou
   if(!pairs.length){yield{kind:'deferred',reason:'Same-actor stable-table endpoint pair unavailable',hypothesisIndex};continue;}
   const wanted=sourceFacing(h.toPose?.yawFx);
   if(!wanted){yield{kind:'deferred',reason:'Incoming native yaw has no source facing interpretation',hypothesisIndex};continue;}
+  const priorFacing=sourceFacing(h.fromPose?.yawFx);
+  if(!priorFacing){yield{kind:'deferred',reason:'Prior native yaw has no source facing interpretation',hypothesisIndex};continue;}
+  if(!priorFacing.every((n,i)=>n===wanted[i])){yield{kind:'incompatible-source-route-hypothesis',reason:'Observed endpoint yaw alternatives differ under the completed-turn stable-heading hypothesis',hypothesisIndex,unknownAlternativeRetained:true,currentVideoStateRecovered:false};continue;}
   const targets=[];let unresolvedTarget=false;
   for(const node of r.graph.nodes){const xyz=node.position.map(v=>v*4096),xz=p=>[p[0],0,p[2]],beforeDistance=sourceDistance(xz(h.fromPositionFx),xz(xyz)),afterDistance=sourceDistance(xz(h.toPositionFx),xz(xyz));if(beforeDistance===null||afterDistance===null){unresolvedTarget=true;continue;}if(afterDistance>=beforeDistance)continue;const a=motionKernel.state2EntrySteering(h.fromPositionFx,xyz),b=motionKernel.state2Steering(h.toPositionFx,xyz);
    if(!a.resolved||!b.resolved){unresolvedTarget=true;continue;}const fa=sourceFacing(a.targetAngle),fb=sourceFacing(b.targetAngle);if(!fa||!fb){unresolvedTarget=true;continue;}

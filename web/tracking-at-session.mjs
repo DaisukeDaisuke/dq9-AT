@@ -1,8 +1,8 @@
 import {assertProductionATInput} from './production-at-input-policy.mjs?v=production-inputs-20261006-1320';
 import {searchAutomaticReplayInputs} from './video-replay-factor-search.mjs?v=automatic-entry-factors-20261006-1120';
-import {compileTrackingObservations} from './tracking-at-observation-adapter.mjs?v=motion-closure-20261008-89e290ef';
+import {compileTrackingObservations} from './tracking-at-observation-adapter.mjs?v=route-poses-20261008-d98f497f';
 import {fingerprint} from './tracking-at-runner.mjs?v=native-lineage-at-20261008-556f7ca6';
-import {createNativeMotionContinuityIndex} from './tracking-native-motion.mjs?v=enc-motion-at-20261006-1156';
+import {createNativeMotionContinuityIndex} from './tracking-native-motion.mjs?v=route-poses-20261008-d98f497f';
 const need=(v,m)=>{if(!v)throw Error(m);};
 // A predecessor with the same model is not necessarily the prior classified
 // actor. Bind each exact endpoint sighting and its own frame/map/camera evidence.

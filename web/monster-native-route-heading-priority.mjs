@@ -10,7 +10,7 @@ export function deriveSourceTargetHeadingProposals({prior,frame,record,candidate
  const old=prior?.sourcePlacement?.priorFrame,placement=prior?.sourcePlacement;
  const sameIdentity=(a,b)=>validFrame(a)&&validFrame(b)&&['romSHA256','recordKey','sourceId','sourceEpoch','timelineSegment'].every(k=>a[k]===b[k]);
  const temporal=placement?.placementKind==='conditional-previous-native-root-priority'&&sameIdentity(frame,old)&&frame.mediaTime>old.mediaTime;
- const current=['conditional-native-emitted-envelope','conditional-native-boundary-envelope'].includes(placement?.placementKind)&&placement.originOnFloorAssumed===true&&sameIdentity(frame,currentRootFrame)&&frame.mediaTime===currentRootFrame.mediaTime&&frame.fullRGBA_SHA256===currentRootFrame.fullRGBA_SHA256;
+ const current=['conditional-native-emitted-envelope','conditional-native-boundary-envelope','conditional-tested-native-root-heading-seed'].includes(placement?.placementKind)&&placement.originOnFloorAssumed===true&&sameIdentity(frame,currentRootFrame)&&frame.mediaTime===currentRootFrame.mediaTime&&frame.fullRGBA_SHA256===currentRootFrame.fullRGBA_SHA256;
  if((!temporal&&!current)||frame?.romSHA256!==romSHA256||record?.key!==frame.recordKey||!Array.isArray(prior.positionFx)||prior.positionFx.length!==3||!prior.positionFx.every(int32))return [];
  const mapSpecies=new Set((candidate.origins??[]).filter(o=>o.mapId===record.mapId&&o.trapRuleUnresolved!==true&&Number.isInteger(o.monsterId)).map(o=>o.monsterId));
  const ai=creator.ai.filter(a=>speciesIds.includes(a.species)&&mapSpecies.has(a.species)&&(a.flags&7)===1&&[1,2,3].includes((a.flags>>>3)&7));
@@ -21,16 +21,17 @@ export function deriveSourceTargetHeadingProposals({prior,frame,record,candidate
  for(const node of graph.nodes){
   if(!Number.isInteger(node.index)||!Number.isInteger(node.id)||!Array.isArray(node.position)||node.position.length!==3||!node.position.every(v=>Number.isInteger(v)&&v>=-32768&&v<=32767))continue;
   const target=node.position?.map(v=>v*4096);if(!target||target.length!==3||!target.every(int32))continue;
-  const steering=motionKernel.state2EntrySteering(prior.positionFx,target);
+  for(const [sourceStage,steering] of [['state2-entry',motionKernel.state2EntrySteering(prior.positionFx,target)],['state2-update',motionKernel.state2Steering(prior.positionFx,target)]]){
   if(!steering.resolved||steering.steeringDistance<4096)continue;
   const facing=fieldNativeFacing(steering.targetAngle,trig);if(!facing||facing.every((v,i)=>v===oldFacing[i]))continue;
-  const key=JSON.stringify(facing),reference={nodeIndex:node.index,nodeId:node.id,targetXYZ:target,targetAngle:steering.targetAngle};
+  const key=JSON.stringify(facing),reference={nodeIndex:node.index,nodeId:node.id,targetXYZ:target,targetAngle:steering.targetAngle,sourceStage};
   if(groups.has(key)){groups.get(key).targets.push(reference);continue;}
   groups.set(key,{yawFx:steering.targetAngle,facing,targets:[reference],continuityOrder:oldFacing[0]*facing[0]+oldFacing[2]*facing[2]});
+  }
  }
  return [...groups.values()].sort((a,b)=>b.continuityOrder-a.continuityOrder||a.targets[0].nodeIndex-b.targets[0].nodeIndex).map((row,index)=>({
   id:`source-route-heading:${index}:${candidate.modelId}:${prior.id}`,positionFx:prior.positionFx.slice(),pose:{...copy(pose),yawFx:row.yawFx},
-  sourcePlacement:{...copy(prior.sourcePlacement),poseOrdering:current?'same-frozen-ROM-route-target-heading-priority':'same-service-ROM-route-target-heading-priority',placementKind:current?'conditional-ROM-current-root-heading-priority':'conditional-ROM-route-heading-priority',headingAnchorFrame:copy(current?currentRootFrame:old),rootHypothesisKind:current?'same-frozen-native-emitted-root':'previous-owned-native-root',
+  sourcePlacement:{...copy(prior.sourcePlacement),poseOrdering:current?'same-frozen-ROM-route-target-heading-priority':'same-service-ROM-route-target-heading-priority',placementKind:current?'conditional-ROM-current-root-heading-priority':'conditional-ROM-route-heading-priority',headingAnchorFrame:copy(current?currentRootFrame:old),rootHypothesisKind:current?(placement.placementKind==='conditional-tested-native-root-heading-seed'?'same-frozen-native-tested-root':'same-frozen-native-emitted-root'):'previous-owned-native-root',
    routeHeading:{romSHA256,recordKey:record.key,graphSource:copy(graph.source),ai:ai.map(a=>({species:a.species,flags:a.flags,sourceOffset:a.sourceOffset})),targets:row.targets,source:'Existing ROM-bound state2 entry steering WASM',ordering:'source facing dot with prior heading, not calibrated confidence',actorHeadingCorrespondenceAssumed:true,sourceRouteReached:false,sourceTargetKnown:false},
    priorSupportReused:false,currentActorPoseCertified:false,currentRootCertified:false,actorAssociationCertified:false,sourceClockKnown:false,ATChoiceKnown:false,priorityOnly:true}
  }));

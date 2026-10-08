@@ -1,5 +1,5 @@
 import {readMovementNoDrawSource} from './monster-motion-source-binding.mjs?v=motion-closure-20261008-89e290ef';
-import { enumerateNativeRouteChoiceHypotheses } from './tracking-native-route-choice.mjs?v=native-route-20261008-171401b8';
+import { enumerateNativeRouteChoiceHypotheses } from './tracking-native-route-choice.mjs?v=route-poses-20261008-d98f497f';
 import { connectConditionalNativeRouteChoices,composeConditionalNativeRouteSequence } from './tracking-native-route-chain.mjs?v=motion-closure-20261008-89e290ef';
 import { mineFieldGraphs, fieldPathName } from './field-graph.mjs';
 import { decodeCalls } from './map-core.mjs';

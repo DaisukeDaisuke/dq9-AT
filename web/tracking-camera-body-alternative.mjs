@@ -1,7 +1,7 @@
 // Automatic hypothetical AT branch producer for video/ROM camera-body alternatives.
 // It appends conditional singleton alternatives; it never changes a legacy
 // prediction, claims a birth, intersects tracks or removes the unknown branch.
-import {collectTrackingSightings} from './tracking-at-event-evidence.mjs?v=proposal-support-20261006-1152';
+import {collectTrackingSightings} from './tracking-at-event-evidence.mjs?v=route-poses-20261008-d98f497f';
 import {encounterModelCandidates} from './map-browser-preview/encounter-model-candidates.mjs';
 const need=(v,m)=>{if(!v)throw Error(m);},clone=v=>structuredClone(v);
 function sameFrame(alternative,provenance,sighting){const a=alternative?.frame,p=provenance?.frame;return a&&p&&a.romSHA256===p.romSHA256&&a.fullRGBA_SHA256===p.fullRGBA_SHA256&&a.sourceId===p.sourceId&&a.sourceEpoch===p.sourceEpoch&&a.timelineSegment===p.timelineSegment&&a.mediaTime===p.sourcePTS&&p.sourcePTS===sighting.sourcePTS&&p.frameKey===sighting.frameKey;}

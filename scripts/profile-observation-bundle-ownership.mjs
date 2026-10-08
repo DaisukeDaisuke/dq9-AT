@@ -11,8 +11,8 @@ const {VideoObservationTimeline:BeforeTimeline}=await import(baseline('web/map-b
 import {VideoObservationTimeline as AfterTimeline} from '../web/map-browser-preview/video-observation-timeline.mjs';
 const {createVideoTrackingAT:beforeController}=await import(baseline('web/map-browser-preview/video-tracking-at.mjs'));
 const {prepareTrackingJob:beforePrepare}=await import(baseline('web/tracking-at-session.mjs'));
-import {prepareTrackingJob as afterPrepare} from '../web/tracking-at-session.mjs?v=motion-closure-20261008-89e290ef';
-import {createVideoTrackingAT as afterController} from '../web/map-browser-preview/video-tracking-at.mjs?v=motion-closure-20261008-89e290ef';
+import {prepareTrackingJob as afterPrepare} from '../web/tracking-at-session.mjs?v=route-poses-20261008-d98f497f';
+import {createVideoTrackingAT as afterController} from '../web/map-browser-preview/video-tracking-at.mjs?v=route-poses-20261008-d98f497f';
 import {assertProductionATInput} from '../web/production-at-input-policy.mjs';
 // Private WeakSet ownership is scoped to the exact module URL. Resolve the
 // producer's real import, including its cache query, rather than duplicating it.

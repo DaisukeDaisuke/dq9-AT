@@ -7,7 +7,7 @@ const ownershipImport=readFileSync(timelineModuleURL,'utf8').match(/import\s*\{\
 assert(ownershipImport,'Production timeline ownership-helper import is required');
 const {cloneImmutableObservationBundle,copyObservationBundleForAT}=await import(new URL(ownershipImport[1],timelineModuleURL).href);
 import {VideoObservationTimeline} from '../web/map-browser-preview/video-observation-timeline.mjs';
-import {createVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=motion-closure-20261008-89e290ef';
+import {createVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=route-poses-20261008-d98f497f';
 const bundle=extra=>({schema:'headless-monster-observation-bundle-v1',producer:'browser-ROM-background-residual',sightings:[],videoObservations:[{kind:'partial-video-observation-timeline',timeline:{old:true}}],...extra});
 const stamp={sourceId:'ownership-test',sourceEpoch:0,timelineSegment:0,mediaTime:1};
 const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -73,7 +73,7 @@ test('AT pending sessions and retry keep a writable companion root with immutabl
 });
 
 test('camera alternative validation and singleton append accept frozen nested evidence',async()=>{
- const {compareCameraBodyAlternative}=await import('../web/monster-camera-body-alternative.mjs');
+ const {compareCameraBodyAlternative}=await import('../web/monster-camera-body-alternative.mjs?v=route-poses-20261008-d98f497f');
  const {mapHypothesisProvenance}=await import('../web/map-browser-preview/map-hypothesis-provenance.mjs');
  const frame={romSHA256:'a'.repeat(64),sourceId:'camera-ownership',sourceEpoch:0,timelineSegment:0,mediaTime:1,fullRGBA_SHA256:'b'.repeat(64)},stamp={...frame,frameSerial:1};
  const retained={frameSerial:1,sourcePTS:1,stamp,romSHA256:frame.romSHA256,backgroundAlternatives:[{recordKey:'map:1',mapId:1,accepted:true,state:'conditional-residual-hypotheses'}]},map=mapHypothesisProvenance(retained),branchId='background-row-0',recordKey='map:1',modelId='synthetic';
@@ -118,7 +118,7 @@ test('default/non-AT timeline skips freezing and retains mutable independent nat
 });
 
 test('main AT consumer explicitly opts in while GPU preview uses the default native-copy path',()=>{
- const main=readFileSync(new URL('../web/map-browser-preview/preview.mjs?v=replay-sequence-20261008-a60b0c3b',import.meta.url),'utf8'),gpu=readFileSync(new URL('../web/map-browser-preview/gpu-file-preview.mjs?v=replay-sequence-20261008-a60b0c3b',import.meta.url),'utf8'),panel=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs?v=replay-sequence-20261008-a60b0c3b',import.meta.url),'utf8');
+ const main=readFileSync(new URL('../web/map-browser-preview/preview.mjs?v=route-poses-20261008-d98f497f',import.meta.url),'utf8'),gpu=readFileSync(new URL('../web/map-browser-preview/gpu-file-preview.mjs?v=route-poses-20261008-d98f497f',import.meta.url),'utf8'),panel=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs?v=route-poses-20261008-d98f497f',import.meta.url),'utf8');
  const mount=source=>source.match(/const videoComparison=mountMapVideoComparison\(\{[^\n]+/)[0];
  assert.match(mount(main),/immutableObservationBundles:true,onObservationBundle:bundle=>trackingAT.observeBounded\(bundle\)/);assert.doesNotMatch(mount(gpu),/immutableObservationBundles|onObservationBundle/);
  assert.match(panel,/onObservationReset=\(\)=>\{\},immutableObservationBundles=false\}/);assert.match(panel,/timeline=new VideoObservationTimeline\(\{timing,immutableObservationBundles\}\)/);

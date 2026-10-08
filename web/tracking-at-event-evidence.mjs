@@ -1,4 +1,4 @@
-import {collectNativeTrackingBodySupport} from './tracking-native-body-support.mjs?v=enc-motion-at-20261006-1156';
+import {collectNativeTrackingBodySupport} from './tracking-native-body-support.mjs?v=route-poses-20261008-d98f497f';
 import {sightingBodyMapCompatibility} from './map-browser-preview/conditional-body-map-compatibility.mjs?v=proposal-support-20261006-1152';
 import {trackingSightingMapProvenance} from './map-browser-preview/map-hypothesis-provenance.mjs?v=native-body-20261006-0212';
 // Automatic *conditional* source-model predicates, never native event certificates.
