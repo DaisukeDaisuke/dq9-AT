@@ -6,7 +6,7 @@ import {mountAutomaticGpuPanel} from './gpu-file-panel.mjs?v=fair-source-yield-2
 import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=browser-at-20261008-138417cd';
 import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=shrine-beam-20261008-a9738d0c';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
-import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=browser-at-20261008-138417cd';
+import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=native-budget-20261008-83ff459d';
 import {residualModelPlan} from './residual-recognition-input.mjs?v=conditional-ui-20261007-0257';
 import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=recognition-20261008-7cf64cf4';
 import {CPUTextClient} from '../font-akinator-cpu-client.mjs?v=recognition-20261008-7cf64cf4';
@@ -14,7 +14,7 @@ import {deriveVideoMapNames} from './video-map-name-input.mjs?v=shrine-beam-2026
 import {MapPositionMatcher} from '../map-position.mjs?v=registration-timing-20261007-0020';
 import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs?v=shrine-beam-20261008-a9738d0c';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
-import {mountMapVideoComparison} from './map-video-comparison.mjs?v=browser-at-20261008-138417cd';
+import {mountMapVideoComparison} from './map-video-comparison.mjs?v=native-budget-20261008-83ff459d';
 import {openMapRom} from './static-scene.mjs?v=native-source-reuse-20261006-1028';
 import {buildRomMapCatalog} from './rom-map-catalog.mjs';
 import {nameCatalogMaps} from './rom-map-names.mjs';

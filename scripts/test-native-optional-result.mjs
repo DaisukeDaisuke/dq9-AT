@@ -1,7 +1,7 @@
 import {waitForOptionalNativeResult} from '../web/map-browser-preview/native-optional-result.mjs?v=native-async-20261008-43d9a67a';
 import assert from 'node:assert/strict';
 import {Worker as NodeWorker} from 'node:worker_threads';
-import {ResidualRecognitionClient} from '../web/map-browser-preview/residual-recognition-client.mjs?v=browser-at-20261008-138417cd';
+import {ResidualRecognitionClient} from '../web/map-browser-preview/residual-recognition-client.mjs?v=native-budget-20261008-83ff459d';
 import {nativeBodyRequestPayload} from '../web/map-browser-preview/native-body-request.mjs';
 import {attachResidualNativeSupport} from '../web/map-browser-preview/residual-native-support.mjs';
 import {runResidualRecognitionJob} from '../web/map-browser-preview/residual-recognition-job.mjs?v=browser-at-20261008-138417cd';

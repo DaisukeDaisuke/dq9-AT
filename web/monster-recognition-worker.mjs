@@ -12,7 +12,7 @@ import {createDinoFeatureBackend} from './monster-dinov2.mjs?v=envelope-yield-20
 import {createFeatureBankStore} from './monster-feature-cache.mjs';
 import {recognizeROI,supplementEnemyROIs,prepareDinoPoseBank,createRenderedReferenceCache} from './monster-recognition-engine.mjs?v=recognition-20261008-7cf64cf4';
 let state=null,epoch=0,active=null,nativeBodyModulePromise=null;
-const loadNativeBodyModule=()=>nativeBodyModulePromise??=import('./monster-native-auto-support.mjs?v=temporal-prior-20261008-e462320d').catch(error=>{nativeBodyModulePromise=null;throw error;});
+const loadNativeBodyModule=()=>nativeBodyModulePromise??=import('./monster-native-auto-support.mjs?v=native-budget-20261008-83ff459d').catch(error=>{nativeBodyModulePromise=null;throw error;});
 const post=message=>self.postMessage(message);
 self.onmessage=async({data:m})=>{
  const handlerStarted=classificationNow();let engineStarted=null,engineEnded=null,engineReturned=false;
@@ -47,14 +47,15 @@ self.onmessage=async({data:m})=>{
    if(!runState.nativeBodySupport){
     const {createAutomaticNativeBodySupportService}=await loadNativeBodyModule();
     if(active!==controller||mine!==epoch||controller.signal.aborted)throw new DOMException('中止','AbortError');
-    if(performance.now()-started>=budget.wallTimeMs)throw Error('Native optional import exhausted the cooperative job budget; body work remains unknown');
     runState.nativeBodySupport=createAutomaticNativeBodySupportService({rom:runState.rom,catalog:runState.catalog,geometry:runState.geometry,romSHA256:runState.romSHA256,nitro:runState.nitro});
    }
    const service=runState.nativeBodySupport;
-   const remaining=budget.wallTimeMs-(performance.now()-started);
-   if(remaining<=0)throw Error('Native source preparation exhausted the cooperative job budget; body work remains unknown');
-   const result=await service.evaluate(m.request,{signal:controller.signal,getCurrentFrame:()=>active===controller&&mine===epoch&&!controller.signal.aborted?{...m.request.videoEvidence,romSHA256:runState.romSHA256}:null,budget:{wallTimeMs:remaining,maxProposals:budget.maxProposals},onProgress});
-   if(active!==controller||mine!==epoch||controller.signal.aborted)return;active=null;post({type:'result',id,romEpoch,result});return;
+   // Loading code/service is owned asynchronous preparation, not a source visit.
+   // Start the finite cooperative source budget only after preparation.
+   const preparationElapsedMs=performance.now()-started;
+   onProgress({phase:'native-service-ready',nativePreparationTiming:{elapsedMs:preparationElapsedMs,kind:'async-preparation-elapsed',sourceBudgetStartsAfterPreparation:true}});
+   const result=await service.evaluate(m.request,{signal:controller.signal,getCurrentFrame:()=>active===controller&&mine===epoch&&!controller.signal.aborted?{...m.request.videoEvidence,romSHA256:runState.romSHA256}:null,budget:{wallTimeMs:budget.wallTimeMs,maxProposals:budget.maxProposals},onProgress});
+   if(active!==controller||mine!==epoch||controller.signal.aborted)return;active=null;post({type:'result',id,romEpoch,result:{...result,nativePreparationTiming:{elapsedMs:preparationElapsedMs,kind:'async-preparation-elapsed',sourceBudgetStartsAfterPreparation:true}}});return;
   }
   const getDino=async({backend:provider='wasm',onAcquisitionTiming}={})=>{if(runState.dino?.spec.backend===provider){try{onAcquisitionTiming?.({reused:true});}catch{}return runState.dino;}const previous=runState.dino,previousStage=stage;runState.dino=null;runState.renderedReferenceCache.clear();stage='backend-dispose';await previous?.dispose();stage=`${provider}-init`;const backend=await createDinoFeatureBackend({backend:provider,signal:controller.signal,onProgress});if(active!==controller||mine!==epoch){await backend.dispose();throw new DOMException('中止','AbortError');}runState.dino=backend;stage=previousStage;try{onAcquisitionTiming?.({reused:false});}catch{}return backend;};
   engineStarted=classificationNow();const outcome=await (m.type==='prepare'?prepareDinoPoseBank:m.type==='supplement'?supplementEnemyROIs:recognizeROI)(m,{...runState,cacheQuery:true,cachePartialPoses:true,signal:controller.signal,onProgress,getDino});engineReturned=true;engineEnded=classificationNow();
