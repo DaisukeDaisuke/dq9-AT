@@ -1,17 +1,17 @@
 import{verifyNativeDrawAnimationSource,nativeDrawAnimationTerms,bindNativeDrawAnimationTerms}from'./monster-native-draw-animation.mjs?v=conditional-draw-links-20261007-0847';
 import{originalComponentMaskSHA256}from'./original-component-mask-binding.mjs?v=shrine-beam-20261008-a9738d0c';
 import{sourcePixelComparisonBinding}from'./native-pixel-comparison-binding.mjs?v=native-scene-link-20261007-0354';
-import{verifyNativeAnimationSource,readNativeRate0Animation}from'./monster-native-animation.mjs?v=integer-scale-source-20261007-1102';
-import{verifyNativeJointBlendSource}from'./monster-native-joint-blend.mjs?v=integer-scale-source-20261007-1102';
-import{createNativeBodyJointPlan}from'./monster-native-joint-plan.mjs?v=integer-scale-source-20261007-1102';
-import{nativeBodyExtentEvidence}from'./monster-native-extent-evidence.mjs?v=integer-scale-source-20261007-1102';
+import{verifyNativeAnimationSource,readNativeRate0Animation}from'./monster-native-animation.mjs?v=source-rate1-curves-20261008-2e3ba48d';
+import{verifyNativeJointBlendSource}from'./monster-native-joint-blend.mjs?v=source-rate1-curves-20261008-2e3ba48d';
+import{createNativeBodyJointPlan}from'./monster-native-joint-plan.mjs?v=source-rate1-curves-20261008-2e3ba48d';
+import{nativeBodyExtentEvidence}from'./monster-native-extent-evidence.mjs?v=source-rate1-curves-20261008-2e3ba48d';
 // Optional bounded worker-side source-native evaluator. No production caller.
 import{readMonsterAssets}from'./monster-assets.mjs';
-import{readNSBCA}from'./monster-animation.mjs?v=integer-scale-source-20261007-1102';
-import{prepareNativeBodyEnvelope,placeNativeBodyEnvelopeOnFloors}from'./monster-native-body-placement.mjs?v=integer-scale-source-20261007-1102';
+import{readNSBCA}from'./monster-animation.mjs?v=source-rate1-curves-20261008-2e3ba48d';
+import{prepareNativeBodyEnvelope,placeNativeBodyEnvelopeOnFloors}from'./monster-native-body-placement.mjs?v=source-rate1-curves-20261008-2e3ba48d';
 import{readSdkInitialMaterialGlobals}from'./map-browser-preview/rom-sdk-initial-material.mjs';
 import{readInitialMode1RasterProfile}from'./map-browser-preview/integer/initial-mode1-integer-preview.mjs?v=fair-source-yield-20261007-0247';
-import{prepareNativeBodyProgram,projectNativeBodyPolygons,rasterNativeBody}from'./monster-native-body.mjs?v=integer-scale-source-20261007-1102';
+import{prepareNativeBodyProgram,projectNativeBodyPolygons,rasterNativeBody}from'./monster-native-body.mjs?v=source-rate1-curves-20261008-2e3ba48d';
 import{createNativeBodyBillboardState}from'./monster-native-billboard.mjs?v=native-body-20261006-0212';
 import{bindFrozenBodyProjection}from'./monster-perspective-input.mjs?v=native-body-20261006-0212';
 import{comparePerspectiveBody}from'./monster-perspective-body.mjs?v=shrine-beam-20261008-a9738d0c';

@@ -1,7 +1,7 @@
 // Architecture-independent local ROM -> exact 128px RGBA pose source.
 // No detector, feature extractor, label inference, upload, or ROM fetch.
 import {MONSTER_ARCHIVE, readMonsterAssets, parseMonsterAssetCatalog} from './monster-assets.mjs';
-import {readNSBCA, sampleMatrices} from './monster-animation.mjs?v=integer-scale-source-20261007-1102';
+import {readNSBCA, sampleMatrices} from './monster-animation.mjs?v=source-rate1-curves-20261008-2e3ba48d';
 import {MonsterGeometry} from './monster-geometry.mjs';
 import {rasterTile} from './monster-cpu-template.mjs';
 import {templateBoundsForViews} from './monster-render-state.mjs';

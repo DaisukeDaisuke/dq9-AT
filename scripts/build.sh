@@ -70,6 +70,8 @@ node --experimental-vm-modules --test scripts/check-paused-video-startup-panel.m
 # Experimental ROM-derived pose matching: portable CPU/Worker and parser checks.
 node scripts/test-monster-animation.mjs
 node scripts/test-monster-sparse-scale.mjs
+node scripts/test-monster-animation-sparse-scalars.mjs
+node scripts/test-monster-animation-sparse-rotations.mjs
 node scripts/test-monster-recognition.mjs
 node scripts/test-monster-recognize-page.mjs
 

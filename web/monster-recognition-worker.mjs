@@ -10,9 +10,9 @@ import {parseMonsterAssetCatalog} from './monster-assets.mjs';
 import {MonsterGeometry} from './monster-geometry.mjs?v=field-stream-20261005-1108';
 import {createDinoFeatureBackend} from './monster-dinov2.mjs?v=envelope-yield-20261007-0140';
 import {createFeatureBankStore} from './monster-feature-cache.mjs';
-import {recognizeROI,supplementEnemyROIs,prepareDinoPoseBank,createRenderedReferenceCache} from './monster-recognition-engine.mjs?v=shrine-beam-20261008-a9738d0c';
+import {recognizeROI,supplementEnemyROIs,prepareDinoPoseBank,createRenderedReferenceCache} from './monster-recognition-engine.mjs?v=source-rate1-curves-20261008-2e3ba48d';
 let state=null,epoch=0,active=null,nativeBodyModulePromise=null;
-const loadNativeBodyModule=()=>nativeBodyModulePromise??=import('./monster-native-auto-support.mjs?v=shrine-beam-20261008-a9738d0c').catch(error=>{nativeBodyModulePromise=null;throw error;});
+const loadNativeBodyModule=()=>nativeBodyModulePromise??=import('./monster-native-auto-support.mjs?v=source-rate1-curves-20261008-2e3ba48d').catch(error=>{nativeBodyModulePromise=null;throw error;});
 const post=message=>self.postMessage(message);
 self.onmessage=async({data:m})=>{
  const handlerStarted=classificationNow();let engineStarted=null,engineEnded=null,engineReturned=false;

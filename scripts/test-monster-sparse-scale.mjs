@@ -25,9 +25,11 @@ for(const numFrames of[2,4,6,8,28,510,512])for(let test=0;test<4;test++){
  const last=a.objects[0].scale[0].samples.at(-1);a.objects[0].scale[0].samples[0]=999;eq(readNSBCA(b).objects[0].scale[0].samples.at(-1),last);eq(readNSBCA(b).objects[0].scale[0].samples[0]*4096,pairs[0][0][0]);
 }
 const pairs=Array.from({length:3},()=>[[1,-3],[2,-2],[32767,-32768],[-5,9],[77,88]]),good=fixture(8,pairs);
-for(const descriptor of[0x60060001,0xa0060000,0xe0060000,0x40060000,0x50060000,0x70060000,0x60080000,0x60040000]){const b=good.slice();new DataView(b.buffer).setUint32(94,descriptor,true);bad(()=>readNSBCA(b),/Only complete rate0/);}
-for(const flags of[0x270,0x202]){const b=good.slice();new DataView(b.buffer).setUint16(90,flags,true);bad(()=>readNSBCA(b),/Only complete rate0/);}
-{const b=good.slice();new DataView(b.buffer).setUint16(72,7,true);bad(()=>readNSBCA(b),/Only complete rate0/);}
+for(const descriptor of[0x60060001,0xa0060000,0xe0060000,0x50060000,0x70060000,0x60080000,0x60040000]){const b=good.slice();new DataView(b.buffer).setUint32(94,descriptor,true);bad(()=>readNSBCA(b),/Only complete rate0/);}
+// These descriptor reinterpretations are now within the source-derived rate1 scalar scope.
+{const b=good.slice();new DataView(b.buffer).setUint32(94,0x40060000,true);eq(readNSBCA(b).integerFrameExpansion,'source-rate1-scalar-curves-v1');}
+for(const flags of[0x270,0x202]){const b=good.slice();new DataView(b.buffer).setUint16(90,flags,true);if(flags===0x270)eq(readNSBCA(b).integerFrameExpansion,'source-rate1-scalar-curves-v1');else bad(()=>readNSBCA(b),/Only complete rate0/);}
+{const b=good.slice();new DataView(b.buffer).setUint16(72,7,true);eq(readNSBCA(b).integerFrameExpansion,'source-rate1-scalar-curves-v1');}
 for(const offset of[good.length-2,good.length,0xfffffffc]){const b=good.slice();new DataView(b.buffer).setUint32(98,offset-68,true);bad(()=>readNSBCA(b),/outside declared section/);}
 for(let n=0;n<good.length;n++){const b=good.slice(0,n);if(n>=28){const d=new DataView(b.buffer);d.setUint32(8,n,true);d.setUint32(24,n-20,true);}bad(()=>readNSBCA(b));}
 console.log(JSON.stringify({passed:true,checks,syntheticExpandedFrames:expandedFrames,syntheticOnly:true,actualROMOrARMChecked:false,newScope:'start0, rate1, FX16 scale pairs, even frame count, end=numFrames-2; integer phases only'}));

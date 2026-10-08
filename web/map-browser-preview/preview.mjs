@@ -7,7 +7,7 @@ import {VideoMapContinuity} from './video-map-continuity.mjs?v=shrine-beam-20261
 import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=shrine-beam-20261008-a9738d0c';
 import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=shrine-beam-20261008-a9738d0c';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
-import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=shrine-beam-20261008-a9738d0c';
+import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=source-rate1-curves-20261008-2e3ba48d';
 import {residualModelPlan} from './residual-recognition-input.mjs?v=conditional-ui-20261007-0257';
 import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=rgb-dependency-optin-20261007-0943';
 import {CPUTextClient} from '../font-akinator-cpu-client.mjs?v=provided-layout-20261005';

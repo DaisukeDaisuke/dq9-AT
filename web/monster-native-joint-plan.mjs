@@ -1,6 +1,6 @@
 // Binds source post-scaling blend results to exactly one compiled body program.
 // Generated inside the consumer: no serialized/raw native-matrix override API.
-import {planNativeJointBlend} from './monster-native-joint-blend.mjs?v=integer-scale-source-20261007-1102';
+import {planNativeJointBlend} from './monster-native-joint-blend.mjs?v=source-rate1-curves-20261008-2e3ba48d';
 const plans=new WeakMap(),need=(x,m)=>{if(!x)throw Error(m);};
 const EMIT_SPANS=[[34321532, 124, 1970301811], [34323760, 300, 1079331160]];
 const hash=bytes=>{let h=0x811c9dc5;for(const b of bytes)h=Math.imul(h^b,0x1000193)>>>0;return h;};

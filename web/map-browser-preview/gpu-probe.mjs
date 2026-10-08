@@ -1,2 +1,2 @@
 // ROM + video entry; fixed JSON validation lives in gpu-fixture-probe.mjs.
-import './gpu-file-preview.mjs?v=shrine-beam-20261008-a9738d0c';
+import './gpu-file-preview.mjs?v=source-rate1-curves-20261008-2e3ba48d';

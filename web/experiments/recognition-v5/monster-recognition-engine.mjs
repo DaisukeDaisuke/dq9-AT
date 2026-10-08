@@ -1,6 +1,6 @@
 import {proposeDenseComplement,validateDenseComplement} from '../../monster-dense-proposals.mjs';
 import {readMonsterAssets} from '../../monster-assets.mjs';
-import {readNSBCA,sampleMatrices} from '../../monster-animation.mjs?v=integer-scale-source-20261007-1102';
+import {readNSBCA,sampleMatrices} from '../../monster-animation.mjs?v=source-rate1-curves-20261008-2e3ba48d';
 import {MonsterTemplateBank} from '../../monster-template-bank.mjs';
 import {MonsterCPU} from '../../monster-cpu-template.mjs';
 import {getFieldExclusion,normalizeSceneContext} from '../../monster-field-mask.mjs';
