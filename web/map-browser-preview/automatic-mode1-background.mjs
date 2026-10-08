@@ -1,7 +1,7 @@
 import{continueRefinedFloorAlternatives,collectRefinedFloorResults}from'./refined-floor-alternatives.mjs?v=source-scene-20261006-0040';
 /* Image-observed discrete ordinary load record, not continuously interpolated
  * mode2 or video elapsed-time inference. No ordinary-state/fog-phase render loop. */
-import{prepareMode1PhotometricBasis,renderMode1PhotometricBasis,inferMode1OrdinaryColor}from'./mode1-photometric-inverse.mjs?v=fair-source-yield-20261007-0247';
+import{prepareMode1PhotometricBasisAsync,renderMode1PhotometricBasis,inferMode1OrdinaryColor}from'./mode1-photometric-inverse.mjs?v=browser-at-20261008-138417cd';
 import{automaticPreviewCamera}from'./automatic-preview-camera.mjs';
 import{automaticBillboardScenes}from'./automatic-billboard-scene.mjs';
 import{applyMode1OrdinaryHypothesis}from'./automatic-material-environment.mjs?v=native-body-20261006-0212';
@@ -16,14 +16,16 @@ export function createMode1BackgroundInference({backgroundRenderer}){
   try{
    check();project=archives.forProject(project,rom);const initialPoint={...position.world,yFx,yawDegrees:heading.yawDegrees},initialCamera=automaticPreviewCamera(project,rom,record,initialPoint),gpu=await backgroundRenderer.begin();check();
    let totalBasisRenders=0;const basisRender=async(model,weights=false)=>{check();await onProgress({phase:'background',message:'ROMの材質色を解析中',completed:diagnostics.basisRenders});await new Promise(r=>setTimeout(r,0));check();const basis=await renderMode1PhotometricBasis(model,{gpu,isCurrent,weights});diagnostics.basisRenders=++totalBasisRenders;return basis;};
-   let model=prepareMode1PhotometricBasis({project,rom,record,automatic,camera:initialCamera}),basis=await basisRender(model);
+   await onProgress({phase:'background',message:'ROM背景の材質・幾何準備中（協調処理）'});check();
+   let model=await prepareMode1PhotometricBasisAsync({project,rom,record,automatic,camera:initialCamera},{isCurrent}),basis=await basisRender(model);
    const geometry=await refineGeometryPosition({position,camera:initialCamera,image:basis,depth24:basis.sourceDepth24,knownMask:basis.knownMask,video:analysisVideo,isCurrent,onProgress});diagnostics.geometryRefinement=geometry;check();
    if(!geometry.ready||geometry.onBoundary)throw Error(geometry.reason??'Source geometry optimum touches unresolved marker interval boundary');
    const floor=floorHeightsAtXZ(floors,geometry.world.xFx,geometry.world.zFx),continuation=continueRefinedFloorAlternatives({position,yFx,floors,refinedFloor:floor,refinedWorld:geometry.world});diagnostics.refinedFloor=floor;diagnostics.floorContinuation=continuation;if(!continuation.ready)throw Error(continuation.reason);
    const results=[];for(const floorBranch of continuation.alternatives){check();const branchDiagnostics={...diagnostics,floorBranch};try{results.push(await renderBranch(floorBranch,branchDiagnostics));}catch(error){if(error.name==='AbortError')throw error;results.push({ready:false,reason:error.message,diagnostics:branchDiagnostics,currentEnvironmentCertified:false});}}return collectRefinedFloorResults(results);
    async function renderBranch(floorBranch,diagnostics){
    const point={...geometry.world,yFx:floorBranch.yFx,yawDegrees:heading.yawDegrees},camera=automaticPreviewCamera(project,rom,record,point);
-   model=prepareMode1PhotometricBasis({project,rom,record,automatic,camera});basis=await basisRender(model);const weights=await basisRender(model,true),photometry=inferMode1OrdinaryColor({model,basis,weights,video:analysisVideo});diagnostics.basisRenders=totalBasisRenders;diagnostics.photometry=photometry;if(!photometry.ready)throw Error(photometry.reason);
+   await onProgress({phase:'background',message:'再投影したROM背景を準備中（協調処理）'});check();
+   model=await prepareMode1PhotometricBasisAsync({project,rom,record,automatic,camera},{isCurrent});basis=await basisRender(model);const weights=await basisRender(model,true),photometry=inferMode1OrdinaryColor({model,basis,weights,video:analysisVideo});diagnostics.basisRenders=totalBasisRenders;diagnostics.photometry=photometry;if(!photometry.ready)throw Error(photometry.reason);
    if(photometry.equivalentIndices.length!==1){const images=photometry.equivalentIndices.map(i=>{const a=model.states[i];return JSON.stringify({fog:a.environment.fogParameters,material:a.environment.materialGlobals,colors:a.scenes.map(s=>s.instances.map(n=>n.draws.map(d=>d.vertices.map(v=>v.color555))))});});if(images.some(x=>x!==images[0]))throw Error('Observed COLOR-equivalent slots retain differing unobserved source color/fog');}
    const environment=model.read.hypotheses[photometry.index],active=applyMode1OrdinaryHypothesis(project,record,automaticBillboardScenes(project,automatic,camera.viewFx),environment);check();
    // Exactly one inferred/equivalent source state is forward-rendered. Never

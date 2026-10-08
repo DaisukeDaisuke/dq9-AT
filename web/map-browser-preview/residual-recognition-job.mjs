@@ -70,19 +70,22 @@ export async function runResidualRecognitionJob({input,plan,variant,client,prefe
  let nativeResult=null,nativeError=null,nativeRequest=null,nativeRequestSequence;
  const detachable=typeof input.isNativeCurrent==='function'&&typeof input.onNativePartial==='function'&&typeof client.scheduleNativeContinuation==='function';
  const onNativePartial=input.onNativePartial;
+ let terminalNotified=false;
+ const notifyNativeTerminal=detail=>{if(terminalNotified)return;terminalNotified=true;try{input.onNativeTerminal?.({...detail,frame:structuredClone(input.videoEvidence),romSHA256:input.backgroundEvidence?.romSHA256,identityCertified:false,currentATRecovered:false});}catch{}};
  let retainedAppearance=null,retainedInput=null;
  const checkNative=()=>{if(!nativeCurrent())throw new DOMException('保持フレームの身体比較を中止しました','AbortError');};
  const startContinuation=result=>{
-  if(!result||!detachable)return;
-  try{client.scheduleNativeContinuation({request:nativeRequest,result,requestSequence:nativeRequestSequence,isCurrent:nativeCurrent,onResult:value=>{if(nativeCurrent())onNativePartial(attachResidualNativeSupport(retainedAppearance,{input:retainedInput,result:value}));}});}catch{/* Optional setup cannot discard successful evidence. */}
+  if(!result||!detachable){notifyNativeTerminal({status:'stalled',reason:!result?'native-result-unavailable':'owned-native-continuation-unavailable'});return;}
+  try{const scheduled=client.scheduleNativeContinuation({request:nativeRequest,result,requestSequence:nativeRequestSequence,isCurrent:nativeCurrent,onTerminal:notifyNativeTerminal,onResult:value=>{if(nativeCurrent())return onNativePartial(attachResidualNativeSupport(retainedAppearance,{input:retainedInput,result:value}));}});if(scheduled!==true&&!terminalNotified)notifyNativeTerminal({status:'stalled',reason:'owned-native-continuation-not-scheduled'});}catch(error){notifyNativeTerminal({status:'error',reason:String(error?.message??error)});/* Successful evidence remains retained. */}
  };
- const publishLate=outcome=>{
+ const publishLate=async outcome=>{
   try{
-   if(!nativeCurrent())return;
-   if(outcome.status==='error'&&outcome.error?.name==='AbortError')return;
-   onNativePartial(attachResidualNativeSupport(retainedAppearance,{input:retainedInput,result:outcome.result??null,error:outcome.error??null}));
-   if(nativeCurrent())startContinuation(outcome.result);
-  }catch{/* Cancelled/replaced optional work cannot update another frame. */}
+   if(!nativeCurrent()){notifyNativeTerminal({status:'cancelled',reason:'retained-native-frame-ownership-lost'});return;}
+   if(outcome.status==='error'&&outcome.error?.name==='AbortError'){notifyNativeTerminal({status:'cancelled',reason:outcome.error.message});return;}
+   await onNativePartial(attachResidualNativeSupport(retainedAppearance,{input:retainedInput,result:outcome.result??null,error:outcome.error??null}));
+   if(outcome.status==='error')notifyNativeTerminal({status:'error',reason:String(outcome.error?.message??outcome.error)});
+   else if(nativeCurrent())startContinuation(outcome.result);
+  }catch(error){notifyNativeTerminal({status:error?.name==='AbortError'?'cancelled':'error',reason:String(error?.message??error)});/* Other frames remain untouched. */}
  };
  try{
   if(typeof client.nativeBodySupport!=='function')throw Error('Automatic native body worker unavailable');
@@ -105,8 +108,8 @@ export async function runResidualRecognitionJob({input,plan,variant,client,prefe
    nativeResult=outcome.result;
   }else nativeResult=await pending;
   check();
- }catch(error){check();if(error?.name==='AbortError')throw error;nativeError=error;}
- check();
+ }catch(error){notifyNativeTerminal({status:error?.name==='AbortError'?'cancelled':'error',reason:String(error?.message??error)});check();if(error?.name==='AbortError')throw error;nativeError=error;}
+ try{check();}catch(error){notifyNativeTerminal({status:'cancelled',reason:String(error?.message??error)});throw error;}
  const first=attachResidualNativeSupport(appearance,{input,result:nativeResult,error:nativeError});
  startContinuation(nativeResult);
  return first;

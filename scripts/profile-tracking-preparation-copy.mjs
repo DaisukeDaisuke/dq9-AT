@@ -5,7 +5,7 @@ import {pathToFileURL} from 'node:url';
 import {performance} from 'node:perf_hooks';
 import assert from 'node:assert/strict';
 import {VideoObservationTimeline} from '../web/map-browser-preview/video-observation-timeline.mjs';
-import {createVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=native-route-20261008-171401b8';
+import {createVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=browser-at-20261008-138417cd';
 import {residualObservationBundle} from '../web/map-browser-preview/residual-recognition-input.mjs';
 import {prepareTrackingJob as afterPrepare} from '../web/tracking-at-session.mjs?v=native-route-20261008-171401b8';
 const [baselinePath,timelinePath,comparisonPath,outputPath,mode]=process.argv.slice(2);

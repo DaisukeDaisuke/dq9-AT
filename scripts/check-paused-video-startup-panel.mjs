@@ -5,7 +5,7 @@ import vm from 'node:vm';
 import {readFile} from 'node:fs/promises';
 import {test} from 'node:test';
 import {createVideoTrackingCapture} from '../web/map-browser-preview/video-tracking-capture.mjs';
-const panelURL=new URL('../web/map-browser-preview/map-video-comparison.mjs?v=native-async-20261008-43d9a67a',import.meta.url),source=await readFile(panelURL,'utf8'),imports=new Map();
+const panelURL=new URL('../web/map-browser-preview/map-video-comparison.mjs?v=browser-at-20261008-138417cd',import.meta.url),source=await readFile(panelURL,'utf8'),imports=new Map();
 for(const spec of [...source.matchAll(/^import.*?from\s*['"]([^'"]+)['"]/gm)].map(m=>m[1]))imports.set(spec,await import(new URL(spec,panelURL)));
 const deferred=()=>{let resolve,reject;const promise=new Promise((a,b)=>{resolve=a;reject=b;});return{promise,resolve,reject};};
 const turns=async(n=20)=>{for(let i=0;i<n;i++)await Promise.resolve();};
@@ -47,8 +47,8 @@ test('actual second Start waits for the same paused preparation and only the lat
 test('unknown-map background outcome can resume once its real frozen frame is retained',async()=>{
  const f=await fixture(),pending=f.api.startAutomatic();await f.waitBackground();f.backgrounds[0].reject(Error('map remains unresolved'));const result=await pending;assert.equal(result.started,true);assert.equal(f.playCalls,1);assert.equal(f.api.hasComparison(),false);assert.equal(f.api.measuredTrackingSnapshot().retainedFrames,1);f.api.stopAutomatic();
 });
-test('already-playing Start preserves immediate play path and does not pause for priming',async()=>{
- const f=await fixture();f.video.paused=false;const pending=f.api.startAutomatic();assert.equal(f.playCalls,1);assert.equal(f.video.paused,false);await f.waitBackground();f.finish();await pending;f.api.stopAutomatic();
+test('already-playing Start holds the first admitted slow analysis and resumes after completion',async()=>{
+ const f=await fixture();f.video.paused=false;const pending=f.api.startAutomatic();assert.equal(f.playCalls,1);assert.equal(f.video.paused,true);await f.waitBackground();f.finish();await pending;await turns();assert.equal(f.video.paused,false);assert.equal(f.playCalls,2);f.api.stopAutomatic();
 });
 test('not-yet-decoded and ROM-not-ready Starts preserve their immediate playback behavior',async()=>{
  for(const options of [{decoded:false},{romReady:false}]){const f=await fixture(options);await f.api.startAutomatic();assert.equal(f.playCalls,1);assert.equal(f.backgrounds.length,0);f.api.stopAutomatic();}

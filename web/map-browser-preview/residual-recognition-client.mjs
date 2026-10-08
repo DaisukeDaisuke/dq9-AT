@@ -27,19 +27,20 @@ const continuationAbort=()=>new DOMException('保持フレームの身体比較�
 // One ROM worker owns both its appearance cache and optional source preparations.
 export class ResidualRecognitionClient{
  constructor(){this.cancellationVersion=0;this.sequence=0;this.epoch=0;this.worker=null;this.pending=null;this.romSHA=null;this.catalog=null;this.nativeDeadlines=new Map();this.nativeContinuation=null;this.nativeSetupContinuation=null;}
- stopNativeContinuation(state=this.nativeContinuation){
+ stopNativeContinuation(state=this.nativeContinuation,terminal={status:'cancelled',reason:'owned-native-continuation-cancelled'}){
   if(!state||this.nativeContinuation!==state)return;
   this.nativeContinuation=null;if(state.timer!==null)clearTimeout(state.timer);
+  if(!state.terminalSent){state.terminalSent=true;try{Promise.resolve(state.onTerminal?.({...terminal,progress:structuredClone(state.progress),romEpoch:state.romEpoch,cancellationVersion:state.cancellationVersion})).catch(()=>{});}catch{}}
   const p=this.pending;
   if(p?.nativeContinuation===state){this.pending=null;this.clearPendingTimers(p);try{this.worker?.postMessage({type:'cancel',id:p.id,romEpoch:p.romEpoch});}catch{}p.reject(continuationAbort());}
  }
- scheduleNativeContinuation({request,result,isCurrent,onResult,onProgress,requestSequence=this.sequence}){
+ scheduleNativeContinuation({request,result,isCurrent,onResult,onProgress,onTerminal,requestSequence=this.sequence}){
   if(typeof isCurrent!=='function'||typeof onResult!=='function')return false;
   const progress=continuationProgress(result),setupOnly=initialNativeSetup(progress);
   if(setupOnly&&this.nativeSetupContinuation?.token===progress.token&&this.nativeSetupContinuation.romEpoch===this.epoch&&this.nativeSetupContinuation.cancellationVersion===this.cancellationVersion)return false;
-  if(!needsNativeContinuation(progress)||!(setupOnly||progress.firstSweepServed>0||progress.totalPreparationSteps>0||!progress.preparationPending&&progress.totalAttempts>0)||this.pending||requestSequence!==this.sequence)return false;
+  if(!needsNativeContinuation(progress)||!(setupOnly||progress.firstSweepServed>0||progress.totalPreparationSteps>0||!progress.preparationPending&&progress.totalAttempts>0)||this.pending||requestSequence!==this.sequence){try{onTerminal?.({status:progress?.hasMore===false?'source-exhausted':this.pending||requestSequence!==this.sequence?'cancelled':'stalled',reason:'no-admissible-owned-continuation',progress:structuredClone(progress)});}catch{}return false;}
   let frozenRequest;try{frozenRequest=structuredClone(nativeBodyRequestPayload(request));}catch{return false;}
-  const state={request:frozenRequest,progress,isCurrent,onResult,onProgress,timer:null,cancellationVersion:this.cancellationVersion,romEpoch:this.epoch};
+  const state={request:frozenRequest,progress,isCurrent,onResult,onProgress,onTerminal,timer:null,cancellationVersion:this.cancellationVersion,romEpoch:this.epoch};
   const check=()=>{if(this.nativeContinuation!==state||this.cancellationVersion!==state.cancellationVersion||this.epoch!==state.romEpoch||!this.worker||state.isCurrent()!==true)throw continuationAbort();};
   state.check=check;this.stopNativeContinuation();this.nativeContinuation=state;
   try{check();if(setupOnly)this.nativeSetupContinuation={token:progress.token,romEpoch:this.epoch,cancellationVersion:this.cancellationVersion};this.queueNativeContinuation(state);return true;}catch{this.stopNativeContinuation(state);return false;}
@@ -53,10 +54,10 @@ export class ResidualRecognitionClient{
     state.check();if(this.pending){this.stopNativeContinuation(state);return;}
     const result=await this.nativeBodySupport({...state.request,continuationToken:state.progress.token},state.onProgress,{assertCurrent:state.check,nativeContinuation:state});
     state.check();const next=continuationProgress(result),previous=state.progress;
-    if(!next||next.token!==previous.token||next.jobsTotal!==previous.jobsTotal||next.slice<=previous.slice||next.firstSweepServed<previous.firstSweepServed||next.totalAttempts<previous.totalAttempts||next.totalPreparationSteps<previous.totalPreparationSteps||next.totalCompletedVisits<previous.totalCompletedVisits||next.totalEmittedPlacementSteps<previous.totalEmittedPlacementSteps||next.laterPlacementPhase!==previous.laterPlacementPhase||!(madeNativeProgress(next,previous)||!next.hasMore&&previous.hasMore)){this.stopNativeContinuation(state);return;}
-    state.progress=next;state.onResult(result);state.check();
-    if(needsNativeContinuation(next))this.queueNativeContinuation(state);else this.stopNativeContinuation(state);
-   }catch{this.stopNativeContinuation(state);}
+    if(!next||next.token!==previous.token||next.jobsTotal!==previous.jobsTotal||next.slice<=previous.slice||next.firstSweepServed<previous.firstSweepServed||next.totalAttempts<previous.totalAttempts||next.totalPreparationSteps<previous.totalPreparationSteps||next.totalCompletedVisits<previous.totalCompletedVisits||next.totalEmittedPlacementSteps<previous.totalEmittedPlacementSteps||next.laterPlacementPhase!==previous.laterPlacementPhase||!(madeNativeProgress(next,previous)||!next.hasMore&&previous.hasMore)){this.stopNativeContinuation(state,{status:'stalled',reason:'continuation-progress-or-token-validation-failed'});return;}
+    state.progress=next;await state.onResult(result);state.check();
+    if(needsNativeContinuation(next))this.queueNativeContinuation(state);else this.stopNativeContinuation(state,{status:next.hasMore?'stalled':'source-exhausted',reason:next.hasMore?'unsupported-continuation-domain':'source-domain-exhausted'});
+   }catch(error){this.stopNativeContinuation(state,{status:error?.name==='AbortError'?'cancelled':'error',reason:String(error?.message??error)});}
    // Optional failures end this schedule. Keep the last successful evidence;
    // do not retry an expired/error slice or terminate the worker for it.
   },0);

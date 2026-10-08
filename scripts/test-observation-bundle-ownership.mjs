@@ -7,7 +7,7 @@ const ownershipImport=readFileSync(timelineModuleURL,'utf8').match(/import\s*\{\
 assert(ownershipImport,'Production timeline ownership-helper import is required');
 const {cloneImmutableObservationBundle,copyObservationBundleForAT}=await import(new URL(ownershipImport[1],timelineModuleURL).href);
 import {VideoObservationTimeline} from '../web/map-browser-preview/video-observation-timeline.mjs';
-import {createVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=native-route-20261008-171401b8';
+import {createVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=browser-at-20261008-138417cd';
 const bundle=extra=>({schema:'headless-monster-observation-bundle-v1',producer:'browser-ROM-background-residual',sightings:[],videoObservations:[{kind:'partial-video-observation-timeline',timeline:{old:true}}],...extra});
 const stamp={sourceId:'ownership-test',sourceEpoch:0,timelineSegment:0,mediaTime:1};
 const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
@@ -118,8 +118,8 @@ test('default/non-AT timeline skips freezing and retains mutable independent nat
 });
 
 test('main AT consumer explicitly opts in while GPU preview uses the default native-copy path',()=>{
- const main=readFileSync(new URL('../web/map-browser-preview/preview.mjs?v=native-route-20261008-171401b8',import.meta.url),'utf8'),gpu=readFileSync(new URL('../web/map-browser-preview/gpu-file-preview.mjs?v=temporal-prior-20261008-e462320d',import.meta.url),'utf8'),panel=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs?v=native-async-20261008-43d9a67a',import.meta.url),'utf8');
+ const main=readFileSync(new URL('../web/map-browser-preview/preview.mjs?v=browser-at-20261008-138417cd',import.meta.url),'utf8'),gpu=readFileSync(new URL('../web/map-browser-preview/gpu-file-preview.mjs?v=browser-at-20261008-138417cd',import.meta.url),'utf8'),panel=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs?v=browser-at-20261008-138417cd',import.meta.url),'utf8');
  const mount=source=>source.match(/const videoComparison=mountMapVideoComparison\(\{[^\n]+/)[0];
- assert.match(mount(main),/immutableObservationBundles:true,onObservationBundle:bundle=>trackingAT.observe\(bundle\)/);assert.doesNotMatch(mount(gpu),/immutableObservationBundles|onObservationBundle/);
+ assert.match(mount(main),/immutableObservationBundles:true,onObservationBundle:bundle=>trackingAT.observeBounded\(bundle\)/);assert.doesNotMatch(mount(gpu),/immutableObservationBundles|onObservationBundle/);
  assert.match(panel,/onObservationReset=\(\)=>\{\},immutableObservationBundles=false\}/);assert.match(panel,/timeline=new VideoObservationTimeline\(\{timing,immutableObservationBundles\}\)/);
 });

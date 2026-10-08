@@ -1,11 +1,11 @@
 import {resolveConditionalBeamBackground} from './conditional-beam-background.mjs?v=shrine-beam-20261008-a9738d0c';
-import {createReadyMode1GeometryFallback,hasNonzeroSourceXZBounds} from './ready-mode1-geometry-fallback.mjs?v=native-viewport-color-20261008-99202e36';
+import {createReadyMode1GeometryFallback,hasNonzeroSourceXZBounds} from './ready-mode1-geometry-fallback.mjs?v=browser-at-20261008-138417cd';
 import {createAutomaticMonsterMapGate} from './automatic-monster-map-eligibility.mjs?v=monster-map-cpu-20261006-1005';
 import{createAmbiguousMarkerBackgroundBudget}from'./physical-marker-background-hypotheses.mjs?v=native-continuation-20261006-0333';
 import{buildBackgroundBranchSupport}from'./background-branch-support.mjs?v=recognition-20261008-7cf64cf4';
-import{createSourceAnchorSceneInference}from'./source-anchor-scene-inference.mjs?v=shrine-beam-20261008-a9738d0c';
+import{createSourceAnchorSceneInference}from'./source-anchor-scene-inference.mjs?v=browser-at-20261008-138417cd';
 import{resolveFrozenInferencePixels}from'./capture-analysis-pixels.mjs?v=native-continuation-20261006-0333';
-import{createMode1BackgroundInference}from'./automatic-mode1-background.mjs?v=shrine-beam-20261008-a9738d0c';
+import{createMode1BackgroundInference}from'./automatic-mode1-background.mjs?v=browser-at-20261008-138417cd';
 import {Mode2VideoContinuity} from './mode2-video-continuity.mjs?v=recognition-20261008-7cf64cf4';
 import {inferAutomaticMode2Background} from './automatic-mode2-background.mjs?v=recognition-20261008-7cf64cf4';
 import {readRomMapCameraInputGate} from './rom-camera-input-gate.mjs';

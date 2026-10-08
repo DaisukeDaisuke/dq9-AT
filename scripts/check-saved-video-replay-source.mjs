@@ -3,7 +3,7 @@
 import fs from 'node:fs';import path from 'node:path';import assert from 'node:assert/strict';import {createHash} from 'node:crypto';
 import {openMapRom} from '../web/map-browser-preview/static-scene.mjs';
 import {buildRomMapCatalog} from '../web/map-browser-preview/rom-map-catalog.mjs';
-import {createVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=native-route-20261008-171401b8';
+import {createVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=browser-at-20261008-138417cd';
 import {prepareTrackingJob} from '../web/tracking-at-session.mjs?v=native-route-20261008-171401b8';
 import {searchAutomaticReplayInputs} from '../web/video-replay-factor-search.mjs';
 const [romPath,evidenceRoot]=process.argv.slice(2);assert(romPath&&evidenceRoot,'ROM and saved evidence root required');

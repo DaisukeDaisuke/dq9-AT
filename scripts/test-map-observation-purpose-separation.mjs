@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
-import {AutomaticVideoAlignment} from '../web/map-browser-preview/automatic-video-alignment.mjs';
+import {AutomaticVideoAlignment} from '../web/map-browser-preview/automatic-video-alignment.mjs?v=browser-at-20261008-138417cd';
 import {VideoMapContinuity} from '../web/map-browser-preview/video-map-continuity.mjs';
 import {VideoObservationTimeline} from '../web/map-browser-preview/video-observation-timeline.mjs';
 function fixture(){

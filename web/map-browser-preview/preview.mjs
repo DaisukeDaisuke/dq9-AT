@@ -1,13 +1,13 @@
 import {loadMapKernel} from '../map-kernel-loader.mjs?v=registration-timing-20261007-0020';
 import {classificationNow,classificationDuration,classificationClock,emitClassificationTiming} from '../monster-classification-timing.mjs?v=envelope-yield-20261007-0140';
 import {mountResidualInferencePreparation} from './residual-inference-preparation.mjs?v=envelope-yield-20261007-0140';
-import {createVideoTrackingAT,videoATSearchOptions} from './video-tracking-at.mjs?v=native-route-20261008-171401b8';
-import {runResidualRecognitionJob} from './residual-recognition-job.mjs?v=native-async-20261008-43d9a67a';
+import {createVideoTrackingAT,videoATSearchOptions} from './video-tracking-at.mjs?v=browser-at-20261008-138417cd';
+import {runResidualRecognitionJob} from './residual-recognition-job.mjs?v=browser-at-20261008-138417cd';
 import {VideoMapContinuity} from './video-map-continuity.mjs?v=recognition-20261008-7cf64cf4';
-import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=recognition-20261008-7cf64cf4';
+import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=browser-at-20261008-138417cd';
 import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=shrine-beam-20261008-a9738d0c';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
-import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=temporal-prior-20261008-e462320d';
+import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=browser-at-20261008-138417cd';
 import {residualModelPlan} from './residual-recognition-input.mjs?v=conditional-ui-20261007-0257';
 import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=recognition-20261008-7cf64cf4';
 import {CPUTextClient} from '../font-akinator-cpu-client.mjs?v=recognition-20261008-7cf64cf4';
@@ -15,7 +15,7 @@ import {deriveVideoMapNames} from './video-map-name-input.mjs?v=shrine-beam-2026
 import {MapPositionMatcher} from '../map-position.mjs?v=registration-timing-20261007-0020';
 import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs?v=shrine-beam-20261008-a9738d0c';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
-import {mountMapVideoComparison} from './map-video-comparison.mjs?v=native-async-20261008-43d9a67a';
+import {mountMapVideoComparison} from './map-video-comparison.mjs?v=browser-at-20261008-138417cd';
 import {openMapRom} from './static-scene.mjs?v=native-source-reuse-20261006-1028';
 import {buildRomMapCatalog} from './rom-map-catalog.mjs';
 import {nameCatalogMaps} from './rom-map-names.mjs';
@@ -35,10 +35,10 @@ mountResidualInferencePreparation(document,window);
 const mapContinuity=new VideoMapContinuity();
 for(const id of ['comparison-file','comparison-layout'])$(id).addEventListener('change',()=>mapContinuity.reset());
 const nameClient=new CPUTextClient({reuseWorker:true});let nameRomEpoch=0;let nameInput=null,pendingNamedMap=null,automaticSearch=null,automaticMsePhase=null;
-const trackingAT=createVideoTrackingAT({engineRevision:'sha256:e14f431e81e0441c9f87e49dcd83c0545cc4dd6e34ee3bba1d2852766f1e6305',getTables:()=>encounterTables??{},getReplaySourceContext:()=>loaded?{project,catalog,romSHA256,rom}:null,getOptions:()=>videoATSearchOptions({seed:$('video-at-seed').value,seedProvenance:'User-supplied initial seed, not inferred from video',first:$('video-at-first').value,last:$('video-at-last').value,indexProvenance:'User-specified advanced conditional terminal-index interval; outside interval remains possible'},encounterTables??{}),onState:value=>{$('video-at-status').textContent=value.reason;$('video-at-details').textContent=JSON.stringify(value,null,2);}});
+const trackingAT=createVideoTrackingAT({onNativeATValidated:(frame,detail)=>videoComparison.nativeATValidated?.(frame,detail),engineRevision:'sha256:887fec187819b8588a53bfb390da2998c2fa1e4bc02500b5d338953eacc19f41',getTables:()=>encounterTables??{},getReplaySourceContext:()=>loaded?{project,catalog,romSHA256,rom}:null,getOptions:()=>videoATSearchOptions({seed:$('video-at-seed').value,seedProvenance:'User-supplied initial seed, not inferred from video',first:$('video-at-first').value,last:$('video-at-last').value,indexProvenance:'User-specified advanced conditional terminal-index interval; outside interval remains possible'},encounterTables??{}),onState:value=>{$('video-at-status').textContent=value.reason;$('video-at-details').textContent=JSON.stringify(value,null,2);}});
 for(const id of ['video-at-seed','video-at-first','video-at-last'])$(id).addEventListener('input',()=>trackingAT.cancel('AT入力を変更しました。再試行または次の動画観測を待ちます。',{retainObservation:true}));
 $('video-at-retry').onclick=()=>trackingAT.retry();
-const videoComparison=mountMapVideoComparison({onAutomaticStart:()=>automaticSearch?.backgroundRenderer?.begin(),immutableObservationBundles:true,onObservationBundle:bundle=>trackingAT.observe(bundle),onObservationReset:reason=>trackingAT.cancel(reason),canAnalyze:()=>loaded,getRomIdentity:()=>romSHA256,getRecognitionContext:()=>({romEpoch:nameRomEpoch,variant:$('residual-model-variant').value,backend:$('residual-inference-backend')?.value??'wasm'}),renderBackground:render,derivePlayerBackground:renderFromMarker,deriveMapBackground:renderFromName,classifyResiduals:classifyBackgroundResiduals,cancelSearch:()=>{version++;$('auto-search-status').textContent='自動探索を中止しました。';},cancelPending:()=>{nameClient.cancel();residualClient.cancel();}});
+const videoComparison=mountMapVideoComparison({onAutomaticStart:()=>automaticSearch?.backgroundRenderer?.begin(),immutableObservationBundles:true,onObservationBundle:bundle=>trackingAT.observeBounded(bundle),onObservationReset:reason=>trackingAT.cancel(reason),canAnalyze:()=>loaded,getRomIdentity:()=>romSHA256,getRecognitionContext:()=>({romEpoch:nameRomEpoch,variant:$('residual-model-variant').value,backend:$('residual-inference-backend')?.value??'wasm'}),renderBackground:render,derivePlayerBackground:renderFromMarker,deriveMapBackground:renderFromName,classifyResiduals:classifyBackgroundResiduals,cancelSearch:()=>{version++;$('auto-search-status').textContent='自動探索を中止しました。';},cancelPending:()=>{nameClient.cancel();residualClient.cancel();}});
 function clearView({comparisonAlreadyCleared=false}={}){automaticMsePhase=null;$('marker-details').textContent='';$('marker-status').textContent='描画入力が変わりました。固定映像の上画面から再計算します。';renderVersion++;if(!comparisonAlreadyCleared)videoComparison.invalidate('背景の入力が変わりました。');ctx.clearRect(0,0,256,192);$('draw').disabled=true;point=null;markerInput=null;$('floor').replaceChildren();$('floor').disabled=true;}
 function reportError(e){videoComparison.invalidate('背景の描画に失敗しました。',{resetTracking:true});$('status').textContent='描画できません：'+e.message;console.error(e);}
 function guard(fn){return async event=>{try{await fn(event);}catch(e){reportError(e);}};}

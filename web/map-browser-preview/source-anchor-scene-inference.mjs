@@ -14,7 +14,7 @@ import{automaticBillboardScenes}from'./automatic-billboard-scene.mjs';
 import{prepareDrawPackets}from'./draw-packets.mjs';
 import{readSdkInitialMaterialGlobals}from'./rom-sdk-initial-material.mjs';
 import{rasterizePreviewPackets}from'./source-scene-diagnostic-raster.mjs?v=source-scene-20261006-0040';
-import{prepareMode1PhotometricBasisAsync as prepareMode1PhotometricBasis,renderMode1PhotometricBasis,inferMode1OrdinaryColor}from'./mode1-photometric-inverse.mjs?v=fair-source-yield-20261007-0247';
+import{prepareMode1PhotometricBasisAsync as prepareMode1PhotometricBasis,renderMode1PhotometricBasis,inferMode1OrdinaryColor}from'./mode1-photometric-inverse.mjs?v=browser-at-20261008-138417cd';
 import{applyMode1OrdinaryHypothesis}from'./automatic-material-environment.mjs?v=native-body-20261006-0212';
 import{compareMapBackground}from'./map-video-residual.mjs?v=shrine-beam-20261008-a9738d0c';
 import{createRendererSourceArchives}from'./renderer-source-archives.mjs';

@@ -1,6 +1,6 @@
 // Delayed source-bounded geometry only. The caller first exhausts the unchanged
 // centroid pass and must not call this when any original candidate is accepted.
-import {prepareMode1PhotometricBasis,renderMode1PhotometricBasis} from './mode1-photometric-inverse.mjs?v=fair-source-yield-20261007-0247';
+import {prepareMode1PhotometricBasisAsync,renderMode1PhotometricBasis} from './mode1-photometric-inverse.mjs?v=browser-at-20261008-138417cd';
 import {refineGeometryPosition} from './geometry-position-refinement.mjs?v=geometry-display-20261006-1112';
 import {floorHeightsAtXZ} from './rom-floor-candidates.mjs';
 import {continueRefinedFloorAlternatives} from './refined-floor-alternatives.mjs?v=source-scene-20261006-0040';
@@ -26,7 +26,8 @@ export function createReadyMode1GeometryFallback({backgroundRenderer}){
     if(!geometryImage||!binding||Object.entries({project,rom,record,position,camera,environment,frameEvidence}).some(([key,value])=>binding[key]!==value))return unavailable('Native-color geometry input does not belong to this exact scene/camera/frame branch');
    }
    project=archives.forProject(project,rom);const gpu=await backgroundRenderer.begin();check();
-   const model=prepareMode1PhotometricBasis({project,rom,record,automatic,camera}),basis=await renderMode1PhotometricBasis(model,{gpu,isCurrent});check();
+   await onProgress({phase:'background',message:'ROM背景の幾何準備中（協調処理）'});check();
+   const model=await prepareMode1PhotometricBasisAsync({project,rom,record,automatic,camera},{isCurrent}),basis=await renderMode1PhotometricBasis(model,{gpu,isCurrent});check();
    // No photometric inference is called. This white basis supplies coherent
    // source geometry/depth; it is never an accepted environment or display.
    diagnostics.basisRenders=1;diagnostics.basis={basisOnly:basis.basisOnly,knownPixels:basis.knownMask?.reduce((n,v)=>n+v,0)??0};
