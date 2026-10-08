@@ -4,11 +4,11 @@ import{sourcePixelComparisonBinding}from'./native-pixel-comparison-binding.mjs?v
 import{verifyNativeAnimationSource,readNativeRate0Animation}from'./monster-native-animation.mjs?v=source-rate1-curves-20261008-2e3ba48d';
 import{verifyNativeJointBlendSource}from'./monster-native-joint-blend.mjs?v=source-rate1-curves-20261008-2e3ba48d';
 import{createNativeBodyJointPlan}from'./monster-native-joint-plan.mjs?v=source-rate1-curves-20261008-2e3ba48d';
-import{nativeBodyExtentEvidence}from'./monster-native-extent-evidence.mjs?v=native-viewport-color-20261008-99202e36';
+import{nativeBodyExtentEvidence}from'./monster-native-extent-evidence.mjs?v=native-boundary-20261008-1bf21a3f';
 // Optional bounded worker-side source-native evaluator. No production caller.
 import{readMonsterAssets}from'./monster-assets.mjs';
 import{readNSBCA}from'./monster-animation.mjs?v=source-rate1-curves-20261008-2e3ba48d';
-import{prepareNativeBodyEnvelope,placeNativeBodyEnvelopeOnFloors}from'./monster-native-body-placement.mjs?v=native-viewport-color-20261008-99202e36';
+import{prepareNativeBodyEnvelope,placeNativeBodyEnvelopeOnFloors,nativeBoundaryPlacementAnchor,placeNativeBodyBoundaryEnvelopeOnFloors}from'./monster-native-body-placement.mjs?v=native-boundary-20261008-1bf21a3f';
 import{readSdkInitialMaterialGlobals}from'./map-browser-preview/rom-sdk-initial-material.mjs';
 import{readInitialMode1RasterProfile}from'./map-browser-preview/integer/initial-mode1-integer-preview.mjs?v=fair-source-yield-20261007-0247';
 import{prepareNativeBodyProgram,projectNativeBodyPolygons,rasterNativeBody}from'./monster-native-body.mjs?v=native-viewport-color-20261008-99202e36';
@@ -114,7 +114,13 @@ export function createNativeBodySupportRunner({project,rom,catalog,romSHA256,max
   // Preparation and each floor solve are cooperative indivisible segments.
   const source=prepared(request.candidate),nativePose=poseInput(source,request.pose),envelope={...state.envelope,program:source.program,nativeInput:{...state.envelope.nativeInput,...nativePose}};
   while(state.planeIndex<request.floorPlan.planes.length&&!shouldYield()){guard();const floorPlan={...request.floorPlan,planes:[request.floorPlan.planes[state.planeIndex]]},placed=placeNativeBodyEnvelopeOnFloors(envelope,request.region,floorPlan);state.planeIndex++;state.completedSteps++;guard();result.placements.push(...placed.placements);result.unresolved.push(...placed.unresolved);if(result.placements.length)break;}
-  result.completedSteps=state.completedSteps;result.complete=state.planeIndex===request.floorPlan.planes.length;return result;
+  // Finish the old complete-envelope floor sequence first. Boundary hypotheses
+  // have their own resumable cursor and never replace an old solve or failure.
+  if(state.planeIndex===request.floorPlan.planes.length&&state.boundaryPlaneIndex===undefined){const anchor=nativeBoundaryPlacementAnchor(envelope,request.region);state.boundaryPlaneIndex=anchor.ready?0:request.floorPlan.planes.length;if(!anchor.ready&&anchor.reason!=='residual-does-not-touch-observation-boundary')result.unresolved.push({reason:anchor.reason,scope:'conditional-native-boundary-placement'});}
+  while(!result.placements.length&&state.planeIndex===request.floorPlan.planes.length&&state.boundaryPlaneIndex<request.floorPlan.planes.length&&!shouldYield()){
+   guard();const floorPlan={...request.floorPlan,planes:[request.floorPlan.planes[state.boundaryPlaneIndex]]},placed=placeNativeBodyBoundaryEnvelopeOnFloors(envelope,request.region,floorPlan);state.boundaryPlaneIndex++;state.completedSteps++;guard();result.placements.push(...placed.placements);result.unresolved.push(...placed.unresolved);if(result.placements.length)break;
+  }
+  result.completedSteps=state.completedSteps;result.complete=state.planeIndex===request.floorPlan.planes.length&&state.boundaryPlaneIndex===request.floorPlan.planes.length;return result;
  }
  return{proposeNativeEnvelope,proposeNativePhaseEnvelope,proposeNativeDrawAnimationEnvelope,prepareNativePhaseDomain,dispose(){cache.clear();envelopeSeeds.clear();bytes=envelopeBytes=0;disposed=true;},get stats(){return{entries:cache.size,estimatedBytes:bytes,maxCacheBytes,maxPrograms,hits,misses,disposed,...(phaseResourcesPrepared?{explicitPhase:{preparedResources:phaseResourcesPrepared,cachedAnimations:[...cache.values()].reduce((n,s)=>n+s.phaseAnimations.size,0),sourceVerified:Boolean(phaseSourceRules)}}:{}),envelopeSeeds:{entries:envelopeSeeds.size,estimatedBytes:envelopeBytes,maxCacheBytes,maxEntries:maxPrograms,hits:envelopeHits,misses:envelopeMisses,evictions:envelopeEvictions}};},async evaluate(request,{signal,getCurrentFrame,budget,yieldTask=pause,onProgress=()=>{}}={}){
   need(!disposed,'Source-native runner disposed');need(request?.frame?.romSHA256===romSHA256&&Array.isArray(request.candidates)&&Array.isArray(request.branches)&&request.branches.length>0,'Source-native request identity/candidates/branches required');need(Number.isFinite(budget?.wallTimeMs)&&budget.wallTimeMs>0&&Number.isSafeInteger(budget?.maxProposals)&&budget.maxProposals>0,'Explicit per-job time and proposal bounds required');need(typeof getCurrentFrame==='function','Current frozen-frame identity guard required');

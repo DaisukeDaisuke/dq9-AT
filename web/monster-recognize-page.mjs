@@ -83,7 +83,7 @@ export class RequestGate {
 
 /** Termination also invalidates File.arrayBuffer reads that have not completed yet. */
 export class RecognitionWorkerClient {
-  constructor({ factory = () => new Worker(new URL('./monster-recognition-worker.mjs?v=native-viewport-color-20261008-99202e36', import.meta.url), { type: 'module' }), onProgress = () => {} } = {}) {
+  constructor({ factory = () => new Worker(new URL('./monster-recognition-worker.mjs?v=native-boundary-20261008-1bf21a3f', import.meta.url), { type: 'module' }), onProgress = () => {} } = {}) {
     this.factory = factory; this.onProgress = onProgress; this.worker = null; this.generation = 0; this.pending = new Map(); this.loadedRomEpoch = null;
   }
   createWorker() {
