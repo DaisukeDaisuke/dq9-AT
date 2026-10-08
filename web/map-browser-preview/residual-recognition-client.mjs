@@ -6,7 +6,7 @@ function retainRequestEnvelope(value,p,status,entryAtMs=null,workerEnvelope=null
  value.classificationEnvelopeTiming=structuredClone({...(workerEnvelope??value.classificationEnvelopeTiming??{}),main:{...p.classificationEnvelope,status,...(Number.isFinite(entryAtMs)?{replyHandlerEntryAtMs:entryAtMs,requestToReplyHandlerEntryElapsedMs:classificationDuration(p.classificationEnvelope.requestStartedAtMs,entryAtMs)}:{}),snapshotElapsedMs:classificationDuration(p.classificationEnvelope.requestStartedAtMs)}});
  }catch{}return value;}
 import {nativeBodyRequestPayload} from './native-body-request.mjs?v=recognition-20261008-7cf64cf4';
-import {RESIDUAL_NATIVE_BODY_BUDGET,RESIDUAL_NATIVE_BODY_OPTIONAL_WAIT_MS} from './residual-native-support.mjs?v=recognition-20261008-7cf64cf4';
+import {RESIDUAL_NATIVE_BODY_BUDGET,RESIDUAL_NATIVE_BODY_OPTIONAL_WAIT_MS,RESIDUAL_NATIVE_FRAME_SOURCE_BUDGET_MS} from './residual-native-support.mjs?v=frame-heading-20261008-b8f5df4e';
 // First-sweep progress is work coverage, never a recognition/pose certificate.
 const continuationProgress=result=>{
  const value=result?.continuation;
@@ -23,6 +23,14 @@ const needsNativeContinuation=p=>p&&p.hasMore===true&&(p.firstSweepComplete===fa
 // The normal per-slice progress checks below still reject a second zero slice.
 const initialNativeSetup=p=>p?.slice===1&&p.jobsTotal>0&&p.laterPlacementPhase===true&&p.firstSweepComplete===false&&p.firstSweepServed===0&&p.totalAttempts===0&&p.totalPreparationSteps===0&&p.totalCompletedVisits===0&&p.totalEmittedPlacementSteps===0&&p.preparationPending===false;
 const madeNativeProgress=(next,previous)=>next.firstSweepServed>previous.firstSweepServed||next.totalPreparationSteps>previous.totalPreparationSteps||next.laterPlacementPhase&&(next.totalCompletedVisits>previous.totalCompletedVisits||next.totalEmittedPlacementSteps>previous.totalEmittedPlacementSteps)||!next.laterPlacementPhase&&!next.preparationPending&&next.totalAttempts>previous.totalAttempts;
+function chargeNativeSourceBudget(state,result){
+ const elapsed=result?.elapsedMs;state.sourceSlices++;
+ // Unknown/nonpositive timing cannot license an unbounded retained schedule.
+ if(!Number.isFinite(elapsed)||elapsed<=0)state.sourceTimingUnavailable=true;
+ else state.sourceElapsedMs+=elapsed;
+ return state.sourceTimingUnavailable||state.sourceElapsedMs>=RESIDUAL_NATIVE_FRAME_SOURCE_BUDGET_MS;
+}
+function nativeBudgetTerminal(state){return{status:'budget-yield',reason:state.sourceTimingUnavailable?'source-evaluation-timing-unavailable':'per-frame-source-compute-budget-reached',resourceBudget:{kind:'per-frame-source-evaluation-elapsed-budget',limitMs:RESIDUAL_NATIVE_FRAME_SOURCE_BUDGET_MS,observedElapsedMs:state.sourceElapsedMs,evaluatedSlices:state.sourceSlices,timingUnavailable:state.sourceTimingUnavailable,remainingSourceDomainUnknown:true,sourceExhausted:false,importAndServicePreparationExcluded:true},identityCertified:false,currentATRecovered:false};}
 const continuationAbort=()=>new DOMException('保持フレームの身体比較を中止しました','AbortError');
 // One ROM worker owns both its appearance cache and optional source preparations.
 export class ResidualRecognitionClient{
@@ -40,10 +48,10 @@ export class ResidualRecognitionClient{
   if(setupOnly&&this.nativeSetupContinuation?.token===progress.token&&this.nativeSetupContinuation.romEpoch===this.epoch&&this.nativeSetupContinuation.cancellationVersion===this.cancellationVersion)return false;
   if(!needsNativeContinuation(progress)||!(setupOnly||progress.firstSweepServed>0||progress.totalPreparationSteps>0||!progress.preparationPending&&progress.totalAttempts>0)||this.pending||requestSequence!==this.sequence){try{onTerminal?.({status:progress?.hasMore===false?'source-exhausted':this.pending||requestSequence!==this.sequence?'cancelled':'stalled',reason:'no-admissible-owned-continuation',progress:structuredClone(progress)});}catch{}return false;}
   let frozenRequest;try{frozenRequest=structuredClone(nativeBodyRequestPayload(request));}catch{return false;}
-  const state={request:frozenRequest,progress,isCurrent,onResult,onProgress,onTerminal,timer:null,cancellationVersion:this.cancellationVersion,romEpoch:this.epoch};
+  const state={sourceElapsedMs:0,sourceSlices:0,sourceTimingUnavailable:false,request:frozenRequest,progress,isCurrent,onResult,onProgress,onTerminal,timer:null,cancellationVersion:this.cancellationVersion,romEpoch:this.epoch};
   const check=()=>{if(this.nativeContinuation!==state||this.cancellationVersion!==state.cancellationVersion||this.epoch!==state.romEpoch||!this.worker||state.isCurrent()!==true)throw continuationAbort();};
   state.check=check;this.stopNativeContinuation();this.nativeContinuation=state;
-  try{check();if(setupOnly)this.nativeSetupContinuation={token:progress.token,romEpoch:this.epoch,cancellationVersion:this.cancellationVersion};this.queueNativeContinuation(state);return true;}catch{this.stopNativeContinuation(state);return false;}
+  try{check();if(chargeNativeSourceBudget(state,result)){this.stopNativeContinuation(state,nativeBudgetTerminal(state));return true;}if(setupOnly)this.nativeSetupContinuation={token:progress.token,romEpoch:this.epoch,cancellationVersion:this.cancellationVersion};this.queueNativeContinuation(state);return true;}catch{this.stopNativeContinuation(state);return false;}
  }
  queueNativeContinuation(state){
   // Each slice yields a task boundary. A foreground request always cancels this
@@ -55,7 +63,8 @@ export class ResidualRecognitionClient{
     const result=await this.nativeBodySupport({...state.request,continuationToken:state.progress.token},state.onProgress,{assertCurrent:state.check,nativeContinuation:state});
     state.check();const next=continuationProgress(result),previous=state.progress;
     if(!next||next.token!==previous.token||next.jobsTotal!==previous.jobsTotal||next.slice<=previous.slice||next.firstSweepServed<previous.firstSweepServed||next.totalAttempts<previous.totalAttempts||next.totalPreparationSteps<previous.totalPreparationSteps||next.totalCompletedVisits<previous.totalCompletedVisits||next.totalEmittedPlacementSteps<previous.totalEmittedPlacementSteps||next.laterPlacementPhase!==previous.laterPlacementPhase||!(madeNativeProgress(next,previous)||!next.hasMore&&previous.hasMore)){const rejectedConditions=[];if(!next)rejectedConditions.push('invalid-progress-envelope');else{if(next.token!==previous.token)rejectedConditions.push('token-changed');if(next.jobsTotal!==previous.jobsTotal)rejectedConditions.push('jobs-total-changed');if(next.slice<=previous.slice)rejectedConditions.push('slice-not-increasing');for(const key of ['firstSweepServed','totalAttempts','totalPreparationSteps','totalCompletedVisits','totalEmittedPlacementSteps'])if(next[key]<previous[key])rejectedConditions.push(key+'-decreased');if(next.laterPlacementPhase!==previous.laterPlacementPhase)rejectedConditions.push('placement-phase-changed');if(!(madeNativeProgress(next,previous)||!next.hasMore&&previous.hasMore))rejectedConditions.push('no-monotonic-source-work');}this.stopNativeContinuation(state,{status:'stalled',reason:'continuation-progress-or-token-validation-failed',validationFailure:{rejectedConditions,previous:structuredClone(previous),next:structuredClone(next),rawContinuation:structuredClone(result?.continuation??null)},nativePreparationTiming:result?.nativePreparationTiming??null});return;}
-    state.progress=next;await state.onResult(result);state.check();
+    state.progress=next;const budgetReached=chargeNativeSourceBudget(state,result);await state.onResult(result);state.check();
+    if(next.hasMore&&budgetReached){this.stopNativeContinuation(state,nativeBudgetTerminal(state));return;}
     if(needsNativeContinuation(next))this.queueNativeContinuation(state);else this.stopNativeContinuation(state,{status:next.hasMore?'stalled':'source-exhausted',reason:next.hasMore?'unsupported-continuation-domain':'source-domain-exhausted'});
    }catch(error){this.stopNativeContinuation(state,{status:error?.name==='AbortError'?'cancelled':'error',reason:String(error?.message??error)});}
    // Optional failures end this schedule. Keep the last successful evidence;
@@ -102,7 +111,7 @@ export class ResidualRecognitionClient{
  async load(rom,sha){
   this.stopNativeContinuation();
   if(this.romSHA===sha&&this.catalog&&this.worker)return this.catalog;
-  this.release();const worker=new Worker(new URL('../monster-recognition-worker.mjs?v=native-budget-20261008-83ff459d',import.meta.url),{type:'module'});this.worker=worker;this.epoch++;
+  this.release();const worker=new Worker(new URL('../monster-recognition-worker.mjs?v=frame-heading-20261008-b8f5df4e',import.meta.url),{type:'module'});this.worker=worker;this.epoch++;
   worker.onmessage=({data:m})=>{
    const handlerEntryAtMs=classificationNow();
    if(this.worker!==worker)return;

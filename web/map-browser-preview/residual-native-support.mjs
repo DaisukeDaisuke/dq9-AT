@@ -7,6 +7,10 @@ import {attachNativeBodySupport} from '../monster-native-support.mjs?v=camera-re
 export const RESIDUAL_NATIVE_BODY_BUDGET=Object.freeze({wallTimeMs:1500,maxProposals:128});
 // Optional result wait only: expiry preserves the shared worker and caches.
 export const RESIDUAL_NATIVE_BODY_OPTIONAL_WAIT_MS=2000;
+// Per-frame scheduling allowance, not a recognition or domain-completion gate.
+// Sum source evaluate elapsed only; import/service preparation is separate.
+// Checked after each owned slice; atomic source work can overrun this allowance.
+export const RESIDUAL_NATIVE_FRAME_SOURCE_BUDGET_MS=30000;
 const clone=value=>structuredClone(value);
 const FRAME_KEYS=['romSHA256','recordKey','sourceId','sourceEpoch','timelineSegment','mediaTime','fullRGBA_SHA256'];
 const unknown=(branchId,recordKey,reason)=>({branchId,recordKey,status:'unavailable',reason,ownGain:null,unknownRetained:true});

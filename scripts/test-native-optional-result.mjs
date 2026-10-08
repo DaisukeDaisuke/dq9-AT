@@ -1,10 +1,10 @@
 import {waitForOptionalNativeResult} from '../web/map-browser-preview/native-optional-result.mjs?v=native-async-20261008-43d9a67a';
 import assert from 'node:assert/strict';
 import {Worker as NodeWorker} from 'node:worker_threads';
-import {ResidualRecognitionClient} from '../web/map-browser-preview/residual-recognition-client.mjs?v=native-budget-20261008-83ff459d';
+import {ResidualRecognitionClient} from '../web/map-browser-preview/residual-recognition-client.mjs?v=frame-heading-20261008-b8f5df4e';
 import {nativeBodyRequestPayload} from '../web/map-browser-preview/native-body-request.mjs';
-import {attachResidualNativeSupport} from '../web/map-browser-preview/residual-native-support.mjs';
-import {runResidualRecognitionJob} from '../web/map-browser-preview/residual-recognition-job.mjs?v=browser-at-20261008-138417cd';
+import {attachResidualNativeSupport} from '../web/map-browser-preview/residual-native-support.mjs?v=frame-heading-20261008-b8f5df4e';
+import {runResidualRecognitionJob} from '../web/map-browser-preview/residual-recognition-job.mjs?v=frame-heading-20261008-b8f5df4e';
 import {dinoSpec} from '../web/monster-dinov2.mjs';
 
 const clone=structuredClone;
@@ -15,7 +15,7 @@ const support={kind:'same-frame-background-branch-support-v1',ready:true,frame:v
 const input={regionIds:[9],regions:[{id:9,roi:{x:10,y:10,w:4,h:4}}],videoEvidence:video,backgroundEvidence:{romSHA256,backgroundBranchSupport:support},nativeVideo:{width:256,height:192,rgba:new Uint8Array(256*192*4)},nativeComparison:{},fullFrame:{},isNativeCurrent:()=>true};
 const rankings=models.map((modelId,i)=>({modelId,speciesCandidates:[{monsterId:i+1}],similarity:1-i/10,distance:i/10,bodyFit:{unchanged:'legacy-thumbnail'}}));
 const appearance={source:{modelPlan:{models:models.map(modelId=>({modelId}))}},sightings:[{originalProposalId:'9',conditionalBodyPrediction:{modelId:null,bodyFit:{unchanged:'legacy-thumbnail'}},classificationEvidence:[{rankings}]}],minimumProvenATCalls:0};
-const result={kind:'automatic-source-native-body-support',regions:[{regionId:9,groups:branches.map(b=>{
+const result={elapsedMs:1,kind:'automatic-source-native-body-support',regions:[{regionId:9,groups:branches.map(b=>{
  const frame={...video,romSHA256,recordKey:b.recordKey};
  return{frame,branchIds:[b.branchId],bundle:{kind:'per-candidate-source-native-body-support',renderer:'source-integer-original-GX-body-subset',frame,branches:[{branchId:b.branchId,assumptions:['synthetic complete support'],unknownAlternatives:['unsearched poses','background','party'],candidates:models.map((modelId,i)=>({modelId,testedProposals:1,unsupported:[{reason:'later poses remain unknown'}],candidateSource:{matchesBranchEncounterPlan:true},best:{proposalId:modelId,fit:{regionId:9,originalProposalSupport:{kind:'conditional-source-native-original-proposal-support-v1',ready:true,originalResidualId:9,sourcePixelSHA256:video.fullRGBA_SHA256,componentPixels:4,knownPixels:4,unavailablePixels:0,backgroundSSE:200,renderedSSE:100+i*10,pixelErrorReduction:100-i*10,outsideProposal:{pixelErrorReduction:0}},pixelErrorReduction:100-i*10,backgroundSSE:200,bodySSE:100+i*10,raster:'source-integer-original-GX-body-subset'},nativeBodyExtent:{frame,bodyColorOwnership:{ready:true,empty:false,completeWithinAdmittedRendererSubset:true,allVisibleContributionsCapturedWithinComposition:true,knownPixels:4,unavailablePixels:0,knownSpatialSupportRank:2,knownBodySpatiallyDegenerate:false}}}}))}]}};
 })}]};
