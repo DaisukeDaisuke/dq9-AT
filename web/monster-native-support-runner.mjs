@@ -1,20 +1,20 @@
 import{verifyNativeDrawAnimationSource,nativeDrawAnimationTerms,bindNativeDrawAnimationTerms}from'./monster-native-draw-animation.mjs?v=conditional-draw-links-20261007-0847';
-import{originalComponentMaskSHA256}from'./original-component-mask-binding.mjs?v=shrine-beam-20261008-a9738d0c';
+import{originalComponentMaskSHA256}from'./original-component-mask-binding.mjs?v=native-viewport-color-20261008-99202e36';
 import{sourcePixelComparisonBinding}from'./native-pixel-comparison-binding.mjs?v=native-scene-link-20261007-0354';
 import{verifyNativeAnimationSource,readNativeRate0Animation}from'./monster-native-animation.mjs?v=source-rate1-curves-20261008-2e3ba48d';
 import{verifyNativeJointBlendSource}from'./monster-native-joint-blend.mjs?v=source-rate1-curves-20261008-2e3ba48d';
 import{createNativeBodyJointPlan}from'./monster-native-joint-plan.mjs?v=source-rate1-curves-20261008-2e3ba48d';
-import{nativeBodyExtentEvidence}from'./monster-native-extent-evidence.mjs?v=source-rate1-curves-20261008-2e3ba48d';
+import{nativeBodyExtentEvidence}from'./monster-native-extent-evidence.mjs?v=native-viewport-color-20261008-99202e36';
 // Optional bounded worker-side source-native evaluator. No production caller.
 import{readMonsterAssets}from'./monster-assets.mjs';
 import{readNSBCA}from'./monster-animation.mjs?v=source-rate1-curves-20261008-2e3ba48d';
-import{prepareNativeBodyEnvelope,placeNativeBodyEnvelopeOnFloors}from'./monster-native-body-placement.mjs?v=source-rate1-curves-20261008-2e3ba48d';
+import{prepareNativeBodyEnvelope,placeNativeBodyEnvelopeOnFloors}from'./monster-native-body-placement.mjs?v=native-viewport-color-20261008-99202e36';
 import{readSdkInitialMaterialGlobals}from'./map-browser-preview/rom-sdk-initial-material.mjs';
 import{readInitialMode1RasterProfile}from'./map-browser-preview/integer/initial-mode1-integer-preview.mjs?v=fair-source-yield-20261007-0247';
-import{prepareNativeBodyProgram,projectNativeBodyPolygons,rasterNativeBody}from'./monster-native-body.mjs?v=source-rate1-curves-20261008-2e3ba48d';
+import{prepareNativeBodyProgram,projectNativeBodyPolygons,rasterNativeBody}from'./monster-native-body.mjs?v=native-viewport-color-20261008-99202e36';
 import{createNativeBodyBillboardState}from'./monster-native-billboard.mjs?v=native-body-20261006-0212';
 import{bindFrozenBodyProjection}from'./monster-perspective-input.mjs?v=native-body-20261006-0212';
-import{comparePerspectiveBody}from'./monster-perspective-body.mjs?v=shrine-beam-20261008-a9738d0c';
+import{comparePerspectiveBody}from'./monster-perspective-body.mjs?v=native-viewport-color-20261008-99202e36';
 const need=(v,m)=>{if(!v)throw Error(m);},clone=v=>structuredClone(v),pause=()=>new Promise(r=>setTimeout(r,0));
 const frameKey=f=>JSON.stringify(['romSHA256','recordKey','sourceId','sourceEpoch','timelineSegment','mediaTime','fullRGBA_SHA256'].map(k=>f?.[k]));
 /** Bind this cache to one already verified ROM/project/catalog epoch. Destroy it

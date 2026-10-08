@@ -163,6 +163,7 @@ node scripts/test-ready-mode1-geometry-fallback.mjs
 
 # Conditional mode1 map/actor/MSE replay and retained isolated results.
 node scripts/test-mode1-mse-composition.mjs
+node scripts/test-native-observation-viewport.mjs
 node scripts/test-native-isolated-support.mjs
 
 # Exact native yaw classes, resumable continuation and lossless evidence.

@@ -1,6 +1,6 @@
 import {classificationNow,classificationDuration,classificationClock,emitClassificationTiming} from '../monster-classification-timing.mjs?v=envelope-yield-20261007-0140';
-import {nativeBodyRequestPayload} from './native-body-request.mjs?v=shrine-beam-20261008-a9738d0c';
-import {attachResidualNativeSupport,RESIDUAL_NATIVE_BODY_BUDGET} from './residual-native-support.mjs?v=shrine-beam-20261008-a9738d0c';
+import {nativeBodyRequestPayload} from './native-body-request.mjs?v=native-viewport-color-20261008-99202e36';
+import {attachResidualNativeSupport,RESIDUAL_NATIVE_BODY_BUDGET} from './residual-native-support.mjs?v=native-viewport-color-20261008-99202e36';
 import {chooseResidualBackend,residualBackendProvenance,assertResidualBackendResult} from './residual-recognition-backend.mjs?v=envelope-yield-20261007-0140';
 import {residualClassificationRequest,residualObservationBundle} from './residual-recognition-input.mjs?v=conditional-ui-20261007-0257';
 // Claim a queued frame's native-only destination while its one-frame mailbox

@@ -1,13 +1,13 @@
 import {resolveConditionalBeamBackground} from './conditional-beam-background.mjs?v=shrine-beam-20261008-a9738d0c';
-import {createReadyMode1GeometryFallback,hasNonzeroSourceXZBounds} from './ready-mode1-geometry-fallback.mjs?v=shrine-beam-20261008-a9738d0c';
+import {createReadyMode1GeometryFallback,hasNonzeroSourceXZBounds} from './ready-mode1-geometry-fallback.mjs?v=native-viewport-color-20261008-99202e36';
 import {createAutomaticMonsterMapGate} from './automatic-monster-map-eligibility.mjs?v=monster-map-cpu-20261006-1005';
 import{createAmbiguousMarkerBackgroundBudget}from'./physical-marker-background-hypotheses.mjs?v=native-continuation-20261006-0333';
-import{buildBackgroundBranchSupport}from'./background-branch-support.mjs?v=shrine-beam-20261008-a9738d0c';
+import{buildBackgroundBranchSupport}from'./background-branch-support.mjs?v=native-viewport-color-20261008-99202e36';
 import{createSourceAnchorSceneInference}from'./source-anchor-scene-inference.mjs?v=shrine-beam-20261008-a9738d0c';
 import{resolveFrozenInferencePixels}from'./capture-analysis-pixels.mjs?v=native-continuation-20261006-0333';
 import{createMode1BackgroundInference}from'./automatic-mode1-background.mjs?v=shrine-beam-20261008-a9738d0c';
-import {Mode2VideoContinuity} from './mode2-video-continuity.mjs?v=shrine-beam-20261008-a9738d0c';
-import {inferAutomaticMode2Background} from './automatic-mode2-background.mjs?v=shrine-beam-20261008-a9738d0c';
+import {Mode2VideoContinuity} from './mode2-video-continuity.mjs?v=native-viewport-color-20261008-99202e36';
+import {inferAutomaticMode2Background} from './automatic-mode2-background.mjs?v=native-viewport-color-20261008-99202e36';
 import {readRomMapCameraInputGate} from './rom-camera-input-gate.mjs';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
 import {CandidateMapMatcher} from '../map-disambiguation.mjs?v=registration-timing-20261007-0020';
@@ -17,7 +17,7 @@ import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=sh
 import {automaticPreviewCamera} from './automatic-preview-camera.mjs';
 import {automaticBillboardScenes} from './automatic-billboard-scene.mjs';
 import {applyAutomaticMaterialEnvironment} from './automatic-material-environment.mjs?v=native-body-20261006-0212';
-import {createAutomaticBackgroundRenderer} from './automatic-background-renderer.mjs?v=shrine-beam-20261008-a9738d0c';
+import {createAutomaticBackgroundRenderer} from './automatic-background-renderer.mjs?v=native-viewport-color-20261008-99202e36';
 import {readRomMapScreenEffectPlan} from './rom-map-screen-effect-plan.mjs';
 import {prepareDrawPackets} from './draw-packets.mjs';
 import {rasterizePreviewPackets} from './cpu-preview.mjs';
@@ -74,7 +74,7 @@ export class AutomaticVideoAlignment {
        if(integer.ready){image=integer;backend=integer.backend??(integer.diagnostics?.automaticBackgroundPipeline?.backend==='webgpu-source-integer-pixels'?'webgpu-source-integer-pixels':'source-integer-static-mode1');}else{if(phase){candidateRow.unsupported=integer.reason;completedRows.add(candidateRow);continue;}const packets=active.scenes.map(s=>prepareDrawPackets(s,{materialGlobals:active.environment.materialGlobals,masks:scene.automatic.masks}));image=rasterizePreviewPackets({draws:packets.flatMap(p=>p.draws)},{view:identity,projection:camera.projectionFx.map(x=>x/4096),clearRGBA:[0,0,0,0],colorProfile:'native-mode0-rgb'});backend='float64-diagnostic';unresolved=[{reason:integer.reason},...packets.flatMap(p=>p.unsupported)];}
        const comparison=compareMapBackground(image,video,{applyTranslation:true});Object.assign(candidateRow,{backend,alignment:comparison.alignment,stats:comparison.stats,state:comparison.state,accepted:comparison.state==='conditional-residual-hypotheses'||comparison.state==='no-residual-split',renderPipeline:integer.diagnostics?.automaticBackgroundPipeline,integerReady:integer.ready,rendererReason:integer.reason??null});
        if(candidateRow.accepted)passingBackgrounds.push({row:candidateRow,rowIndex:rows.indexOf(candidateRow),point,camera,comparison,image});
-       if(!inferenceKind&&integer.ready&&active.environmentApplied&&active.environment.mode===1&&active.environment.colorReady===true&&active.environment.fogReady&&comparison.state==='alignment-unresolved'&&hasNonzeroSourceXZBounds(position))readyMode1Queue.push({record,scene,reference,position,markerHypothesis,yFx,heading,phase,initialCamera,environment:active.environment,originalRowIndex:rows.indexOf(candidateRow)});
+       if(!inferenceKind&&integer.ready&&active.environmentApplied&&active.environment.mode===1&&active.environment.colorReady===true&&active.environment.fogReady&&comparison.state==='alignment-unresolved'&&hasNonzeroSourceXZBounds(position))readyMode1Queue.push({record,scene,reference,position,markerHypothesis,yFx,heading,phase,initialCamera,geometryInput:phase===null?{image:{ready:image.ready,width:image.width,height:image.height,rgba:image.rgba,knownMask:image.knownMask},binding:{project,rom,record,position,camera:initialCamera,environment:active.environment,frameEvidence:input.frameEvidence}}:null,environment:active.environment,originalRowIndex:rows.indexOf(candidateRow)});
        const score=Number.isFinite(comparison.alignment.residual)?comparison.alignment.residual:Infinity;if(!selected||(candidateRow.accepted&&!selected.row.accepted)||(candidateRow.accepted===selected.row.accepted&&score<selected.score))selected={row:candidateRow,score,record,scene,reference,position,heading,image,camera,integer,unresolved,point};completedRows.add(candidateRow);
       }
      }catch(error){if(error.automaticBackgroundPipeline)row.renderPipeline=error.automaticBackgroundPipeline;if(error.name==='AbortError')throw error;row.unsupported=error.message;completedRows.add(row);}
@@ -85,16 +85,21 @@ export class AutomaticVideoAlignment {
   // Preserve every original row and the complete successful first-pass path.
   // No geometry preparation, analysis readback or extra render on an accepted run.
   if(!rows.some(r=>r.accepted)&&readyMode1Queue.length){
-   const groups=[];for(const q of readyMode1Queue){let group=groups.find(g=>g.record===q.record&&g.reference===q.reference&&g.position===q.position&&g.yFx===q.yFx&&g.heading===q.heading);if(!group){group={...q,requests:[]};groups.push(group);}group.requests.push({originalRowIndex:q.originalRowIndex,phase:q.phase});}
+   const groups=[];for(const q of readyMode1Queue){let group=groups.find(g=>g.record===q.record&&g.reference===q.reference&&g.position===q.position&&g.yFx===q.yFx&&g.heading===q.heading);if(!group){group={...q,requests:[]};groups.push(group);}if(q.geometryInput)group.geometryInput=q.geometryInput;group.requests.push({originalRowIndex:q.originalRowIndex,phase:q.phase});}
    interruptionStage='ready-mode1-analysis';let analysis,analysisError=null;try{analysis=await analysisInput();check();}catch(error){if(error.name==='AbortError')throw error;analysisError=error.message;}
-   for(const group of groups){interruptionStage='ready-mode1-geometry';check();const {record,scene,reference,position,markerHypothesis,yFx,heading}=group,results=analysisError?group.requests.map(r=>({...r,ready:false,reason:analysisError,diagnostics:{kind:'ready-mode1-analysis-unavailable',currentEnvironmentCertified:false,minimumProvenATCalls:0}})):await this.readyMode1Geometry.render({project,rom,record,automatic:scene.automatic,position,yFx,heading,camera:group.initialCamera,environment:group.environment,requests:group.requests,video,analysisVideo:analysis.image,analysisEvidence:analysis.evidence,floors:scene.floors,isCurrent,onProgress});check();
-    for(const result of results){const original=rows[result.originalRowIndex],row={...original,accepted:false,geometryFallback:{kind:'ready-mode1-after-all-first-pass-failed',originalRowIndex:result.originalRowIndex,originalState:original.state,originalFailurePreserved:true},geometryRefinement:result.diagnostics.geometryRefinement,geometryFallbackDiagnostics:result.diagnostics};rows.push(row);
+   // Preserve the complete old white-basis proposal pass. Only after it fails
+   // everywhere, reuse the same-camera no-MSE native colors already rendered.
+   for(const geometryImageKind of ['white-basis','ready-native-color']){
+   if(geometryImageKind==='ready-native-color'&&rows.some(r=>r.accepted))break;
+   for(const group of groups){if(geometryImageKind==='ready-native-color'&&!group.geometryInput)continue;interruptionStage='ready-mode1-geometry';check();const {record,scene,reference,position,markerHypothesis,yFx,heading}=group,results=analysisError?group.requests.map(r=>({...r,ready:false,reason:analysisError,diagnostics:{kind:'ready-mode1-analysis-unavailable',currentEnvironmentCertified:false,minimumProvenATCalls:0}})):await this.readyMode1Geometry.render({project,rom,record,automatic:scene.automatic,position,yFx,heading,camera:group.initialCamera,geometryInput:geometryImageKind==='ready-native-color'?group.geometryInput:null,frameEvidence:input.frameEvidence,environment:group.environment,requests:group.requests,video,analysisVideo:analysis.image,analysisEvidence:analysis.evidence,floors:scene.floors,isCurrent,onProgress});check();
+    for(const result of results){const original=rows[result.originalRowIndex],row={...original,accepted:false,geometryFallback:{kind:geometryImageKind==='ready-native-color'?'ready-mode1-native-color-after-white-proposals-failed':'ready-mode1-after-all-first-pass-failed',originalRowIndex:result.originalRowIndex,originalState:original.state,originalFailurePreserved:true},geometryRefinement:result.diagnostics.geometryRefinement,geometryFallbackDiagnostics:result.diagnostics};rows.push(row);
      if(!result.ready){Object.assign(row,{state:'geometry-refinement-unresolved',unsupported:result.reason,integerReady:false,rendererReason:result.reason,backend:null,alignment:null,stats:null,renderPipeline:result.diagnostics?.renderPipeline??null});completedRows.add(row);continue;}
      const {image,comparison,point,camera}=result;Object.assign(row,{originalWorld:original.world,originalYFx:original.yFx,world:{xFx:point.xFx,zFx:point.zFx},yFx:point.yFx,phase:result.phase,backend:image.backend??image.diagnostics?.backend??'source-integer-static-mode1',alignment:comparison.alignment,stats:comparison.stats,state:comparison.state,accepted:['conditional-residual-hypotheses','no-residual-split'].includes(comparison.state),renderPipeline:image.diagnostics?.automaticBackgroundPipeline,integerReady:true,rendererReason:null,floorContinuation:result.diagnostics.floorContinuation,floorBranch:result.diagnostics.floorBranch});
      if(row.accepted)passingBackgrounds.push({row,rowIndex:rows.indexOf(row),point,camera,comparison,image});
      const score=Number.isFinite(comparison.alignment.residual)?comparison.alignment.residual:Infinity;if(!selected||(row.accepted&&!selected.row.accepted)||(row.accepted===selected.row.accepted&&score<selected.score))selected={row,score,record,scene,reference,position,markerHypothesis,heading,image,camera,integer:image,unresolved:[],point};completedRows.add(row);
     }
    }
+  }
   }
   // Camera search is complete. Compare source effect ON/OFF with that exact
   // camera, material, effect phase, translation and shared known-pixel metric.

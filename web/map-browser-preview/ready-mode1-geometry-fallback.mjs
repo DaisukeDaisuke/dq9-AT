@@ -15,17 +15,33 @@ export function hasNonzeroSourceXZBounds(position){
 }
 export function createReadyMode1GeometryFallback({backgroundRenderer}){
  const archives=createRendererSourceArchives();
- async function render({project,rom,record,automatic,position,yFx,heading,camera,environment,requests,video,analysisVideo=video,analysisEvidence=null,floors,isCurrent=()=>true,onProgress=async()=>{}}){
+ async function render({project,rom,record,automatic,position,yFx,heading,camera,geometryInput=null,frameEvidence=null,environment,requests,video,analysisVideo=video,analysisEvidence=null,floors,isCurrent=()=>true,onProgress=async()=>{}}){
   const check=()=>{if(!isCurrent())throw new DOMException('Ready mode1 geometry cancelled','AbortError');},diagnostics={kind:'ready-mode1-source-bounded-geometry',originalWorld:copy(position?.world),sourceBounds:copy(position?.coordinate?.bounds),analysisInput:analysisEvidence,finalComparisonInput:'original-frozen-input-RGBA',environmentSearch:false,phaseSearch:false,yawExpansion:false,thresholdsChanged:false,currentEnvironmentCertified:false,minimumProvenATCalls:0};
   const unavailable=reason=>requests.map(r=>({originalRowIndex:r.originalRowIndex,phase:copy(r.phase),ready:false,reason,diagnostics:copy(diagnostics)}));
   try{
    check();if(environment?.mode!==1||environment.colorReady!==true||environment.fogReady!==true||!hasNonzeroSourceXZBounds(position))return unavailable('Ready source mode1 environment and original nonzero XZ bounds required');
+   const geometryImage=geometryInput?.image??null;
+   if(geometryInput){
+    const binding=geometryInput.binding;
+    if(!geometryImage||!binding||Object.entries({project,rom,record,position,camera,environment,frameEvidence}).some(([key,value])=>binding[key]!==value))return unavailable('Native-color geometry input does not belong to this exact scene/camera/frame branch');
+   }
    project=archives.forProject(project,rom);const gpu=await backgroundRenderer.begin();check();
    const model=prepareMode1PhotometricBasis({project,rom,record,automatic,camera}),basis=await renderMode1PhotometricBasis(model,{gpu,isCurrent});check();
    // No photometric inference is called. This white basis supplies coherent
    // source geometry/depth; it is never an accepted environment or display.
    diagnostics.basisRenders=1;diagnostics.basis={basisOnly:basis.basisOnly,knownPixels:basis.knownMask?.reduce((n,v)=>n+v,0)??0};
-   const geometry=await refineGeometryPosition({position,camera,image:basis,depth24:basis.sourceDepth24,knownMask:basis.knownMask,video:analysisVideo,isCurrent,onProgress});diagnostics.geometryRefinement=geometry;check();
+   let registrationImage=basis,registrationKnown=basis.knownMask;
+   if(geometryImage){
+    // Supplied only from this exact group's initial camera/environment and
+    // phase=null render. The white probe still owns the depth/opaque-owner gate:
+    // color/fog changes neither source geometry nor camera. Never use MSE RGB
+    // or translucent color with an unrelated opaque depth owner.
+    if(geometryImage.ready!==true||geometryImage.width!==256||geometryImage.height!==192||geometryImage.rgba?.length!==196608||geometryImage.knownMask?.length!==49152)throw Error('Coherent ready native-color geometry image required');
+    registrationImage=geometryImage;
+    registrationKnown=Uint8Array.from(basis.knownMask,(known,i)=>Number(Boolean(known&&geometryImage.knownMask[i]&&geometryImage.rgba[i*4+3]===255)));
+   }
+   diagnostics.geometryImage={kind:geometryImage?'ready-source-color-fog-no-screen-effect':'algebraic-white-no-fog',sameCamera:true,depthOwnerGate:'unchanged-white-basis-opaque-owner',knownPixels:registrationKnown?.reduce((n,v)=>n+v,0)??0,extraColorRender:false};
+   const geometry=await refineGeometryPosition({position,camera,image:registrationImage,depth24:basis.sourceDepth24,knownMask:registrationKnown,video:analysisVideo,isCurrent,onProgress});diagnostics.geometryRefinement=geometry;check();
    if(!geometry.ready||geometry.onBoundary)return unavailable(geometry.reason??'Source geometry optimum touches unresolved marker interval boundary');
    const refinedFloor=floorHeightsAtXZ(floors,geometry.world.xFx,geometry.world.zFx),continuation=continueRefinedFloorAlternatives({position,yFx,floors,refinedFloor,refinedWorld:geometry.world});diagnostics.refinedFloor=refinedFloor;diagnostics.floorContinuation=continuation;if(!continuation.ready)return unavailable(continuation.reason);
    const results=[];

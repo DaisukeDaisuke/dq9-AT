@@ -1,4 +1,4 @@
-import{nativeOriginalProposalAttribution}from'./monster-native-proposal-support.mjs?v=shrine-beam-20261008-a9738d0c';
+import{nativeOriginalProposalAttribution}from'./monster-native-proposal-support.mjs?v=native-viewport-color-20261008-99202e36';
 // Isolated continuous source-geometry diagnostic. Not imported by recognition.
 // No template normalization, pixel rescaling, species gate, or AT evidence.
 import {orientMonsterVertices} from './monster-render-state.mjs';
