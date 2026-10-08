@@ -1,7 +1,7 @@
 import {preparedCurrentNativeAdmission} from '../tracking-current-native-admission.mjs?v=route-poses-20261008-d98f497f';
 import {fingerprint} from '../tracking-at-runner.mjs';
-import {createTrackingObservationWorkQueue} from '../tracking-observation-work-queue.mjs?v=browser-at-20261008-138417cd';
-import {createNativeRouteProducer} from '../tracking-native-route-producer.mjs?v=route-poses-20261008-d98f497f';
+import {createTrackingObservationWorkQueue} from '../tracking-observation-work-queue.mjs?v=route-cursor-20261008-d2296d0e';
+import {createNativeRouteProducer} from '../tracking-native-route-producer.mjs?v=route-cursor-20261008-d2296d0e';
 import {resolveCameraATBackgroundSupport} from './camera-at-background-support.mjs?v=camera-at-20261008-f1a85661';
 import {prepareVideoReplaySources} from '../video-replay-source-preparation.mjs?v=replay-source-20261007-0743';
 import {copyObservationBundleForAT} from './observation-bundle-ownership.mjs?v=gap-owned-observation-20261006-1340';
@@ -87,17 +87,23 @@ export function createVideoTrackingAT({getOptions,getTables=()=>({}),getReplaySo
    if(cameraValidation.deferred.length)snapshot.cameraBodyATValidationDeferrals=cameraValidation.deferred;
    const singleEvents=cameraAlternatives?appendCameraBodySingletonAlternatives(automatic.singleEvents,cameraAlternatives):automatic.singleEvents;
    latestNativeMotionInputs=collectTrackingMotionAssociationInputs(snapshot,latestNativeBodySupport,{singleEvents});
-   let routeEvidence=null;
-   try{routeEvidence=await produceNativeRoutes(latestNativeMotionInputs,getReplaySourceContext?.(),{isCurrent:()=>mine===epoch});if(mine!==epoch)return;}
-   catch(error){if(mine!==epoch||error?.name==='AbortError')return;routeEvidence={chains:[],deferred:[{reason:String(error?.message??error)}],unknownAlternativeRetained:true,currentVideoStateRecovered:false};}
+   storePromise??=openStore().catch(e=>{storePromise=null;throw e;});const routeStore=await storePromise;if(mine!==epoch)return;
+   // This controller overwrites its own route output below. It is not an
+   // input to source enumeration; every original video/body/map field remains.
+   const {automaticNativeRouteEvidence:previousRouteOutput,...routeSourceSnapshot}=snapshot;
+   const routeInputs=latestNativeMotionInputs,routeObservationHash=await fingerprint(routeSourceSnapshot);if(mine!==epoch)return;
+   let routeResult=null,routeEvidence=null;
+   try{routeResult=await produceNativeRoutes(routeInputs,getReplaySourceContext?.(),{isCurrent:()=>mine===epoch,routeStore,engineRevision,observationIdentity:routeObservationHash});if(mine!==epoch)return;const {resumeCursor,...evidence}=routeResult;routeEvidence=evidence;}
+   catch(error){if(mine!==epoch||error?.name==='AbortError')return;routeResult=null;routeEvidence={chains:[],deferred:[{reason:String(error?.message??error),sourceEnumerationFailed:true,unvisitedAlternativesRetained:true}],unknownAlternativeRetained:true,currentVideoStateRecovered:false};}
    snapshot.automaticNativeRouteEvidence=routeEvidence;
    const nativeRouteChains=routeEvidence?.chains??[];
    const chains=snapshot.conditionalATEventEvidence?.chains??[];
-   if(!chains.length&&!nativeRouteChains.length&&!singleEvents.length){emit({status:'waiting',reason:'映像観測を接続済み。身体と種類が一致する条件付き予測はまだありません。残差の順位だけではAT解析を開始せず、候補と未確定の可能性を保持します。',sightings:snapshot.sightings?.length??0,missingEvidence:['supported conditional body/species prediction or explicit finite event evidence'],deferredAlternatives:automatic.deferred.length,unobservedGapsRetained:true});return;}
    const options=chains.length?getOptions():automaticSingletonSearchOptions(getTables());
    options.singleEvents=singleEvents;
    options.nativeRouteChains=nativeRouteChains;
    if(nativeRouteChains.length&&!chains.length)options.budget={...options.budget,maxInspectedStates:65536};
+   const finishRoutes=async result=>{if(!routeResult?.resumeCursor)return result;const key=await beginRouteWork(routeStore,snapshot,routeInputs,replayInputs,options,routeResult,mine,routeObservationHash);return mergeWork(result,key?[key]:[]);};
+   if(!chains.length&&!nativeRouteChains.length&&!singleEvents.length){emit({status:'waiting',reason:'映像観測を接続済み。身体と種類が一致する条件付き予測はまだありません。残差の順位だけではAT解析を開始せず、候補と未確定の可能性を保持します。',sightings:snapshot.sightings?.length??0,missingEvidence:['supported conditional body/species prediction or explicit finite event evidence'],deferredAlternatives:automatic.deferred.length,unobservedGapsRetained:true});return finishRoutes({status:'waiting'});}
    // Only an actual automatic producer's explicit conditional evidence is used.
    options.chains=structuredClone(snapshot.conditionalATEventEvidence?.chains??[]);
    // This controller already owns a native-cloned observation; the compiler
@@ -108,7 +114,7 @@ export function createVideoTrackingAT({getOptions,getTables=()=>({}),getReplaySo
    job.replayInputHypotheses=structuredClone(replayInputs);
    if(job.nativeMotionAssociationInputs)latestNativeMotionInputs=structuredClone(job.nativeMotionAssociationInputs);
    const pending=job.gate.filter(b=>b.status==='pending');
-   if(!pending.length){emit({status:'waiting',reason:'有限の抽選イベント列・順序・AT消費間隔の自動根拠を待っています。候補順位や同一追跡を別の抽選に数えません。',gate:job.gate,missingEvidence:job.missingEvidence});return;}
+   if(!pending.length){emit({status:'waiting',reason:'有限の抽選イベント列・順序・AT消費間隔の自動根拠を待っています。候補順位や同一追跡を別の抽選に数えません。',gate:job.gate,missingEvidence:job.missingEvidence});return finishRoutes({status:'waiting'});}
    // Store completion, not Worker progress, is the durable ACK boundary.
    storePromise??=openStore().catch(e=>{storePromise=null;throw e;});
    const kind=options.domain.kind;if(!wasmPromises.has(kind))wasmPromises.set(kind,loadWasm(kind).catch(e=>{wasmPromises.delete(kind);throw e;}));
@@ -116,10 +122,63 @@ export function createVideoTrackingAT({getOptions,getTables=()=>({}),getReplaySo
    emit({status:'running',reason:(chains.length||nativeRouteChains.length)?'明示された有限条件下だけを探索中。未知の代替・範囲外・現フレームまでの未観測消費は残ります。':'ROMの身体・種類の条件付き予測について、過去の単一抽選という仮説を解析中。誤観測の可能性と現在ATの全状態は残ります。',producer:cameraAlternatives?.singleEvents.length?'legacy-plus-camera-body-alternatives-v1':automatic.producer,conditionalSingletons:singleEvents.length,conditionalNativeRouteChains:nativeRouteChains.length,nativeRouteEnumerationBudgetStopped:routeEvidence?.budgetStopped??false,...(cameraAlternatives?.singleEvents.length?{cameraBodyConditionalSingletons:cameraAlternatives.singleEvents.length}:{})});
    const result=await runPreparedSlice(job,store,wasmBytes,mine,snapshot.source?.video);if(mine!==epoch)return result;
    emit({status:result.status,reason:result.status==='complete'?'条件付きイベント状態の解析終了。誤観測・現在ATの全状態は残り、映像のAT特定完了ではありません。':'計算予算で中断。未探索範囲が残ります。',summary:result.summary});
-   return result;
+   if(!['complete','budget-stopped'].includes(result.status))return result;
+   return finishRoutes(result);
 
   }catch(e){if(mine===epoch)emit({status:'waiting',reason:e.message,error:e.name!=='Error'?e.name:undefined});return {status:'error',reason:e.message};}
  }
+ async function checkedWork(store,key,schema){
+  const saved=await store.load(key);if(!saved)throw Error('Saved route work missing; remaining alternatives are not complete');const {checksum,...payload}=saved;
+  if(payload.schema!==schema||payload.inputHash!==key||await fingerprint(payload)!==checksum)throw Error('Saved route work identity/checksum differs');return payload;
+ }
+ async function saveImmutableWork(store,key,payload){
+  const checksum=await fingerprint(payload),old=await store.load(key);
+  if(old){if(old.checksum!==checksum||await fingerprint(Object.fromEntries(Object.entries(old).filter(([k])=>k!=='checksum')))!==checksum)throw Error('Immutable route work differs');}
+  else await store.save(key,{...payload,checksum});
+ }
+ const mergeWork=(result,keys)=>{const resumeKeys=[...new Set([result?.resumeKey,...(result?.resumeKeys??[]),...keys].filter(Boolean))];return resumeKeys.length?{...result,atResultStatus:result?.status,status:'budget-stopped',progressed:true,resumeKey:resumeKeys[0],resumeKeys:resumeKeys.slice(1)}:result;};
+ async function persistRouteSlice(store,contextKey,context,route,mine){
+  if(!route?.resumeCursor||mine!==epoch)return null;
+  const owner=route.resumeCursor.inputHash,key=`tracking-native-route-work:${owner}`,journalKey=`tracking-native-route-slice:${owner}:${route.resumeCursor.sequence}`;
+  await saveImmutableWork(store,journalKey,{schema:'tracking-native-route-slice-v1',inputHash:journalKey,sequence:1,owner,contextKey,result:route});if(mine!==epoch)return null;
+  const old=await store.load(key),payload={schema:'tracking-native-route-work-v1',inputHash:key,sequence:route.resumeCursor.sequence,owner,engineRevision,contextKey,journalKey,cursor:route.resumeCursor,complete:route.resumeCursor.phase==='complete'};
+  if(old){const prior=await checkedWork(store,key,'tracking-native-route-work-v1');if(prior.contextKey!==contextKey||prior.owner!==owner||prior.sequence>payload.sequence)throw Error('Route checkpoint owner or sequence differs');}
+  await store.save(key,{...payload,checksum:await fingerprint(payload)});if(mine!==epoch)return null;
+  return payload.complete?null:key;
+ }
+ async function beginRouteWork(store,snapshot,inputs,replayInputs,options,route,mine,observationIdentity){
+  if(!route?.resumeCursor||mine!==epoch)return null;
+  const owner=route.resumeCursor.inputHash,contextKey=`tracking-native-route-context:${owner}`;
+  const context={schema:'tracking-native-route-context-v1',inputHash:contextKey,sequence:1,engineRevision,owner,observationIdentity,snapshot,inputs,replayInputs,options};
+  await saveImmutableWork(store,contextKey,context);if(mine!==epoch)return null;
+  const priorKey=`tracking-native-route-work:${owner}`,prior=await store.load(priorKey);if(mine!==epoch)return null;
+  if(prior){const checked=await checkedWork(store,priorKey,'tracking-native-route-work-v1');if(checked.contextKey!==contextKey||checked.engineRevision!==engineRevision)throw Error('Route retry owner differs');if(checked.sequence>=route.resumeCursor.sequence)return checked.complete?null:priorKey;}
+  return persistRouteSlice(store,contextKey,context,route,mine);
+ }
+ async function resumeNativeRoutes(key,control){
+  const mine=++epoch;storePromise??=openStore().catch(e=>{storePromise=null;throw e;});const store=await storePromise;
+  const saved=await checkedWork(store,key,'tracking-native-route-work-v1');if(mine!==epoch||!control.isCurrent())return{status:'cancelled'};
+  if(saved.engineRevision!==engineRevision)throw Error('Saved route source engine differs');if(saved.complete)return{status:'complete',routeEnumerationComplete:true,currentATRecovered:false};
+  const context=await checkedWork(store,saved.contextKey,'tracking-native-route-context-v1');if(context.owner!==saved.owner||context.engineRevision!==engineRevision)throw Error('Route context/source identity differs');
+  const current=()=>mine===epoch&&control.isCurrent();
+  const route=await produceNativeRoutes(context.inputs,getReplaySourceContext?.(),{isCurrent:current,resume:saved.cursor,routeStore:store,engineRevision,observationIdentity:context.observationIdentity});if(!current())return{status:'cancelled'};
+  if(!route?.resumeCursor||route.resumeCursor.inputHash!==saved.owner||route.resumeCursor.sequence<=saved.cursor.sequence)throw Error('Route cursor made no source progress');
+  const {resumeCursor,...evidence}=route,snapshot={...context.snapshot,automaticNativeRouteEvidence:evidence};
+  let result={status:'complete',routeEnumerationComplete:!route.budgetStopped,currentATRecovered:false};
+  if(route.chains?.length){
+   const options={...context.options,singleEvents:[],chains:[],nativeRouteChains:route.chains,includeBroadSingletons:false,budget:{...context.options.budget,maxInspectedStates:65536}};
+   const job=await prepare(snapshot,options,{engineRevision,isCurrent:current,includeReplayInputHypotheses:false,includeCompilerBundleSnapshot:false});if(!current())return{status:'cancelled'};
+   // The immutable endpoint predicates were independently bound before source
+   // enumeration. Repeated weighted singletons are not scheduled again here.
+   job.nativeMotionAssociationInputs=context.inputs;
+   const admitted=preparedCurrentNativeAdmission(snapshot,job);if(admitted)onNativeATValidated(admitted.frame,admitted);
+   if(job.gate.some(b=>b.status==='pending')){const kind=options.domain.kind;if(!wasmPromises.has(kind))wasmPromises.set(kind,loadWasm(kind).catch(e=>{wasmPromises.delete(kind);throw e;}));const wasmBytes=await wasmPromises.get(kind);if(!current())return{status:'cancelled'};result=await runPreparedSlice(job,store,wasmBytes,mine,snapshot.source?.video);if(!current())return{status:'cancelled'};if(!['complete','budget-stopped'].includes(result.status))return result;}
+  }
+  const next=await persistRouteSlice(store,saved.contextKey,context,route,mine);if(!current())return{status:'cancelled'};
+  emit({status:next?'budget-stopped':'complete',reason:'ROM由来の経路列挙を保存位置から進めました。未探索と未知の入力条件は保持しています。',sourceVideo:snapshot.source?.video,nativeRouteEnumeration:{rowsVisited:route.resumeCursor.totalRowsVisited,pairEvaluations:route.resumeCursor.totalPairEvaluations,conditionalChains:route.resumeCursor.totalChains,phase:route.resumeCursor.phase,coverageComplete:false}});
+  return mergeWork(result,next?[next]:[]);
+ }
+
  async function runPreparedSlice(job,store,wasmBytes,mine,sourceVideo){
   const resume=await store.load(job.checkpointKey);if(mine!==epoch)return {status:'cancelled'};
   let lastProgressAt=-Infinity;
@@ -137,6 +196,7 @@ export function createVideoTrackingAT({getOptions,getTables=()=>({}),getReplaySo
  }
  async function resumePrepared(key,control){
   if(!control.isCurrent())return {status:'cancelled'};
+  if(key.startsWith('tracking-native-route-work:')){try{return await resumeNativeRoutes(key,control);}catch(error){if(control.isCurrent())emit({status:'waiting',reason:'保存した経路列挙を再開できません。最後の確定cursorと未探索は保持しています。 '+error.message,error:true,resumeKey:key});return{status:'error',reason:error.message,resumeKey:key,unvisitedAlternativesRetained:true};}}
   const mine=++epoch;storePromise??=openStore().catch(e=>{storePromise=null;throw e;});const store=await storePromise;
   const saved=await store.load(key);if(mine!==epoch||!control.isCurrent())return {status:'cancelled'};
   if(!saved)throw Error('Prepared AT work is missing; remaining states are not complete');

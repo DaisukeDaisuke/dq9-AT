@@ -1,5 +1,6 @@
+import {advanceNativeRouteEnumeration} from './tracking-native-route-cursor.mjs?v=route-cursor-20261008-d2296d0e';
 import {readMovementNoDrawSource} from './monster-motion-source-binding.mjs?v=motion-closure-20261008-89e290ef';
-import { enumerateNativeRouteChoiceHypotheses } from './tracking-native-route-choice.mjs?v=route-poses-20261008-d98f497f';
+import { enumerateNativeRouteChoiceHypotheses } from './tracking-native-route-choice.mjs?v=route-cursor-20261008-d2296d0e';
 import { connectConditionalNativeRouteChoices,composeConditionalNativeRouteSequence } from './tracking-native-route-chain.mjs?v=motion-closure-20261008-89e290ef';
 import { mineFieldGraphs, fieldPathName } from './field-graph.mjs';
 import { decodeCalls } from './map-core.mjs';
@@ -16,7 +17,7 @@ const defaultLoad = async name => { const r=await fetch(new URL(`./wasm/${name}`
 // Owned immutable ROM context, not a fabricated replay entry or runtime packet.
 export function createNativeRouteProducer({loadKernel=defaultLoad}={}) {
   let cached=null;
-  return async function produce(inputs,context,{isCurrent=()=>true,maximumRouteRows=4096,maximumPairEvaluations=32768,maximumChains=32,maximumEvents=32,yieldTask=()=>new Promise(resolve=>setTimeout(resolve,0))}={}) {
+  return async function produce(inputs,context,{resume=null,routeStore=null,engineRevision=null,observationIdentity=null,isCurrent=()=>true,maximumRouteRows=4096,maximumPairEvaluations=32768,maximumChains=32,maximumEvents=32,yieldTask=()=>new Promise(resolve=>setTimeout(resolve,0))}={}) {
     assertProductionATInput(inputs);
     if(![maximumRouteRows,maximumPairEvaluations,maximumChains].every(n=>Number.isSafeInteger(n)&&n>0))throw Error('Positive route resource budgets required');
     if(!Number.isSafeInteger(maximumEvents)||maximumEvents<2||maximumEvents>32)throw Error('Source engine supports 2..32 ordered route events');
@@ -49,6 +50,7 @@ export function createNativeRouteProducer({loadKernel=defaultLoad}={}) {
       }
       resources.push(state.records.get(key));await yieldTask();current();
     }
+    if(routeStore){const result=await advanceNativeRouteEnumeration(inputs,{romSHA256,resources,trig:state.trig,sourceBinding:state.sourceBinding,motionKernel:state.motionKernel,fieldKernel:state.fieldKernel},{store:routeStore,resume,engineRevision,observationIdentity,isCurrent,maximumRouteRows,maximumPairEvaluations,maximumChains,maximumEvents,yieldTask});result.deferred.unshift(...output.deferred);return result;}
     return enumeratePreparedNativeRouteChains(inputs,{romSHA256,resources,trig:state.trig,sourceBinding:state.sourceBinding,motionKernel:state.motionKernel,fieldKernel:state.fieldKernel},{isCurrent,maximumRouteRows,maximumPairEvaluations,maximumChains,maximumEvents,yieldTask,output});
   };
 }
