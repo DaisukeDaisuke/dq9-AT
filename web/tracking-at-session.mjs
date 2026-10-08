@@ -1,6 +1,6 @@
 import {assertProductionATInput} from './production-at-input-policy.mjs?v=production-inputs-20261006-1320';
 import {searchAutomaticReplayInputs} from './video-replay-factor-search.mjs?v=automatic-entry-factors-20261006-1120';
-import {compileTrackingObservations} from './tracking-at-observation-adapter.mjs?v=map-input-owned-preparation-20261006-1408';
+import {compileTrackingObservations} from './tracking-at-observation-adapter.mjs?v=native-route-20261008-171401b8';
 import {fingerprint} from './tracking-at-runner.mjs?v=native-lineage-at-20261008-556f7ca6';
 import {createNativeMotionContinuityIndex} from './tracking-native-motion.mjs?v=enc-motion-at-20261006-1156';
 const need=(v,m)=>{if(!v)throw Error(m);};

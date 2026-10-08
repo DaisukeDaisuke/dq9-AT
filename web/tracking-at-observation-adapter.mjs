@@ -9,7 +9,7 @@ export const UNKNOWN_BRANCH='tracking-observation-unknown';
 // detections contribute alternatives to one latent predicate, not extra draws.
 // Default callers retain the complete independent snapshot. The video controller
 // already owns its cloneable observation and preparation never uses this copy.
-export function compileTrackingObservations(bundle,{tables={},domain,budget,materialization,chains=[],singleEvents=[],includeBroadSingletons=true}={},{includeBundleSnapshot=true}={}){
+export function compileTrackingObservations(bundle,{tables={},domain,budget,materialization,chains=[],nativeRouteChains=[],singleEvents=[],includeBroadSingletons=true}={},{includeBundleSnapshot=true}={}){
  need(bundle?.schema==='headless-monster-observation-bundle-v1','Observation bundle required');
  const rows=[...(bundle.sightings??[])];
  for(const v of bundle.videoObservations??[])for(const f of v.timeline?.frames??[])rows.push(...(f.sightings??[]));
@@ -38,6 +38,24 @@ export function compileTrackingObservations(bundle,{tables={},domain,budget,mate
  // Optional source-model evidence is supplied as data by a producer. The adapter
  // cannot certify it. Missing or unsupported gaps remain unresolved in engines.
  for(const chain of chains){need(chain.status==='conditional-source-model-evidence'&&typeof chain.provenance==='string'&&chain.provenance.length,'Explicit conditional evidence provenance required');need(Array.isArray(chain.sightingIds)&&chain.sightingIds.length>=2,'At least two event representatives required');const ids=chain.sightingIds.map(s=>sightingGroup.get(s));need(ids.every(Boolean)&&new Set(ids).size===ids.length,'Repeated track cannot become independent events');const gs=ids.map(id=>[...groups.values()].find(g=>g.id===id));need(Array.isArray(chain.gaps)&&chain.gaps.length===ids.length-1,'Explicit adjacent gaps required');const edges=chain.gaps.map((g,i)=>({from:ids[i],to:ids[i+1],callsBetweenPostStates:copy(g.callsBetweenPostStates),provenance:g.provenance??chain.provenance}));hypotheses.push(makeBranch(chain.id,gs,edges,[chain.provenance,'Event identity/order/gaps conditional on supplied source-model evidence; unknown alternative retained.']));}
+ // Source movement draws belong to one actor; they are not new weighted births.
+ // Accept only the explicitly conditional route-chain producer contract.
+ for(const route of nativeRouteChains){
+  need(route?.kind==='conditional-chain'&&route.unknownAlternativeRetained===true&&route.currentVideoStateRecovered===false&&route.sourceRuntimeInitialized===false,'Conditional native route-chain contract required');
+  const refs=route.sourceEvidence,h=route.hypothesis;
+  need(refs?.first&&refs?.second&&h&&Array.isArray(h.events)&&h.events.length===2&&h.events.every(e=>e.operation==='direct-output-modulo'),'Two source route choices required');
+  for(const ref of [refs.first,refs.second]){
+   need(ref.romSHA256===bundle.source?.background?.romSHA256,'Route ROM differs from observation');
+   need(Array.isArray(ref.sourceIdentity)&&ref.sourceIdentity.length===3&&ref.sourceIdentity.every((v,i)=>v===[bundle.source?.video?.sourceId,bundle.source?.video?.sourceEpoch,bundle.source?.video?.timelineSegment][i]),'Route source epoch or segment differs');
+   need(seen.has(ref.fromSightingId)&&seen.has(ref.toSightingId),'Route endpoints must exist in the owned observation');
+   for(const [id,endpoint] of [[ref.fromSightingId,ref.from],[ref.toSightingId,ref.to]]){
+    const sighting=seen.get(id),frame=trackingSightingMapProvenance(bundle,sighting)?.frame;
+    need(frame&&endpoint?.frameKey===sighting.frameKey&&endpoint.frameKey===frame.frameKey&&endpoint.sourcePTS===frame.sourcePTS&&frame.romSHA256===ref.romSHA256&&['sourceId','sourceEpoch','timelineSegment'].every((k,i)=>frame[k]===ref.sourceIdentity[i]),'Route endpoint differs from its exact immutable frame');
+   }
+  }
+  need(h.edges?.length===1&&h.edges[0].callsBetweenPostStates?.min==='1'&&h.edges[0].callsBetweenPostStates?.max==='1'&&h.edges[0].assumptionsMeasured===false,'Explicit conditional consecutive-consumer edge required');
+  hypotheses.push(copy(h));
+ }
  const experiment=compileExperiment({sightings,associationAlternatives:alternatives,hypotheses,coverage:{...copy(bundle.coverage??{}),eventHypothesesComplete:false,associationEnumerationComplete:false,deferredAutomaticAlternatives:copy(bundle.automaticATEventEvidence?.deferred??[]),broadTrackingHypothesesDeferred:!includeBroadSingletons}},{tables});
  const request={experiment,domain:copy(domain),budget:copy(budget),...(domain?.kind==='known-origin-terminal-indices'?{materialization:copy(materialization)}:{})};
  const gate=domain?.kind==='known-origin-terminal-indices'?prepareIndexIdentification(request):prepare(request);

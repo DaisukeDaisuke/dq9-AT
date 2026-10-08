@@ -1,3 +1,4 @@
+import {createNativeRouteProducer} from '../tracking-native-route-producer.mjs?v=native-route-20261008-171401b8';
 import {resolveCameraATBackgroundSupport} from './camera-at-background-support.mjs?v=camera-at-20261008-f1a85661';
 import {prepareVideoReplaySources} from '../video-replay-source-preparation.mjs?v=replay-source-20261007-0743';
 import {copyObservationBundleForAT} from './observation-bundle-ownership.mjs?v=gap-owned-observation-20261006-1340';
@@ -7,7 +8,7 @@ import {deriveCameraBodySingletonAlternatives,appendCameraBodySingletonAlternati
 import {assertProductionATInput} from '../production-at-input-policy.mjs?v=production-inputs-20261006-1320';
 import {searchAutomaticReplayInputs} from '../video-replay-factor-search.mjs?v=automatic-entry-factors-20261006-1120';
 import {deriveTrackingEventEvidence,automaticSingletonSearchOptions} from '../tracking-at-event-evidence.mjs?v=proposal-support-20261006-1152';
-import {prepareTrackingJob,openTrackingCheckpointStore,startTrackingSession,collectTrackingMotionAssociationInputs} from '../tracking-at-session.mjs?v=camera-at-20261008-f1a85661';
+import {prepareTrackingJob,openTrackingCheckpointStore,startTrackingSession,collectTrackingMotionAssociationInputs} from '../tracking-at-session.mjs?v=native-route-20261008-171401b8';
 // This is an execution budget/prior supplied by the user, never inferred from PTS.
 export function videoATSearchOptions(values,tables){
  const {seed,seedProvenance,first,last,indexProvenance}=values;
@@ -52,7 +53,7 @@ function validatedCameraComparisons(snapshot){
 const scope={minimumProvenATCalls:0,currentVideoStateRecovered:false,unknownAlternativeRetained:true,branchCountsSummed:false};
 // Conditional ROM-body/species predictions can produce single-event filters.
 // Multi-event search still needs explicit event/order/gap evidence; PTS is not calls.
-export function createVideoTrackingAT({getOptions,getTables=()=>({}),getReplaySourceContext=null,engineRevision,onState=()=>{},prepare=prepareTrackingJob,openStore=openTrackingCheckpointStore,startSession=startTrackingSession,loadWasm=async(kind)=>{const file=kind==='known-origin-terminal-indices'?'at_identify_stream.wasm':'at_identify.wasm';const r=await fetch(new URL('../wasm/'+file,import.meta.url));if(!r.ok)throw Error('AT WASM HTTP '+r.status);return new Uint8Array(await r.arrayBuffer());}}){
+export function createVideoTrackingAT({getOptions,getTables=()=>({}),getReplaySourceContext=null,produceNativeRoutes=createNativeRouteProducer(),engineRevision,onState=()=>{},prepare=prepareTrackingJob,openStore=openTrackingCheckpointStore,startSession=startTrackingSession,loadWasm=async(kind)=>{const file=kind==='known-origin-terminal-indices'?'at_identify_stream.wasm':'at_identify.wasm';const r=await fetch(new URL('../wasm/'+file,import.meta.url));if(!r.ok)throw Error('AT WASM HTTP '+r.status);return new Uint8Array(await r.arrayBuffer());}}){
  let epoch=0,session=null,latest=null,latestNativeBodySupport=null,latestNativeMotionInputs=null,latestReplayInputs=null,latestReplaySources=null,storePromise=null,wasmPromises=new Map();
  const emit=(state)=>onState({...scope,...state,...(latestReplaySources?{replaySourcePreparation:{status:latestReplaySources.status??'conditional-static-source-preparation',inputBindings:latestReplaySources.bindings?.length??0,sourceRecords:latestReplaySources.sources?.length??0,sourceReadyRecords:latestReplaySources.sources?.filter(s=>s.sourceReady).length??0,nativeRuntimePacketConstructed:false,nativeReplayExecuted:false,minimumProvenATCalls:0,missingRuntimeInputs:latestReplaySources.missingRuntimeInputs??[],error:latestReplaySources.error??null}}:{})});
  function cancel(reason='入力が変わりました。',{retainObservation=false}={}){epoch++;session?.cancel();session=null;if(!retainObservation){latest=null;latestNativeBodySupport=null;latestNativeMotionInputs=null;latestReplayInputs=null;latestReplaySources=null;}emit({status:'waiting',reason});}
@@ -81,11 +82,18 @@ export function createVideoTrackingAT({getOptions,getTables=()=>({}),getReplaySo
    if(cameraAlternatives)snapshot.cameraBodyATAlternatives=cameraAlternatives;
    if(cameraValidation.deferred.length)snapshot.cameraBodyATValidationDeferrals=cameraValidation.deferred;
    const singleEvents=cameraAlternatives?appendCameraBodySingletonAlternatives(automatic.singleEvents,cameraAlternatives):automatic.singleEvents;
-   latestNativeMotionInputs=collectTrackingMotionAssociationInputs(snapshot,latestNativeBodySupport);
+   latestNativeMotionInputs=collectTrackingMotionAssociationInputs(snapshot,latestNativeBodySupport,{singleEvents});
+   let routeEvidence=null;
+   try{routeEvidence=await produceNativeRoutes(latestNativeMotionInputs,getReplaySourceContext?.(),{isCurrent:()=>mine===epoch});if(mine!==epoch)return;}
+   catch(error){if(mine!==epoch||error?.name==='AbortError')return;routeEvidence={chains:[],deferred:[{reason:String(error?.message??error)}],unknownAlternativeRetained:true,currentVideoStateRecovered:false};}
+   snapshot.automaticNativeRouteEvidence=routeEvidence;
+   const nativeRouteChains=routeEvidence?.chains??[];
    const chains=snapshot.conditionalATEventEvidence?.chains??[];
-   if(!chains.length&&!singleEvents.length){emit({status:'waiting',reason:'映像観測を接続済み。身体と種類が一致する条件付き予測はまだありません。残差の順位だけではAT解析を開始せず、候補と未確定の可能性を保持します。',sightings:snapshot.sightings?.length??0,missingEvidence:['supported conditional body/species prediction or explicit finite event evidence'],deferredAlternatives:automatic.deferred.length,unobservedGapsRetained:true});return;}
+   if(!chains.length&&!nativeRouteChains.length&&!singleEvents.length){emit({status:'waiting',reason:'映像観測を接続済み。身体と種類が一致する条件付き予測はまだありません。残差の順位だけではAT解析を開始せず、候補と未確定の可能性を保持します。',sightings:snapshot.sightings?.length??0,missingEvidence:['supported conditional body/species prediction or explicit finite event evidence'],deferredAlternatives:automatic.deferred.length,unobservedGapsRetained:true});return;}
    const options=chains.length?getOptions():automaticSingletonSearchOptions(getTables());
    options.singleEvents=singleEvents;
+   options.nativeRouteChains=nativeRouteChains;
+   if(nativeRouteChains.length&&!chains.length)options.budget={...options.budget,maxInspectedStates:65536};
    // Only an actual automatic producer's explicit conditional evidence is used.
    options.chains=structuredClone(snapshot.conditionalATEventEvidence?.chains??[]);
    // This controller already owns a native-cloned observation; the compiler
@@ -101,7 +109,7 @@ export function createVideoTrackingAT({getOptions,getTables=()=>({}),getReplaySo
    const kind=options.domain.kind;if(!wasmPromises.has(kind))wasmPromises.set(kind,loadWasm(kind).catch(e=>{wasmPromises.delete(kind);throw e;}));
    const [store,wasmBytes]=await Promise.all([storePromise,wasmPromises.get(kind)]);if(mine!==epoch)return;
    let resume=await store.load(job.checkpointKey);if(mine!==epoch)return;
-   emit({status:'running',reason:chains.length?'明示された有限条件下だけを探索中。未知の代替・範囲外・現フレームまでの未観測消費は残ります。':'ROMの身体・種類の条件付き予測について、過去の単一抽選という仮説を解析中。誤観測の可能性と現在ATの全状態は残ります。',producer:cameraAlternatives?.singleEvents.length?'legacy-plus-camera-body-alternatives-v1':automatic.producer,conditionalSingletons:singleEvents.length,...(cameraAlternatives?.singleEvents.length?{cameraBodyConditionalSingletons:cameraAlternatives.singleEvents.length}:{})});
+   emit({status:'running',reason:(chains.length||nativeRouteChains.length)?'明示された有限条件下だけを探索中。未知の代替・範囲外・現フレームまでの未観測消費は残ります。':'ROMの身体・種類の条件付き予測について、過去の単一抽選という仮説を解析中。誤観測の可能性と現在ATの全状態は残ります。',producer:cameraAlternatives?.singleEvents.length?'legacy-plus-camera-body-alternatives-v1':automatic.producer,conditionalSingletons:singleEvents.length,conditionalNativeRouteChains:nativeRouteChains.length,nativeRouteEnumerationBudgetStopped:routeEvidence?.budgetStopped??false,...(cameraAlternatives?.singleEvents.length?{cameraBodyConditionalSingletons:cameraAlternatives.singleEvents.length}:{})});
    let lastProgressAt=-Infinity,result;
    for(;;){
    // A state notification can synchronously cancel/supersede this source.
