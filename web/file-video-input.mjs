@@ -55,7 +55,10 @@ export class FileVideoInput {
     (pending.record.recentMissingPresentations??=[]).push(gap);if(pending.record.recentMissingPresentations.length>8){pending.record.recentMissingPresentations.shift();pending.record.evictedMissingIntervals=(pending.record.evictedMissingIntervals??0)+1;}
    }
    const caughtUp=monotonic&&time>=pending.record.previousPTS;
-   if(monotonic&&pending.record.lowerObservedPTS<=time&&time<pending.record.previousPTS&&time<=state.currentTime){
+   // Callback PTS and the separately sampled HTML playhead need not be ordered.
+   // Both still advance within their own clocks; ownership and the measured
+   // pre-pause PTS bracket bound this unobserved catch-up sequence.
+   if(monotonic&&pending.record.lowerObservedPTS<=time&&time<pending.record.previousPTS){
     // Additional presentations inside this measured pause interval remain
     // unobserved. Never feed their pixels, timestamps or counts to inference.
     const sample={mediaTime:time,presentedFrames:metadata.presentedFrames,currentTime:state.currentTime,registration:structuredClone(context.registration)};

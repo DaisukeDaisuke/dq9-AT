@@ -59,5 +59,5 @@ test('background phase spans label elapsed time while retaining backend outputs'
 });
 test('instrumentation introduces no timer or new await scheduling boundary',()=>{
  const collector=readFileSync(new URL('../web/map-browser-preview/video-pipeline-timing.mjs',import.meta.url),'utf8');assert.doesNotMatch(collector,/\b(?:setTimeout|setInterval|requestAnimationFrame|queueMicrotask)\s*\(/);assert.doesNotMatch(collector,/\bawait\b|new Promise/);
- const panel=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs?v=own-endpoints-20261008-e58b244e',import.meta.url),'utf8');assert.match(panel,/videoPipelineTiming:timing.snapshot\(\)/);assert.match(panel,/new Blob\(\[timeline.stringifySnapshot\(\)\]/);assert.match(panel,/timing.callbackBoundary\('video-pause'\)/);
+ const panel=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs?v=capture-catchup-20261008-e9f42247',import.meta.url),'utf8');assert.match(panel,/videoPipelineTiming:timing.snapshot\(\)/);assert.match(panel,/new Blob\(\[timeline.stringifySnapshot\(\)\]/);assert.match(panel,/timing.callbackBoundary\('video-pause'\)/);
 });

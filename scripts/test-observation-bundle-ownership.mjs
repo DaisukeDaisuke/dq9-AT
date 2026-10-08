@@ -124,7 +124,7 @@ test('default/non-AT timeline skips freezing and retains mutable independent nat
 });
 
 test('main AT consumer explicitly opts in while GPU preview uses the default native-copy path',()=>{
- const main=readFileSync(new URL('../web/map-browser-preview/preview.mjs?v=placement-turns-20261008-733872ec',import.meta.url),'utf8'),gpu=readFileSync(new URL('../web/map-browser-preview/gpu-file-preview.mjs?v=placement-turns-20261008-733872ec',import.meta.url),'utf8'),panel=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs?v=own-endpoints-20261008-e58b244e',import.meta.url),'utf8');
+ const main=readFileSync(new URL('../web/map-browser-preview/preview.mjs?v=capture-catchup-20261008-e9f42247',import.meta.url),'utf8'),gpu=readFileSync(new URL('../web/map-browser-preview/gpu-file-preview.mjs?v=capture-catchup-20261008-e9f42247',import.meta.url),'utf8'),panel=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs?v=capture-catchup-20261008-e9f42247',import.meta.url),'utf8');
  const mount=source=>source.match(/const videoComparison=mountMapVideoComparison\(\{[^\n]+/)[0];
  assert.match(mount(main),/immutableObservationBundles:true,onObservationBundle:bundle=>trackingAT.observeBounded\(bundle\)/);assert.doesNotMatch(mount(gpu),/immutableObservationBundles|onObservationBundle/);
  assert.match(panel,/onObservationReset=\(\)=>\{\},immutableObservationBundles=false\}/);assert.match(panel,/timeline=new VideoObservationTimeline\(\{timing,immutableObservationBundles\}\)/);

@@ -1,5 +1,5 @@
 import fs from 'node:fs/promises';import assert from 'node:assert/strict';
-const html=await fs.readFile(new URL('../web/map-recognize.html',import.meta.url),'utf8'),main=await fs.readFile(new URL('../web/index.html',import.meta.url),'utf8'),app=await fs.readFile(new URL('../web/app.mjs',import.meta.url),'utf8'),panel=await fs.readFile(new URL('../web/video-panel.mjs?v=route-poses-20261008-d98f497f',import.meta.url),'utf8');
+const html=await fs.readFile(new URL('../web/map-recognize.html',import.meta.url),'utf8'),main=await fs.readFile(new URL('../web/index.html',import.meta.url),'utf8'),app=await fs.readFile(new URL('../web/app.mjs',import.meta.url),'utf8'),panel=await fs.readFile(new URL('../web/video-panel.mjs?v=capture-catchup-20261008-e9f42247',import.meta.url),'utf8');
 let checks=0;const ok=v=>{assert(v);checks++};
 const ids=[...html.matchAll(/\bid="([^"]+)"/g)].map(m=>m[1]);assert.equal(ids.length,new Set(ids).size);checks++;
 for(const id of app.match(/Object\.fromEntries\(\[(.*?)\]\.map/s)[1].matchAll(/'([^']+)'/g))ok(ids.includes(id[1]));

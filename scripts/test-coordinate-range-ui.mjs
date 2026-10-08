@@ -7,7 +7,7 @@ import {imageToMapCoordinateCandidate} from '../web/player-coordinate.mjs';
 import {markerCoordinateBinding,mapMarkerCoordinateCandidate} from '../web/map-marker-coordinate.mjs';
 import {factorPartyMapCandidates,previewPartyMapCandidates} from '../web/party-map-candidates.mjs';
 
-const source=await readFile(new URL('../web/video-panel.mjs?v=route-poses-20261008-d98f497f',import.meta.url),'utf8');
+const source=await readFile(new URL('../web/video-panel.mjs?v=capture-catchup-20261008-e9f42247',import.meta.url),'utf8');
 function extract(start,end){const a=source.indexOf(start),b=source.indexOf(end,a);assert(a>=0&&b>a,`Missing render section: ${start}`);return source.slice(a,b);}
 class Element{
  constructor(tag='div'){this.tagName=tag;this.children=[];this.text='';}
