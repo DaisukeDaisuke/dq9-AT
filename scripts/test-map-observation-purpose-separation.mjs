@@ -3,7 +3,7 @@ import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
 import {AutomaticVideoAlignment} from '../web/map-browser-preview/automatic-video-alignment.mjs?v=browser-at-20261008-138417cd';
 import {VideoMapContinuity} from '../web/map-browser-preview/video-map-continuity.mjs';
-import {VideoObservationTimeline} from '../web/map-browser-preview/video-observation-timeline.mjs';
+import {VideoObservationTimeline} from '../web/map-browser-preview/video-observation-timeline.mjs?v=own-endpoints-20261008-e58b244e';
 function fixture(){
  const sourceImage={width:512,height:192,rgba:new Uint8ClampedArray(512*192*4)},pixel=(x,y,v)=>sourceImage.rgba.set([v,v,v,255],(y*512+x)*4);
  for(let i=0;i<512*192;i++)sourceImage.rgba[i*4+3]=255;for(let y=80;y<83;y++)for(let x=120;x<123;x++)pixel(x,y,66);

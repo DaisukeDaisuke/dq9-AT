@@ -1,4 +1,4 @@
-import {enumerateNativeRouteChoiceHypotheses} from './tracking-native-route-choice.mjs?v=route-cursor-20261008-d2296d0e';
+import {enumerateNativeRouteChoiceHypotheses} from './tracking-native-route-choice.mjs?v=own-endpoints-20261008-e58b244e';
 import {connectConditionalNativeRouteChoices,composeConditionalNativeRouteSequence} from './tracking-native-route-chain.mjs?v=motion-closure-20261008-89e290ef';
 import {fieldNativeFacing,fieldNativeDistance} from './field-preferred-node.mjs';
 import {fingerprint} from './tracking-at-runner.mjs';

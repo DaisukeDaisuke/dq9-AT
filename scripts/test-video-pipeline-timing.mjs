@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
 import {VideoPipelineTiming} from '../web/map-browser-preview/video-pipeline-timing.mjs';
-import {VideoObservationTimeline} from '../web/map-browser-preview/video-observation-timeline.mjs';
+import {VideoObservationTimeline} from '../web/map-browser-preview/video-observation-timeline.mjs?v=own-endpoints-20261008-e58b244e';
 import {VideoTrackingReplay} from '../web/map-browser-preview/video-tracking-replay.mjs';
 import {createVideoTrackingCapture} from '../web/map-browser-preview/video-tracking-capture.mjs';
 import {createAutomaticBackgroundRenderer} from '../web/map-browser-preview/automatic-background-renderer.mjs';
@@ -59,5 +59,5 @@ test('background phase spans label elapsed time while retaining backend outputs'
 });
 test('instrumentation introduces no timer or new await scheduling boundary',()=>{
  const collector=readFileSync(new URL('../web/map-browser-preview/video-pipeline-timing.mjs',import.meta.url),'utf8');assert.doesNotMatch(collector,/\b(?:setTimeout|setInterval|requestAnimationFrame|queueMicrotask)\s*\(/);assert.doesNotMatch(collector,/\bawait\b|new Promise/);
- const panel=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs?v=route-poses-20261008-d98f497f',import.meta.url),'utf8');assert.match(panel,/videoPipelineTiming:timing.snapshot\(\)/);assert.match(panel,/new Blob\(\[timeline.stringifySnapshot\(\)\]/);assert.match(panel,/timing.callbackBoundary\('video-pause'\)/);
+ const panel=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs?v=own-endpoints-20261008-e58b244e',import.meta.url),'utf8');assert.match(panel,/videoPipelineTiming:timing.snapshot\(\)/);assert.match(panel,/new Blob\(\[timeline.stringifySnapshot\(\)\]/);assert.match(panel,/timing.callbackBoundary\('video-pause'\)/);
 });

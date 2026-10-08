@@ -1,3 +1,4 @@
+import {deriveOwnNativeModelEndpoints,validateOwnNativeRouteReferences} from './tracking-own-native-endpoints.mjs?v=own-endpoints-20261008-e58b244e';
 import {collectNativeTrackingBodySupport} from './tracking-native-body-support.mjs?v=route-poses-20261008-d98f497f';
 import {trackingSightingMapProvenance} from './map-browser-preview/map-hypothesis-provenance.mjs?v=native-body-20261006-0212';
 import {compileExperiment} from './at-observation-compiler.mjs?v=field-stream-20261005-1108';
@@ -40,13 +41,15 @@ export function compileTrackingObservations(bundle,{tables={},domain,budget,mate
  for(const chain of chains){need(chain.status==='conditional-source-model-evidence'&&typeof chain.provenance==='string'&&chain.provenance.length,'Explicit conditional evidence provenance required');need(Array.isArray(chain.sightingIds)&&chain.sightingIds.length>=2,'At least two event representatives required');const ids=chain.sightingIds.map(s=>sightingGroup.get(s));need(ids.every(Boolean)&&new Set(ids).size===ids.length,'Repeated track cannot become independent events');const gs=ids.map(id=>[...groups.values()].find(g=>g.id===id));need(Array.isArray(chain.gaps)&&chain.gaps.length===ids.length-1,'Explicit adjacent gaps required');const edges=chain.gaps.map((g,i)=>({from:ids[i],to:ids[i+1],callsBetweenPostStates:copy(g.callsBetweenPostStates),provenance:g.provenance??chain.provenance}));hypotheses.push(makeBranch(chain.id,gs,edges,[chain.provenance,'Event identity/order/gaps conditional on supplied source-model evidence; unknown alternative retained.']));}
  // Source movement draws belong to one actor; they are not new weighted births.
  // Accept only the explicitly conditional route-chain producer contract.
+ let ownNativeEndpoints=null;
  for(const route of nativeRouteChains){
   need(route?.kind==='conditional-chain'&&route.unknownAlternativeRetained===true&&route.currentVideoStateRecovered===false&&route.sourceRuntimeInitialized===false,'Conditional native route-chain contract required');
   const refs=route.sourceEvidence,h=route.hypothesis;
   need(refs?.first&&refs?.second&&h&&Array.isArray(h.events)&&h.events.length>=2&&h.events.length<=32&&h.events.every(e=>e.operation==='direct-output-modulo'),'Source route choices only; weighted-origin transition is not source-closed');
   const routeReferences=refs.choices??[refs.first,refs.second];
   need(Array.isArray(routeReferences)&&routeReferences.length===h.events.filter(e=>e.operation==='direct-output-modulo').length,'Each route draw must retain its source motion interval');
-  for(const ref of routeReferences){
+  for(const [referenceIndex,ref] of routeReferences.entries()){
+   if(ref.endpointSpeciesHypotheses!==undefined){ownNativeEndpoints??=deriveOwnNativeModelEndpoints(bundle);validateOwnNativeRouteReferences(ownNativeEndpoints,ref);const eventEvidence=h.events[referenceIndex]?.evidence;need(JSON.stringify(eventEvidence?.endpointSpeciesHypotheses)===JSON.stringify(ref.endpointSpeciesHypotheses),'Route event endpoint IDs differ from source reference');validateOwnNativeRouteReferences(ownNativeEndpoints,eventEvidence);}
    need(ref.romSHA256===bundle.source?.background?.romSHA256,'Route ROM differs from observation');
    need(Array.isArray(ref.sourceIdentity)&&ref.sourceIdentity.length===3&&ref.sourceIdentity.every((v,i)=>v===[bundle.source?.video?.sourceId,bundle.source?.video?.sourceEpoch,bundle.source?.video?.timelineSegment][i]),'Route source epoch or segment differs');
    need(seen.has(ref.fromSightingId)&&seen.has(ref.toSightingId),'Route endpoints must exist in the owned observation');

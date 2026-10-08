@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
-import {videoObservationFrameKey} from '../web/map-browser-preview/video-observation-timeline.mjs';
-const text=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs?v=route-poses-20261008-d98f497f',import.meta.url),'utf8');
+import {videoObservationFrameKey} from '../web/map-browser-preview/video-observation-timeline.mjs?v=own-endpoints-20261008-e58b244e';
+const text=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs?v=own-endpoints-20261008-e58b244e',import.meta.url),'utf8');
 const start=text.indexOf(' const classificationWaiters=new Map()'),end=text.indexOf(' let classificationMapKey',start);
 const context=vm.createContext({structuredClone,videoObservationFrameKey,getRomIdentity:()=> 'rom',nativeContinuationEpoch:1,timeline:{update(){}},timelineStatus(){}});
 vm.runInContext(text.slice(start,end)+`;globalThis.gate={nativePlaybackWaiters,receiveNativePlayback,nativeATValidated,settleNativePlayback};`,context);

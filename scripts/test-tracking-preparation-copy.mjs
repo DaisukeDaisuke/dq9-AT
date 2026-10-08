@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {compileTrackingObservations} from '../web/tracking-at-observation-adapter.mjs?v=route-poses-20261008-d98f497f';
-import {prepareTrackingJob} from '../web/tracking-at-session.mjs?v=route-poses-20261008-d98f497f';
-import {createVideoTrackingAT as createProductionVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=route-cursor-20261008-d2296d0e';
+import {compileTrackingObservations} from '../web/tracking-at-observation-adapter.mjs?v=own-endpoints-20261008-e58b244e';
+import {prepareTrackingJob} from '../web/tracking-at-session.mjs?v=own-endpoints-20261008-e58b244e';
+import {createVideoTrackingAT as createProductionVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=own-endpoints-20261008-e58b244e';
 // Route persistence uses the existing store DI in Node-only fixtures.
 const createVideoTrackingAT=options=>{
  const records=new Map(),store={load:async key=>structuredClone(records.get(key)??null),save:async(key,value)=>{records.set(key,structuredClone(value));}};

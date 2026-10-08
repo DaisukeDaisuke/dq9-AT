@@ -1,6 +1,6 @@
-import {advanceNativeRouteEnumeration} from './tracking-native-route-cursor.mjs?v=route-cursor-20261008-d2296d0e';
+import {advanceNativeRouteEnumeration} from './tracking-native-route-cursor.mjs?v=own-endpoints-20261008-e58b244e';
 import {readMovementNoDrawSource} from './monster-motion-source-binding.mjs?v=motion-closure-20261008-89e290ef';
-import { enumerateNativeRouteChoiceHypotheses } from './tracking-native-route-choice.mjs?v=route-cursor-20261008-d2296d0e';
+import { enumerateNativeRouteChoiceHypotheses } from './tracking-native-route-choice.mjs?v=own-endpoints-20261008-e58b244e';
 import { connectConditionalNativeRouteChoices,composeConditionalNativeRouteSequence } from './tracking-native-route-chain.mjs?v=motion-closure-20261008-89e290ef';
 import { mineFieldGraphs, fieldPathName } from './field-graph.mjs';
 import { decodeCalls } from './map-core.mjs';

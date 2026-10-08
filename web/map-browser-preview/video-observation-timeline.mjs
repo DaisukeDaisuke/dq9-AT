@@ -1,4 +1,4 @@
-import {cloneImmutableObservationBundle} from './observation-bundle-ownership.mjs?v=gap-owned-observation-20261006-1340';
+import {cloneImmutableObservationBundle} from './observation-bundle-ownership.mjs?v=own-endpoints-20261008-e58b244e';
 import {mapHypothesisProvenance,mapHypothesisSignature} from './map-hypothesis-provenance.mjs?v=native-body-20261006-0212';
 // Scheduling/storage limits are resource budgets, never recognition thresholds.
 const copy=x=>structuredClone(x);
@@ -49,7 +49,7 @@ export class VideoObservationTimeline {
   if(provenance.candidates.length&&this.previousMap&&this.previousMap.signature!==signature)this.event({kind:'map-entry-or-reload-candidate',cause:'map-candidate-set-changed',startPTS:this.previousMap.sourcePTS,endPTS:row.sourcePTS,previousCandidates:this.previousMap.candidates,currentCandidates:copy(candidates),previousMapHypotheses:copy(this.previousMap.provenance),currentMapHypotheses:copy(provenance),alternatives:['map-change','candidate-ambiguity','observation-error'],timing:'between observed map hypotheses; exact entry unobserved'});
   if(provenance.candidates.length)this.previousMap={signature,sourcePTS:row.sourcePTS,candidates:copy(candidates),provenance:copy(provenance)};return true;
  }
- update(frameSerial,patch){const row=this.frames.find(f=>f.frameSerial===frameSerial);if(!row)return false;Object.assign(row,this.timing?this.timing.sync('timeline-update-clone',row.stamp,()=>copy(patch)):copy(patch));return true;}
+ update(frameSerial,patch,{immutableEvidence=false}={}){const row=this.frames.find(f=>f.frameSerial===frameSerial);if(!row)return false;const clonePatch=this.immutableObservationBundles===true&&immutableEvidence===true?cloneImmutableObservationBundle:copy;Object.assign(row,this.timing?this.timing.sync('timeline-update-clone',row.stamp,()=>clonePatch(patch)):clonePatch(patch));return true;}
  #snapshotRecord(){return {schema:'video-map-observation-timeline-v1',source:this.source,resetReason:this.reason,resetCount:this.resetCount,totalAnalyzedFrames:this.totalFrames,frames:this.frames,entryCandidates:this.events,unobservedIntervals:this.gaps,retention:{maximumFrames:this.maximumFrames,maximumEvents:this.maximumEvents,maximumGaps:this.maximumGaps,evicted:this.evicted,complete:this.evicted.frames+this.evicted.events+this.evicted.gaps===0},coverage:{everyDecodedFrameObserved:false,continuousRecognitionComplete:false,entryDetectionComplete:false,romLayerResetKnown:false,absenceCertified:false},minimumProvenATCalls:0,currentVideoStateRecovered:false};}
  snapshot(){return this.#timed('timeline-snapshot-clone',()=>copy(this.#snapshotRecord()));}
  // Compose the current timeline before the single ownership clone. The old
@@ -67,7 +67,7 @@ export class VideoObservationTimeline {
   }
   const timeline=this.#snapshotRecord();
   const cloneBundle=this.immutableObservationBundles===true?cloneImmutableObservationBundle:copy;
-  return this.#timed('observation-bundle-clone',()=>cloneBundle({...value,videoObservations:observations.map(item=>({...item,timeline}))}));
+  return this.#timed('observation-bundle-clone',()=>cloneBundle({...value,videoObservations:observations.map(item=>({...item,timeline}))},{reuseCertifiedSubgraphs:true}));
  }
  // JSON serialization is synchronous, so it needs no detached graph before
  // converting this already-owned state to a string. No live references escape.

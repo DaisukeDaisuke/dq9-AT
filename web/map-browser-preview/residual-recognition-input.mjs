@@ -2,7 +2,7 @@ import {retainConditionalUiCompetition} from '../conditional-ui-competition.mjs?
 import {originalResidualProposalSupport} from './residual-proposal-support.mjs?v=proposal-support-20261006-1152';
 import {bindConditionalBodyPrediction} from './conditional-body-map-compatibility.mjs?v=proposal-support-20261006-1152';
 import {conditionalBodyPrediction} from '../monster-body-support.mjs?v=proposal-support-20261006-1152';
-import {residualAssociationHints,videoObservationFrameKey} from './video-observation-timeline.mjs?v=map-input-owned-preparation-20261006-1408';
+import {residualAssociationHints,videoObservationFrameKey} from './video-observation-timeline.mjs?v=own-endpoints-20261008-e58b244e';
 // Background residuals are geometry hypotheses, never certified detections/draws.
 import {decodeEncounterContexts,contextsForMap} from '../encounter-context.mjs';
 import {decodeCalls} from './minimap-preview.mjs';

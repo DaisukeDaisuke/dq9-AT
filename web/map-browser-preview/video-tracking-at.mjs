@@ -1,17 +1,18 @@
+import {deriveOwnNativeModelEndpoints} from '../tracking-own-native-endpoints.mjs?v=own-endpoints-20261008-e58b244e';
 import {preparedCurrentNativeAdmission} from '../tracking-current-native-admission.mjs?v=route-poses-20261008-d98f497f';
 import {fingerprint} from '../tracking-at-runner.mjs';
 import {createTrackingObservationWorkQueue} from '../tracking-observation-work-queue.mjs?v=route-cursor-20261008-d2296d0e';
-import {createNativeRouteProducer} from '../tracking-native-route-producer.mjs?v=route-cursor-20261008-d2296d0e';
+import {createNativeRouteProducer} from '../tracking-native-route-producer.mjs?v=own-endpoints-20261008-e58b244e';
 import {resolveCameraATBackgroundSupport} from './camera-at-background-support.mjs?v=camera-at-20261008-f1a85661';
 import {prepareVideoReplaySources} from '../video-replay-source-preparation.mjs?v=replay-source-20261007-0743';
-import {copyObservationBundleForAT} from './observation-bundle-ownership.mjs?v=gap-owned-observation-20261006-1340';
+import {copyObservationBundleForAT} from './observation-bundle-ownership.mjs?v=own-endpoints-20261008-e58b244e';
 import {compareCameraBodyAlternative} from '../monster-camera-body-alternative.mjs?v=route-poses-20261008-d98f497f';
 import {trackingSightingMapProvenance} from './map-hypothesis-provenance.mjs';
 import {deriveCameraBodySingletonAlternatives,appendCameraBodySingletonAlternatives} from '../tracking-camera-body-alternative.mjs?v=route-poses-20261008-d98f497f';
 import {assertProductionATInput} from '../production-at-input-policy.mjs?v=production-inputs-20261006-1320';
 import {searchAutomaticReplayInputs,mineAutomaticReplayFactors} from '../video-replay-factor-search.mjs?v=automatic-entry-factors-20261006-1120';
 import {deriveTrackingEventEvidence,automaticSingletonSearchOptions} from '../tracking-at-event-evidence.mjs?v=route-poses-20261008-d98f497f';
-import {prepareTrackingJob,openTrackingCheckpointStore,startTrackingSession,collectTrackingMotionAssociationInputs} from '../tracking-at-session.mjs?v=route-poses-20261008-d98f497f';
+import {prepareTrackingJob,openTrackingCheckpointStore,startTrackingSession,collectTrackingMotionAssociationInputs} from '../tracking-at-session.mjs?v=own-endpoints-20261008-e58b244e';
 // This is an execution budget/prior supplied by the user, never inferred from PTS.
 export function videoATSearchOptions(values,tables){
  const {seed,seedProvenance,first,last,indexProvenance}=values;
@@ -102,7 +103,7 @@ export function createVideoTrackingAT({getOptions,getTables=()=>({}),getReplaySo
    options.singleEvents=singleEvents;
    options.nativeRouteChains=nativeRouteChains;
    if(nativeRouteChains.length&&!chains.length)options.budget={...options.budget,maxInspectedStates:65536};
-   const finishRoutes=async result=>{if(!routeResult?.resumeCursor)return result;const key=await beginRouteWork(routeStore,snapshot,routeInputs,replayInputs,options,routeResult,mine,routeObservationHash);return mergeWork(result,key?[key]:[]);};
+   const finishRoutes=async result=>{if(!routeResult?.resumeCursor||routeResult.resumeCursor.phase==='complete')return result;const key=await beginRouteWork(routeStore,snapshot,routeInputs,replayInputs,options,routeResult,mine,routeObservationHash);return mergeWork(result,key?[key]:[]);};
    if(!chains.length&&!nativeRouteChains.length&&!singleEvents.length){emit({status:'waiting',reason:'映像観測を接続済み。身体と種類が一致する条件付き予測はまだありません。残差の順位だけではAT解析を開始せず、候補と未確定の可能性を保持します。',sightings:snapshot.sightings?.length??0,missingEvidence:['supported conditional body/species prediction or explicit finite event evidence'],deferredAlternatives:automatic.deferred.length,unobservedGapsRetained:true});return finishRoutes({status:'waiting'});}
    // Only an actual automatic producer's explicit conditional evidence is used.
    options.chains=structuredClone(snapshot.conditionalATEventEvidence?.chains??[]);
@@ -214,7 +215,8 @@ export function createVideoTrackingAT({getOptions,getTables=()=>({}),getReplaySo
   const singles=camera?appendCameraBodySingletonAlternatives(automatic.singleEvents,camera):automatic.singleEvents;
   const native=(automatic.nativeBodySupportEvidence?.observations??[]).map(o=>({sightingId:o.sightingId,frame:o.frame,frameKey:o.frameKey,sourcePTS:o.sourcePTS,tentativeImageTrack:o.tentativeImageTrack,alternatives:(o.alternatives??[]).filter(a=>a.binding?.ready===true&&Number.isFinite(a.ownGain)&&a.ownGain>0).map(a=>({modelId:a.modelId,variant:a.variant,recordKey:a.recordKey,branchId:a.branchId,proposalId:a.proposalId,positionFx:a.positionFx,pose:a.pose,bodyColorOwnership:a.extent?.bodyColorOwnership}))})).filter(o=>o.alternatives.length);
   const predicates=singles.map(e=>({id:e.id,sightingIds:e.sightingIds,modelId:e.modelId,tableSpeciesAlternatives:e.tableSpeciesAlternatives,source:e.sourceEvidence?.map(s=>({sightingId:s.sightingId,frameKey:s.frameKey,sourcePTS:s.sourcePTS,mapHypothesisProvenance:s.mapHypothesisProvenance,branchSpecificEncounterAlternatives:s.branchSpecificEncounterAlternatives}))}));
-  return JSON.stringify({frame:bundle.source?.video,rom:bundle.source?.background?.romSHA256,replay:mineAutomaticReplayFactors(bundle),singleEvents:predicates,tracks:automatic.tracks,native});
+  const ownNativeEndpoints=deriveOwnNativeModelEndpoints(bundle).endpoints.map(e=>({id:e.id,frame:e.frame,modelId:e.modelId,variant:e.variant,branchId:e.branchId,recordKey:e.recordKey,proposalId:e.proposalId,positionFx:e.positionFx,pose:e.pose,tableSpeciesAlternatives:e.tableSpeciesAlternatives}));
+  return JSON.stringify({ownNativeEndpoints,frame:bundle.source?.video,rom:bundle.source?.background?.romSHA256,replay:mineAutomaticReplayFactors(bundle),singleEvents:predicates,tracks:automatic.tracks,native});
  }
  workQueue=createTrackingObservationWorkQueue({
   sourceKey:bundle=>JSON.stringify([bundle.source?.background?.romSHA256,bundle.source?.video?.sourceId,bundle.source?.video?.sourceEpoch,bundle.source?.video?.timelineSegment]),

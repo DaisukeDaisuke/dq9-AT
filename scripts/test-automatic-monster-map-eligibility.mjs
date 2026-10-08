@@ -3,7 +3,7 @@ import fs from 'node:fs/promises';
 import {readMonsterWorkflowEncounterContexts,monsterMapWorkflowEligibility,createAutomaticMonsterMapGate} from '../web/map-browser-preview/automatic-monster-map-eligibility.mjs';
 import {AutomaticVideoAlignment} from '../web/map-browser-preview/automatic-video-alignment.mjs?v=browser-at-20261008-138417cd';
 import {VideoMapContinuity} from '../web/map-browser-preview/video-map-continuity.mjs';
-import {VideoObservationTimeline} from '../web/map-browser-preview/video-observation-timeline.mjs';
+import {VideoObservationTimeline} from '../web/map-browser-preview/video-observation-timeline.mjs?v=own-endpoints-20261008-e58b244e';
 let checks=0;const ok=(value,message)=>{assert.ok(value,message);checks++;},equal=(a,b,message)=>{assert.deepEqual(a,b,message);checks++;};
 // Synthetic command streams exercise framing and support boundaries only.
 function stream(commands){

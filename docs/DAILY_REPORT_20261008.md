@@ -227,3 +227,16 @@ AT候補を単発の種類抽選だけで終わらせず、同じ個体という
 有限の人工入力を実WASMへ渡し、分割した42行・60chainが一括結果と一致し重複提出がないこと、保存境界を跨いでATとproducerの両方が進むことを確認した。これは実動画のAT特定ではない。現runはb429版のまま継続中で、この新cursorを実行タブへ読み込んだとは主張しない。
 
 b429の実動画20.779秒では、region29のz013bとz058aにROM方向の再描画支持が各1件保持され、compact trackingへ到達した。ただし同じ画素の既存UI代替がより大きな改善を示し、appearanceとbodyの種別も不一致で、敵の特定成功とは扱わない。21.646秒には別model z018cの正のendpointがあるが、前frameのmodelと繋がらずmotion候補は0。22.212秒は保存時点で未完だった。実動画の経路成立・現在AT・最速メタル出現の操作列は未完成。
+
+
+## 2026-10-09 00:18 JST — ROM候補別の経路条件を独立に照合
+
+既存認識はDINO最高順位とnative最良が一致する場合にspecies条件を作るため、独立に画素支持がある別model/root/poseも、条件付き経路仮説の入口で止まっていた。既存のaccepted/failed判定を維持し、そのposeが当該actorである場合だけの別species/table endpointを追加した。完全なnative比較・身体支持・正の元component・同じ画素/背景/ROI/camera・ROM model/variant/alias/encounter provenanceを全て再検証する。DINO不一致、より良いUI代替、他model、別個体、no-event、未知runtimeは残す。weighted出生は追加しない。
+
+各根拠は元contextのcatalogに一度保持し、移動linkとoccupancy行はexact endpoint IDを参照する。compilerは元raw bundleから再導出して、source referenceとevent evidenceの双方を照合する。他枠の同じ種類や、保存IDだけを根拠にしない。最初から列挙完了したproducerは再開contextを保存せず、途中・resume最終の確定cursor保存は維持する。
+
+保存した実7観測では14の条件付きposeから7区間がsource入口へ届いた。ROM graph/trigと既存movement/eligibility WASMによる23判定は全て不整合で、route eventは0だった。両端yawが同じ完成旋回方向ではない、またはその向きと正の進行に合うROM targetが無い。この条件を満たさない候補をATへ採用せず、通常旋回・別root・別個体など未解決の代替を残す。現在ATの特定や最速操作の発見ではない。
+
+実ブラウザの保存timingでは、観測bundle cloneが84回・計101.7秒（最大5.598秒）、consumer同期部分が計129.7秒（最大22.808秒）を要していた。重なりを含むため総経過時間やCPU時間として加算しない。AT専用opt-inで、切離しclone後に私的証明付きでfreezeした分類証拠だけを後続bundleで共有する。可変row/timing、通常public snapshotは従来どおり独立copy、後着更新は新証拠に置換して旧bundleを変えない。任意のfreeze済みobjectを信頼するcacheは追加しない。既存所有・取消・更新条件を確認したが、新版の実ブラウザ速度は未測定。
+
+正式Libraryのメタル1動画も各part・結合byte列・動画を照合し、次のメタル出現入力として準備した。現在のb429本番観測とその失敗記録を保持し、この新配信をまだ実行中タブへ読み込んだとは扱わない。

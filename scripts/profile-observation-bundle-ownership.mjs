@@ -8,15 +8,15 @@ const [baselinePath,inputPath,comparisonPath,outputPath]=process.argv.slice(2);
 if(!baselinePath||!inputPath||!comparisonPath||!outputPath)throw Error('Usage: node --expose-gc scripts/profile-observation-bundle-ownership.mjs BASELINE_SOURCE TIMELINE_JSON COMPARISON_JSON OUTPUT_JSON');
 const baseline=file=>pathToFileURL(resolve(baselinePath,file)).href;
 const {VideoObservationTimeline:BeforeTimeline}=await import(baseline('web/map-browser-preview/video-observation-timeline.mjs'));
-import {VideoObservationTimeline as AfterTimeline} from '../web/map-browser-preview/video-observation-timeline.mjs';
+import {VideoObservationTimeline as AfterTimeline} from '../web/map-browser-preview/video-observation-timeline.mjs?v=own-endpoints-20261008-e58b244e';
 const {createVideoTrackingAT:beforeController}=await import(baseline('web/map-browser-preview/video-tracking-at.mjs'));
 const {prepareTrackingJob:beforePrepare}=await import(baseline('web/tracking-at-session.mjs'));
-import {prepareTrackingJob as afterPrepare} from '../web/tracking-at-session.mjs?v=route-poses-20261008-d98f497f';
-import {createVideoTrackingAT as afterController} from '../web/map-browser-preview/video-tracking-at.mjs?v=route-cursor-20261008-d2296d0e';
+import {prepareTrackingJob as afterPrepare} from '../web/tracking-at-session.mjs?v=own-endpoints-20261008-e58b244e';
+import {createVideoTrackingAT as afterController} from '../web/map-browser-preview/video-tracking-at.mjs?v=own-endpoints-20261008-e58b244e';
 import {assertProductionATInput} from '../web/production-at-input-policy.mjs';
 // Private WeakSet ownership is scoped to the exact module URL. Resolve the
 // producer's real import, including its cache query, rather than duplicating it.
-const timelineModuleURL=new URL('../web/map-browser-preview/video-observation-timeline.mjs',import.meta.url);
+const timelineModuleURL=new URL('../web/map-browser-preview/video-observation-timeline.mjs?v=own-endpoints-20261008-e58b244e',import.meta.url);
 const ownershipImport=fs.readFileSync(timelineModuleURL,'utf8').match(/import\s*\{\s*cloneImmutableObservationBundle\s*\}\s*from\s*['"]([^'"]+)['"]/);
 assert(ownershipImport,'Production timeline ownership-helper import is required');
 const {copyObservationBundleForAT}=await import(new URL(ownershipImport[1],timelineModuleURL).href);
@@ -25,7 +25,7 @@ const baselineOwnershipImport=fs.readFileSync(baselineTimelineURL,'utf8').match(
 // Historical sources before ownership sharing use native cloning. Later
 // baselines must resolve their own producer's exact private-brand module.
 const beforeCopy=baselineOwnershipImport?(await import(new URL(baselineOwnershipImport[1],baselineTimelineURL).href)).copyObservationBundleForAT:structuredClone;
-import {residualObservationBundle} from '../web/map-browser-preview/residual-recognition-input.mjs';
+import {residualObservationBundle} from '../web/map-browser-preview/residual-recognition-input.mjs?v=own-endpoints-20261008-e58b244e';
 const input=resolve(inputPath),comparisonInput=resolve(comparisonPath),output=resolve(outputPath);
 const raw=fs.readFileSync(input),timeline=JSON.parse(raw),comparison=JSON.parse(fs.readFileSync(comparisonInput)),frame=timeline.frames.at(-1);delete timeline.videoPipelineTiming;
 const sha=x=>createHash('sha256').update(typeof x==='string'?x:JSON.stringify(x)).digest('hex');

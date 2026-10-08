@@ -4,7 +4,7 @@ import {Worker as NodeWorker} from 'node:worker_threads';
 import {ResidualRecognitionClient} from '../web/map-browser-preview/residual-recognition-client.mjs?v=route-poses-20261008-d98f497f';
 import {nativeBodyRequestPayload} from '../web/map-browser-preview/native-body-request.mjs';
 import {attachResidualNativeSupport} from '../web/map-browser-preview/residual-native-support.mjs?v=route-poses-20261008-d98f497f';
-import {runResidualRecognitionJob} from '../web/map-browser-preview/residual-recognition-job.mjs?v=route-poses-20261008-d98f497f';
+import {runResidualRecognitionJob} from '../web/map-browser-preview/residual-recognition-job.mjs?v=own-endpoints-20261008-e58b244e';
 import {dinoSpec} from '../web/monster-dinov2.mjs';
 
 const clone=structuredClone;

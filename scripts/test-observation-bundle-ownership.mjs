@@ -2,12 +2,12 @@ import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {createHash} from 'node:crypto';
 import {readFileSync} from 'node:fs';
-const timelineModuleURL=new URL('../web/map-browser-preview/video-observation-timeline.mjs',import.meta.url);
+const timelineModuleURL=new URL('../web/map-browser-preview/video-observation-timeline.mjs?v=own-endpoints-20261008-e58b244e',import.meta.url);
 const ownershipImport=readFileSync(timelineModuleURL,'utf8').match(/import\s*\{\s*cloneImmutableObservationBundle\s*\}\s*from\s*['"]([^'"]+)['"]/);
 assert(ownershipImport,'Production timeline ownership-helper import is required');
 const {cloneImmutableObservationBundle,copyObservationBundleForAT}=await import(new URL(ownershipImport[1],timelineModuleURL).href);
-import {VideoObservationTimeline} from '../web/map-browser-preview/video-observation-timeline.mjs';
-import {createVideoTrackingAT as createProductionVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=route-cursor-20261008-d2296d0e';
+import {VideoObservationTimeline} from '../web/map-browser-preview/video-observation-timeline.mjs?v=own-endpoints-20261008-e58b244e';
+import {createVideoTrackingAT as createProductionVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=own-endpoints-20261008-e58b244e';
 // Node ownership fixtures supply the production store boundary explicitly.
 // Browser IndexedDB is not available here; callers' specialized stores remain.
 const createVideoTrackingAT=options=>{
@@ -124,7 +124,7 @@ test('default/non-AT timeline skips freezing and retains mutable independent nat
 });
 
 test('main AT consumer explicitly opts in while GPU preview uses the default native-copy path',()=>{
- const main=readFileSync(new URL('../web/map-browser-preview/preview.mjs?v=route-cursor-20261008-d2296d0e',import.meta.url),'utf8'),gpu=readFileSync(new URL('../web/map-browser-preview/gpu-file-preview.mjs?v=route-poses-20261008-d98f497f',import.meta.url),'utf8'),panel=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs?v=route-poses-20261008-d98f497f',import.meta.url),'utf8');
+ const main=readFileSync(new URL('../web/map-browser-preview/preview.mjs?v=own-endpoints-20261008-e58b244e',import.meta.url),'utf8'),gpu=readFileSync(new URL('../web/map-browser-preview/gpu-file-preview.mjs?v=own-endpoints-20261008-e58b244e',import.meta.url),'utf8'),panel=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs?v=own-endpoints-20261008-e58b244e',import.meta.url),'utf8');
  const mount=source=>source.match(/const videoComparison=mountMapVideoComparison\(\{[^\n]+/)[0];
  assert.match(mount(main),/immutableObservationBundles:true,onObservationBundle:bundle=>trackingAT.observeBounded\(bundle\)/);assert.doesNotMatch(mount(gpu),/immutableObservationBundles|onObservationBundle/);
  assert.match(panel,/onObservationReset=\(\)=>\{\},immutableObservationBundles=false\}/);assert.match(panel,/timeline=new VideoObservationTimeline\(\{timing,immutableObservationBundles\}\)/);
