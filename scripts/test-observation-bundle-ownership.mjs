@@ -7,7 +7,13 @@ const ownershipImport=readFileSync(timelineModuleURL,'utf8').match(/import\s*\{\
 assert(ownershipImport,'Production timeline ownership-helper import is required');
 const {cloneImmutableObservationBundle,copyObservationBundleForAT}=await import(new URL(ownershipImport[1],timelineModuleURL).href);
 import {VideoObservationTimeline} from '../web/map-browser-preview/video-observation-timeline.mjs';
-import {createVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=route-cursor-20261008-d2296d0e';
+import {createVideoTrackingAT as createProductionVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=route-cursor-20261008-d2296d0e';
+// Node ownership fixtures supply the production store boundary explicitly.
+// Browser IndexedDB is not available here; callers' specialized stores remain.
+const createVideoTrackingAT=options=>{
+ const records=new Map(),store={load:async key=>structuredClone(records.get(key)??null),save:async(key,value)=>{records.set(key,structuredClone(value));}};
+ return createProductionVideoTrackingAT({openStore:async()=>store,...options});
+};
 const bundle=extra=>({schema:'headless-monster-observation-bundle-v1',producer:'browser-ROM-background-residual',sightings:[],videoObservations:[{kind:'partial-video-observation-timeline',timeline:{old:true}}],...extra});
 const stamp={sourceId:'ownership-test',sourceEpoch:0,timelineSegment:0,mediaTime:1};
 const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
