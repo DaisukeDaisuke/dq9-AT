@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {videoObservationFrameKey} from '../web/map-browser-preview/video-observation-timeline.mjs';
-const text=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs?v=frame-heading-20261008-b8f5df4e',import.meta.url),'utf8');
+const text=readFileSync(new URL('../web/map-browser-preview/map-video-comparison.mjs?v=pause-bracket-20261008-59aef60e',import.meta.url),'utf8');
 const start=text.indexOf(' const classificationWaiters=new Map()'),end=text.indexOf('\n',text.indexOf("function nativeATValidated",start));
 const context=vm.createContext({structuredClone,videoObservationFrameKey,getRomIdentity:()=> 'rom',nativeContinuationEpoch:1,timeline:{update(){}},timelineStatus(){}});
 vm.runInContext(text.slice(start,end)+`;globalThis.gate={nativePlaybackWaiters,receiveNativePlayback,nativeATValidated,settleNativePlayback};`,context);

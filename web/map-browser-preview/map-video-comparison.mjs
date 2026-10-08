@@ -20,7 +20,7 @@ import {parseVideoTimecode,formatVideoTimecode} from './video-timecode.mjs';
 import {inferPairedVideoLayout} from './automatic-video-layout.mjs?v=shrine-beam-20261008-a9738d0c';
 import {ResidualTracker} from './residual-tracking-input.mjs?v=continuity-yield-local-evidence-20261006-1458';
 import {annotateResidualRegions,selectResidualDisplay} from './residual-region-display.mjs';
-import {FileVideoInput} from '../file-video-input.mjs?v=automatic-playback-source-cache-20261006-1100';
+import {FileVideoInput} from '../file-video-input.mjs?v=pause-bracket-20261008-59aef60e';
 import {gameplayVideoROI,sampleGameplayFrame,compareMapBackground} from './map-video-residual.mjs?v=shrine-beam-20261008-a9738d0c';
 const $=id=>document.getElementById(id),sha=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join('');
 const draw=(id,image)=>{const canvas=$(id);canvas.width=image.width;canvas.height=image.height;canvas.getContext('2d').putImageData(new ImageData(image.rgba,image.width,image.height),0,0);};

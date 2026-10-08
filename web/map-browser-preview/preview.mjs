@@ -15,7 +15,7 @@ import {deriveVideoMapNames} from './video-map-name-input.mjs?v=shrine-beam-2026
 import {MapPositionMatcher} from '../map-position.mjs?v=registration-timing-20261007-0020';
 import {deriveVideoPlayerMapInput} from './video-player-map-input.mjs?v=shrine-beam-20261008-a9738d0c';
 import {readRomInitialHeading} from './rom-initial-heading.mjs';
-import {mountMapVideoComparison} from './map-video-comparison.mjs?v=frame-heading-20261008-b8f5df4e';
+import {mountMapVideoComparison} from './map-video-comparison.mjs?v=pause-bracket-20261008-59aef60e';
 import {openMapRom} from './static-scene.mjs?v=native-source-reuse-20261006-1028';
 import {buildRomMapCatalog} from './rom-map-catalog.mjs';
 import {nameCatalogMaps} from './rom-map-names.mjs';

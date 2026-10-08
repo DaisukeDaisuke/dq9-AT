@@ -21,9 +21,14 @@ export class FileVideoInput {
  // that measured boundary may arm a one-callback hold after a continuous play.
  rememberPause(){
   this.clearPresentation('paused-before-confirmation');if(!this.presentationReplayEnabled||!this.running||!this.video.paused||this.video.seeking||this.video.ended)return;
-  const anchor=this.trace.clockSamples.mediaTime,pause=this.diagnosticState(),lo=anchor?.before?.clockTimes?.mediaTime,hi=anchor?.metadata?.mediaTime;
+  const anchor=this.trace.clockSamples.mediaTime,pause=this.diagnosticState(),hi=anchor?.metadata?.mediaTime;
+  // Presented PTS may lead the paused playhead by more than one callback.
+  // Use a retained, actually accepted lower sample enclosing that playhead,
+  // never a frame-duration guess or a tolerated backward-time delta.
+  const lower=[...this.trace.captures].reverse().find(sample=>sample.outcome==='accepted'&&sample.context?.origin==='requestVideoFrameCallback'&&sample.before?.sourceId===pause.sourceId&&sample.before?.sourceEpoch===pause.sourceEpoch&&sample.before?.timelineSegment===pause.timelineSegment&&Number.isFinite(sample.metadata?.mediaTime)&&sample.metadata.mediaTime<=pause.currentTime&&sample.metadata.mediaTime<hi&&sample.metadata.presentedFrames<anchor?.metadata?.presentedFrames);
+  const previousPTS=anchor?.before?.clockTimes?.mediaTime,lo=Number.isFinite(previousPTS)&&previousPTS<=pause.currentTime?previousPTS:lower?.metadata?.mediaTime;
   if(anchor?.context?.origin!=='requestVideoFrameCallback'||!Number.isSafeInteger(anchor.metadata.presentedFrames)||!Number.isFinite(lo)||!(lo<hi)||!Number.isFinite(pause.currentTime)||!Number.isFinite(anchor.before.currentTime)||!(anchor.before.currentTime<=pause.currentTime&&pause.currentTime<hi)||!(pause.playbackRate>0)||this.clockTimes.mediaTime!==hi)return;
-  this.pauseBoundary={anchor:structuredClone(anchor),pause,lowerObservedPTS:lo,upperObservedPTS:hi,resumed:false,registration:null};
+  this.pauseBoundary={anchor:structuredClone(anchor),lowerAcceptedSample:lower?structuredClone(lower):null,pause,lowerObservedPTS:lo,upperObservedPTS:hi,resumed:false,registration:null};
  }
  armPauseResume(){
   const b=this.pauseBoundary;if(!b)return;const resume=this.diagnosticState();
@@ -46,7 +51,7 @@ export class FileVideoInput {
   }
   const b=this.pauseBoundary;this.pauseBoundary=null;
   if(!b?.resumed||clock!=='mediaTime'||!(time<previous)||!this.currentPresentationCallback(context)||context.registration.serial!==b.registration?.serial||context.registration.callbackId!==b.registration?.callbackId||previous!==b.upperObservedPTS||!(b.lowerObservedPTS<=time&&time<=b.resume.currentTime)||!Number.isFinite(this.video.currentTime)||this.video.currentTime<b.resume.currentTime||metadata.presentedFrames!==b.anchor.metadata.presentedFrames+1)return false;
-  const record={kind:'pause-resume-presentation-replay-candidate-v1',id:this.sourceId+':'+this.generation+':'+(++this.presentationSerial),resolution:'pending-forward-check',sourceId:this.sourceId,sourceEpoch:this.generation,timelineSegment:this.segment,previousPTS:previous,incomingPTS:time,previousAcceptedSample:b.anchor,pause:b.pause,resume:b.resume,incomingCapture:structuredClone(diagnostic),callbackMetadataObserved:true,pixelsObserved:false,replayCertified:false,observed:false,absenceCertified:false,independentDrawCertified:false,minimumProvenATCalls:0,frameRateAssumed:false,timeRetimed:false};
+  const record={kind:'pause-resume-presentation-replay-candidate-v1',id:this.sourceId+':'+this.generation+':'+(++this.presentationSerial),resolution:'pending-forward-check',sourceId:this.sourceId,sourceEpoch:this.generation,timelineSegment:this.segment,previousPTS:previous,incomingPTS:time,previousAcceptedSample:b.anchor,lowerAcceptedSample:b.lowerAcceptedSample,lowerObservedPTS:b.lowerObservedPTS,pause:b.pause,resume:b.resume,incomingCapture:structuredClone(diagnostic),callbackMetadataObserved:true,pixelsObserved:false,replayCertified:false,observed:false,absenceCertified:false,independentDrawCertified:false,minimumProvenATCalls:0,frameRateAssumed:false,timeRetimed:false};
   diagnostic.outcome='pause-resume-presentation-withheld';diagnostic.presentationReplay=record;this.pendingPresentation={record,metadata:diagnosticMetadata(metadata)};this.notifyPresentation(record,metadata);return true;
  }
  diagnosticState(){
