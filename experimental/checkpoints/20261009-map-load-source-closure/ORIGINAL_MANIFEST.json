@@ -1,0 +1,30 @@
+{
+  "schema": "source-only-freeze-v1",
+  "files": [
+    {
+      "path": "web/map-transition.mjs",
+      "bytes": 28854,
+      "sha256": "e6e92c68eb508926f05989f078f23e99f5210f241f2130622db8db8aefac68a2"
+    },
+    {
+      "path": "web/source-destination-runtime.mjs",
+      "bytes": 8156,
+      "sha256": "1ef495bcf0518a01263af2e320736eea9b6c328bbfedad5c797e210fd5d9008a"
+    },
+    {
+      "path": "measure-source-only.mjs",
+      "bytes": 2366,
+      "sha256": "5775d3ca0102f1f52f52b348fce9b42218160991cf731dd22062a6a827de9314"
+    },
+    {
+      "path": "MEASURED_COMPONENTS.json",
+      "bytes": 8198,
+      "sha256": "5c138ad56ce44178a009e1be355332d364c20fdeb4fd5d1d4771c4c3fddde779"
+    },
+    {
+      "path": "README.md",
+      "bytes": 2200,
+      "sha256": "8217703514641b85930cec895f7c76f9b2b792936699e4f9dcd75a76fd4564d9"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "sourceManifestSHA256": "bc03d04cffff5a07265ef0a0d83e22dae49c2628051447c5e8069d46bc9c64a6",
+  "productionIntegrated": false,
+  "standaloneOverlayAdopted": false,
+  "currentATRecovered": false,
+  "rawInputsIncluded": false,
+  "scope": "7400/7401 scheduler, pickup and treasure local0 are conditional source components. Ordinary7400 NPC2 draws require reachability/allocation and other stated conditions. Optional7401 kind2 draw count is unknown. Global/world consumption remains unbounded. Full SOURCE_ONLY_RESULT and symlink source tree excluded; long-term integration remains ongoing."
+}
