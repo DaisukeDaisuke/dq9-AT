@@ -1,0 +1,19 @@
+{
+  "schema": "verified-history-to-map-owner-followup-v1",
+  "actualResult": "real saved36 source entry plus historical frame22 survived UI diagnostic clear; explicit checkpoint restored1 history job and1 source-revalidated map segment in newWorker; waiting for real destination event",
+  "compilerConnection": "Synthetic later event reached existing compileGap/AT prepare and remained unresolved; cross-epoch rejected",
+  "outputBytes": 11409,
+  "fullObservationDiskCopies": 0,
+  "currentATRecovered": false,
+  "realDestinationEventAvailable": false,
+  "priorSnapshotsUnchanged": true,
+  "ROMorPixelsIncluded": false,
+  "originalManifestSHA256": "bc18aec9a1bfcaf588b4c9c53794df1e6e5e6f46c0746298181a2ceed6090cce",
+  "productionIntegrated": false,
+  "omittedResultReference": {
+    "path": "map-load-at-segments/REAL36_MAP_SEGMENTS.json",
+    "originalPath": "connect-video-at-c7c19b96/map-load-at-segments/REAL36_MAP_SEGMENTS.json",
+    "bytes": 124940,
+    "sha256": "d2fa415d1d61eb952bfe2b87d7acf0fe64806b8e2db131bcbfdf0ea808618428"
+  }
+}
