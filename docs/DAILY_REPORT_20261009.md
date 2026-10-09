@@ -59,3 +59,13 @@ map変更frame61〜181の観測AT消費は0。loader側021a3690/021a39fcは128�
 これは実機source/C++・WASMモデルとの差を調べるdebug検証。DSTのseed・座標・runtimeを本番動画解析の正解入力には使わない。動画ATは未特定で、マップ入退場前後の未知consumerを埋める作業が続く。
 
 公開内容はsource、入力hash、制御手順、呼出位置と小集計のみ。DST、RAM/register値、画素本体は含めない。
+
+## 追記：ほこら外への継続debug検証（03:42 UTC）
+
+前の181フレームを同じ非改変DSTから再現し、終端map・AT・画面hash・register hashの一致を確認した後、下入力を150フレーム追加した。frame331で7401→7400へ移動し、さらに入力を離して120フレーム、frame451まで確認した。
+
+今回のAT消費は2回で、両方ともframe399、戻りLR020409d0／0203ccf0。loader entry〜return内にあり、後段returnはframe401だった。普通descriptor101のcontroller1回＋actor1回というROM条件付き予測と、このreplayで一致した。drop0、各更新・戻り・終端LCGを照合。frame451の実画面でほこら外と主人公を確認したが、最初に表示されたframeは未測定。
+
+これは1つの入力に対するdebug結果であり、全ロードや全world消費へ一般化しない。DST・RAM・seedを本番動画の正解入力へ渡さず、現在動画ATは未特定のまま。
+
+別途、ROM hashに結び付く局所loader component2ファイルとfocused testを未統合checkpointへ保存した。関数は入れ子になり得るため、局所値を独立な区間として足し合わせない。loader全体の最大消費は未知。本番Web実装はこの追補で変更していない。

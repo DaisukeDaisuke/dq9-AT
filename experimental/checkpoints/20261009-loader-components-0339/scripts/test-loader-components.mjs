@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';import fs from 'node:fs';import {createHash} from 'node:crypto';
+import {createSourceLoaderATComponentReader,isPreparedSourceLoaderATComponents} from '../web/source-loader-at-components.mjs';
+const rom=new Uint8Array(fs.readFileSync('video-resume-20261007-2343/inputs/verified/dq9_new2.nds')),romSHA256=createHash('sha256').update(rom).digest('hex');
+const read=await createSourceLoaderATComponentReader({rom,romSHA256}),result=read();
+assert(isPreparedSourceLoaderATComponents(result));assert(!isPreparedSourceLoaderATComponents(structuredClone(result)));
+assert.equal(result.components.length,10);for(const c of result.components)assert.deepEqual(c.calls,{min:'0',max:'0'});
+assert.deepEqual(result.sourceLoopBounds.map(x=>x.invocations.max),[48,48]);
+assert.deepEqual(result.kind2.commonControllerCalls,{min:'1',max:'1'});assert.deepEqual(result.kind2.actorInitializerCalls,{min:'0',max:'0'});assert.equal(result.kind2.wholeDescriptorCalls.max,null);
+assert.equal(result.wholeLoaderCalls.max,null);assert.equal(result.wholeWorldGapResolved,false);assert.equal(result.currentATRecovered,false);
+assert(Object.isFrozen(result.components[0].sourceBindings));assert.throws(()=>{result.components[0].calls.max='1'});
+await assert.rejects(createSourceLoaderATComponentReader({rom,romSHA256:'0'.repeat(64)}),/Verified original ROM/);
+rom[0]^=1;await assert.rejects(createSourceLoaderATComponentReader({rom,romSHA256}),/Verified original ROM/);
+console.log(JSON.stringify({passed:true,components:result.components.map(({id,closedInstructionCount,calls})=>({id,closedInstructionCount,calls})),sourceLoopBounds:result.sourceLoopBounds,kind2:result.kind2,wholeLoaderMax:result.wholeLoaderCalls.max,currentATRecovered:false},null,2));

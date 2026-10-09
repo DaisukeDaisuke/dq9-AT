@@ -1,0 +1,55 @@
+{
+  "schema": "bounded-shrine-continuation-public-result-v1",
+  "debugOnly": true,
+  "input": {
+    "previous181Replayed": true,
+    "previousTerminalMapPixelRegisterATAllEqual": true,
+    "buttons": "Down",
+    "downFrames": 150,
+    "releasedFrames": 120
+  },
+  "mapChange": {
+    "frame": 331,
+    "from": 7401,
+    "to": 7400
+  },
+  "finalFrame": 451,
+  "calls": [
+    {
+      "frame": 399,
+      "returnAddress": "0x20409d0"
+    },
+    {
+      "frame": 399,
+      "returnAddress": "0x203ccf0"
+    }
+  ],
+  "callCount": 2,
+  "allUpdateEntryReturnAndFinalLCGMatch": true,
+  "probeDrops": 0,
+  "loaderEvents": [
+    {
+      "frame": 399,
+      "pc": "0x21a3690"
+    },
+    {
+      "frame": 399,
+      "pc": "0x21a39fc"
+    },
+    {
+      "frame": 401,
+      "pc": "0x21a3bdc"
+    }
+  ],
+  "finalFrameViewed": true,
+  "visibleDescription": "Shrine exterior with player in front of building; map title \u3075\u3046\u3044\u3093\u306e\u307b\u3053\u3089",
+  "firstVisibleFrameKnown": false,
+  "sourcePrediction": "One successful ordinary descriptor101 constructor: controller1 + actor1",
+  "sourcePredictionMatchedForThisReplay": true,
+  "wholeWorldGeneralization": false,
+  "currentVideoATRecovered": false,
+  "seedOrRAMExportToProduction": false,
+  "finalPixelSHA256": "c6ff01f48c5fb13c2b44c6fe537f19495a98addde2558d4693785c628ee4f00f",
+  "privateEvidenceSHA256": "98cc4107dfda09cc8ea16b81c7a21256e5d330538b78911aa4e6bb52e03f337b",
+  "residentCommandLoop": "70597 remains alive; ordinary buttons/finite steps and log count/search/read"
+}

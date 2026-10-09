@@ -1,0 +1,36 @@
+{
+  "taskUUID": "bf506706-921c-4d28-bcb2-e9c1449f4136",
+  "baseSHA": "1928cd9c6c2018445ce87f0c7179abb36e1a2fba",
+  "files": [
+    {
+      "path": "web/source-loader-at-components.mjs",
+      "bytes": 6930,
+      "sha256": "bd3255cd94c3f3ffc664338fc5ae8fc1f15243f2fac43dfd24b29d3811bfac0e"
+    },
+    {
+      "path": "web/source-loader-at-bindings.mjs",
+      "bytes": 13576,
+      "sha256": "849596b0f74b6011799bcdb0f9aaceba022a115e2898dfeff0aad3b88a50fab9"
+    },
+    {
+      "path": "scripts/test-loader-components.mjs",
+      "bytes": 1766,
+      "sha256": "77dc54961d4b919ac873bda1225467c8d912421659499daf68c20c28be07340e"
+    }
+  ],
+  "changedExistingFiles": [],
+  "newWebFiles": 2,
+  "validation": {
+    "ROMOnlyTest": "passed",
+    "closedRoots": 10,
+    "loopHelperInvocationBounds": [
+      48,
+      48
+    ],
+    "forgedCloneRejected": true,
+    "mutatedROMRejected": true,
+    "wholeLoaderMaximum": null,
+    "currentATRecovered": false
+  },
+  "scope": "ROM-hash-bound local conditional component replacement facts; no numeric seed or current-world inference. Functions can nest and must not be summed as disjoint full-gap spans."
+}
