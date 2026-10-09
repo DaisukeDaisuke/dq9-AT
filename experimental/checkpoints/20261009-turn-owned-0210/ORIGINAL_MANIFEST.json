@@ -1,0 +1,80 @@
+{
+  "files": [
+    {
+      "path": "web/native-turn-phase.mjs",
+      "bytes": 3323,
+      "sha256": "ca62bdc9198d7fead36ac65ac294b6f7856052e7c5431da16d2ad15f667e418a"
+    },
+    {
+      "path": "web/tracking-native-route-choice.mjs",
+      "bytes": 9811,
+      "sha256": "2b70fce6044756dd0bc6f4ef565afe3daa0cd2a01916bb4432752ee614cd43d9"
+    },
+    {
+      "path": "web/tracking-native-route-cursor.mjs",
+      "bytes": 12064,
+      "sha256": "166ee18b516d4eef675d83348d377419b40186693ee3b7248cd26dfbf34b779d"
+    },
+    {
+      "path": "web/tracking-at-observation-adapter.mjs",
+      "bytes": 11935,
+      "sha256": "402a1b157df2d1fcde2a017163a8a33dbf5b52fcfabb4b466814b7444fb2dd91"
+    },
+    {
+      "path": "web/monster-movement.mjs",
+      "bytes": 27609,
+      "sha256": "217b9cd8482f64def891f8211b270e5e776dad58d74cb70e23a89b74837f4269"
+    },
+    {
+      "path": "wasm/monster_movement.c",
+      "bytes": 13693,
+      "sha256": "4db709e62c905b19f430d8725b79555d127593107554743d2c715277bec45394"
+    },
+    {
+      "path": "historical-at-ledger.mjs",
+      "bytes": 9579,
+      "sha256": "4128bc69fd11fbbf603e87ceffc08a243427cb07d656a1bbd3d93bf6237fd669"
+    },
+    {
+      "path": "measure-real-cursor-turn.mjs",
+      "bytes": 6739,
+      "sha256": "28ffb233121dbeb6618a35c21cb8f99c31a6748bf0c916f4101249e3de11c308"
+    },
+    {
+      "path": "check-history-support.mjs",
+      "bytes": 3840,
+      "sha256": "824525184ef5fbc58cd1206462ddf71111eb52ca812dea5340852bd4fa6ee427"
+    },
+    {
+      "path": "REAL_CURSOR_TURN.json",
+      "bytes": 931,
+      "sha256": "37b7cf06ee3939d7b69d8289a072139eb1de2a1434a2dcf624f02feb43ce55e6"
+    },
+    {
+      "path": "README.md",
+      "bytes": 4619,
+      "sha256": "779c1aee93abf55759b78ca547bb0d97b75721f8e09493e436d4d874a7d5c9c2"
+    }
+  ],
+  "baseFiles": [
+    {
+      "path": "web/tracking-native-route-choice.mjs",
+      "sha256": "657b60f89c2554ffba4968a3bafc7370a68a3b5b656fe17463c4e51f55dae88b"
+    },
+    {
+      "path": "web/tracking-native-route-cursor.mjs",
+      "sha256": "6e81929efbb81131d20168b9e9d3dbd75612ad37e153b07ed9e48cab3b5e1f9f"
+    },
+    {
+      "path": "web/tracking-at-observation-adapter.mjs",
+      "sha256": "2a9c5082f52198ff1d237f7e9d9f062d7d42dbda60fd01d4d7b134f6403d670d"
+    },
+    {
+      "path": "web/monster-movement.mjs",
+      "sha256": "812c219e368b7ead7fb49764d6605d7f26a81fc5c6e839ade87b06cf5e31dc05"
+    }
+  ],
+  "sourceScope": "5898 exact source overlay, current live owner not changed",
+  "priorSnapshot": "snapshot-turn-0203",
+  "browserRun": false
+}

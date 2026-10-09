@@ -1,0 +1,9 @@
+{
+  "sourceManifestSHA256": "273e2d391c6628640dd9bc259b8d8d68f0e85210c46520349e5e40093ca09265",
+  "productionIntegrated": false,
+  "canonicalControllerBrowserIntegrationComplete": false,
+  "liveOwnerReplaced": false,
+  "currentATRecovered": false,
+  "rawPayloadIncluded": false,
+  "scope": "Immutable ownership/cursor support checkpoint only. Ongoing controller integration excluded; live history/segment/continuation owner remains untouched."
+}
