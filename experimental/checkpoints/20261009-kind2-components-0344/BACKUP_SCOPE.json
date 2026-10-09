@@ -1,0 +1,9 @@
+{
+  "originalManifestSHA256": "827efe2d8b729ab8c266c45a5c5310e46747d0e213ff7f0ad96db3c12f499c37",
+  "productionIntegrated": false,
+  "later0352CompleteClosureIncluded": false,
+  "wholeKind2Maximum": null,
+  "currentATRecovered": false,
+  "rawInputsIncluded": false,
+  "scope": "Fixed0344 version only; later closure not included. ROM-hash/address/semantic-source facts, no raw instructions or runtime values."
+}

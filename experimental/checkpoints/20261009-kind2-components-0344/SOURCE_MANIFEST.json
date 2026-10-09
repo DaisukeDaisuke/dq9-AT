@@ -1,0 +1,33 @@
+{
+  "taskUUID": "bf506706-921c-4d28-bcb2-e9c1449f4136",
+  "baseSHA": "1928cd9c6c2018445ce87f0c7179abb36e1a2fba",
+  "files": [
+    {
+      "path": "web/source-kind2-model-components.mjs",
+      "bytes": 7462,
+      "sha256": "6ac28c65ad95a1f37b70a85149f059739bdb6bbdc25a3a0ee50f552fc0343944"
+    },
+    {
+      "path": "web/source-kind2-model-bindings.mjs",
+      "bytes": 5942,
+      "sha256": "deb74680f2bd07b48ea3bd9c1db6a502c55212ccc35c2eb1e6289f0fcd956b01"
+    },
+    {
+      "path": "scripts/test-kind2-components.mjs",
+      "bytes": 1471,
+      "sha256": "24c100c3ab3d05db8a08a7f1b009c7d289cc59cb8025fe99133db3c145243efe"
+    }
+  ],
+  "changedExistingFiles": [],
+  "validation": {
+    "ROMOnlyKind2D04id29": "passed",
+    "nonAllocationConfigCommands": 10,
+    "allocationRequests": 1,
+    "allocationBytes": 288,
+    "wholeKind2Maximum": null,
+    "debugInputsRejected": true,
+    "forgedCloneRejected": true,
+    "currentATRecovered": false
+  },
+  "scope": "Automatic ROM descriptor\u2192model\u2192configuration\u2192handler table reading. Closed config commands are scoped separately from allocation/scheduling/graphics. No whole-kind2 finite count."
+}
