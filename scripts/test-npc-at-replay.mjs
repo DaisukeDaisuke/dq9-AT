@@ -20,7 +20,7 @@ const files={origin:new File([JSON.stringify(origin)],'origin.json'),clocks:new 
 eq((await replayNpcFiles(files)).conditionalConsumed,2);
 await assert.rejects(replayNpcFiles({...files,origin:new File(['{'],'broken.json')}));checks++;
 // Execute the actual production Worker, adapting only its browser transport/fetch.
-const workerURL=new URL('../web/at-worker.mjs',import.meta.url).href,web=new URL('../web/',import.meta.url).href;
+const workerURL=new URL('../web/at-worker.mjs?v=symbolic-clock-20261009-e604633f',import.meta.url).href,web=new URL('../web/',import.meta.url).href;
 const worker=new Worker(`import {parentPort} from 'node:worker_threads';import {readFile} from 'node:fs/promises';globalThis.self=globalThis;globalThis.postMessage=m=>parentPort.postMessage(m);globalThis.fetch=async p=>new Response(await readFile(new URL(p,${JSON.stringify(web)})));await import(${JSON.stringify(workerURL)});parentPort.on('message',data=>self.onmessage({data}));`,{eval:true,type:'module'});
 let id=0;const pending=new Map();worker.on('message',m=>{const p=pending.get(m.id);pending.delete(m.id);m.ok?p.resolve(m.value):p.reject(Error(m.error));});
 worker.on('error',e=>{for(const p of pending.values())p.reject(e);pending.clear();});
@@ -32,7 +32,7 @@ try{
  for(const [type,args] of [['npc-continuation',{input}],['replay',{trace:input}],['npc-continuation',{input:unknown}],['npc-continuation-files',files]]){
   await assert.rejects(send(type,args),/DST・メモリ/);checks++;eq(await send('export'),initial);
  }
- const panel=await readFile(new URL('../web/at-panel.mjs',import.meta.url),'utf8');
+ const panel=await readFile(new URL('../web/at-panel.mjs?v=symbolic-clock-20261009-e604633f',import.meta.url),'utf8');
  assert(panel.includes('PRODUCTION_AT_INPUT_NOTICE'));checks++;
  assert(!panel.includes("trace.format==='dq9-npc-replay-v1'"));checks++;
  assert(panel.includes('attachNpcReplayPanel'));checks++;

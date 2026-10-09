@@ -2,7 +2,7 @@ import {mineFieldGraphs,fieldPathName} from './field-graph.mjs';
 import {decodeCalls} from './map-core.mjs';
 import {mineCreatorResources} from './monster-creation-resources.mjs';
 import {preferredNodeTrigFromRom,fieldNativeFacing} from './field-preferred-node.mjs';
-import {MonsterMovementKernel} from './monster-movement.mjs?v=ordinary-turn-20261009-e76d366f';
+import {MonsterMovementKernel} from './monster-movement.mjs?v=symbolic-clock-20261009-e604633f';
 const validFrame=f=>f&&['romSHA256','fullRGBA_SHA256'].every(k=>/^[a-f0-9]{64}$/.test(f[k]??''))&&['recordKey','sourceId'].every(k=>typeof f[k]==='string'&&f[k].length)&&['sourceEpoch','timelineSegment'].every(k=>Number.isSafeInteger(f[k])&&f[k]>=0)&&Number.isFinite(f.mediaTime)&&f.mediaTime>=0;
 const copy=structuredClone,int32=n=>Number.isInteger(n)&&n>=-2147483648&&n<=2147483647;
 

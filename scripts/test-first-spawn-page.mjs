@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {setupFirstSpawnPanel} from '../web/first-spawn-panel.mjs';
+import {setupFirstSpawnPanel} from '../web/first-spawn-panel.mjs?v=symbolic-clock-20261009-e604633f';
 let checks=0;const eq=(a,b)=>{assert.deepEqual(a,b);checks++;};
 const ids=['spawn-replay-newborn','spawn-replay-status','spawn-replay-start','spawn-replay-step','spawn-replay-ten','spawn-replay-run','spawn-replay-cancel','spawn-replay-reset','spawn-replay-runtime','spawn-replay-trajectory','spawn-replay-declared','spawn-replay-inputs','spawn-replay-log','seed'];
 const els=new Map(ids.map(id=>[id,{disabled:false,checked:false,value:id==='seed'?'1':'',files:[],textContent:'',listeners:{},addEventListener(n,f){this.listeners[n]=f;}}]));const $=id=>els.get(id);

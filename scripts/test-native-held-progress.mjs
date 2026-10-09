@@ -1,5 +1,5 @@
 import assert from'node:assert/strict';import{readFileSync}from'node:fs';
-const source=readFileSync(new URL('../web/monster-native-auto-support.mjs?v=ordinary-turn-20261009-e76d366f',import.meta.url),'utf8');
+const source=readFileSync(new URL('../web/monster-native-auto-support.mjs?v=symbolic-clock-20261009-e604633f',import.meta.url),'utf8');
 const early=source.match(/if\(remaining<=0\)\{job\.pending\.unshift\(proposal\);[^}]+\}/)[0];
 const ordinary=source.match(/if\(visitProgress\)work\.totalCompletedVisits\+\+;if\(!holdCursor\)\{work\.cursor=\(work\.cursor\+1\)%jobs\.length;\}/)[0];
 const later=source.match(/if\(progress\)work\.totalCompletedVisits\+\+;if\(!holdCursor\)\{work\[cursorKey\]=\(work\[cursorKey\]\+1\)%activeJobs\.length;\}/)[0];

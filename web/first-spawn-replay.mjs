@@ -7,7 +7,7 @@ import {prepareMapTransitions,advanceMapTransition} from './map-transition.mjs';
 import {prepareF06Continuation,advanceF06Continuation} from './f06-continuation.mjs';
 import {prepareFieldSpawnTables} from './field-spawn-source.mjs?v=field-source-preparation-20261006-1806';
 import {mineCreatorResources,bindCreatorResources} from './monster-creation-resources.mjs';
-import {FieldScheduler} from './field-scheduler.mjs';
+import {FieldScheduler} from './field-scheduler.mjs?v=symbolic-clock-20261009-e604633f';
 import {queryPreferredFieldNode,preferredNodeTrigFromRom} from './field-preferred-node.mjs';
 import {evaluateFieldSpawnPoint} from './field-spawn-point.mjs';
 import {deriveNaturalFreeSlot,describeInventorySlot} from './field-inventory.mjs';

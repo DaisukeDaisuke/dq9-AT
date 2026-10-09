@@ -2,6 +2,9 @@
 // This prepares static source resources, never a native runtime packet. A map
 // observation is not a reached loader, actor origin, seed, or source clock.
 import {mineFieldGraphs,fieldPathName} from './field-graph.mjs';
+import {bindSourceFieldScheduler,prepareGraphPresentSchedulerDomain} from './symbolic-field-scheduler.mjs?v=symbolic-clock-20261009-e604633f';
+import {bindOrdinaryFieldInvocationClock,prepareReplayInputClockHypotheses} from './source-field-invocation-clock.mjs?v=symbolic-clock-20261009-e604633f';
+import {readSelectedOrdinaryEntryClock} from './source-single-entry-clock.mjs?v=symbolic-clock-20261009-e604633f';
 import {decodeCalls} from './map-core.mjs';
 import {prepareFieldSpawnTables} from './field-spawn-source.mjs?v=field-source-preparation-20261006-1806';
 import {mineCreatorResources} from './monster-creation-resources.mjs';
@@ -29,7 +32,9 @@ export async function prepareVideoReplaySources(replayInputs,context={},
  const {project,catalog,romSHA256}=context??{};
  const snapshot=copy(replayInputs),sources=[],bindings=[],byRecord=new Map(),nfs=project?.nfs??project?.nitro;
  const records=Array.isArray(catalog?.maps)?catalog.maps.map(r=>({key:r.key,mapId:r.mapId,fieldCode:r.fieldCode,source:copy(r.source)})):null;
- let graphs=null,graphError=null,graphAttempted=false;
+ let graphs=null,graphError=null,graphAttempted=false,schedulerBinding=null,schedulerBindingError=null,invocationClock=null,invocationClockError=null;
+ if(context?.rom instanceof Uint8Array){try{schedulerBinding=await bindSourceFieldScheduler(context);}catch(error){schedulerBindingError=String(error?.message??error);}}
+ if(context?.rom instanceof Uint8Array){try{invocationClock=await bindOrdinaryFieldInvocationClock(context);}catch(error){invocationClockError=String(error?.message??error);}}
  const contextReady=shaPattern.test(romSHA256??'')&&typeof nfs?.readFile==='function'&&Array.isArray(records);
  const checkInput=input=>{
   if(!contextReady)return 'Loaded ROM project, exact catalog and ROM identity unavailable';
@@ -64,7 +69,9 @@ export async function prepareVideoReplaySources(replayInputs,context={},
   // archive identity is carried on every source, including subsequent records.
   const graphArchive=dependencies.find(d=>d.path==='data/pack_lv5/path.gp2')??sources.flatMap(s=>s.dependencies).find(d=>d.path==='data/pack_lv5/path.gp2');
   if(graphArchive&&!dependencies.some(d=>d.path===graphArchive.path))dependencies.unshift(copy(graphArchive));
-  return {schema:'conditional-ROM-field-replay-source-v1',record:{recordKey:record.key,mapId:record.mapId,fieldCode:record.fieldCode,source:copy(record.source)},romSHA256,sourceReady:errors.length===0,graph,encounters,creator,dependencies,unsupported:errors,missingRuntimeInputs:requiredRuntime.slice(),...notLive,
+  const schedulerSource={graph,romSHA256,record:{recordKey:record.key,mapId:record.mapId,fieldCode:record.fieldCode}};
+  const schedulerProgression=schedulerBinding?prepareGraphPresentSchedulerDomain(schedulerSource,schedulerBinding):{schema:'conditional-graph-scheduler-domain-v1',status:'unresolved-source-binding',reason:schedulerBindingError??'Owned ROM instruction bytes unavailable',unknownAlternativeRetained:true};
+  return {schedulerProgression,schema:'conditional-ROM-field-replay-source-v1',record:{recordKey:record.key,mapId:record.mapId,fieldCode:record.fieldCode,source:copy(record.source)},romSHA256,sourceReady:errors.length===0,graph,encounters,creator,dependencies,unsupported:errors,missingRuntimeInputs:requiredRuntime.slice(),...notLive,
    scope:'Static graph, full ordered encounter groups/rows and ordinary creator species/model/AI records. Static node initialFlags are not current node flags; player location/floor is not an enemy root. Current group/table, templates/allocation topology and source execution remain unknown.'};
  }
  for(const [inputIndex,input] of snapshot.inputs.entries()){
@@ -75,7 +82,9 @@ export async function prepareVideoReplaySources(replayInputs,context={},
    await yieldTask();current();const record=records.find(r=>r.key===key),source=await prepareRecord(record);current();byRecord.set(key,sources.length);sources.push(source);
   }
   const sourceIndex=byRecord.get(key);
-  bindings.push({inputIndex,status:sources[sourceIndex].sourceReady?'conditional-static-source-prepared':'conditional-static-source-partial',sourceIndex,input:copy(input),...notLive});
+  const clockHypotheses=invocationClock?prepareReplayInputClockHypotheses(input,invocationClock):{schema:'conditional-replay-clock-hypotheses-v1',spans:[],unresolved:[{reason:invocationClockError??'Owned ROM invocation-clock binding unavailable'}],unknownAlternativeRetained:true};
+  let selectedEntryClock=null;if(invocationClock&&input.fromMap?.recordKey!==input.map?.recordKey&&input.entryTimeHypothesis?.lowerBoundKnown===true){try{selectedEntryClock=await readSelectedOrdinaryEntryClock({project,catalog,source:sources[sourceIndex],input,clockBinding:invocationClock});}catch(error){selectedEntryClock={schema:'source-bound-selected-single-entry-clock-v1',status:'unresolved-source-entry',reason:String(error?.message??error),unknownAlternativeRetained:true};}}
+  bindings.push({selectedEntryClock,clockHypotheses,inputIndex,status:sources[sourceIndex].sourceReady?'conditional-static-source-prepared':'conditional-static-source-partial',sourceIndex,input:copy(input),...notLive});
  }
  current();
  return {schema:'automatic-video-replay-source-preparation-v1',sources,bindings,inputSearchComplete:snapshot.complete===true,inputRetention:copy(snapshot.retention??null),inputSearchStats:copy(snapshot.stats??null),unretainedInputsPrepared:false,unknownBranch:copy(snapshot.unknownBranch),retainedInputBranchesPreserved:true,ATConstraintsChanged:false,initialSeed:null,initialSeedInferred:false,cadence:null,ATCallRange:null,missingRuntimeInputs:requiredRuntime.slice(),...notLive,

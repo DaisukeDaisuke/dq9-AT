@@ -5,7 +5,7 @@ import {TreasureEntryKernel} from './treasure-entry.mjs';
 import {WorldATKernel,MovementATStep,replayWorldPairs} from './world-at.mjs';
 import {ATKernel,ATSession,replayObservedTrace} from './at-core.mjs';
 import {FieldATKernel} from './field-at.mjs';
-import {FieldScheduler,replaySchedulerTrace} from './field-scheduler.mjs';
+import {FieldScheduler,replaySchedulerTrace} from './field-scheduler.mjs?v=symbolic-clock-20261009-e604633f';
 let session=null,kernel=null,tables=null,fieldKernel=null,candidateForecastEpoch=0;
 const ready=(async()=>{const [r,t]=await Promise.all([fetch('./wasm/map_render.wasm'),fetch('./data/enc.json')]);if(!r.ok||!t.ok)throw Error('AT資産の取得に失敗しました');const {instance}=await WebAssembly.instantiate(await r.arrayBuffer(),{});kernel=new ATKernel(instance);fieldKernel=new FieldATKernel(kernel);tables=(await t.json()).main;})();
 self.onmessage=async({data:m})=>{try{assertProductionATCommand(m);await ready;let value;

@@ -4,9 +4,9 @@ import {validateMapTransitionInputs,deriveEmptyF06NpcList,advanceMapTransition} 
 import {ATKernel} from '../web/at-core.mjs';
 import {FieldATKernel} from '../web/field-at.mjs';
 import {MapProject} from '../web/map-core.mjs';
-import {MonsterMovementKernel} from '../web/monster-movement.mjs?v=ordinary-turn-20261009-e76d366f';
+import {MonsterMovementKernel} from '../web/monster-movement.mjs?v=symbolic-clock-20261009-e604633f';
 import {preferredNodeTrigFromRom} from '../web/field-preferred-node.mjs';
-import {createFirstSpawnReplay} from '../web/first-spawn-replay.mjs';
+import {createFirstSpawnReplay} from '../web/first-spawn-replay.mjs?v=symbolic-clock-20261009-e604633f';
 let checks=0;const eq=(a,b)=>{assert.deepEqual(a,b);checks++;},reject=f=>{assert.throws(f);checks++;},copy=structuredClone;
 const context={primitive:{story:[4,3,3],networkWord:2,quest185:0,eventFlags:{89:false,90:false}},conditions:Object.fromEntries(['ordinarySingleParty','stablePlacementConditions','successfulDestinationLoads','successfulNpcAllocations','noAdditionalFieldSpecies','noInterveningOtherAT','noSeedSetter','stablePickupWords','pickupDescriptorBound','successfulPickupAllocations'].map(k=>[k,true])),pickup:{stateWords:{15:0x80020400},phaseRange:{lower:10,upper:30}}};
 const kinds=['exit-request','field-cleanup','map-changed','destination-placement','pool-initialization','destination-load'];

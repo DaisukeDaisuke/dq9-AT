@@ -1,0 +1,12 @@
+import fs from'node:fs';import assert from'node:assert/strict';
+import{deriveNativeTurnPhaseAlternatives,deriveNativeTurnSequenceAlternatives}from'../web/native-turn-phase.mjs?v=symbolic-clock-20261009-e604633f';
+const e=(await WebAssembly.instantiate(fs.readFileSync(new URL('../web/wasm/monster_movement.wasm',import.meta.url)),{})).instance.exports,sourceFacing=a=>[a],turnAngle=e.monster_motion_turn_angle;
+let checks=0;const eq=(a,b)=>{assert.deepEqual(a,b);checks++;},run=(fromYaw,toYaw,targetAngle,more={})=>deriveNativeTurnSequenceAlternatives({fromYaw,toYaw,targetAngle,turnRate:808,sourceFacing,turnAngle,phaseDomain:[0,3],...more});
+const one=deriveNativeTurnPhaseAlternatives({fromYaw:0,toYaw:3000,targetAngle:3000,turnRate:808,sourceFacing,turnAngle,phaseDomain:[0,3]});eq(one.alternatives,[]);const multi=run(0,3000,3000);eq(multi.minimumInvocations,2);eq(multi.maximumInvocations,null);eq(multi.alternatives[0].witness.phases.every(p=>p>=0&&p<=3),true);eq(multi.sourceUpdateCountMeasured,false);eq(multi.wholeTickATCallsKnown,false);eq(multi.translationResolved,false);
+eq(run(0,6000,6000).minimumInvocations,3);eq(run(0,0,0).minimumInvocations,0);eq(run(0,0,0,{requirePositivePhase:true}).minimumInvocations,1);
+for(const from of[0,100,1000,19366,25600])for(const target of[0,200,3000,10000,25000]){
+ const states=new Map([[from,0]]);let frontier=new Set([from]);for(let count=1;count<=8;count++){const next=new Set();for(const angle of frontier)for(let phase=0;phase<=3;phase++){const to=turnAngle(angle,target,808,phase);next.add(to);if(!states.has(to))states.set(to,count);}frontier=next;}
+ for(const [to,count]of states){const result=run(from,to,target);eq(result.resolved,true);eq(result.minimumInvocations,count);for(const a of result.alternatives){let angle=a.beforeAngle;for(const phase of a.witness.phases){eq(phase<=3,true);angle=turnAngle(angle,target,808,phase);}eq(angle,a.afterAngle);}}
+}
+eq(run(0,3000,3000,{maximumStates:1}).resolved,false);eq(run(0,3000,3000,{maximumStates:1}).remainingAlternativesRetained,true);
+console.log(JSON.stringify({passed:true,checks,onePrefix:{from:0,to:3000,target:3000,compatible:one.alternatives.length},multiplePrefix:{minimumInvocations:multi.minimumInvocations,maximumInvocations:multi.maximumInvocations,witness:multi.alternatives[0].witness},reference:'All phase0..3 transitions through8 updates for25 source-angle/target pairs',videoClockAssumed:false,currentATRecovered:false},null,2));

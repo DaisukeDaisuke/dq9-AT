@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {createHash} from 'node:crypto';
-import {prepareVideoReplaySources} from '../web/video-replay-source-preparation.mjs';
+import {prepareVideoReplaySources} from '../web/video-replay-source-preparation.mjs?v=symbolic-clock-20261009-e604633f';
 import {prepareFieldSpawnTables} from '../web/field-spawn-source.mjs';
 import {mineCreatorResources} from '../web/monster-creation-resources.mjs';
 import {mineFieldGraphs,fieldPathName} from '../web/field-graph.mjs';
 import {decodeCalls} from '../web/map-core.mjs';
 import {openMapRom} from '../web/map-browser-preview/static-scene.mjs';
 import {buildRomMapCatalog} from '../web/map-browser-preview/rom-map-catalog.mjs';
-import {createVideoTrackingAT as createProductionVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=ordinary-turn-20261009-e76d366f';
+import {createVideoTrackingAT as createProductionVideoTrackingAT} from '../web/map-browser-preview/video-tracking-at.mjs?v=symbolic-clock-20261009-e604633f';
 let checks=0;const eq=(a,b)=>{assert.deepEqual(a,b);checks++;},reject=async(f,name)=>{await assert.rejects(f,name?{name}:undefined);checks++;};
 const hash=b=>createHash('sha256').update(b).digest('hex');
 const romSHA256='a'.repeat(64),frame=(t,key)=>({romSHA256,sourceId:'synthetic-video',sourceEpoch:1,timelineSegment:2,sourcePTS:t,frameKey:key});

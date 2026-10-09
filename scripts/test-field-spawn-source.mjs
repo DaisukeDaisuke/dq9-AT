@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';import fs from 'node:fs';
 import {prepareFieldSpawnTables} from '../web/field-spawn-source.mjs';
 import {decodeEncounterStream} from '../web/encounter-distribution.mjs';
-import {createFirstSpawnReplay} from '../web/first-spawn-replay.mjs';
+import {createFirstSpawnReplay} from '../web/first-spawn-replay.mjs?v=symbolic-clock-20261009-e604633f';
 import {openMapRom} from '../web/map-browser-preview/static-scene.mjs';
 import {readArm9Overlay} from '../web/map-browser-preview/rom-overlay.mjs';
 import {readNaturalMonsterScaleRule,convertNaturalScaleArgument} from '../web/monster-source-scale.mjs';

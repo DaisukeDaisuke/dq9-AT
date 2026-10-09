@@ -1,5 +1,5 @@
 import {PRODUCTION_AT_INPUT_NOTICE,assertProductionATInput} from './production-at-input-policy.mjs?v=production-inputs-20261006-1320';
-import {createFirstSpawnReplay} from './first-spawn-replay.mjs?v=field-source-preparation-20261006-1806';
+import {createFirstSpawnReplay} from './first-spawn-replay.mjs?v=symbolic-clock-20261009-e604633f';
 import {parseSeed} from './at-core.mjs';
 const hex=n=>'0x'+(n>>>0).toString(16).padStart(8,'0');
 

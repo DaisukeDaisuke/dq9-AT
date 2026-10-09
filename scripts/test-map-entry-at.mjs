@@ -45,7 +45,7 @@ test('main panel restores a local session through the production Worker without 
  const previous=Object.fromEntries(Object.keys(globals).map(k=>[k,Object.getOwnPropertyDescriptor(globalThis,k)]));
  try{
   for(const [k,v]of Object.entries(globals))Object.defineProperty(globalThis,k,{value:v,writable:true,configurable:true});
-  const {eventLogPreview}=await import('../web/at-panel.mjs');
+  const {eventLogPreview}=await import('../web/at-panel.mjs?v=symbolic-clock-20261009-e604633f');
   const rawRows=Array.from({length:20000},(_,i)=>({sequence:i,payload:'x'.repeat(100)}));
   const heavy={kind:'npc-continuation-observation',id:'large-native',evidence:{events:rawRows},comparison:{orderedConsumptionMatches:true,firstDifference:{field:'controllerFlags',expected:0,actual:1}}};
   const preview=eventLogPreview([heavy]);assert(preview.length<4096);assert.match(preview,/20000/);assert.match(preview,/controllerFlags/);assert(!preview.includes('payload'));assert.equal(heavy.evidence.events,rawRows);

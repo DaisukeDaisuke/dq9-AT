@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';import fs from 'node:fs';
 import {prepareF06Continuation,advanceF06Continuation} from '../web/f06-continuation.mjs';
-import {floatBits} from '../web/pickup-updater.mjs';import {ATKernel} from '../web/at-core.mjs';import {FieldATKernel} from '../web/field-at.mjs';import {FieldScheduler} from '../web/field-scheduler.mjs';
-import {MapProject} from '../web/map-core.mjs';import {MonsterMovementKernel} from '../web/monster-movement.mjs?v=ordinary-turn-20261009-e76d366f';import {preferredNodeTrigFromRom} from '../web/field-preferred-node.mjs';import {createFirstSpawnReplay} from '../web/first-spawn-replay.mjs';
+import {floatBits} from '../web/pickup-updater.mjs';import {ATKernel} from '../web/at-core.mjs';import {FieldATKernel} from '../web/field-at.mjs';import {FieldScheduler} from '../web/field-scheduler.mjs?v=symbolic-clock-20261009-e604633f';
+import {MapProject} from '../web/map-core.mjs';import {MonsterMovementKernel} from '../web/monster-movement.mjs?v=symbolic-clock-20261009-e604633f';import {preferredNodeTrigFromRom} from '../web/field-preferred-node.mjs';import {createFirstSpawnReplay} from '../web/first-spawn-replay.mjs?v=symbolic-clock-20261009-e604633f';
 let checks=0;const eq=(a,b)=>{assert.deepEqual(a,b);checks++;},reject=f=>{assert.throws(f);checks++;},copy=structuredClone;
 const names=['ordinaryOfflineUpdates','noOtherPickupWordWriters','motionCannotMutateATInputs','ordinaryF06LoaderComplete','noOtherDestinationAT','completeOrderedUpdaterStream','completeOrderedDestinationTicks','noOtherDestinationFieldWrites','noOtherDestinationPoolWrites'];
 const initial={initialSourceFrame:0,cursor:0,accumulatorBits:floatBits(60),groupWords:Object.fromEntries(Array.from({length:100},(_,i)=>[i,i===15?0xa002021e:0])),conditions:Object.fromEntries(names.map(k=>[k,true]))};

@@ -1,4 +1,4 @@
-import {isMovementNoDrawSource} from './monster-motion-source-binding.mjs?v=motion-closure-20261008-89e290ef';
+import {isMovementNoDrawSource} from './monster-motion-source-binding.mjs?v=symbolic-clock-20261009-e604633f';
 // Partial source-derived native motion arithmetic. No renderer, tween, recorded
 // next position, collision result or full-FSM completion is hidden in this API.
 import {fieldNodeOccupied} from './field-preferred-node.mjs';

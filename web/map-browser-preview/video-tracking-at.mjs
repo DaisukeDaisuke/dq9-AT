@@ -2,9 +2,9 @@ import {deriveOwnNativeModelEndpoints} from '../tracking-own-native-endpoints.mj
 import {preparedCurrentNativeAdmission} from '../tracking-current-native-admission.mjs?v=route-poses-20261008-d98f497f';
 import {fingerprint} from '../tracking-at-runner.mjs';
 import {createTrackingObservationWorkQueue} from '../tracking-observation-work-queue.mjs?v=route-cursor-20261008-d2296d0e';
-import {createNativeRouteProducer} from '../tracking-native-route-producer.mjs?v=ordinary-turn-20261009-e76d366f';
+import {createNativeRouteProducer} from '../tracking-native-route-producer.mjs?v=symbolic-clock-20261009-e604633f';
 import {resolveCameraATBackgroundSupport} from './camera-at-background-support.mjs?v=camera-at-20261008-f1a85661';
-import {prepareVideoReplaySources} from '../video-replay-source-preparation.mjs?v=replay-source-20261007-0743';
+import {prepareVideoReplaySources} from '../video-replay-source-preparation.mjs?v=symbolic-clock-20261009-e604633f';
 import {copyObservationBundleForAT} from './observation-bundle-ownership.mjs?v=own-endpoints-20261008-e58b244e';
 import {compareCameraBodyAlternative} from '../monster-camera-body-alternative.mjs?v=route-poses-20261008-d98f497f';
 import {trackingSightingMapProvenance} from './map-hypothesis-provenance.mjs';

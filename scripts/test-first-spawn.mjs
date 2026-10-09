@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {FirstSpawnReplay,createFirstSpawnReplay,validateSpawnTrajectory} from '../web/first-spawn-replay.mjs';
+import {FirstSpawnReplay,createFirstSpawnReplay,validateSpawnTrajectory} from '../web/first-spawn-replay.mjs?v=symbolic-clock-20261009-e604633f';
 import {ATKernel} from '../web/at-core.mjs';
 import {FieldATKernel} from '../web/field-at.mjs';
 import {MapProject} from '../web/map-core.mjs';
-import {MonsterMovementKernel} from '../web/monster-movement.mjs?v=ordinary-turn-20261009-e76d366f';
+import {MonsterMovementKernel} from '../web/monster-movement.mjs?v=symbolic-clock-20261009-e604633f';
 import {preferredNodeTrigFromRom} from '../web/field-preferred-node.mjs';
 import {decodeEncounterStream} from '../web/encounter-distribution.mjs';
 let checks=0;const eq=(a,b)=>{assert.deepEqual(a,b);checks++;},reject=f=>{assert.throws(f);checks++;};

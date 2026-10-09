@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';import vm from 'node:vm';import{readFileSync}from'node:fs';
-let code=readFileSync(new URL('../web/monster-recognition-worker.mjs?v=ordinary-turn-20261009-e76d366f',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace(/const loadNativeBodyModule=.*;\n/,'const loadNativeBodyModule=globalThis.loadModule;\n');
+let code=readFileSync(new URL('../web/monster-recognition-worker.mjs?v=symbolic-clock-20261009-e604633f',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace(/const loadNativeBodyModule=.*;\n/,'const loadNativeBodyModule=globalThis.loadModule;\n');
 code=code.replaceAll('import.meta.url', '"file:///worker.mjs"');code+='\nglobalThis.setState=s=>{state=s;};';
 let now=0,calls=0,frames=[],posted=[],cancel=false;const self={postMessage:m=>posted.push(m)};
 const context=vm.createContext({self,performance:{now:()=>now},classificationNow:()=>now,AbortController,DOMException,loadModule:async()=>{now+=3000;if(cancel)await self.onmessage({data:{type:'cancel',id:'one',romEpoch:1}});return{createAutomaticNativeBodySupportService:()=>({evaluate:async(_r,o)=>{calls++;assert.equal(o.budget.wallTimeMs,1500);assert.equal(o.budget.maxProposals,128);frames.push(o.getCurrentFrame());return{continuation:{hasMore:false}};}})};}});

@@ -1,14 +1,19 @@
 import {monsterForRandom} from './at-core.mjs';
 import {queryPreferredFieldNode} from './field-preferred-node.mjs';
 
+const symbolicMode=Symbol('symbolic scheduler state'),symbolicBoundary=Symbol('symbolic scheduler output');
 // Owns AT consumption and timer updates. Unknown runtime facts suspend a step;
 // the caller refines its original input, not a fabricated zero-draw continuation.
 export class FieldScheduler {
  constructor(field){this.field=field;this.kernel=field.kernel;this.e=field.e;if(!this.e.field_spawn_timer)throw Error('生成scheduler対応WASMが必要です');}
+ stepSymbolic(state,input,tables){
+  if(!state?.seed||typeof state.seed!=='object'||Array.isArray(state.seed))throw Error('Opaque symbolic AT reference required');
+  try{return this.step({...state,[symbolicMode]:true},input,tables);}catch(error){if(!error?.[symbolicBoundary])throw error;return error.result;}
+ }
  step(state,input,tables){
   const initial=BigInt(state.position),cursor={position:initial,timer:state.timer},events=[];let row=null;
   const result=(resolved,reason,extra={})=>({resolved,reason,position:String(cursor.position),timer:cursor.timer,consumed:Number(cursor.position-initial),minimumConsumed:Number(cursor.position-initial),events,bootProof:false,...(!resolved?{refineOriginalInput:true,originalState:{...state,position:String(initial)}}:{}),...extra});
-  const draw=kind=>{const [seed,random]=this.kernel.generate(state.seed,cursor.position,1);cursor.position++;events.push({kind,position:String(cursor.position),seed,random});return random;};
+  const draw=(kind,outputIndependent=false)=>{if(state[symbolicMode]){if(!outputIndependent)throw {[symbolicBoundary]:true,result:result(false,'symbolic-AT-output-required',{requestedDraw:{kind,position:String(cursor.position),count:1},ATReference:state.seed,numericSeedSupplied:false})};cursor.position++;events.push({kind,position:String(cursor.position),ATReference:state.seed,random:null,outputDomain:[0,32767],outputIndependent:true});return null;}const [seed,random]=this.kernel.generate(state.seed,cursor.position,1);cursor.position++;events.push({kind,position:String(cursor.position),seed,random});return random;};
   if(input.active===false||input.storyAllowed===false)return result(true,'inactive-or-story-gated');
   if(input.active!==true||input.storyAllowed!==true)return result(false,'activity/story gate unknown');
   const delta=Number.isInteger(input.elapsedLow)&&Number.isInteger(input.elapsedHigh)?this.e.field_clock_delta(input.elapsedLow,input.elapsedHigh):input.delta;
@@ -35,14 +40,14 @@ export class FieldScheduler {
     if(!Array.isArray(nodeIds)||!Array.isArray(dots)||dots.length!==nodeIds.length||dots.some(x=>!Number.isInteger(x)))return result(false,'ordered direction candidates/dots unknown');
     if(!nodeIds.length)continue;
     const p=this.kernel.heap;this.field.reserve(dots.length*4);new Int32Array(this.e.memory.buffer,p,dots.length).set(dots);
-    let chosen=this.e.field_spawn_direction_index(p,dots.length);if(chosen<0)chosen=draw('spawn-direction')%nodeIds.length;
+    let chosen=this.e.field_spawn_direction_index(p,dots.length);if(chosen<0){const random=draw('spawn-direction',nodeIds.length===1);chosen=nodeIds.length===1?0:random%nodeIds.length;}
     node=nodeIds[chosen];
    }else if(attempt.directionResolved!==true)return result(false,'spawn-direction draw status unknown',{attempt:index});
    events.push({kind:'node',attempt:index,memberId:attempt.memberId,nodeId:node});
    if(attempt.geometryEligible===false)continue;
    if(attempt.geometryEligible!==true||!Number.isInteger(attempt.areaMask)||!Number.isInteger(input.timeValue)||!Array.isArray(input.rows))return result(false,'spawn position/collision/area/time unknown',{attempt:index,nodeId:node});
    const candidates=this.field.tableCandidates(input.rows,input.timeValue,attempt.areaMask);
-   row=candidates.length?candidates[this.e.at_randint(draw('table-select'),candidates.length)]:null;
+   if(candidates.length){const random=draw('table-select',candidates.length===1);row=candidates[candidates.length===1?0:this.e.at_randint(random,candidates.length)];}else row=null;
    if(!row)continue;
    const threshold=this.e.field_spawn_delay(row.flags),next=input.attempts?.[index+1];
    const branch=this.e.field_spawn_delay_branch(cursor.timer,row.flags,index,next?.memberId===-1?0:Number.isInteger(next?.memberId)?1:-1);

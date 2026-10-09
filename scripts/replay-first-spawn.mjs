@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 import {readFile} from 'node:fs/promises';
 import {MapProject} from '../web/map-core.mjs';
-import {MonsterMovementKernel} from '../web/monster-movement.mjs?v=ordinary-turn-20261009-e76d366f';
+import {MonsterMovementKernel} from '../web/monster-movement.mjs?v=symbolic-clock-20261009-e604633f';
 import {preferredNodeTrigFromRom} from '../web/field-preferred-node.mjs';
 import {ATKernel,parseSeed} from '../web/at-core.mjs';
 import {FieldATKernel} from '../web/field-at.mjs';
-import {createFirstSpawnReplay} from '../web/first-spawn-replay.mjs';
+import {createFirstSpawnReplay} from '../web/first-spawn-replay.mjs?v=symbolic-clock-20261009-e604633f';
 const [romPath,runtimePath,trajectoryPath,seedText,mode]=process.argv.slice(2);
 if(!seedText)throw Error('Usage: replay-first-spawn.mjs ROM.nds runtime.json trajectory.json seed');
 const [bytes,r,t,m,a]=await Promise.all([readFile(romPath),readFile(runtimePath,'utf8'),readFile(trajectoryPath,'utf8'),readFile(new URL('../web/wasm/monster_movement.wasm',import.meta.url)),readFile(new URL('../web/wasm/map_render.wasm',import.meta.url))]);

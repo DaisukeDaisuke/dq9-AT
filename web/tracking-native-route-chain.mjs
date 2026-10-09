@@ -1,4 +1,4 @@
-import {isMovementNoDrawSource} from './monster-motion-source-binding.mjs?v=motion-closure-20261008-89e290ef';
+import {isMovementNoDrawSource} from './monster-motion-source-binding.mjs?v=symbolic-clock-20261009-e604633f';
 // A conditional two-choice path, not a recovered runtime or video clock.
 // Callers retain all input rows and the unconstrained companion below.
 const copy = structuredClone;

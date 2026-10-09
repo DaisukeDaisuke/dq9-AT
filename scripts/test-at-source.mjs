@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 import {AT_SOURCE_BINDING,atSourceDigest,verifyATSourceRom} from '../web/at-source.mjs';
 import {sourceArm9} from '../web/f06-creator.mjs';
-import {createFirstSpawnReplay} from '../web/first-spawn-replay.mjs';
+import {createFirstSpawnReplay} from '../web/first-spawn-replay.mjs?v=symbolic-clock-20261009-e604633f';
 let checks=0;const eq=(a,b)=>{assert.deepEqual(a,b);checks++;},reject=(f,re)=>{assert.throws(f,re);checks++;};
 const hash=bytes=>createHash('sha256').update(bytes).digest('hex');
 for(let n=0;n<256;n++){

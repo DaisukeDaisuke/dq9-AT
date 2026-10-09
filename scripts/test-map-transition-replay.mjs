@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
-import {validateMapTransitionInputs,advanceMapTransition} from '../web/map-transition.mjs';import {createFirstSpawnReplay} from '../web/first-spawn-replay.mjs';
-import {ATKernel} from '../web/at-core.mjs';import {FieldATKernel} from '../web/field-at.mjs';import {MapProject} from '../web/map-core.mjs';import {MonsterMovementKernel} from '../web/monster-movement.mjs?v=ordinary-turn-20261009-e76d366f';import {preferredNodeTrigFromRom} from '../web/field-preferred-node.mjs';
+import {validateMapTransitionInputs,advanceMapTransition} from '../web/map-transition.mjs';import {createFirstSpawnReplay} from '../web/first-spawn-replay.mjs?v=symbolic-clock-20261009-e604633f';
+import {ATKernel} from '../web/at-core.mjs';import {FieldATKernel} from '../web/field-at.mjs';import {MapProject} from '../web/map-core.mjs';import {MonsterMovementKernel} from '../web/monster-movement.mjs?v=symbolic-clock-20261009-e604633f';import {preferredNodeTrigFromRom} from '../web/field-preferred-node.mjs';
 let checks=0;const eq=(a,b)=>{assert.deepEqual(a,b);checks++;},reject=f=>{assert.throws(f);checks++;},copy=structuredClone;
 const context={primitive:{story:[4,3,3],networkWord:2,quest185:0,eventFlags:{89:false,90:false}},conditions:Object.fromEntries(['ordinarySingleParty','stablePlacementConditions','successfulDestinationLoads','successfulNpcAllocations','noAdditionalFieldSpecies','noInterveningOtherAT','noSeedSetter'].map(n=>[n,true]))};
 const kinds=['exit-request','field-cleanup','map-changed','destination-placement','pool-initialization','destination-load'],phases=Array.from({length:12},(_,i)=>({phase:kinds[i%6],sourceFrame:i+10,...(i%6===0?{heroXYZ:[0,0,0]}:{}),...(i%6===4?{allocationPointer:0x022f0e58}:{})}));

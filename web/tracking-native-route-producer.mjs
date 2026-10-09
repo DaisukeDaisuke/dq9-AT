@@ -1,13 +1,13 @@
-import {advanceNativeRouteEnumeration} from './tracking-native-route-cursor.mjs?v=ordinary-turn-20261009-e76d366f';
-import {readMovementNoDrawSource} from './monster-motion-source-binding.mjs?v=motion-closure-20261008-89e290ef';
-import { enumerateNativeRouteChoiceHypotheses } from './tracking-native-route-choice.mjs?v=ordinary-turn-20261009-e76d366f';
-import { connectConditionalNativeRouteChoices,composeConditionalNativeRouteSequence } from './tracking-native-route-chain.mjs?v=motion-closure-20261008-89e290ef';
+import {advanceNativeRouteEnumeration} from './tracking-native-route-cursor.mjs?v=symbolic-clock-20261009-e604633f';
+import {readMovementNoDrawSource} from './monster-motion-source-binding.mjs?v=symbolic-clock-20261009-e604633f';
+import { enumerateNativeRouteChoiceHypotheses } from './tracking-native-route-choice.mjs?v=symbolic-clock-20261009-e604633f';
+import { connectConditionalNativeRouteChoices,composeConditionalNativeRouteSequence } from './tracking-native-route-chain.mjs?v=symbolic-clock-20261009-e604633f';
 import { mineFieldGraphs, fieldPathName } from './field-graph.mjs';
 import { decodeCalls } from './map-core.mjs';
 import { prepareFieldSpawnTables } from './field-spawn-source.mjs';
 import { mineCreatorResources } from './monster-creation-resources.mjs';
 import { preferredNodeTrigFromRom, fieldNativeFacing, fieldNativeDistance } from './field-preferred-node.mjs';
-import { MonsterMovementKernel } from './monster-movement.mjs?v=ordinary-turn-20261009-e76d366f';
+import { MonsterMovementKernel } from './monster-movement.mjs?v=symbolic-clock-20261009-e604633f';
 import { ATKernel } from './at-core.mjs';
 import { FieldATKernel } from './field-at.mjs';
 import { assertProductionATInput } from './production-at-input-policy.mjs';

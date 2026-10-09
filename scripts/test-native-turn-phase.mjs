@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {deriveNativeTurnPhaseAlternatives} from '../web/native-turn-phase.mjs?v=ordinary-turn-20261009-e76d366f';
+import {deriveNativeTurnPhaseAlternatives} from '../web/native-turn-phase.mjs?v=symbolic-clock-20261009-e604633f';
 const {instance}=await WebAssembly.instantiate(await readFile(new URL('../web/wasm/monster_movement.wasm',import.meta.url)),{}),leaf=instance.exports.monster_motion_turn_angle;
 assert.equal(typeof leaf,'function');
 const facing=a=>[a],derive=(fromYaw,toYaw,targetAngle,turnRate)=>deriveNativeTurnPhaseAlternatives({fromYaw,toYaw,targetAngle,turnRate,sourceFacing:facing,turnAngle:leaf});

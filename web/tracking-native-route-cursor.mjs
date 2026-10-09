@@ -1,10 +1,10 @@
-import {createNativeOrdinaryTurnResolver} from './native-turn-phase.mjs?v=ordinary-turn-20261009-e76d366f';
-import {enumerateNativeRouteChoiceHypotheses} from './tracking-native-route-choice.mjs?v=ordinary-turn-20261009-e76d366f';
-import {connectConditionalNativeRouteChoices,composeConditionalNativeRouteSequence} from './tracking-native-route-chain.mjs?v=motion-closure-20261008-89e290ef';
+import {createNativeOrdinaryTurnResolver,createNativeOrdinaryTurnSequenceResolver} from './native-turn-phase.mjs?v=symbolic-clock-20261009-e604633f';
+import {enumerateNativeRouteChoiceHypotheses} from './tracking-native-route-choice.mjs?v=symbolic-clock-20261009-e604633f';
+import {connectConditionalNativeRouteChoices,composeConditionalNativeRouteSequence} from './tracking-native-route-chain.mjs?v=symbolic-clock-20261009-e604633f';
 import {fieldNativeFacing,fieldNativeDistance} from './field-preferred-node.mjs';
 import {fingerprint} from './tracking-at-runner.mjs';
 const clone=structuredClone;
-const SCHEMA='source-native-route-cursor-with-turn-support-v2';
+const SCHEMA='source-native-route-cursor-with-clock-sequences-v3';
 // Pages contain source event hypotheses only. The complete observation is owned
 // once by the controller; neither pages nor scalar cursor copy its pixels.
 async function pageAccess(store,inputHash,pages,current){
@@ -21,9 +21,10 @@ export async function advanceNativeRouteEnumeration(inputs,source,{store,resume=
  const candidates=(inputs?.perSightingPriorCandidates??[]).flatMap(r=>r.candidates??[]).filter(c=>c.conditionalATInput?.priorSelectionLinks?.length&&c.conditionalATInput?.incomingSelectionLinks?.length);
  if(new Set(candidates.map(c=>c.id)).size!==candidates.length)throw Error('Ambiguous native route candidate identity');
  const turnAvailable=Boolean(motionKernel.sourceBinding&&typeof motionKernel.e?.monster_motion_turn_angle==='function');
- const jobs=candidates.flatMap((candidate,index)=>[{index,mode:'stable'},...(turnAvailable?[{index,mode:'ordinary-turn'}]:[])]);
+ const turnSequenceAvailable=turnAvailable&&Boolean(motionKernel.sourceBinding.ordinaryClockPhaseDomain);
+ const jobs=candidates.flatMap((candidate,index)=>[{index,mode:'stable'},...(turnAvailable?[{index,mode:'ordinary-turn'}]:[]),...(turnSequenceAvailable?[{index,mode:'ordinary-turn-sequence'}]:[])]);
  const limits={maximumRouteRows,maximumPairEvaluations,maximumChains,maximumEvents};
- const inputHash=await fingerprint({schema:SCHEMA,engineRevision,observationIdentity,romSHA256,sourceBindingKind:sourceBinding?.kind??null,turnAvailable,inputs,resources,limits});current();
+ const inputHash=await fingerprint({schema:SCHEMA,engineRevision,observationIdentity,romSHA256,sourceBindingKind:sourceBinding?.kind??null,turnAvailable,turnSequenceAvailable,inputs,resources,limits});current();
  if(resume&&(resume.schema!==SCHEMA||resume.inputHash!==inputHash))throw Error('Native route cursor input/source identity differs');
  const state=resume?clone(resume):{schema:SCHEMA,inputHash,sequence:0,phase:'choices',candidateCursor:0,choices:jobs.map(()=>null),exhausted:jobs.map(()=>false),turnSupportPages:{},pages:[],rowCount:0,batchStart:0,dfs:null,totalRowsVisited:0,totalPairEvaluations:0,totalChains:0,depthLimitReached:false};
  if(state.choices.length!==jobs.length||state.exhausted.length!==jobs.length)throw Error('Native route candidate cursor differs');
@@ -38,12 +39,13 @@ export async function advanceNativeRouteEnumeration(inputs,source,{store,resume=
  const saveSupport=async()=>{for(const[key,value]of pendingSupport){const payload={schema:'source-turn-support-page-v1',owner:inputHash,key,value},checksum=await fingerprint(payload),storageKey=`tracking-turn-support:${inputHash}:${await fingerprint(key)}`;current();const prior=state.turnSupportPages[key];if(prior&&prior.checksum!==checksum)throw Error('Source turning support changed');const saved=await store.load(storageKey);current();if(saved){if(saved.checksum!==checksum||await fingerprint(saved.payload)!==checksum)throw Error('Turning support page changed');}else await store.save(storageKey,{inputHash:storageKey,sequence:1,payload,checksum});current();state.turnSupportPages[key]={key:storageKey,checksum};loadedSupport.set(key,value);}pendingSupport.clear();};
  const getSupport=async key=>{if(loadedSupport.has(key))return loadedSupport.get(key);const ref=state.turnSupportPages[key];if(!ref)throw Error('Turning evidence not owned');const saved=await store.load(ref.key);current();if(!saved||saved.checksum!==ref.checksum||await fingerprint(saved.payload)!==ref.checksum||saved.payload.owner!==inputHash||saved.payload.key!==key)throw Error('Turning evidence identity/checksum differs');loadedSupport.set(key,saved.payload.value);return saved.payload.value;};
  const page=await pageAccess(store,inputHash,state.pages,current),args={romSHA256,resources,motionKernel,fieldKernel,sourceFacing:a=>fieldNativeFacing(a,trig),sourceDistance:fieldNativeDistance};
+ const sequenceArgs=turnSequenceAvailable?{...args,turnPhaseResolver:createNativeOrdinaryTurnSequenceResolver({motionKernel,sourceFacing:args.sourceFacing}),onTurnSupport:(key,value)=>pendingSupport.set(key,clone(value))}:null;
  const turnArgs=turnAvailable?{...args,turnPhaseResolver:createNativeOrdinaryTurnResolver({motionKernel,sourceFacing:args.sourceFacing}),onTurnSupport:(key,value)=>pendingSupport.set(key,clone(value))}:null;
  if(state.phase==='choices'){
   const rows=[],iterators=new Map();state.batchStart=state.rowCount;
   while(state.exhausted.some(x=>!x)&&output.routeRows<maximumRouteRows){
    const index=state.candidateCursor;state.candidateCursor=(index+1)%jobs.length;if(state.exhausted[index])continue;
-   if(!iterators.has(index))iterators.set(index,enumerateNativeRouteChoiceHypotheses(candidates[jobs[index].index],jobs[index].mode==='ordinary-turn'?turnArgs:args,{resume:state.choices[index],onCursor:c=>{state.choices[index]=c;}}));
+   if(!iterators.has(index))iterators.set(index,enumerateNativeRouteChoiceHypotheses(candidates[jobs[index].index],jobs[index].mode==='ordinary-turn'?turnArgs:jobs[index].mode==='ordinary-turn-sequence'?sequenceArgs:args,{resume:state.choices[index],onCursor:c=>{state.choices[index]=c;}}));
    const next=iterators.get(index).next();if(next.done){state.exhausted[index]=true;continue;}
    output.routeRows++;state.totalRowsVisited++;if(next.value.kind==='conditional-event')rows.push(next.value);else output.deferred.push(next.value);
    if(output.routeRows%64===0){await yieldTask();current();}
