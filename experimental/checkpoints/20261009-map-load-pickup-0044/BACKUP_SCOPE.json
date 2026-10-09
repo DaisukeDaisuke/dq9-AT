@@ -1,0 +1,33 @@
+{
+  "sourceManifestSHA256": "00c61fc2053693b90d356a2773ba07af1e3cac0b4ff8259fbe7aad090f44abd1",
+  "productionIntegrated": false,
+  "rawEvidenceIncluded": false,
+  "omittedLocalEvidenceAndHelperReferences": [
+    {
+      "path": "REAL36_FAILED_PROJECT_SHAPE.json",
+      "bytes": 73876,
+      "sha256": "6140f3d739070f8b256a5be27256704997cd9e978cbab774f8549a1363a4bea8",
+      "included": false
+    },
+    {
+      "path": "REAL36_NPC_ONLY.json",
+      "bytes": 116611,
+      "sha256": "b18183b23818c8b24c21ac568b4499bce31c6b223550c315ac3d8a00ca2e9055",
+      "included": false
+    },
+    {
+      "path": "REAL36_MAP_SEGMENTS.json",
+      "bytes": 124543,
+      "sha256": "c37ab6b019a17658ef3124cf541888453766c0a545380c835065c08f1767dad2",
+      "included": false
+    },
+    {
+      "path": "measure-real36.mjs",
+      "bytes": 3676,
+      "sha256": "4d30fc5e8e41528ad549d97f5f89a230476329ded58846b0496e7956883edc41",
+      "included": false
+    }
+  ],
+  "duplicatePatchOmitted": true,
+  "oldNPCSnapshotPreserved": true
+}

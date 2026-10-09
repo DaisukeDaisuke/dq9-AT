@@ -1,0 +1,69 @@
+{
+  "schema": "conditional-map-load-npc-pickup-source-v1",
+  "files": [
+    {
+      "path": "web/map-transition.mjs",
+      "bytes": 23717,
+      "sha256": "33ce04c09ee9e3fb9628cbec7f430543b09cda188cb8cbf660f22820b3d1388a",
+      "baseSHA256": "060c216a7ea94a9b630391d5ffb2f73a1778adf53dd50595bcd1dd2abd2920b5"
+    },
+    {
+      "path": "web/pickup-materialization.mjs",
+      "bytes": 8245,
+      "sha256": "6527ed4b5200db26749328afb358f9651f71ad6782c83911868ae6c939c8bec7",
+      "baseSHA256": "3fa856b9577b4501b24657c9bfec519efddcd7ff5803ca9b471799f340e00f69"
+    },
+    {
+      "path": "web/tracking-map-load-segments.mjs",
+      "bytes": 8425,
+      "sha256": "2228e68f63f99950ad55b02acd7f6a1bf1fa5f494fb01be1791d38c4bd0f845e",
+      "baseSHA256": null
+    },
+    {
+      "path": "web/tracking-at-observation-adapter.mjs",
+      "bytes": 11249,
+      "sha256": "eadd32c9fce562272a5b9fb4f65cbd5971936b34ab12a47032ff2fabb30b0dd8",
+      "baseSHA256": "2a9c5082f52198ff1d237f7e9d9f062d7d42dbda60fd01d4d7b134f6403d670d"
+    },
+    {
+      "path": "web/map-browser-preview/video-tracking-at.mjs",
+      "bytes": 31959,
+      "sha256": "3e66a91dfcf469c2f36e9daa8fa21431be922a6b71e6c0970ef570b3a56e658e",
+      "baseSHA256": "73f4514e01b74f598c6e8a4c53398e5e950de3cb5e885eea6feb2e22a8387eca"
+    }
+  ],
+  "actualROMSourceScope": "existing ordinary D04/F06 destination closure; video/ROM ordinary edge binding added",
+  "sourceOnly": true,
+  "ROMorPixelsIncluded": false,
+  "actualLocalLoaderCountDomain": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23,
+    24
+  ],
+  "actualMapBranches": 0,
+  "destinationFramePending": true,
+  "wholeTransitionATBounded": false,
+  "currentATRecovered": false
+}
