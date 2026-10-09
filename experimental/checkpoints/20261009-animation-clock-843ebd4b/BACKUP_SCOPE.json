@@ -1,0 +1,13 @@
+{
+  "manifestSHA256": "4bfe0265f600bfa2ef676badc827b250c234e54c58fdea3875951ca6ae1a533a",
+  "productionIntegrated": false,
+  "sourceClockDomainBefore": 65536,
+  "sourceClockDomainAfter": 272,
+  "ATCandidateReductionMeasured": false,
+  "rejectedTablePrototypeIncluded": false,
+  "tablePrototypeActualDistinctPredicates": 11,
+  "tablePrototypeAdditionalCandidateReduction": 0,
+  "currentATRecovered": false,
+  "rawAssetsIncluded": false,
+  "scope": "Clock source-domain reduction only; unknown animation/clip rates and world gaps remain. Unchanged table candidate counts are not an improvement. Rejected prototype files and Unicorn binaries/ARM dumps excluded."
+}

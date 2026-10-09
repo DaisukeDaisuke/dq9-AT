@@ -1,0 +1,67 @@
+{
+  "baseSHA": "1928cd9c6c2018445ce87f0c7179abb36e1a2fba",
+  "taskId": "843ebd4b-75a8-4e69-9cae-61f58b6292b6",
+  "candidateSourcePatch": "SOURCE_CLOCK.patch",
+  "notIntegrated": true,
+  "sourceClockDomain": {
+    "before": 65536,
+    "after": 272,
+    "sourceScope": "ordinary constructor/setter and animation signed16 read; arbitrary signed16 global rate retained",
+    "actualATCandidateCountImprovement": null
+  },
+  "rejectedTablePrototype": {
+    "paths": [
+      "main/web/at-observation-compiler.mjs",
+      "main/web/tracking-field-selection.mjs"
+    ],
+    "reason": "Every reached table candidate list in both actual timelines is singleton. No AT candidate reduction. Do not integrate these changes as an improvement."
+  },
+  "verification": {
+    "originalROMUnicornExecutions": 697,
+    "setterCases": 297,
+    "allScaledDeltaTailCases": 400,
+    "mismatches": 0,
+    "JavaScriptSigned16RateInputsExhausted": 65536,
+    "compilerRegressionChecks": 360503,
+    "binary64RegressionAssertions": 196795,
+    "sourceClockNoVideoElapsedConversion": true
+  },
+  "unresolved": [
+    "Clip lookup/rate and actor animation rate need source-bound ongoing history",
+    "Same actor/same clip/playback/stop/loop and reached update count are not known from actual saved video",
+    "World AT gaps outside same handler remain unbounded",
+    "No current AT identification or all-input automation claim"
+  ],
+  "files": [
+    {
+      "path": "main/web/animation-clock-source-domain.mjs",
+      "bytes": 4932,
+      "sha256": "86f9ddde5cb664df08a0f19e317858f21c3b812b84903223814ef067cec1fdb6"
+    },
+    {
+      "path": "test-animation-clock-domain.mjs",
+      "bytes": 2758,
+      "sha256": "b45bfcc1bc7dd17a946e521761c5c548e3051d59f68842c422e5377236c5586f"
+    },
+    {
+      "path": "verify-animation-clock.py",
+      "bytes": 3297,
+      "sha256": "48fdfa4fc0c46c34edf16a2fa1ae6443cf64a310e80db08d26ecf49e3e7589eb"
+    },
+    {
+      "path": "ANIMATION_CLOCK_RESULT.json",
+      "bytes": 1017,
+      "sha256": "21b610890a206e38b8ea42dbe835d4dddbd06eff04bc8924d2405fd80a16e83e"
+    },
+    {
+      "path": "ZERO_REDUCTION_RESULT.json",
+      "bytes": 33934,
+      "sha256": "faf724d6104663a4461a4a52c46f30c994a09a6a227a1909ec5500087c78965b"
+    },
+    {
+      "path": "SOURCE_CLOCK.patch",
+      "bytes": 5049,
+      "sha256": "0e9defae1398d627ba36cbb496aac26b5711c6cedc37dbe570f30f1d2875a4a6"
+    }
+  ]
+}
