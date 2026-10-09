@@ -2,7 +2,7 @@ import {deriveOwnNativeModelEndpoints} from '../tracking-own-native-endpoints.mj
 import {preparedCurrentNativeAdmission} from '../tracking-current-native-admission.mjs?v=route-poses-20261008-d98f497f';
 import {fingerprint} from '../tracking-at-runner.mjs';
 import {createTrackingObservationWorkQueue} from '../tracking-observation-work-queue.mjs?v=route-cursor-20261008-d2296d0e';
-import {createNativeRouteProducer} from '../tracking-native-route-producer.mjs?v=own-endpoints-20261008-e58b244e';
+import {createNativeRouteProducer} from '../tracking-native-route-producer.mjs?v=ordinary-turn-20261009-e76d366f';
 import {resolveCameraATBackgroundSupport} from './camera-at-background-support.mjs?v=camera-at-20261008-f1a85661';
 import {prepareVideoReplaySources} from '../video-replay-source-preparation.mjs?v=replay-source-20261007-0743';
 import {copyObservationBundleForAT} from './observation-bundle-ownership.mjs?v=own-endpoints-20261008-e58b244e';
@@ -12,7 +12,7 @@ import {deriveCameraBodySingletonAlternatives,appendCameraBodySingletonAlternati
 import {assertProductionATInput} from '../production-at-input-policy.mjs?v=production-inputs-20261006-1320';
 import {searchAutomaticReplayInputs,mineAutomaticReplayFactors} from '../video-replay-factor-search.mjs?v=automatic-entry-factors-20261006-1120';
 import {deriveTrackingEventEvidence,automaticSingletonSearchOptions} from '../tracking-at-event-evidence.mjs?v=route-poses-20261008-d98f497f';
-import {prepareTrackingJob,openTrackingCheckpointStore,startTrackingSession,collectTrackingMotionAssociationInputs} from '../tracking-at-session.mjs?v=own-endpoints-20261008-e58b244e';
+import {prepareTrackingJob,openTrackingCheckpointStore,startTrackingSession,collectTrackingMotionAssociationInputs} from '../tracking-at-session.mjs?v=ordinary-turn-20261009-e76d366f';
 // This is an execution budget/prior supplied by the user, never inferred from PTS.
 export function videoATSearchOptions(values,tables){
  const {seed,seedProvenance,first,last,indexProvenance}=values;

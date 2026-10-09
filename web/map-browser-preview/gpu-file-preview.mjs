@@ -6,7 +6,7 @@ import {mountAutomaticGpuPanel} from './gpu-file-panel.mjs?v=fair-source-yield-2
 import {AutomaticVideoAlignment} from './automatic-video-alignment.mjs?v=browser-at-20261008-138417cd';
 import {resolveVideoMinimapCandidates} from './video-minimap-candidates.mjs?v=shrine-beam-20261008-a9738d0c';
 import {readRomCameraYawCandidates} from './read-rom-camera-yaw-candidates.mjs';
-import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=immediate-placement-20261008-3f1821b3';
+import {ResidualRecognitionClient} from './residual-recognition-client.mjs?v=ordinary-turn-20261009-e76d366f';
 import {residualModelPlan} from './residual-recognition-input.mjs?v=own-endpoints-20261008-e58b244e';
 import {renderInitialIntegerFog} from './integer-static-fog.mjs?v=recognition-20261008-7cf64cf4';
 import {CPUTextClient} from '../font-akinator-cpu-client.mjs?v=recognition-20261008-7cf64cf4';

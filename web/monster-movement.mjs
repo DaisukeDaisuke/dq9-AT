@@ -19,6 +19,11 @@ function boundDerivedFamily(actor,context){
 }
 export class MonsterMovementKernel {
  constructor(instance,trig,{sourceBinding=null}={}){this.sourceBinding=isMovementNoDrawSource(sourceBinding)?sourceBinding:null;this.e=instance.exports;if(typeof this.e.monster_motion_prefix!=='function')throw Error('Monster motion WASM export missing');if(trig?.divisor!==25736||!(trig.values instanceof Int16Array)||trig.values.length!==8192)throw Error('Verified ROM trig resource required');new Int16Array(this.e.memory.buffer,this.e.monster_motion_trig(),8192).set(trig.values);this.atanReady=trig.atan?.values instanceof Int16Array&&trig.atan.values.length===129&&typeof this.e.monster_motion_atan_table==='function';if(this.atanReady)new Int16Array(this.e.memory.buffer,this.e.monster_motion_atan_table(),129).set(trig.atan.values);}
+ orientationStep(angle,targetAngle,turnRate,phase){
+  if(![angle,targetAngle].every(n=>Number.isInteger(n)&&n>=0&&n<=25736)||!Number.isInteger(turnRate)||turnRate<0||turnRate>32767||!Number.isInteger(phase)||phase<0||phase>65535||typeof this.e.monster_motion_turn_angle!=='function')return {resolved:false,reason:'Bounded source orientation leaf/input unavailable'};
+  const result=this.e.monster_motion_turn_angle(angle,targetAngle,turnRate,phase);
+  return result<0?{resolved:false,reason:'Source orientation outside supported domain'}:{resolved:true,angle:result,ATConsumedInLeaf:0,fullMonsterStepResolved:false,sourceClockKnown:false};
+ }
  state2Steering(currentXYZ,targetXYZ){return this.steering(currentXYZ,targetXYZ,true);}
  state2EntrySteering(currentXYZ,targetXYZ){return this.steering(currentXYZ,targetXYZ,false);}
  steering(currentXYZ,targetXYZ,flattenCurrentY){

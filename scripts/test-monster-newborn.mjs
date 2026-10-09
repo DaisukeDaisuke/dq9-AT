@@ -2,7 +2,7 @@
 // Synthetic source/guard tests. No ROM table is exercised by stationary motion;
 // native ROM/collision validation lives in replay-monster-newborn.mjs.
 import {readFile} from 'node:fs/promises';import assert from 'node:assert/strict';
-import {MonsterMovementKernel} from '../web/monster-movement.mjs?v=motion-closure-20261008-89e290ef';import {stepNewbornState0} from '../web/monster-newborn.mjs';
+import {MonsterMovementKernel} from '../web/monster-movement.mjs?v=ordinary-turn-20261009-e76d366f';import {stepNewbornState0} from '../web/monster-newborn.mjs';
 const wasm=await readFile(process.argv[2]??new URL('../web/wasm/monster_movement.wasm',import.meta.url)),{instance}=await WebAssembly.instantiate(wasm,{}),kernel=new MonsterMovementKernel(instance,{divisor:25736,values:new Int16Array(8192)});
 const initial={xyz:[-12000,0,1000],angle:1234,targetAngle:1234,header:35,actorFlags:4,state:0,previousState:1,stateTimer:0,activeElapsed:0,updateCounter:0,currentSeed:0x12345678,movementByte:5,previousMovementByte:0,e0:128,c1:0,c2:0,cooldownByte:0,delayWord:0,correctionSpeed:0,gravity:0,turnRate:804,speed:0,targetSpeed:450,acceleration:40,verticalVelocity:0,verticalLimit:0,verticalCounter:0,mapId:7402,animationEventIndex:65535};
 const context={tickReached:true,globalWord:0,managerMapId:7402,clock:{phase:2,scaledDelta:33},visualBindingValidated:true,animationComponents:{complete:true,records:[{typeWord:1}]}};

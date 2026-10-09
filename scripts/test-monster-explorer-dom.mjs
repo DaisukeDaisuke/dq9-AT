@@ -18,7 +18,7 @@ const html=await readFile(new URL('../web/monster-explorer.html',import.meta.url
 for(const m of html.matchAll(/<([a-z0-9]+)\b([^>]*\bid="([^"]+)"[^>]*)>/gi)){const e=new Element(m[1]);e.id=m[3];e.value=m[2].match(/\bvalue="([^"]*)"/)?.[1]??'';e.checked=/\bchecked\b/.test(m[2]);e.disabled=/\bdisabled\b/.test(m[2]);e.width=Number(m[2].match(/\bwidth="(\d+)"/)?.[1]??0);e.height=Number(m[2].match(/\bheight="(\d+)"/)?.[1]??0);elements.set(e.id,e);}
 const $=id=>elements.get(id);globalThis.document={getElementById:$,createElement:tag=>new Element(tag)};
 const fetched=[];globalThis.fetch=async path=>{assert(['./wasm/monster_movement.wasm','./wasm/map_render.wasm','./data/map-id-names.csv'].includes(path),'only static same-site source assets may be fetched');fetched.push(path);const b=await readFile(new URL('../web/'+path.slice(2),import.meta.url));return{ok:true,status:200,arrayBuffer:async()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),text:async()=>b.toString('utf8')};};
-await import('../web/monster-explorer.mjs?v=motion-closure-20261008-89e290ef');assert($('step-ai').disabled);assert($('initialize').disabled);
+await import('../web/monster-explorer.mjs?v=ordinary-turn-20261009-e76d366f');assert($('step-ai').disabled);assert($('initialize').disabled);
 const b=await readFile(process.argv[2]),rom=b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength),file={name:'user.nds',size:rom.byteLength,arrayBuffer:async()=>rom.slice(0)};
 $('rom').files=[file];await $('rom').onchange();assert.equal($('inputs').disabled,false,$('status').textContent);assert.equal($('step-ai').disabled,true);
 for(const id of ['no-other-actors','animation-type1','scene-complete','declared'])$(id).checked=true;

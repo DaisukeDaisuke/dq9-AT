@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import {readFile} from 'node:fs/promises';
 import {MapProject} from '../web/map-core.mjs';
-import {MonsterMovementKernel} from '../web/monster-movement.mjs?v=motion-closure-20261008-89e290ef';
+import {MonsterMovementKernel} from '../web/monster-movement.mjs?v=ordinary-turn-20261009-e76d366f';
 import {preferredNodeTrigFromRom} from '../web/field-preferred-node.mjs';
 import {ATKernel,parseSeed} from '../web/at-core.mjs';
 import {FieldATKernel} from '../web/field-at.mjs';

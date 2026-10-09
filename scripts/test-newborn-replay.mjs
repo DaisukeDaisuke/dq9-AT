@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
 import {unarmedCurrentNodeTransition} from '../web/monster-unarmed.mjs';
 import {createFirstSpawnReplay,validateSpawnTrajectory} from '../web/first-spawn-replay.mjs';
-import {MapProject} from '../web/map-core.mjs';import {MonsterMovementKernel} from '../web/monster-movement.mjs?v=motion-closure-20261008-89e290ef';import {preferredNodeTrigFromRom} from '../web/field-preferred-node.mjs';import {ATKernel} from '../web/at-core.mjs';import {FieldATKernel} from '../web/field-at.mjs';
+import {MapProject} from '../web/map-core.mjs';import {MonsterMovementKernel} from '../web/monster-movement.mjs?v=ordinary-turn-20261009-e76d366f';import {preferredNodeTrigFromRom} from '../web/field-preferred-node.mjs';import {ATKernel} from '../web/at-core.mjs';import {FieldATKernel} from '../web/field-at.mjs';
 let checks=0;const eq=(a,b)=>{assert.deepEqual(a,b);checks++;},reject=f=>{assert.throws(f);checks++;};
 const graph={nodes:[{id:0}]},pose={xyz:[0,0,0],angle:0,nodeIndex:0,graphEnabled:true},base={schema:'dq9-pre-spawn-trajectory-v2',phase:'pre-spawn-and-post-hero-effective',mapId:7402,steps:[{index:0,sourceFrame:null,delta:33,timeValue:0,hero:pose,postHero:structuredClone(pose),actorClock:{phase:2,scaledDelta:33}}]};
 eq(validateSpawnTrajectory(base,7402,graph,true),base.steps);

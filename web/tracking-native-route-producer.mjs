@@ -1,18 +1,18 @@
-import {advanceNativeRouteEnumeration} from './tracking-native-route-cursor.mjs?v=own-endpoints-20261008-e58b244e';
+import {advanceNativeRouteEnumeration} from './tracking-native-route-cursor.mjs?v=ordinary-turn-20261009-e76d366f';
 import {readMovementNoDrawSource} from './monster-motion-source-binding.mjs?v=motion-closure-20261008-89e290ef';
-import { enumerateNativeRouteChoiceHypotheses } from './tracking-native-route-choice.mjs?v=own-endpoints-20261008-e58b244e';
+import { enumerateNativeRouteChoiceHypotheses } from './tracking-native-route-choice.mjs?v=ordinary-turn-20261009-e76d366f';
 import { connectConditionalNativeRouteChoices,composeConditionalNativeRouteSequence } from './tracking-native-route-chain.mjs?v=motion-closure-20261008-89e290ef';
 import { mineFieldGraphs, fieldPathName } from './field-graph.mjs';
 import { decodeCalls } from './map-core.mjs';
 import { prepareFieldSpawnTables } from './field-spawn-source.mjs';
 import { mineCreatorResources } from './monster-creation-resources.mjs';
 import { preferredNodeTrigFromRom, fieldNativeFacing, fieldNativeDistance } from './field-preferred-node.mjs';
-import { MonsterMovementKernel } from './monster-movement.mjs?v=motion-closure-20261008-89e290ef';
+import { MonsterMovementKernel } from './monster-movement.mjs?v=ordinary-turn-20261009-e76d366f';
 import { ATKernel } from './at-core.mjs';
 import { FieldATKernel } from './field-at.mjs';
 import { assertProductionATInput } from './production-at-input-policy.mjs';
 const digest = async bytes => Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),x=>x.toString(16).padStart(2,'0')).join('');
-const defaultLoad = async name => { const r=await fetch(new URL(`./wasm/${name}`,import.meta.url)); if(!r.ok)throw Error(`Route WASM HTTP ${r.status}`);return (await WebAssembly.instantiate(await r.arrayBuffer(),{})).instance; };
+const defaultLoad = async name => { const r=await fetch(new URL(`./wasm/${name}${name==='monster_movement.wasm'?'?v=26406935598278a6103475d55fb4b8305370ea5a74996adfb61fe271b49ced42':''}`,import.meta.url)); if(!r.ok)throw Error(`Route WASM HTTP ${r.status}`);return (await WebAssembly.instantiate(await r.arrayBuffer(),{})).instance; };
 
 // Owned immutable ROM context, not a fabricated replay entry or runtime packet.
 export function createNativeRouteProducer({loadKernel=defaultLoad}={}) {

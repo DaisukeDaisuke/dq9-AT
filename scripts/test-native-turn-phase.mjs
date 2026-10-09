@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import {deriveNativeTurnPhaseAlternatives} from '../web/native-turn-phase.mjs?v=ordinary-turn-20261009-e76d366f';
+const {instance}=await WebAssembly.instantiate(await readFile(new URL('../web/wasm/monster_movement.wasm',import.meta.url)),{}),leaf=instance.exports.monster_motion_turn_angle;
+assert.equal(typeof leaf,'function');
+const facing=a=>[a],derive=(fromYaw,toYaw,targetAngle,turnRate)=>deriveNativeTurnPhaseAlternatives({fromYaw,toYaw,targetAngle,turnRate,sourceFacing:facing,turnAngle:leaf});
+assert.deepEqual(derive(0,808,3000,808).alternatives.map(r=>r.phase),[{min:1,max:1}]);
+assert.deepEqual(derive(0,3000,3000,808).alternatives.map(r=>r.phase),[{min:4,max:65535}]);
+assert.equal(derive(0,809,3000,808).alternatives.length,0);
+assert.deepEqual(derive(1000,192,0,808).alternatives.map(r=>r.phase),[{min:1,max:1}]);
+assert.equal(leaf(25600,200,808,1),200);
+assert.equal(leaf(100,25000,808,1),25028);
+assert.deepEqual(derive(10,10,200,0).alternatives.map(r=>r.phase),[{min:0,max:65535}]);
+assert.equal(derive(10,200,200,0).alternatives.length,0);
+assert.equal(leaf(0,1,808,65536),-1);
+assert.equal(leaf(0,1,-1,1),-1);
+const r=derive(0,3000,3000,808);assert.equal(r.ATCallsInOrientationLeaf,0);assert.equal(r.wholeTickATCallsKnown,false);assert.equal(r.translationResolved,false);assert.equal(r.unknownAlternativeRetained,true);
+console.log(JSON.stringify({sourceOrientationLeaf:true,phaseSingletonAndSaturation:true,positiveNegativeWrapAndZeroRate:true,unsupportedRejected:true,noWorldClockInference:true,syntheticOnly:true}));

@@ -49,6 +49,16 @@ API("monster_motion_state2_steer") int mm_state2_steer(uint32_t flatten_current_
  output_words[5]=(uint32_t)((integer_sqrt(xz*4U)+1U)>>1);
  return 1;
 }
+/* Shared exact orientation leaf. Does not claim prefix gates or translation
+ * inputs are known. -1 means unsupported; source angles are nonnegative. */
+API("monster_motion_turn_angle") int32_t mm_turn_angle(int32_t angle,int32_t target,int32_t turn,uint32_t phase){
+ if(angle<0||angle>25736||target<0||target>25736||turn<0||turn>32767||phase>65535U)return -1;
+ int32_t diff=angle_diff(angle,target),rate=mul32(turn,signed32(phase));
+ if(rate<0)return -1;
+ if(diff>0)angle=diff<rate?target:add32(angle,rate);
+ else if(diff<0)angle=sub32(0,diff)<rate?target:sub32(angle,rate);
+ return wrap_angle(angle);
+}
 /* words: XYZ,actualAngle,targetAngle,turnRate,speed,targetSpeed,acceleration,
  * movementByte,header,e0,c1,c2,c4,gravity,vertical124,vertical128,counter12c.
  * phase and scaledDelta are pre-invocation clock facts, never post-state input.
@@ -59,11 +69,8 @@ API("monster_motion_prefix") int mm_prefix(uint32_t phase,uint32_t scaled_delta)
  /* This first contract excludes angle-completion animation callbacks, special
   * motion modes and vertical impulses. The caller must keep them unresolved. */
  if((s[11]&4U)||(s[14]&32768U)||(s[9]>1U&&!(s[9]==5U&&signed16(s[6])==0&&angle==target&&signed16(s[15])==0))||s[16]!=0U||s[17]!=0U||s[18]!=0U||angle<0||angle>25736||target<0||target>25736||turn<0||phase>65535U)return 0;
- int32_t diff=angle_diff(angle,target),rate=mul32(turn,signed32(phase));
- if(rate<0)return 0;
- if(diff>0)angle=diff<rate?target:add32(angle,rate);
- else if(diff<0)angle=sub32(0,diff)<rate?target:sub32(angle,rate);
- angle=wrap_angle(angle);o[3]=(uint32_t)angle;
+ int32_t next_angle=mm_turn_angle(angle,target,turn,phase);if(next_angle<0)return 0;
+ angle=next_angle;o[3]=(uint32_t)angle;
  /* 02032fc4's three gates. Orientation has already been updated. */
  if((s[11]&1U)||(s[13]&32U)||(s[12]&4U))return 1;
  uint32_t delay=s[14]&32767U;delay=scaled_delta<delay?delay-scaled_delta:0;o[14]=delay;

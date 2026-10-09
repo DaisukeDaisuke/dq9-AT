@@ -1,7 +1,7 @@
 import {deriveOwnNativeModelEndpoints,linkOwnNativeEndpoints} from './tracking-own-native-endpoints.mjs?v=own-endpoints-20261008-e58b244e';
 import {assertProductionATInput} from './production-at-input-policy.mjs?v=production-inputs-20261006-1320';
 import {searchAutomaticReplayInputs} from './video-replay-factor-search.mjs?v=automatic-entry-factors-20261006-1120';
-import {compileTrackingObservations} from './tracking-at-observation-adapter.mjs?v=own-endpoints-20261008-e58b244e';
+import {compileTrackingObservations} from './tracking-at-observation-adapter.mjs?v=ordinary-turn-20261009-e76d366f';
 import {fingerprint} from './tracking-at-runner.mjs?v=native-lineage-at-20261008-556f7ca6';
 import {createNativeMotionContinuityIndex} from './tracking-native-motion.mjs?v=route-poses-20261008-d98f497f';
 const need=(v,m)=>{if(!v)throw Error(m);};

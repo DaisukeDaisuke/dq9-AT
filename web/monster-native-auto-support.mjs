@@ -1,5 +1,5 @@
 import{registerNativeRoutePoseDomain,retainNativeRoutePose,currentTestedRouteHeadingSeed}from'./monster-native-route-pose-support.mjs?v=route-poses-20261008-d98f497f';
-import{createNativeRouteHeadingPriority}from'./monster-native-route-heading-priority.mjs?v=route-poses-20261008-d98f497f';
+import{createNativeRouteHeadingPriority}from'./monster-native-route-heading-priority.mjs?v=ordinary-turn-20261009-e76d366f';
 import{createNativeTemporalPriorBank}from'./monster-native-temporal-prior.mjs?v=temporal-prior-20261008-e462320d';
 import{sourcePixelComparisonBinding}from'./native-pixel-comparison-binding.mjs?v=native-scene-link-20261007-0354';
 import{createNativePhaseCursor,nextNativePhase,nativePhaseCursorSummary}from'./monster-native-phase-domain.mjs?v=native-phase-20261006-2300';

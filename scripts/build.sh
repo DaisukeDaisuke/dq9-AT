@@ -24,6 +24,7 @@ CLANG="$CLANG" WASM_LD="$LD" bash scripts/build-map-kernel-simd.sh
 node scripts/test-map-kernel-loader.mjs
 bash scripts/build-monster.sh
 CLANG="$CLANG" WASM_LD="$LD" bash scripts/build-monster-movement.sh
+node scripts/test-native-turn-phase.mjs
 
 # This kernel has an exact reviewed hash. Rebuild separately with pinned emsdk 3.1.6.
 bash scripts/build-at-identify.sh --verify
