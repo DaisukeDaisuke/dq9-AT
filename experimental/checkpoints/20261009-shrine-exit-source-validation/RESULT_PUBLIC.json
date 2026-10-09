@@ -1,0 +1,91 @@
+{
+  "schema": "shrine-exit-source-validation-summary-v1",
+  "ROM_SHA256": "3c9d809eb8e446b0da6a9b383c7a6c5146001636038384aa49cb1a2e367546d7",
+  "DST_SHA256": "8faf3a71935f68fd493f5259f93fd6d4185870e9838aef9999c5fc6f6478c0b6",
+  "DSTUnmodified": true,
+  "controls": {
+    "DownFrames": 61,
+    "releasedFrames": 120
+  },
+  "mapChangeFrame": 61,
+  "sourceMapTransition": [
+    7402,
+    7401
+  ],
+  "ATCalls": 15,
+  "ATCallProbeFrames": [
+    13,
+    15,
+    17,
+    19,
+    21,
+    23,
+    25,
+    27,
+    29,
+    31,
+    33,
+    35,
+    37,
+    39,
+    41
+  ],
+  "callerPCs": [
+    "02074b4c"
+  ],
+  "returnLR": "02074b50",
+  "callerRole": "source field spawn direction fallback",
+  "postMapChangeATCallsThroughFrame181": 0,
+  "seedSetterCalls": 0,
+  "observerDrops": 0,
+  "perCallLCGAndReturnOutputVerified": true,
+  "observerOffOnFinalEquality": {
+    "mapId": true,
+    "seed": true,
+    "pixelHash": true,
+    "registerHash": true
+  },
+  "additionalProbeFinalEquality": {
+    "mapId": true,
+    "seed": true,
+    "pixelHash": true,
+    "registerHash": true
+  },
+  "observedLoaderSites": [
+    {
+      "probeFrame": 128,
+      "pc": "021a3690"
+    },
+    {
+      "probeFrame": 128,
+      "pc": "021a39fc"
+    },
+    {
+      "probeFrame": 130,
+      "pc": "021a3bdc"
+    }
+  ],
+  "finalFrameRGBA_SHA256": "d9c22773ad016e3092bc9d90b2aaf232ee4189916153644959fc61cf7d284ba1",
+  "finalFrameRegisters_SHA256": "875d03c8d7015bdbbe719d1f370a5d37cb14a87b5404ad9f1a7992c818e45fa8",
+  "visualInspection": {
+    "frame": 181,
+    "destinationVisible": true,
+    "displayedMapName": "ふういんのほこら 1F",
+    "exactFirstVisibleFrameKnown": false
+  },
+  "limitations": [
+    "Every intermediate frame was not compared between observer-off/on runs",
+    "Zero calls is bounded to this measured interval and does not claim all transitions or future world activity",
+    "Input-specific debug validation; production video receives no DST state, seed, coordinates or runtime flags"
+  ],
+  "privateEvidence": [
+    {
+      "bytes": 11702,
+      "sha256": "bc6c70bfa25540dfa2b37fbc71c1e4692749a2de9d020d113c63161006750682"
+    },
+    {
+      "bytes": 40246,
+      "sha256": "61825bbb5a1433531616ce48363ed694bfccd4e37ef958e6b64c9589bfdab5e4"
+    }
+  ]
+}
