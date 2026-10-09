@@ -1,0 +1,37 @@
+{
+  "originalManifestSHA256": "8ee1f2bdd17d332c36cc41239ca645058fc0c59b167ddae6393f83e442473734",
+  "files": [
+    {
+      "path": "web/native-turn-phase.mjs",
+      "bytes": 3323,
+      "sha256": "ca62bdc9198d7fead36ac65ac294b6f7856052e7c5431da16d2ad15f667e418a"
+    },
+    {
+      "path": "web/tracking-native-route-choice.mjs",
+      "bytes": 9811,
+      "sha256": "2b70fce6044756dd0bc6f4ef565afe3daa0cd2a01916bb4432752ee614cd43d9"
+    },
+    {
+      "path": "web/monster-movement.mjs",
+      "bytes": 27609,
+      "sha256": "217b9cd8482f64def891f8211b270e5e776dad58d74cb70e23a89b74837f4269"
+    },
+    {
+      "path": "wasm/monster_movement.c",
+      "bytes": 13693,
+      "sha256": "4db709e62c905b19f430d8725b79555d127593107554743d2c715277bec45394"
+    },
+    {
+      "path": "scripts/build-monster-movement.sh",
+      "bytes": 1524,
+      "sha256": "fa4ed4db7d75f8e7f260000d13c429442813469ba992fd85d244baaa60ef5f81"
+    },
+    {
+      "path": "README.md",
+      "bytes": 3125,
+      "sha256": "b06e1986b9e2fd9a6cc99a20f466e4afa6c96ef0f524a682f0b7ca4e75ffbd58"
+    }
+  ],
+  "productionIntegrated": false,
+  "currentATRecovered": false
+}
