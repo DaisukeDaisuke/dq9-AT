@@ -1,0 +1,10 @@
+{
+  "originalManifestSHA256": "e82cfe89c5bc0ff50ea7342ef0c5a75ea9f000fc666d6083a7ba019465c49535",
+  "productionIntegrated": false,
+  "rawInputsIncluded": false,
+  "omittedLargeEvidenceOrDuplicatePatch": [],
+  "currentATRecovered": false,
+  "conditionalUpperBoundIsNotMeasuredCandidateReduction": true,
+  "wholeWorldMaximum": null,
+  "scope": "Immutable historical source checkpoint only. Source invocation/entry/clock/runtime conditions are not certified video facts. Unbounded alternatives and prior failures remain; no all-input or current-AT recovery claim."
+}

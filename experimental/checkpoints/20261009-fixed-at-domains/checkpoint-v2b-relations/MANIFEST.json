@@ -1,0 +1,28 @@
+{
+  "applyAfter": "checkpoint-v2-phase",
+  "files": [
+    {
+      "path": "web/tracking-native-route-choice.mjs",
+      "baseSHA256": "05b04779b68a127db98a2a8432184f2ba1dd9df5845f890a6ca96ebb0debc996",
+      "sha256": "be56dcaf2e0fef046dc15890ed0b8fe68490b8367c77ba2a209ccfb0395f4e7d",
+      "bytes": 10846
+    }
+  ],
+  "patchSHA256": "0cb773b2af3c35c393bc021a337c64c72f6fcdf2934f50b9587d927bf545abe7",
+  "evidence": [
+    {
+      "path": "HISTORY36_OUTPUT15_RELATIONS.json",
+      "sha256": "cd189351fe132b1e59f28e7a5da08294835c6e4198d0544dcbffefb83ac4fd74",
+      "bytes": 178010
+    },
+    {
+      "path": "TEST_OUTPUT15_RELATIONS.json",
+      "sha256": "a439012bedc1b39633135c53472637bf99b50ef4819d32daf9b5d51338af0d77",
+      "bytes": 287
+    }
+  ],
+  "scope": "Propagate the already-supported source-clock/multi-orientation conditions into compiler event evidence; exact real output15 predicates under explicit occupancy/actor hypotheses.",
+  "wholeCurrentATDomainNarrowed": false,
+  "unconstrainedOccupancyAlternativesRetained": true,
+  "currentATRecovered": false
+}

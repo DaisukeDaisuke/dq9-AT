@@ -1,0 +1,16 @@
+{
+  "originalManifestSHA256": "2d6cd4129c2aacab1aa797acd6c124253e1cf01656c7cd97fdc7eede3298a6c5",
+  "productionIntegrated": false,
+  "rawInputsIncluded": false,
+  "omittedLargeEvidenceOrDuplicatePatch": [
+    {
+      "path": "HISTORY36_PHASE_REDUCTION.json",
+      "sha256": "7b401e1d1cb5da1d4f0c6f6a527cf139be96a4bc88ecd58e24cee6ee29b83360",
+      "bytes": 179399
+    }
+  ],
+  "currentATRecovered": false,
+  "conditionalUpperBoundIsNotMeasuredCandidateReduction": true,
+  "wholeWorldMaximum": null,
+  "scope": "Immutable historical source checkpoint only. Source invocation/entry/clock/runtime conditions are not certified video facts. Unbounded alternatives and prior failures remain; no all-input or current-AT recovery claim."
+}

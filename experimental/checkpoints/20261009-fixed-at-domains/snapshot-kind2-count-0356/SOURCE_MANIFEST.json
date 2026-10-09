@@ -1,0 +1,49 @@
+{
+  "taskUUID": "bf506706-921c-4d28-bcb2-e9c1449f4136",
+  "baseSHA": "1928cd9c6c2018445ce87f0c7179abb36e1a2fba",
+  "files": [
+    {
+      "path": "web/source-kind2-constructor-binding.mjs",
+      "bytes": 3270,
+      "sha256": "9d2bf7e8158e5a13adf099b69451ba08940c2620c80f383d9b4cc6152df16cbc"
+    },
+    {
+      "path": "web/source-kind2-constructor-count.mjs",
+      "bytes": 6957,
+      "sha256": "05361f2a4a8e8167e781987776c83e0774de84de9796179977804a149c3e7942"
+    },
+    {
+      "path": "scripts/test-kind2-constructor-count.mjs",
+      "bytes": 1506,
+      "sha256": "a5036ebbeba372c768beaf74e3f51a84369f6d38194971fd94dcb56418ab1a03"
+    },
+    {
+      "path": "scripts/source-images.mjs",
+      "bytes": 618,
+      "sha256": "4e21300a5bd42d107cd117db27984b7fedaa4868ed6f237ecbecc4f313132daa"
+    },
+    {
+      "path": "scripts/inspect-kind2-closure.py",
+      "bytes": 8139,
+      "sha256": "6284e4b6b452844242b40a6d4d0eb3faff12642974d91f2d493b0aeed7d34df7"
+    }
+  ],
+  "changedExistingFiles": [],
+  "runtimeNewFiles": [
+    "web/source-kind2-constructor-count.mjs",
+    "web/source-kind2-constructor-binding.mjs"
+  ],
+  "validation": {
+    "ROMOnlyTest": "passed",
+    "conditionalDescriptorInstructions": 12719,
+    "presentSuccessCalls": "1",
+    "absentCalls": "0",
+    "unknownMaximum": null,
+    "sourceCreatorRows": 9,
+    "uniqueATCallPC": "020409cc",
+    "singleControllerCallPC": "0203d668",
+    "debugInputsRejected": true,
+    "forgedCloneRejected": true
+  },
+  "scope": "One conditional successful kind2 descriptor, no-modifier placements; unknown runtime/allocation/interleaving alternative retained; not whole loader/global interval."
+}

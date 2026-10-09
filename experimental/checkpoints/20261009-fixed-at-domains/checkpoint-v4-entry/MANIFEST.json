@@ -1,0 +1,51 @@
+{
+  "taskUUID": "a21569f7-9da6-4413-a3e6-0e0e6b800504",
+  "baseCommit": "1928cd9c6c2018445ce87f0c7179abb36e1a2fba",
+  "applyAfter": "checkpoint-v3-clock",
+  "files": [
+    {
+      "path": "web/source-single-entry-clock.mjs",
+      "baseSHA256": null,
+      "sha256": "464832980aa81ed610e3479dd9b4aa9abf1334bcc2798a3672aada96702992c8",
+      "bytes": 4599
+    },
+    {
+      "path": "web/video-replay-source-preparation.mjs",
+      "baseSHA256": "6bf6a0476f876381e921023e510497766f5f84053219aa59787aa80437ccf226",
+      "sha256": "a50212067cc5fd889a7ba667a9c7a0ef29984eedc236845ffea1563cabb37617",
+      "bytes": 10423
+    }
+  ],
+  "patchSHA256": "a39aeac81cdb90696146ca4b3148fffe4f5a8687697f2c8a36cca58121914565",
+  "evidence": [
+    {
+      "path": "ACTUAL25_SELECTED_ENTRY_CLOCK.json",
+      "sha256": "cc1bb6bf2247f4ae32dbed26c68b3afd0f6b24f7cbece577c1e0a6039409c240",
+      "bytes": 19348
+    },
+    {
+      "path": "TEST_PREPARATION_ENTRY.json",
+      "sha256": "cd5934969a6ccf8ed3bfb530198c2b02058532935dbef04a94dc1a2a1c93844a",
+      "bytes": 212
+    },
+    {
+      "path": "test-selected-entry.mjs",
+      "sha256": "52fc93685f8a6c52ef8925a0d29394237cc87d69cea0c6c8d4c3aa856bb32348",
+      "bytes": 3067
+    }
+  ],
+  "actualBranch": {
+    "entryId": "a1e9bb283aebf87ceaae0ac3a3bd9c276c2db766630c390f858016a887c50a91",
+    "fromPTS": 53.567,
+    "toPTS": 56.584,
+    "fromMap": 7401,
+    "toMap": 7402,
+    "selectedSchedulerInvocationMaximum": 185,
+    "postResetModeledSchedulerCallsMaximum": 1494,
+    "ordinaryROMExitCount": 1
+  },
+  "entryAndClockCertified": false,
+  "cacheHitHiddenReloadUnboundedBranchesRetained": true,
+  "wholeWorldATCallsMaximum": null,
+  "currentATRecovered": false
+}

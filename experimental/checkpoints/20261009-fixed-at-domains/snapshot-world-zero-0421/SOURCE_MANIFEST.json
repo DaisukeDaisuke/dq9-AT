@@ -1,0 +1,25 @@
+{
+  "baseSHA": "1928cd9c6c2018445ce87f0c7179abb36e1a2fba",
+  "baseFile": "web/world-at.mjs",
+  "baseFileSHA256": "4869e150716cbcf1e8f519b3b5fe1f96d78df76381da272cc42f64c964e3dbdb",
+  "requiresSnapshot": "snapshot-npc-updates-0418",
+  "files": [
+    {
+      "path": "SOURCE.patch",
+      "bytes": 3321,
+      "sha256": "535d6d8142e9feb63d040701d75cfe7798b78e62203751cb7aa625b41c13fee7"
+    },
+    {
+      "path": "web/world-at.mjs",
+      "bytes": 8139,
+      "sha256": "26778dd2dad4b3050c5a58c5486be84efa16c1767a2bfb379cbb2a8e3f3f49cf"
+    },
+    {
+      "path": "scripts/test-world-npc-zero-bridge.mjs",
+      "bytes": 1402,
+      "sha256": "146eceba0f0eaf1dcc66f1ff8161d90175b851bf9f59317b4d700f4e920f1a34"
+    }
+  ],
+  "test": "passed source mode-zero existingWorldATKernel flow without RNG/seed, malformed clone rejected, reached unknown not resolved",
+  "scope": "Conditional ordinary-NPC consumer family only; other world consumers unresolved"
+}

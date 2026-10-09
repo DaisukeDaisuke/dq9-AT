@@ -1,0 +1,16 @@
+{
+  "originalManifestSHA256": "e039a44b256e5027807fbedd20dcf6daf661267aac31774bc1bb9179d9051527",
+  "productionIntegrated": false,
+  "rawInputsIncluded": false,
+  "omittedLargeEvidenceOrDuplicatePatch": [
+    {
+      "path": "SOURCE.patch",
+      "bytes": 3321,
+      "sha256": "535d6d8142e9feb63d040701d75cfe7798b78e62203751cb7aa625b41c13fee7"
+    }
+  ],
+  "currentATRecovered": false,
+  "conditionalUpperBoundIsNotMeasuredCandidateReduction": true,
+  "wholeWorldMaximum": null,
+  "scope": "Immutable historical source checkpoint only. Source invocation/entry/clock/runtime conditions are not certified video facts. Unbounded alternatives and prior failures remain; no all-input or current-AT recovery claim."
+}

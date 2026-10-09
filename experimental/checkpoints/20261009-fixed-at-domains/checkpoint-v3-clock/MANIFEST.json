@@ -1,0 +1,67 @@
+{
+  "taskUUID": "a21569f7-9da6-4413-a3e6-0e0e6b800504",
+  "baseCommit": "1928cd9c6c2018445ce87f0c7179abb36e1a2fba",
+  "applyAfter": "checkpoint-v1",
+  "independentOfPhaseV2": true,
+  "files": [
+    {
+      "path": "web/source-field-invocation-clock.mjs",
+      "baseSHA256": null,
+      "sha256": "1c67987d2624d09c420ef44d2062c3a738d6bf7d668fa3a118246de27df13415",
+      "bytes": 10107
+    },
+    {
+      "path": "web/video-replay-source-preparation.mjs",
+      "baseSHA256": "fc1d9fed3c462b77f0a9947e031ac049dc7e33ead3baed6e07784ace0b5fe638",
+      "sha256": "6bf6a0476f876381e921023e510497766f5f84053219aa59787aa80437ccf226",
+      "bytes": 9839
+    },
+    {
+      "path": "scripts/test-source-field-invocation-clock.mjs",
+      "baseSHA256": null,
+      "sha256": "4f5756cab9bd5ed8f0ffa27bd088405c1706d53e0510f8ab56f9f4f7cda6d8ed",
+      "bytes": 4015
+    }
+  ],
+  "patchSHA256": "1e27ef0be619f7fc0e5e8a45d2451ab0025a99f8ca67ab8172b1b05c87d1e64d",
+  "evidence": [
+    {
+      "path": "TEST_INVOCATION_CLOCK.json",
+      "sha256": "9739ecd345e00cba9794df3aa241739053f9945990ff34655f75c8a6f19824ff",
+      "bytes": 12672
+    },
+    {
+      "path": "TEST_PREPARATION_CLOCK.json",
+      "sha256": "cd5934969a6ccf8ed3bfb530198c2b02058532935dbef04a94dc1a2a1c93844a",
+      "bytes": 212
+    }
+  ],
+  "hardwareReferenceInputs": {
+    "primarySources": [
+      "https://github.com/melonDS-emu/melonDS/blob/master/src/GPU.cpp#L28-L30",
+      "https://github.com/melonDS-emu/melonDS/blob/master/src/RTC.cpp"
+    ],
+    "readDateUTC": "2026-10-09",
+    "kind": "Standard-DS-timing hypothesis; not encoded-video FPS",
+    "cyclesPerFrame": 560190,
+    "ROMClockKHz": 33514,
+    "VBlankHzCeiling": 60
+  },
+  "boundaryAllowance": {
+    "endpointDisplayLagEachVBlank": 1,
+    "initialInFlightLoop": 1,
+    "totalVBlankEquivalent": 3
+  },
+  "actual25Example": {
+    "fromPTS": 52.034,
+    "toPTS": 56.584,
+    "selectedSchedulerInvocationsMaximum": 276,
+    "modeledSchedulerCallsMaximum": 2484,
+    "freshEntryLowerBoundKnown": false,
+    "wholeWorldATCallsMaximum": null
+  },
+  "normalRecordingAndLoopConditionsMeasured": false,
+  "unknownNonNormalBranchesRetained": true,
+  "currentATRecovered": false,
+  "wasmChanged": false
+}

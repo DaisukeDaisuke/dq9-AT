@@ -1,0 +1,55 @@
+{
+  "baseSHA": "1928cd9c6c2018445ce87f0c7179abb36e1a2fba",
+  "files": [
+    {
+      "path": "web/source-npc-mode-zero.mjs",
+      "bytes": 6735,
+      "sha256": "b344c652617cb6dcad0c87854ec9db3f90124f5587602dd142ea9db1b5847769"
+    },
+    {
+      "path": "web/source-npc-update-bounds.mjs",
+      "bytes": 3135,
+      "sha256": "ca7c2e0bad7def0acf8fd0468b3051db548b0bd530a964d7b826f56c00d23bb1"
+    },
+    {
+      "path": "web/source-npc-update-binding.mjs",
+      "bytes": 1264,
+      "sha256": "d764d6e452e07eb9e1b58439de4bbe26e779e16b0c2d6c944985b217c6acb4d4"
+    },
+    {
+      "path": "scripts/test-npc-update-bounds.mjs",
+      "bytes": 1068,
+      "sha256": "0cfddc62ea22fb9482685839b8c503aaf0f86965d43254d89c8f6a1a88518fb3"
+    },
+    {
+      "path": "scripts/test-npc-mode-zero.mjs",
+      "bytes": 1141,
+      "sha256": "f80bdcd41087e901e6d5662a0bf78164424a182bfda7c949e9cd9d380916a479"
+    },
+    {
+      "path": "scripts/inspect-npc-update-closure.py",
+      "bytes": 8282,
+      "sha256": "ebcd045eb9b5bdb005946a98ad204697b9e23d773972bb2c22d83ca8f8586a3f"
+    }
+  ],
+  "tests": [
+    "test-npc-update-bounds passed",
+    "test-npc-mode-zero passed final bytes"
+  ],
+  "sourceEffects": {
+    "ordinaryUpdatePerInvocationMax": 2,
+    "modeZeroTimersOnMaps": [
+      7400,
+      7401,
+      7402
+    ],
+    "modeZeroOrdinaryBodyMax": 0,
+    "7402OrdinaryCandidateCount": 14,
+    "7402ModelBodyUnresolvedIds": [
+      29,
+      105
+    ],
+    "7403NegativeControlModeZero": false
+  },
+  "remaining": "kind2/5 body task callback020bf4c4; other globals; source runtime writer/interleaving alternatives retained"
+}

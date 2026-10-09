@@ -1,0 +1,16 @@
+{
+  "originalManifestSHA256": "d6e1c98d122215cd144c3b97f5791de72a23700ec0d9204b4f3af1fe2a993b34",
+  "productionIntegrated": false,
+  "rawInputsIncluded": false,
+  "omittedLargeEvidenceOrDuplicatePatch": [
+    {
+      "path": "ACTUAL25_SELECTED_ENTRY_CLOCK.json",
+      "sha256": "cc1bb6bf2247f4ae32dbed26c68b3afd0f6b24f7cbece577c1e0a6039409c240",
+      "bytes": 19348
+    }
+  ],
+  "currentATRecovered": false,
+  "conditionalUpperBoundIsNotMeasuredCandidateReduction": true,
+  "wholeWorldMaximum": null,
+  "scope": "Immutable historical source checkpoint only. Source invocation/entry/clock/runtime conditions are not certified video facts. Unbounded alternatives and prior failures remain; no all-input or current-AT recovery claim."
+}

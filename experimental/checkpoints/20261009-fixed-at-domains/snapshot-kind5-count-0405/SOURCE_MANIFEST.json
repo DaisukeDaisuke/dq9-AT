@@ -1,0 +1,38 @@
+{
+  "taskUUID": "bf506706-921c-4d28-bcb2-e9c1449f4136",
+  "baseSHA": "1928cd9c6c2018445ce87f0c7179abb36e1a2fba",
+  "files": [
+    {
+      "path": "web/source-kind5-constructor-count.mjs",
+      "bytes": 7355,
+      "sha256": "2ca93b638c9f68995dd7050ec3cd36410e74b9aee1893106878bef180ef440c2"
+    },
+    {
+      "path": "web/source-kind5-constructor-binding.mjs",
+      "bytes": 3777,
+      "sha256": "cbd9204de2ae0620c89941e6d300f5a09ecbd10ecb256060fcbd0ff6e50d5709"
+    },
+    {
+      "path": "scripts/test-kind5-constructor-count.mjs",
+      "bytes": 1401,
+      "sha256": "b756abc715b2ec444ef78f8eaa2bf7c995f1d2460267804da28740656cb4c35e"
+    },
+    {
+      "path": "scripts/inspect-kind5-closure.py",
+      "bytes": 8682,
+      "sha256": "a2589e2035db6da6c566df63723ba0101072cb2b4754a5957ee4884b56891946"
+    }
+  ],
+  "changedExistingFiles": [],
+  "validation": {
+    "ROMOnlyTest": "passed",
+    "conditionalInstructions": 13838,
+    "presentSuccessCalls": "1",
+    "absentCalls": "0",
+    "unknownMaximum": null,
+    "sourceCreatorRows": 4,
+    "sourceDefinition": "D04 id105 kind5",
+    "uniqueATCallPC": "020409cc"
+  },
+  "scope": "Local successful kind5 descriptor under explicit source pointer-domain, no-thread-switch, memory-archive and BIOS-LZ77 primitive contracts. Cold ROM/custom filesystem callbacks and interleavings remain unknown alternatives; not whole-loader proof."
+}

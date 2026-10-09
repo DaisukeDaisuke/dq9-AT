@@ -1,0 +1,101 @@
+{
+  "taskUUID": "a21569f7-9da6-4413-a3e6-0e0e6b800504",
+  "baseCommit": "1928cd9c6c2018445ce87f0c7179abb36e1a2fba",
+  "independentOfCheckpointV1": true,
+  "files": [
+    {
+      "path": "web/monster-motion-source-binding.mjs",
+      "baseSHA256": "3f7001d432edda413a56f63ef1941b21115db23dc4601d99d7947bb32d4d42a7",
+      "sha256": "9bbc753795b5efdb72b0b7275ed372cb1798d503998b8efe487713e86fa2e5bf",
+      "bytes": 3541
+    },
+    {
+      "path": "web/native-turn-phase.mjs",
+      "baseSHA256": "ca62bdc9198d7fead36ac65ac294b6f7856052e7c5431da16d2ad15f667e418a",
+      "sha256": "4928d923e540e2e647aa3881fd6d8c3f9715945ca36f593cec6398f582d46620",
+      "bytes": 8134
+    },
+    {
+      "path": "web/tracking-native-route-choice.mjs",
+      "baseSHA256": "f98304125bc843d2d809c09b34cb2923a3c058a8c8db73875a28f37e662c05b5",
+      "sha256": "05b04779b68a127db98a2a8432184f2ba1dd9df5845f890a6ca96ebb0debc996",
+      "bytes": 10709
+    },
+    {
+      "path": "web/tracking-native-route-cursor.mjs",
+      "baseSHA256": "d90d08b1f2216ae86c3cecc38fd1a2a514fd307eb9fc0c8995dfe171ecab9f51",
+      "sha256": "45c238958bb7a07784254f134929e250e0c6a486b12cb76a7c80a1acf7a54007",
+      "bytes": 12667
+    },
+    {
+      "path": "scripts/test-native-turn-sequence.mjs",
+      "baseSHA256": null,
+      "sha256": "4c2788f87323be1b7d593590dec4bc1d69d32942bfeac53d1eb15289e11db3cf",
+      "bytes": 2424
+    }
+  ],
+  "patchSHA256": "e6f3aef1605ab46a9d1ebb6cbd9f50c3e7ed845139383940d7e68e1a7bbf336e",
+  "evidence": [
+    {
+      "path": "ACTUAL25_PHASE_REDUCTION.json",
+      "sha256": "5d2a8b23ebf03a35c32c82054aef64eebf804b21899bba24bca439d7643d7b0c",
+      "bytes": 3463
+    },
+    {
+      "path": "HISTORY36_PHASE_REDUCTION.json",
+      "sha256": "7b401e1d1cb5da1d4f0c6f6a527cf139be96a4bc88ecd58e24cee6ee29b83360",
+      "bytes": 179399
+    },
+    {
+      "path": "CLOCK_WRITER_SCAN.json",
+      "sha256": "eb07091caf2b66ff76744e488a297b53d8180bec635c07b53de34e497603d69e",
+      "bytes": 9511
+    },
+    {
+      "path": "TEST_TURN_PHASE.json",
+      "sha256": "ba3677343a048af9c9a8aa84c5df9b2ae12869d981db1c14af8921115987dd4e",
+      "bytes": 182
+    },
+    {
+      "path": "TEST_TURN_SEQUENCE.json",
+      "sha256": "68969cfb97421fa5a44935120236c57cb5e2fadad00fb597ab400d47e93ea859",
+      "bytes": 466
+    },
+    {
+      "path": "TEST_CAMERA_MOTION.json",
+      "sha256": "21508c4fb3cf2223ce7157bcd2b2d26ead0fc362501734e638b2eecc8d2b152c",
+      "bytes": 107
+    },
+    {
+      "path": "TEST_TRACKING_COPY.json",
+      "sha256": "9026c9196c19bc2847acf422981cccc5131f1e90bceb1690ed9d5b4550083097",
+      "bytes": 688
+    }
+  ],
+  "cursorSchemaChanged": "source-native-route-cursor-with-clock-sequences-v3",
+  "freshRouteCursorRequired": true,
+  "reportTextCaveat": "Measured reports contain the prior one-invocation wording in shared clock conditions. The multi branch applies phase0..3 to each separate invocation. Source conditions text was clarified afterward; arithmetic unchanged.",
+  "actual25BeforeAfter": [
+    0,
+    0
+  ],
+  "history36NodeHypotheses": {
+    "before": 170,
+    "oneInvocation": 115,
+    "multiInvocation": 170,
+    "requiresMultiple": 55,
+    "minimumUpdateCounts": {
+      "3": 43,
+      "4": 8,
+      "5": 2,
+      "6": 2
+    }
+  },
+  "routePredicateEnumerationCapped": 65536,
+  "firstCappedRouteRowsNumericUnchanged": true,
+  "compiledSelectionLinksNotUpgraded": true,
+  "sourceInvocationCountMeasured": false,
+  "currentATRecovered": false,
+  "wasmChanged": false,
+  "testInvocationCorrection": "Camera-motion test first failed from workspace root because it resolves web relative to cwd. Rerun from owned main passed; no source change."
+}

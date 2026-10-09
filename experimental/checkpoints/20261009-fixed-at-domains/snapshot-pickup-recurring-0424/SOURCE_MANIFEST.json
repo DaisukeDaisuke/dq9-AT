@@ -1,0 +1,33 @@
+{
+  "baseSHA": "1928cd9c6c2018445ce87f0c7179abb36e1a2fba",
+  "files": [
+    {
+      "path": "web/source-pickup-recurring-bounds.mjs",
+      "bytes": 2864,
+      "sha256": "c8d0eeaf2ae7215342f2eab9d54f2c655a7a369b15b3f825ca8e40fe113483c1"
+    },
+    {
+      "path": "web/source-pickup-recurring-binding.mjs",
+      "bytes": 819,
+      "sha256": "eeaf79d1bbe9d0c0bbe4d66bee036a7375ab509366c3b733cc9dcbcc59f38e14"
+    },
+    {
+      "path": "scripts/inspect-pickup-recurring.py",
+      "bytes": 7715,
+      "sha256": "5e77e00d1dd8e3702dbc71cc8ba0d4b2cd72078b93fe2314f1b61eea0dd614c8"
+    },
+    {
+      "path": "scripts/test-pickup-recurring-bounds.mjs",
+      "bytes": 1064,
+      "sha256": "471624e6eda745774ba8aa1107c79f5147c80de086d46aa0844e76661f53caf0"
+    }
+  ],
+  "test": "passed",
+  "perInvocationCalls": {
+    "min": "0",
+    "max": "2"
+  },
+  "scope": "Recurring global pickup updater, not map-code-gated; unproved invocation/window count remains unbounded",
+  "directCallerFound": "0218dac8",
+  "sourceInstructions": 1462
+}
