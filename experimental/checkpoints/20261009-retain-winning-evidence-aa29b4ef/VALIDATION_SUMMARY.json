@@ -1,0 +1,237 @@
+{
+  "frameSerial": 3,
+  "sourcePTS": 28.517,
+  "region": "77",
+  "model": "z068a",
+  "all16CasesDeepEqual": true,
+  "retainedUnknownAndFailureRecordsEqual": true,
+  "rows": [
+    {
+      "placementMethod": "decoded",
+      "poseOrdering": "same-frame-appearance-reference-first",
+      "kind": "cold",
+      "oldCount": {
+        "calls": 8,
+        "serializedCloneInputBytes": 47795
+      },
+      "newCount": {
+        "calls": 8,
+        "serializedCloneInputBytes": 47795
+      },
+      "resultSHA256": "3ce52db6e188ccd80ea843262626e26d484b775dc823bc7b5f4d924553a66a2a"
+    },
+    {
+      "placementMethod": "decoded",
+      "poseOrdering": "same-frame-appearance-reference-first",
+      "kind": "tie",
+      "oldCount": {
+        "calls": 8,
+        "serializedCloneInputBytes": 47795
+      },
+      "newCount": {
+        "calls": 2,
+        "serializedCloneInputBytes": 4448
+      },
+      "resultSHA256": "b8f49c41009a79a76fb8f210b88ec8b1ae74dd6f792cfca722b444c9a6fbf8f3"
+    },
+    {
+      "placementMethod": "decoded",
+      "poseOrdering": "same-frame-appearance-reference-first",
+      "kind": "lower",
+      "oldCount": {
+        "calls": 8,
+        "serializedCloneInputBytes": 47795
+      },
+      "newCount": {
+        "calls": 2,
+        "serializedCloneInputBytes": 4448
+      },
+      "resultSHA256": "27c075d94fde604dac702e8e2bcb9f471ec12e2c5504c3576c9cdb7b94dc995a"
+    },
+    {
+      "placementMethod": "decoded",
+      "poseOrdering": "same-frame-appearance-reference-first",
+      "kind": "no-best",
+      "oldCount": {
+        "calls": 2,
+        "serializedCloneInputBytes": 4448
+      },
+      "newCount": {
+        "calls": 2,
+        "serializedCloneInputBytes": 4448
+      },
+      "resultSHA256": "d976fccf26571c0a2a5689970a5411754c1e75b4732f1217a61145ae28fccbea"
+    },
+    {
+      "placementMethod": "decoded",
+      "poseOrdering": "same-frame-appearance-camera-relative-first",
+      "kind": "cold",
+      "oldCount": {
+        "calls": 8,
+        "serializedCloneInputBytes": 47813
+      },
+      "newCount": {
+        "calls": 8,
+        "serializedCloneInputBytes": 47813
+      },
+      "resultSHA256": "0b243a78bcf3ebf0c70962f5be15dea37ef7c0498720a8c6b53a747d7a8d1ecb"
+    },
+    {
+      "placementMethod": "decoded",
+      "poseOrdering": "same-frame-appearance-camera-relative-first",
+      "kind": "tie",
+      "oldCount": {
+        "calls": 8,
+        "serializedCloneInputBytes": 47813
+      },
+      "newCount": {
+        "calls": 2,
+        "serializedCloneInputBytes": 4448
+      },
+      "resultSHA256": "c70986f3f68fe3e35c121d1b3d8ad7b31e15839332bc9c3fa086e0d8b54fb7ee"
+    },
+    {
+      "placementMethod": "decoded",
+      "poseOrdering": "same-frame-appearance-camera-relative-first",
+      "kind": "lower",
+      "oldCount": {
+        "calls": 8,
+        "serializedCloneInputBytes": 47813
+      },
+      "newCount": {
+        "calls": 2,
+        "serializedCloneInputBytes": 4448
+      },
+      "resultSHA256": "7280c562b2b4a605d38d79147576e3659d92b35a8594e842dedcbe498027f353"
+    },
+    {
+      "placementMethod": "decoded",
+      "poseOrdering": "same-frame-appearance-camera-relative-first",
+      "kind": "no-best",
+      "oldCount": {
+        "calls": 2,
+        "serializedCloneInputBytes": 4448
+      },
+      "newCount": {
+        "calls": 2,
+        "serializedCloneInputBytes": 4448
+      },
+      "resultSHA256": "7ad1d7335b06c208472a3c3b35dbb5242df8b73e022a50e9c06911d8c6b58ffa"
+    },
+    {
+      "placementMethod": "emitted",
+      "poseOrdering": "same-frame-appearance-reference-first",
+      "kind": "cold",
+      "oldCount": {
+        "calls": 8,
+        "serializedCloneInputBytes": 47795
+      },
+      "newCount": {
+        "calls": 8,
+        "serializedCloneInputBytes": 47795
+      },
+      "resultSHA256": "39708556c6ad4e8668e9c2377493fa4f4c37ae65158276b6a47784b0a384a8d1"
+    },
+    {
+      "placementMethod": "emitted",
+      "poseOrdering": "same-frame-appearance-reference-first",
+      "kind": "tie",
+      "oldCount": {
+        "calls": 8,
+        "serializedCloneInputBytes": 47795
+      },
+      "newCount": {
+        "calls": 2,
+        "serializedCloneInputBytes": 4448
+      },
+      "resultSHA256": "00224cb6bc473692d1415aab3a4f6593fbf8a50ef8e6bd29f8278854cb69a92d"
+    },
+    {
+      "placementMethod": "emitted",
+      "poseOrdering": "same-frame-appearance-reference-first",
+      "kind": "lower",
+      "oldCount": {
+        "calls": 8,
+        "serializedCloneInputBytes": 47795
+      },
+      "newCount": {
+        "calls": 2,
+        "serializedCloneInputBytes": 4448
+      },
+      "resultSHA256": "bb2b269005c31e1dee62b53cb83f3fb2b5dfe78582d585579b547c6581b24721"
+    },
+    {
+      "placementMethod": "emitted",
+      "poseOrdering": "same-frame-appearance-reference-first",
+      "kind": "no-best",
+      "oldCount": {
+        "calls": 2,
+        "serializedCloneInputBytes": 4448
+      },
+      "newCount": {
+        "calls": 2,
+        "serializedCloneInputBytes": 4448
+      },
+      "resultSHA256": "e14a749026ec288222b8719749a98ea5e73df2e8f18824af05bbc5b07eeb2802"
+    },
+    {
+      "placementMethod": "emitted",
+      "poseOrdering": "same-frame-appearance-camera-relative-first",
+      "kind": "cold",
+      "oldCount": {
+        "calls": 8,
+        "serializedCloneInputBytes": 47813
+      },
+      "newCount": {
+        "calls": 8,
+        "serializedCloneInputBytes": 47813
+      },
+      "resultSHA256": "5d33aeaec76b34d2c9efe315b2333f4db2182f0a30d9780a1ee4397eb94d9463"
+    },
+    {
+      "placementMethod": "emitted",
+      "poseOrdering": "same-frame-appearance-camera-relative-first",
+      "kind": "tie",
+      "oldCount": {
+        "calls": 8,
+        "serializedCloneInputBytes": 47813
+      },
+      "newCount": {
+        "calls": 2,
+        "serializedCloneInputBytes": 4448
+      },
+      "resultSHA256": "547e804d10fb3d1f9defe8bd98f7c0f5bab619fb290be393646fe56eb6f11b2a"
+    },
+    {
+      "placementMethod": "emitted",
+      "poseOrdering": "same-frame-appearance-camera-relative-first",
+      "kind": "lower",
+      "oldCount": {
+        "calls": 8,
+        "serializedCloneInputBytes": 47813
+      },
+      "newCount": {
+        "calls": 2,
+        "serializedCloneInputBytes": 4448
+      },
+      "resultSHA256": "6262568022b827f5821ed462d239abd52adc46342b206a102202d1984111d152"
+    },
+    {
+      "placementMethod": "emitted",
+      "poseOrdering": "same-frame-appearance-camera-relative-first",
+      "kind": "no-best",
+      "oldCount": {
+        "calls": 2,
+        "serializedCloneInputBytes": 4448
+      },
+      "newCount": {
+        "calls": 2,
+        "serializedCloneInputBytes": 4448
+      },
+      "resultSHA256": "833053fb8760f37476dd8a70c1218c91a583e1bcb0c70329755322a77cc4abeb"
+    }
+  ],
+  "actualATPredicateSHA256": "660705bbce1bc0e908701f295550dbdeadef4dc6a7dac94586a4d6be3821a05a",
+  "actualSingleEvents": 0,
+  "predicateCheckScope": "Existing predicate derivation on unchanged actual classifications; not a new AT state search or RSS measurement."
+}

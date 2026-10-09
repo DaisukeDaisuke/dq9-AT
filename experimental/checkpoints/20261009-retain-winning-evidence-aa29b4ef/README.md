@@ -1,0 +1,5 @@
+# Unintegrated winning-evidence clone optimization
+
+Source-only checkpoint; production web files remain unchanged. CHANGES.json SHA256 da03abb0ef38f05ebab88b260ee617027399aa413b4248f65802753903b4e451. Restore against the listed base hashes before review/integration. The two retention functions defer best/sourcePlacement clones until a strictly greater candidate wins. Counts, ordered failures, unknown evidence, ranking and winning-copy ownership remain unchanged.
+
+The worker verified 16 cold/tie/lower/no-best combinations using an existing real frame3/region77/z068a record, with deep equality and JSON-hash equality. Existing reference-camera and isolated-support tests passed. This is bounded output-parity evidence, not all-input proof, process RSS measurement, browser error4 attribution, raw-export size reduction or current-AT recovery. Validation summary omits the local raw-input path; no raw observations, ROM or pixels are included. SOURCE.patch is omitted as duplicate source representation. Ongoing AT continuation is not modified.

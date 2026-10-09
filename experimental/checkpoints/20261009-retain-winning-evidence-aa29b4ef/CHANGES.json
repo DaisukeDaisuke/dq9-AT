@@ -1,0 +1,17 @@
+{
+  "files": [
+    {
+      "path": "web/monster-native-reference-pose.mjs",
+      "sha256": "364bbb859ea3afc76d1ba4ff53fb640f04823bcd0d41e1c5ec77941b95ccd4b2",
+      "baseSHA256": "61c573a78c3a16312279dab00f93db1078656271e4f143a656722e850e52168d"
+    },
+    {
+      "path": "web/monster-native-isolated-support.mjs",
+      "sha256": "a18a6597ac922dbd7bcae692bb3b4314015bbb253b8d2796e9b035606f0ab6dc",
+      "baseSHA256": "50d3333e51c33c01e61d9a3b361eefe39eb469a250c5e7bf16f31d1c51160fa0"
+    }
+  ],
+  "scope": "Defer detached best/sourcePlacement clones until strictly-greater method or aggregate retention actually wins. Keep counts, ordered failures and shared best alias when retained. No evidence removal, gate or ranking change.",
+  "validation": "Existing actual frame3/region77/z068a best record:16cold/tie/lower/no-best combinations deep and JSON-hash equal. Existing reference-camera20 and isolated-support checks pass. Actual predicates remain0/unknown.",
+  "limits": "No RSS/error4 attribution or rawJSON/download reduction claim. Only discarded structuredClone work avoided; winning copies retain ownership. No browser/video/AT state replay."
+}
