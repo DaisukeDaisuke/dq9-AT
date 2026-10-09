@@ -1,0 +1,19 @@
+{
+  "schema": "verified-recording-lineage-source-followup-v1",
+  "actualResult": "old36/new4 exact overlap verified; locally owned continuation registered; real new4 controller produced no after event and retained waiting",
+  "checkpointContinuationRestore": "implemented, not yet exercised",
+  "oldSourceAndEpochNotRewritten": true,
+  "ATCallsInferred": false,
+  "currentATRecovered": false,
+  "ROMorPixelsIncluded": false,
+  "originalManifestSHA256": "22b0a8b296503190198843df0a83c7572282599d4c9893223135cea33c4c035a",
+  "productionIntegrated": false,
+  "ATStateEqualityProved": false,
+  "ContinuousFrameCoverageProved": false,
+  "omittedLargeMeasurementReference": {
+    "path": "at-worker-memory-ipc-c7/REAL_CONTINUATION.json",
+    "originalPath": "connect-video-at-c7c19b96/at-worker-memory-ipc-c7/REAL_CONTINUATION.json",
+    "bytes": 195299,
+    "sha256": "3d04f3ab08ad2314c126005cdc794db7af4cc565cd8a621cc7f4f6b1427b694a"
+  }
+}
