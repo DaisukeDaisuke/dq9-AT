@@ -1,0 +1,21 @@
+{
+  "manifestSHA256": "5808e8309707ef73804d965473c040e01de6ef0ae3e1cbe3662b03db1f113331",
+  "patchSHA256": "892a45787f69e9933adf650df79d2e2ef572aa56460c40fc540a8cd5ffc9f26f",
+  "baseCommit": "1928cd9c6c2018445ce87f0c7179abb36e1a2fba",
+  "productionIntegrated": false,
+  "actualVideoSourceClockMeasured": false,
+  "numericalSeedUsed": false,
+  "singleMemberAndDelta50AreHypothesesOnly": true,
+  "wholeActualEventToObservationCalls": {
+    "min": "0",
+    "max": null
+  },
+  "currentATRecovered": false,
+  "omittedActualResultReference": {
+    "path": "ACTUAL25_RESULT.json",
+    "sha256": "e99d05d190368c9e9ddc9e51f28b621323cf070467bb710279c388b0de2cc195",
+    "bytes": 28947
+  },
+  "rawEvidenceIncluded": false,
+  "scope": "Source-only scheduler domain and conditional hypotheses. single-member/delta50 are not measured video facts; all event-to-current bounds retain max:null. Production and formal recovery inventory unchanged."
+}

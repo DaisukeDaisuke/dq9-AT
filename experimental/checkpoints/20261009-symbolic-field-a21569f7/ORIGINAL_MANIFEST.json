@@ -1,0 +1,82 @@
+{
+  "taskUUID": "a21569f7-9da6-4413-a3e6-0e0e6b800504",
+  "baseCommit": "1928cd9c6c2018445ce87f0c7179abb36e1a2fba",
+  "baseDirectory": "integrate-ordinary-turn-e76d366f/main",
+  "files": [
+    {
+      "path": "web/field-scheduler.mjs",
+      "baseSHA256": "42df62ddaa73d53c34f5b4616c5f8c4f07e5ac5ff1ea7a82c3c1d5dbbd99c584",
+      "sha256": "fe571d93426f9f61dedc3e1612d03de00ff7f374f0b62fdd1915010afee2f8a1",
+      "bytes": 9412
+    },
+    {
+      "path": "web/video-replay-source-preparation.mjs",
+      "baseSHA256": "dd3db29d468946466df4bb287eec38efecc241b442c5b4f98ff95361d71d5328",
+      "sha256": "fc1d9fed3c462b77f0a9947e031ac049dc7e33ead3baed6e07784ace0b5fe638",
+      "bytes": 9198
+    },
+    {
+      "path": "web/symbolic-field-scheduler.mjs",
+      "baseSHA256": null,
+      "sha256": "5514428d1c9709a62741a7476b2639f998f1b4ae8e4ec0642e490fd0e101e824",
+      "bytes": 12110
+    },
+    {
+      "path": "scripts/test-symbolic-field-scheduler.mjs",
+      "baseSHA256": null,
+      "sha256": "a55c9936ad004074b60fa83f5b5d0c49aa743787274392f977414f7123efb06d",
+      "bytes": 5966
+    }
+  ],
+  "patchSHA256": "892a45787f69e9933adf650df79d2e2ef572aa56460c40fc540a8cd5ffc9f26f",
+  "evidence": [
+    {
+      "path": "ACTUAL25_RESULT.json",
+      "sha256": "e99d05d190368c9e9ddc9e51f28b621323cf070467bb710279c388b0de2cc195",
+      "bytes": 28947
+    },
+    {
+      "path": "TEST_SYMBOLIC.json",
+      "sha256": "087bff79eea19125d3e879136e0dbd2d87ddb1848c792b70001445aae515af21",
+      "bytes": 3959
+    },
+    {
+      "path": "TEST_PREPARATION.json",
+      "sha256": "cd5934969a6ccf8ed3bfb530198c2b02058532935dbef04a94dc1a2a1c93844a",
+      "bytes": 212
+    },
+    {
+      "path": "TEST_FIELD_SOURCE.json",
+      "sha256": "d09284e5bd72395b93beead81ca4fc668c1a5c0f8645c4500d17665ac6a93136",
+      "bytes": 653
+    },
+    {
+      "path": "TEST_first-spawn.json",
+      "sha256": "d0b342b5e2d7fe6de9f4dc2b52489aa62304c52f84750364375b439b1a260d46",
+      "bytes": 157
+    },
+    {
+      "path": "TEST_newborn-replay.json",
+      "sha256": "73f7c69edd0b637cd69ca18c374eaa67b48b49c0ca8c4f8167093dbb1820fe02",
+      "bytes": 179
+    },
+    {
+      "path": "TEST_map-transition-replay.json",
+      "sha256": "e9683dafc42554b1e37a9bbfa1b27e350e360f03576c5d3fe5f2f581a7f9ba40",
+      "bytes": 198
+    },
+    {
+      "path": "TEST_multi-actor-replay.json",
+      "sha256": "99c80168c10a18fd63545b3399a4f2cc0fb6772dcbb3e29efd9f4eaac2cf0b4c",
+      "bytes": 147
+    }
+  ],
+  "buildNeeded": false,
+  "wasmChanged": false,
+  "actualVideoSourceClockMeasured": false,
+  "currentATRecovered": false,
+  "wholeActualEventToObservationCalls": {
+    "min": "0",
+    "max": null
+  }
+}
