@@ -1,0 +1,34 @@
+{
+  "schema": "conditional-map-load-segment-source-v1",
+  "baseSource": "a43 controller/AT closure identical to5898 verified earlier",
+  "files": [
+    {
+      "path": "web/map-transition.mjs",
+      "bytes": 23581,
+      "sha256": "03f0886662d37704814b7a607369ec80bfbae3ef9ff9b82a9737261e03bcce40",
+      "baseSHA256": "060c216a7ea94a9b630391d5ffb2f73a1778adf53dd50595bcd1dd2abd2920b5"
+    },
+    {
+      "path": "web/tracking-map-load-segments.mjs",
+      "bytes": 7958,
+      "sha256": "0a11a53c70aa316a3ad02d7cd2afdbc2c34314e1e2546dbe5e4ce4b506be0a01",
+      "baseSHA256": null
+    },
+    {
+      "path": "web/tracking-at-observation-adapter.mjs",
+      "bytes": 11249,
+      "sha256": "eadd32c9fce562272a5b9fb4f65cbd5971936b34ab12a47032ff2fabb30b0dd8",
+      "baseSHA256": "2a9c5082f52198ff1d237f7e9d9f062d7d42dbda60fd01d4d7b134f6403d670d"
+    },
+    {
+      "path": "web/map-browser-preview/video-tracking-at.mjs",
+      "bytes": 31940,
+      "sha256": "02582a6489fd961f4e52d87972b29dbfdf4a0df3f7ff6477c9ffbd06bbc3bdfc",
+      "baseSHA256": "73f4514e01b74f598c6e8a4c53398e5e950de3cb5e885eea6feb2e22a8387eca"
+    }
+  ],
+  "actualInput": "36 frames same source epoch1 segment0, F05->F06 ROM ordinary edge matched",
+  "actualResult": "NPC-only0draw; no destination event yet; map-edge branches0; prefix/suffix unbounded",
+  "currentATRecovered": false,
+  "workInProgress": "Pickup count domain next, not included"
+}
